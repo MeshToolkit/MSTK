@@ -17,6 +17,10 @@ extern "C" {
     MSTK_Report("ME_Set_RepType_R2","Not implemented",ERROR);
   }
 
+  void ME_Destroy_For_MESH_Delete_R2(MEdge_ptr e) {
+    MSTK_Report("ME_Set_RepType_R2","Not implemented",ERROR);
+  }
+
   int ME_Num_Faces_R2(MEdge_ptr e) {
     return ME_Num_Faces_R1R2(e);
   }

@@ -35,8 +35,11 @@ extern "C" {
 #endif
 
       upadj = (MEdge_UpAdj_F4 *) e->upadj;
-      List_Delete(upadj->elements);
-      MSTK_free(upadj);
+      if (upadj) {
+	if (upadj->elements)
+	  List_Delete(upadj->elements);
+	MSTK_free(upadj);
+      }
       
       MSTK_free(e);
     }
@@ -51,6 +54,19 @@ extern "C" {
 
     MV_Add_Edge(e->vertex[0],e);
     MV_Add_Edge(e->vertex[1],e);
+  }
+
+  void ME_Destroy_For_MESH_Delete_F4(MEdge_ptr e) {
+    MEdge_UpAdj_F4 *upadj;
+
+    upadj = (MEdge_UpAdj_F4 *) e->upadj;
+    if (upadj) {
+      if (upadj->elements)
+	List_Delete(upadj->elements);
+      MSTK_free(upadj);
+    }
+      
+    MSTK_free(e);
   }
 
   int ME_Num_Faces_F4(MEdge_ptr e) {

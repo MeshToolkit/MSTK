@@ -17,6 +17,10 @@ extern "C" {
     MSTK_Report("ME_Delete_R4","Not implemented",ERROR);
  }
 
+  void ME_Destroy_For_MESH_Delete_R4(MEdge_ptr e) {
+    MSTK_Report("ME_Destroy_For_MESH_Delete_R4","Not implemented",ERROR);
+ }
+
   int ME_Num_Faces_R4(MEdge_ptr e) {
     return ME_Num_Faces_R3R4(e);
   }
