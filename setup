@@ -6,6 +6,7 @@ else
 ARCHOS=$1
 fi
 
+echo
 echo "Setting up directories for $ARCHOS system"
 echo
 echo "If you want to compile for a different system, type"
