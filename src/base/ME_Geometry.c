@@ -30,11 +30,13 @@ extern "C" {
 
   void ME_Vec(MEdge_ptr e, double *evec) {
     double xyz0[3],xyz1[3];
+    int i;
 
     MV_Coords(e->vertex[0],xyz0);
     MV_Coords(e->vertex[1],xyz1);
 
-    VDiff3(xyz1,xyz0,evec);
+    for (i = 0; i < 3; i++)
+      evec[i] = xyz1[i]-xyz0[i];
   }
 
 #ifdef __cplusplus
