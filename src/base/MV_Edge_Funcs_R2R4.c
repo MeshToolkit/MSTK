@@ -17,6 +17,8 @@ extern "C" {
     List_ptr vedges;
     MVertex_SameAdj_R2R4 *sameadj;
 
+    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+
     /* Have to create volatile edges */
 
     vedges = List_New(sameadj->nvadj);
