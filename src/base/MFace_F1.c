@@ -19,7 +19,6 @@ extern "C" {
     upadj->fregions[0] = (MRegion_ptr) NULL;
     upadj->fregions[1] = (MRegion_ptr) NULL;
     downadj = f->downadj = (MFace_DownAdj_FN *) MSTK_malloc(sizeof(MFace_DownAdj_FN));
-    downadj->ne = 0;
     downadj->edirs = 0;
     downadj->fedges = NULL;
   }
@@ -32,7 +31,7 @@ extern "C" {
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
-    if (f->dim != MDELFACE) { /* if face has not been temporarily deleted */
+    if (MEnt_Dim(f) != MDELETED) { /* if face hasnt been temporarily deleted */
       if (downadj) {
 	if (downadj->fedges) {
 	  ne = List_Num_Entries(downadj->fedges);
@@ -44,15 +43,7 @@ extern "C" {
       }
     }
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      f->dim = MDELFACE;
-    }
-    else {
-#ifdef DEBUG
-      f->dim = MDELFACE;
-#endif
-
+    if (!keep) {
       upadj = (MFace_UpAdj_F1F3 *) f->upadj;
       if (upadj)
 	MSTK_free(upadj);
@@ -61,7 +52,6 @@ extern "C" {
 	List_Delete(downadj->fedges);
 	MSTK_free(downadj);
       }
-      MSTK_free(f);
     }
   }
 
@@ -70,10 +60,7 @@ extern "C" {
     MEdge_ptr e;
     int i, ne;
 
-    if (f->dim != MDELFACE)
-      return;
-
-    f->dim = MFACE;
+    MEnt_Set_Dim(f,MFACE);
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
@@ -98,8 +85,10 @@ extern "C" {
 	List_Delete(downadj->fedges);
       MSTK_free(downadj);
     }
-    
-    MSTK_free(f);
+  }
+
+  int MF_Set_GInfo_Auto_F1(MFace_ptr f) {
+    return MF_Set_GInfo_Auto_FN(f);
   }
 
   void MF_Set_Edges_F1(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
@@ -142,12 +131,18 @@ extern "C" {
 #endif
   }
 
+  int MFs_AreSame_F1(MFace_ptr f1, MFace_ptr f2) {
+    return (f1 == f2);
+  }
+
   int MF_Num_Vertices_F1(MFace_ptr f) {
-    return ((MFace_DownAdj_FN *)f->downadj)->ne;
+    List_ptr fedges = ((MFace_DownAdj_FN *)f->downadj)->fedges;
+    return List_Num_Entries(fedges);
   }
 
   int MF_Num_Edges_F1(MFace_ptr f) {
-    return ((MFace_DownAdj_FN *)f->downadj)->ne;
+    List_ptr fedges = ((MFace_DownAdj_FN *)f->downadj)->fedges;
+    return List_Num_Entries(fedges);
   }
 
   int MF_Num_AdjFaces_F1(MFace_ptr f) {
