@@ -455,7 +455,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   
   fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"faces",5) == 0) {
+  if (strncasecmp(temp_str,"face",4) == 0) {
+    if (strncasecmp(temp_str,"faces",5) != 0) 
+      MSTK_Report("MESH_InitFromFile","Expected keyword \"faces\"",ERROR);
     
     NF = mesh->nf;
     mesh->mface = List_New(NF);
@@ -560,7 +562,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   else {
     if (mesh->reptype >= F1 || mesh->reptype <= F6) {
-      MSTK_Report("MESH_InitFromFile","Expected face information",ERROR);
+      MSTK_Report("MESH_InitFromFile","Expected face information",FATAL);
       fclose(fp);
       return 0;
     }
@@ -568,7 +570,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   
   
   fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"regions",7) == 0) {
+  if (strncasecmp(temp_str,"region",6) == 0) {
+    if (strncasecmp(temp_str,"regions",7) != 0) 
+      MSTK_Report("MESH_InitFromFile","Expected keyword \"regions\"",ERROR);
+
     NR = mesh->nr;
     mesh->mregion = List_New(NR);
 
