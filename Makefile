@@ -14,7 +14,7 @@ ifeq ($(ARCHOS),i686_linux)
 endif
 
 TOPDIR = $(HOME)/develop
-MSTK_UTIL := $(TOPDIR)/mstkutil/1.1a
+MSTK_UTIL := $(TOPDIR)/mstkutil/1.2
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
