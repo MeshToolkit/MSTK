@@ -15,23 +15,21 @@ extern "C" {
 
   MRegion_ptr MR_New(Mesh_ptr mesh) {
     MRegion_ptr r;
-    RepType rtype;
+    RepType RTYPE;
 
     r = (MRegion_ptr) MSTK_malloc(sizeof(MRegion));
 
-    r->id = 0;
-    r->marker = 0;
-    r->mesh = mesh;
-    r->dim = 3;
-    r->gdim = 3;
-    r->gid = 0;
-    r->gent = (GEntity_ptr) NULL;
-    r->AttInsList = NULL;
+    MEnt_Init_CmnData(r);
+    MEnt_Set_Mesh(r,mesh);
+    MEnt_Set_Dim(r,3);
+    MEnt_Set_GEntDim(r,3);
+    MEnt_Set_GEntID(r,0);
+
     r->sameadj = (void *) NULL;
     r->downadj = (void *) NULL;
 
-    rtype = mesh ? MESH_RepType(mesh) : F1;
-    MR_Set_RepType(r,rtype);
+    RTYPE = mesh ? MESH_RepType(mesh) : F1;
+    MR_Set_RepType(r,RTYPE);
 
     if (mesh) MESH_Add_Region(mesh,r);
 
@@ -39,28 +37,40 @@ extern "C" {
   }
 
   void MR_Delete(MRegion_ptr r, int keep) {
-    int idx;
-    MAttIns_ptr attins;
+    RepType RTYPE = MEnt_RepType(r);
+    Mesh_ptr mesh;
 
-    if (r->dim != MDELREGION)
-      MESH_Rem_Region(r->mesh,r);
+    (*MR_Delete_jmp[RTYPE])(r,keep);
 
-    if (!keep) {
-      if (r->AttInsList) {
-	idx = 0;
-	while ((attins = List_Next_Entry(r->AttInsList,&idx)))
-	  MAttIns_Delete(attins);
-	List_Delete(r->AttInsList);
-      }
+    if (MEnt_Dim(r) != MDELETED) {
+      mesh = MEnt_Mesh(r);
+      MESH_Rem_Region(mesh,r);
+      MEnt_Set_DelFlag(r);
     }
 
-    (*MR_Delete_jmp[r->repType])(r,keep);
+    if (!keep) {
+      MEnt_Free_CmnData(r);
+      MSTK_free(r);
+    }
   }
 
   void MR_Restore(MRegion_ptr r) {
-    if (r->dim == MDELREGION)
-      MESH_Add_Region(r->mesh,r);
-    (*MR_Restore_jmp[r->repType])(r);
+    RepType RTYPE = MEnt_RepType(r);
+    Mesh_ptr mesh = MEnt_Mesh(r);
+
+#ifdef DEBUG
+    if (MEnt_Dim(r) != MDELETED) {
+      MSTK_Report("MR_Restore",
+		  "Trying to restore region that is not deleted",WARN);
+      return;
+    }
+#endif
+
+    MEnt_Rem_DelFlag(r);
+
+    MESH_Add_Region(mesh,r);
+
+    (*MR_Restore_jmp[RTYPE])(r);
   }
 
 
@@ -70,100 +80,104 @@ extern "C" {
      ELSEWHERE !!!! */
 
   void MR_Destroy_For_MESH_Delete(MRegion_ptr r) {
-    int idx;
-    MAttIns_ptr attins;
+    RepType RTYPE = MEnt_RepType(r);
 
-    if (r->AttInsList) {
-      idx = 0;
-      while ((attins = List_Next_Entry(r->AttInsList,&idx)))
-	MAttIns_Delete(attins);
-      List_Delete(r->AttInsList);
-    }
+    (*MR_Destroy_For_MESH_Delete_jmp[RTYPE])(r);
 
-    (*MR_Destroy_For_MESH_Delete_jmp[r->repType])(r);
+    MEnt_Free_CmnData(r);
+
+    MSTK_free(r);
   }
 
-  void MR_Set_RepType(MRegion_ptr r, RepType rtype) {
-    r->repType = rtype;
-    (*MR_Set_RepType_jmp[r->repType])(r);
+  void MR_Set_RepType(MRegion_ptr r, RepType RTYPE) {
+    MEnt_Set_RepType_Data(r,RTYPE);
+    (*MR_Set_RepType_jmp[RTYPE])(r);
   }
 
   void MR_Set_GEntity(MRegion_ptr r, GEntity_ptr gent) {
-    r->gent = gent;
   }
 
   void MR_Set_GEntDim(MRegion_ptr r, int gdim) {
-    r->gdim = gdim;
+    MEnt_Set_GEntDim(r,gdim);
   }
 
   void MR_Set_GEntID(MRegion_ptr r, int gid) {
-    r->gid = gid;
+    MEnt_Set_GEntID(r,gid);
+  }
+
+  int MR_Set_GInfo_Auto(MRegion_ptr r) {
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Set_GInfo_Auto_jmp[RTYPE])(r);
   }
 
   void MR_Set_ID(MRegion_ptr r, int id) {
-    r->id = id;
+    MEnt_Set_ID(r,id);
   }
 
   void MR_Set_Faces(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs) {
-    (*MR_Set_Faces_jmp[r->repType])(r,nf,mfaces,dirs);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Set_Faces_jmp[RTYPE])(r,nf,mfaces,dirs);
   }
 
   void MR_Set_Vertices(MRegion_ptr r, int nv, MFace_ptr *mvertices, int nf, int **template) {
-    (*MR_Set_Vertices_jmp[r->repType])(r,nv,mvertices,nf,template);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Set_Vertices_jmp[RTYPE])(r,nv,mvertices,nf,template);
   }
 
   Mesh_ptr MR_Mesh(MRegion_ptr r) {
-    return r->mesh;
+    return MEnt_Mesh(r);
   }
 
   int MR_ID(MRegion_ptr r) {
-    return r->id;
+    return MEnt_ID(r);
   }
 
   int MR_GEntDim(MRegion_ptr r) {
-    return r->gdim;
+    return MEnt_GEntDim(r);
   }
 
   int MR_GEntID(MRegion_ptr r) {
-    return r->gid;
+    return MEnt_GEntID(r);
   }
 
   GEntity_ptr MR_GEntity(MRegion_ptr r) {
-    return r->gent;
+    return NULL;
   }
 
-  MRType MR_ElementType(MRegion_ptr r) {
-    int nt, i;
-    MFace_ptr face;
-    MRegion_DownAdj_FN *downadj;
+  
+/*   MRType MR_ElementType(MRegion_ptr r) { */
+/*     int nt, i; */
+/*     MFace_ptr face; */
+/*     MRegion_DownAdj_FN *downadj; */
 
-    /* SHOULDN'T THIS BE IN A SPECIFIC REPRESENTATION RATHER THAN HERE ?? */
+/*     /\* SHOULDN'T THIS BE IN A SPECIFIC REPRESENTATION RATHER THAN HERE ?? *\/ */
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    switch (downadj->nf) {
-    case 4:
-      return TET;
-    case 5:
-      /* it could be a pyramid or a triangular prism */
-      nt = 0;
-      for (i = 0; i < downadj->nf; i++) {
-	face = List_Entry(downadj->rfaces,i);
-	if (MF_Num_Edges(face) == 3)
-	  nt++;
-      }
-      if (nt == 2)
-	return PRISM;
-      else 
-	return PYRAMID; 
-    case 6:
-      return HEX;
-    default:
-      if (downadj->nf > 6)
-	return POLYHED;
-      else
-	return RUNKNOWN;
-    }
-  }
+/*     downadj = (MRegion_DownAdj_FN *) r->downadj; */
+/*     switch (downadj->nf) { */
+/*     case 4: */
+/*       return TET; */
+/*     case 5: */
+/*       /\* it could be a pyramid or a triangular prism *\/ */
+/*       nt = 0; */
+/*       for (i = 0; i < downadj->nf; i++) { */
+/* 	face = List_Entry(downadj->rfaces,i); */
+/* 	if (MF_Num_Edges(face) == 3) */
+/* 	  nt++; */
+/*       } */
+/*       if (nt == 2) */
+/* 	return PRISM; */
+/*       else  */
+/* 	return PYRAMID;  */
+/*     case 6: */
+/*       return HEX; */
+/*     default: */
+/*       if (downadj->nf > 6) */
+/* 	return POLYHED; */
+/*       else */
+/* 	return RUNKNOWN; */
+/*     } */
+/*   } */
+
 
   int MR_Num_Vertices(MRegion_ptr r) {
     List_ptr rverts;
@@ -173,8 +187,15 @@ extern "C" {
     nrv = List_Num_Entries(rverts);
     List_Delete(rverts);
 
-    if (r->repType != R1 || r->repType != R2)
-      MSTK_Report("MR_Num_Vertices","Inefficient to use this routine for this representation",WARN);
+#ifdef DEBUG
+    {
+      RepType RTYPE = MEnt_RepType(r);
+      if (RTYPE != R1 || RTYPE != R2)
+	MSTK_Report("MR_Num_Vertices",
+		    "Inefficient to use this routine for this representation",
+		    WARN);
+    }
+#endif
 
     return nrv;
   }
@@ -187,81 +208,102 @@ extern "C" {
     nre = List_Num_Entries(redges);
     List_Delete(redges);
 
-    if (r->repType != R1 || r->repType != R2)
-      MSTK_Report("MR_Num_Vertices","Inefficient to use this routine for this representation",WARN);
+#ifdef DEBUG
+    {
+      RepType RTYPE = MEnt_RepType(r);
+      if (RTYPE != R1 || RTYPE != R2)
+	MSTK_Report("MR_Num_Vertices",
+		    "Inefficient to use this routine for this representation",
+		    WARN);
+    }
+#endif
 
     return nre;
   }
 
   int MR_Num_Faces(MRegion_ptr r) {
-    return (*MR_Num_Faces_jmp[r->repType])(r);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Num_Faces_jmp[RTYPE])(r);
   }
 
   /*
   int MR_Num_AdjRegions(MRegion_ptr r) {
-    return (*MR_Num_AdjRegions_jmp[r->repType])(r);
+    return (*MR_Num_AdjRegions_jmp[RTYPE])(r);
   }
   */
 
   List_ptr MR_Vertices(MRegion_ptr r) {
-    return (*MR_Vertices_jmp[r->repType])(r);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Vertices_jmp[RTYPE])(r);
   }
 
   List_ptr MR_Edges(MRegion_ptr r) {
-    return (*MR_Edges_jmp[r->repType])(r);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Edges_jmp[RTYPE])(r);
   }
 
   List_ptr MR_Faces(MRegion_ptr r) {
-    return (*MR_Faces_jmp[r->repType])(r);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Faces_jmp[RTYPE])(r);
   }
 
   List_ptr MR_AdjRegions(MRegion_ptr r) {
-    return (*MR_AdjRegions_jmp[r->repType])(r);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_AdjRegions_jmp[RTYPE])(r);
   }
 
   int MR_FaceDir(MRegion_ptr r, MFace_ptr f) {
-    return (*MR_FaceDir_jmp[r->repType])(r,f);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_FaceDir_jmp[RTYPE])(r,f);
   }
 
   int MR_FaceDir_i(MRegion_ptr r, int i) {
-    return (*MR_FaceDir_i_jmp[r->repType])(r,i);
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_FaceDir_i_jmp[RTYPE])(r,i);
   }
 
   void MR_Replace_Face(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir) {
-    (*MR_Replace_Face_jmp[r->repType])(r,f,nuf,nudir);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Replace_Face_jmp[RTYPE])(r,f,nuf,nudir);
   }
 
   void MR_Replace_Vertex(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv) {
-    (*MR_Replace_Vertex_jmp[r->repType])(r,v,nuv);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Replace_Vertex_jmp[RTYPE])(r,v,nuv);
   }
 
   void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr nuf, int nudir) {
-    (*MR_Replace_Face_i_jmp[r->repType])(r,i,nuf,nudir);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Replace_Face_i_jmp[RTYPE])(r,i,nuf,nudir);
   }
 
   void MR_Replace_Vertex_i(MRegion_ptr r, int i, MVertex_ptr nuv) {
-    (*MR_Replace_Vertex_i_jmp[r->repType])(r,i,nuv);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Replace_Vertex_i_jmp[RTYPE])(r,i,nuv);
   }
 
   void MR_Add_AdjRegion(MRegion_ptr r, int facenum, MRegion_ptr aregion) {
-    (*MR_Add_AdjRegion_jmp[r->repType])(r,facenum,aregion);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Add_AdjRegion_jmp[RTYPE])(r,facenum,aregion);
   }
 
   void MR_Rem_AdjRegion(MRegion_ptr r, MRegion_ptr aregion) {
-    (*MR_Rem_AdjRegion_jmp[r->repType])(r,aregion);
+    RepType RTYPE = MEnt_RepType(r);
+    (*MR_Rem_AdjRegion_jmp[RTYPE])(r,aregion);
   }
 
   int MR_UsesEntity(MRegion_ptr r, MEntity_ptr e, int etype) {
+    RepType RTYPE = MEnt_RepType(r);
     
     switch (etype) {
     case 3:
       return (r == (MRegion_ptr) e);
     case 2:
-      return (*MR_UsesFace_jmp[r->repType])(r,(MFace_ptr)e);
+      return (*MR_UsesFace_jmp[RTYPE])(r,(MFace_ptr)e);
     case 1:
-      return (*MR_UsesEdge_jmp[r->repType])(r,(MEdge_ptr)e);
+      return (*MR_UsesEdge_jmp[RTYPE])(r,(MEdge_ptr)e);
     case 0:
-      return (*MR_UsesVertex_jmp[r->repType])(r,(MVertex_ptr)e);
+      return (*MR_UsesVertex_jmp[RTYPE])(r,(MVertex_ptr)e);
     default:
       MSTK_Report("MR_UsesEntity","Invalid entity type",ERROR);
     }
