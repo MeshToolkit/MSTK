@@ -39,6 +39,11 @@ extern "C" {
   MFace_ptr    MESH_Face(Mesh_ptr mesh, int i);
   MRegion_ptr  MESH_Region(Mesh_ptr mesh, int i);
   
+  MVertex_ptr  MESH_Next_Vertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr    MESH_Next_Edge(Mesh_ptr mesh, int *index);
+  MFace_ptr    MESH_Next_Face(Mesh_ptr mesh, int *index);
+  MRegion_ptr  MESH_Next_Region(Mesh_ptr mesh, int *index);
+
   void       MESH_Add_Vertex(Mesh_ptr mesh, MVertex_ptr v);
   void       MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e);
   void       MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f);
