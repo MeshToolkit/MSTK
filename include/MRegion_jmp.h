@@ -25,7 +25,7 @@ void MR_Delete_F4(MRegion_ptr r);
 void MR_Delete_R1(MRegion_ptr r);
 void MR_Delete_R2(MRegion_ptr r);
 void MR_Delete_R4(MRegion_ptr r);
-void MR_Delete_FNR3R4(MRegion_ptr r);
+void MR_Delete_F1F3R3R4(MRegion_ptr r);
 static void (*MR_Delete_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Delete_F1, MR_Delete_F4, MR_Delete_R1, MR_Delete_R2, MR_Delete_R4};
 
@@ -34,7 +34,7 @@ void MR_Set_Faces_F4(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
 void MR_Set_Faces_R1(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
 void MR_Set_Faces_R2(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
 void MR_Set_Faces_R4(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
-void MR_Set_Faces_FNR3R4(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
+void MR_Set_Faces_F1F3R3R4(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
 static void 
 (*MR_Set_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs) =
 {MR_Set_Faces_F1, MR_Set_Faces_F4, MR_Set_Faces_R1, MR_Set_Faces_R2, 
@@ -222,20 +222,22 @@ static void (*MR_Set_RepType_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Set_RepType_FNR3R4, MR_Set_RepType_FNR3R4, MR_Set_RepType_R1, 
  MR_Set_RepType_R2, MR_Set_RepType_FNR3R4};
 
-void MR_Delete_FNR3R4(MRegion_ptr r);
+void MR_Delete_F1F3R3R4(MRegion_ptr r);
+void MR_Delete_F4(MRegion_ptr r);
 void MR_Delete_R1(MRegion_ptr r);
 void MR_Delete_R2(MRegion_ptr r);
 static void (*MR_Delete_jmp[MSTK_MAXREP])(MRegion_ptr r) =
-{MR_Delete_FNR3R4, MR_Delete_FNR3R4, MR_Delete_R1, MR_Delete_R2, 
- MR_Delete_FNR3R4};
+{MR_Delete_F1F3R3R4, MR_Delete_F4, MR_Delete_R1, MR_Delete_R2, 
+ MR_Delete_F1F3R3R4};
 
-void MR_Set_Faces_FNR3R4(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);
+void MR_Set_Faces_F1F3R3R4(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);
+void MR_Set_Faces_F4(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);
 void MR_Set_Faces_R1(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);
 void MR_Set_Faces_R2(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);
 static void 
 (*MR_Set_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs) =
-{MR_Set_Faces_FNR3R4, MR_Set_Faces_FNR3R4, MR_Set_Faces_R1, MR_Set_Faces_R2, 
- MR_Set_Faces_FNR3R4};
+{MR_Set_Faces_F1F3R3R4, MR_Set_Faces_F4, MR_Set_Faces_R1, MR_Set_Faces_R2, 
+ MR_Set_Faces_F1F3R3R4};
 
 void MR_Set_Vertices_FNR3R4(MRegion_ptr r, int nv, MVertex_ptr *mvertices);
 void MR_Set_Vertices_R1(MRegion_ptr r, int nv, MVertex_ptr *mvertices);
