@@ -268,10 +268,10 @@ static int (*MF_Num_Edges_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Num_Edges_F1, MF_Num_Edges_F4, MF_Num_Edges_R1R2, MF_Num_Edges_R1R2, 
  MF_Num_Edges_R3R4};
 
-Set_ptr MF_Vertices_FN(MFace_ptr f, int dir);
-Set_ptr MF_Vertices_R1R2(MFace_ptr f, int dir);
-Set_ptr MF_Vertices_R3R4(MFace_ptr f, int dir);
-static Set_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir) =
+Set_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v);
+Set_ptr MF_Vertices_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
+Set_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
+static Set_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
 {MF_Vertices_FN, MF_Vertices_FN, MF_Vertices_R1R2, MF_Vertices_R1R2, 
  MF_Vertices_R3R4};
 
