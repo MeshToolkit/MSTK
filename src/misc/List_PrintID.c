@@ -4,15 +4,15 @@
 
 #ifdef DEBUG
 
-  void List_PrintID(List_ptr l) {
+  void Set_PrintID(Set_ptr l) {
     int i, k, num;
     MEntity_ptr entry;
 
-    num = List_Num_Entries(l);
+    num = Set_Num_Entries(l);
 
-    fprintf(stderr,"List 0x%x:\n",l);
+    fprintf(stderr,"Set 0x%x:\n",l);
     for (i = 0, k = 0; i < num; i++) {
-      entry = List_Entry(l,i);
+      entry = Set_Entry(l,i);
 
       fprintf(stderr,"%d ",MEnt_ID(entry));
       k++;
