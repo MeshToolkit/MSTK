@@ -14,7 +14,9 @@ ifeq ($(ARCHOS),i686_linux)
 endif
 
 TOPDIR = $(HOME)/develop
-MSTK_UTIL := $(TOPDIR)/mstkutil/1.0
+MSTK_UTIL := $(TOPDIR)/mstkutil/1.1a
+
+# ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
 LIBDIR = ./lib
 MSTK_UTIL_INC = -I$(MSTK_UTIL)/include
