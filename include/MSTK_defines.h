@@ -8,8 +8,9 @@
 
 #define MSTK_MAXREP 10
 
-/* In reality we can have as many faces and vertices as we want but these
-   constants can be used to size some arrays by application programs ?? */
+/* Number of edges (or vertices) in a polygon and number of faces in a
+   polyhedron is determined by how much space we have to store their
+   directions */
 
 #define MAXPV2 30
 #define MAXPV3 50
