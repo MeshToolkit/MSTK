@@ -34,6 +34,7 @@ void        MSTK_Init();
 			      const int natt, const char **attnames);
   void       MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
   int        MESH_BuildClassfn(Mesh_ptr mesh);
+  int        MESH_DelInterior(Mesh_ptr mesh);
 
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);
