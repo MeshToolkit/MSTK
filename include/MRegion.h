@@ -9,7 +9,7 @@ extern "C" {
 #include "MSTK_types.h"
 #include "List.h"
 
- extern int mrtype_nv[7], mrtype_ne[7], mrtype_nf[7];
+extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
 #ifdef _H_MRegion_Private
   typedef struct MRegion {
@@ -41,7 +41,7 @@ extern "C" {
 
   typedef struct MRegion_DownAdj_FN {
     unsigned char nf;
-    unsigned char fdirs;
+    unsigned int *fdirs;
     MFace_ptr *rfaces;
   } MRegion_DownAdj_FN;
 
@@ -52,7 +52,7 @@ extern "C" {
 
   typedef struct MRegion_DownAdj_R3R4 {
     unsigned char nf;
-    unsigned char fdirs;
+    unsigned int *fdirs;
     MFace_ptr *rfaces;
   } MRegion_DownAdj_R3R4;
 
@@ -69,7 +69,7 @@ extern "C" {
 
   /* Can be called by user/application after creating region by MR_New(); */
   void MR_Set_Faces(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
-  void MR_Set_Vertices(MRegion_ptr r, int nv, MVertex_ptr *mvertices);
+  void MR_Set_Vertices(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf, int **rfvtemplate);
 
   /* Can be called by mesh modification routines */
   void MR_Replace_Face(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int dir);

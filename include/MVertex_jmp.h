@@ -35,6 +35,16 @@ extern "C" {
   static void (*MV_Restore_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
   {MV_Restore_F1, MV_Restore_F4, MV_Restore_R1, MV_Restore_R2, MV_Restore_R4};
 
+  void MV_Destroy_For_MESH_Delete_F1(MVertex_ptr v);
+  void MV_Destroy_For_MESH_Delete_F4(MVertex_ptr v);
+  void MV_Destroy_For_MESH_Delete_R1(MVertex_ptr v);
+  void MV_Destroy_For_MESH_Delete_R2(MVertex_ptr v);
+  void MV_Destroy_For_MESH_Delete_R4(MVertex_ptr v);
+  static void (*MV_Destroy_For_MESH_Delete_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  {MV_Destroy_For_MESH_Delete_F1, MV_Destroy_For_MESH_Delete_F4, 
+   MV_Destroy_For_MESH_Delete_R1, MV_Destroy_For_MESH_Delete_R2, 
+   MV_Destroy_For_MESH_Delete_R4};
+
   int MV_Num_AdjVertices_F1(MVertex_ptr v);
   int MV_Num_AdjVertices_F4(MVertex_ptr v);
   int MV_Num_AdjVertices_R1(MVertex_ptr v);

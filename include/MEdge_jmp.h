@@ -26,6 +26,12 @@ extern "C" {
   static void (*ME_Restore_jmp[MSTK_MAXREP])(MEdge_ptr e) = 
   {ME_Restore_F1, ME_Restore_F4, ME_Dummy1, ME_Dummy1, ME_Dummy1};
 
+  void ME_Destroy_For_MESH_Delete_F1(MEdge_ptr e);
+  void ME_Destroy_For_MESH_Delete_F4(MEdge_ptr e);
+  static void (*ME_Destroy_For_MESH_Delete_jmp[MSTK_MAXREP])(MEdge_ptr e) = 
+  {ME_Destroy_For_MESH_Delete_F1, ME_Destroy_For_MESH_Delete_F4, ME_Dummy1, 
+   ME_Dummy1, ME_Dummy1};
+
   int ME_Num_Faces_F1(MEdge_ptr e);
   int ME_Num_Faces_F4(MEdge_ptr e);
   int ME_Num_Faces_R1(MEdge_ptr e);

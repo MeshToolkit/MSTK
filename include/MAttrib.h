@@ -15,6 +15,7 @@ extern "C" {
   typedef struct MAttrib { /* Attribute Definition */
     char *name;
     MAttType type;
+    MType entdim;
     Mesh_ptr mesh;
   } MAttrib, *MAttrib_ptr;
 
@@ -36,9 +37,10 @@ extern "C" {
   void        MAttIns_Delete(MAttIns_ptr att);
 
 
-  MAttrib_ptr MAttrib_New(Mesh_ptr mesh, char *att_name, MAttType att_type);
+  MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, MAttType att_type, MType entdim);
   char       *MAttrib_Get_Name(MAttrib_ptr attrib, char *att_name);
   MAttType    MAttrib_Get_Type(MAttrib_ptr attrib);
+  MType       MAttrib_Get_EntDim(MAttrib_ptr attrib);
   void        MAttrib_Delete(MAttrib_ptr attrib);
 
 

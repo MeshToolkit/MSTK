@@ -24,7 +24,16 @@ void        MSTK_Init();
   Mesh_ptr   MESH_New(RepType type);
   void       MESH_Delete(Mesh_ptr mesh);
   int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
+  int        MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
+				 const char *format);
+  int        MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename);
+  int        MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
+			       const char *format, const int natt, 
+			       const char **attnames);
+  int        MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
+			      const int natt, const char **attnames);
   void       MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
+  int        MESH_BuildClassfn(Mesh_ptr mesh);
 
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);
@@ -32,7 +41,7 @@ void        MSTK_Init();
   int         MESH_Num_Attribs(Mesh_ptr mesh);
   MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i);
   MAttrib_ptr MESH_Next_Attrib(Mesh_ptr mesh, int *index);
-  MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, char *name);
+  MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, const char *name);
 
   int        MESH_Num_Vertices(Mesh_ptr mesh);
   int        MESH_Num_Edges(Mesh_ptr mesh);
@@ -49,6 +58,11 @@ void        MSTK_Init();
   MFace_ptr    MESH_Next_Face(Mesh_ptr mesh, int *index);
   MRegion_ptr  MESH_Next_Region(Mesh_ptr mesh, int *index);
 
+
+  MVertex_ptr  MESH_VertexFromID(Mesh_ptr mesh, int i);
+  MEdge_ptr    MESH_EdgeFromID(Mesh_ptr mesh, int i);
+  MFace_ptr    MESH_FaceFromID(Mesh_ptr mesh, int i);
+  MRegion_ptr  MESH_RegionFromID(Mesh_ptr mesh, int i);
 
   void       MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom);
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
@@ -164,6 +178,10 @@ void        MSTK_Init();
   List_ptr MF_Regions(MFace_ptr mface);
   MRegion_ptr MF_Region(MFace_ptr mface, int side);
 
+  MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts);
+  MFace_ptr MEs_CommonFace(int ne, MEdge_ptr *fedges);
+
+
 
 
   void MF_Coords(MFace_ptr mface, int *n, double (*xyz)[3]);
@@ -185,7 +203,8 @@ void        MSTK_Init();
 
   /* Can be called by user/application after creating region by MR_New(); */
   void MR_Set_Faces(MRegion_ptr mregion, int nf, MFace_ptr *mfaces, int *dirs);
-  void MR_Set_Vertices(MRegion_ptr mregion, int nv, MVertex_ptr *mvertices);
+  void MR_Set_Vertices(MRegion_ptr mregion, int nv, MVertex_ptr *mvertices, 
+		       int nf, int **rfvtemplate);
 
   /* Can be called by mesh modification routines */
   void MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
@@ -225,8 +244,8 @@ void        MSTK_Init();
   void MEnt_Set_ID(MEntity_ptr mentity, int id);
 
   int MEnt_ID(MEntity_ptr mentity);
-  int MEnt_Dim(MEntity_ptr mentity);
-  int MEnt_OrigDim(MEntity_ptr mentity);
+  MType MEnt_Dim(MEntity_ptr mentity);
+  MType MEnt_OrigDim(MEntity_ptr mentity);
   Mesh_ptr MEnt_Mesh(MEntity_ptr mentity);
   int MEnt_GEntDim(MEntity_ptr mentity);
   GEntity_ptr MEnt_GEntity(MEntity_ptr mentity);
@@ -254,9 +273,11 @@ void        MSTK_Init();
   /* ATTRIBUTE DEFINITION                                                 */
   /************************************************************************/
 
-  MAttrib_ptr MAttrib_New(Mesh_ptr mesh, char *att_name, MAttType att_type);
+  MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, 
+			  MAttType att_type, MType entdim);
   char       *MAttrib_Get_Name(MAttrib_ptr attrib, char *att_name);
   MAttType    MAttrib_Get_Type(MAttrib_ptr attrib);
+  MType       MAttrib_Get_EntDim(MAttrib_ptr attrib);
   void        MAttrib_Delete(MAttrib_ptr attrib);
 
 
@@ -295,7 +316,7 @@ int         RType_LocFVNums(MRType type, int locfnum, MVertex_ptr *lverts);
 /* UTILITIES                               */
 /*******************************************/
 
-void        MSTK_Report(char *module, char *message, ErrType severity);
+void        MSTK_Report(const char *module, const char *message, ErrType severity);
 
 #ifdef DEBUG
   void        List_PrintID(List_ptr l);

@@ -87,6 +87,17 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void MR_Add_AdjRegion(MRegion_ptr r, int facenum, MRegion_ptr ar);
   void MR_Rem_AdjRegion(MRegion_ptr r, MRegion_ptr ar);
 
+
+  /* These are functions that MESH_Delete calls. These functions
+     destroy entities without worrying about updating entities that
+     point to them */
+
+  void MR_Destroy_For_MESH_Delete(MRegion_ptr r);
+  void MF_Destroy_For_MESH_Delete(MFace_ptr r);
+  void ME_Destroy_For_MESH_Delete(MEdge_ptr r);
+  void MV_Destroy_For_MESH_Delete(MVertex_ptr r);
+
+
   /* Private functions for defining instance of attributes, i.e., objects 
      carry the actual attribute value for some mesh entity */
 

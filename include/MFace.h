@@ -95,6 +95,9 @@ extern "C" {
   List_ptr MF_Regions(MFace_ptr f);
   MRegion_ptr MF_Region(MFace_ptr f, int side);
 
+  MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts);
+  MFace_ptr MEs_CommonFace(int ne, MEdge_ptr *fedges);
+
   /* Calling applications can only set the representation type for the
      entire mesh, not for individual mesh entities */
   void MF_Set_RepType(MFace_ptr f, RepType rtype);

@@ -8,8 +8,12 @@
 
 #define MSTK_MAXREP 10
 
-#define MAXPV2 10
-#define MAXPV3 30
+/* In reality we can have as many faces and vertices as we want but these
+   constants can be used to size some arrays by application programs ?? */
+
+#define MAXPV2 30
+#define MAXPV3 50
+#define MAXPF3 4*(8*sizeof(unsigned int))  /* Expect this to be 128 */
 
 #define NMAXATT 10
 
