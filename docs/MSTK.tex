@@ -4,10 +4,10 @@
 % from the left of the page. So the total left margin for instance is
 % the 'oddsidemargin' + 1 inch.
 %
-%\setlength{\textwidth}{4.5in}
+\setlength{\textwidth}{6.5in}
 %\setlength{\textheight}{7.0in}
-%\setlength{\evensidemargin}{0.0in}
-%\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\oddsidemargin}{0.0in}
 %\setlength{\topmargin}{0.5in}
 
 \usepackage{graphicx}
@@ -24,7 +24,7 @@
 
 \begin{document}
 
-\title{MSTK: Mesh Toolkit, v 1.1 - DRAFT} 
+\title{MSTK: Mesh Toolkit, v 1.2 - DRAFT} 
 
 
 \author{Rao V. Garimella \\
@@ -1034,14 +1034,14 @@ utility to print the IDs of the entities in a set.
 \section{Mesh Representation Types  in MSTK}
 \label{app:reptypes}
 
-\begin{figure}[!h]
-%  \begin{center}
+\begin{figure}[!ht]
+  \begin{center}
     \begin{minipage}{2.525in}
       \begin{center}
         \includegraphics[scale=0.9]{figures/repF1} \\
         Representation F1
       \end{center}
-    \end{minipage}\hfill%
+    \end{minipage}
     \begin{minipage}{2.525in}
       \begin{center}
         \includegraphics[scale=0.9]{figures/repF4} \\
@@ -1068,7 +1068,7 @@ utility to print the IDs of the entities in a set.
         Representation R4
       \end{center}
     \end{minipage}
-%  \end{center}
+  \end{center}
 \end{figure}
 
 \newpage
@@ -1329,6 +1329,122 @@ RA\_int\_1 \hspace{0.5ex} RA\_int\_2 \hspace{0.5ex} RA\_int\_3 \\
 
 \newpage
 
+\section{Example program}
 
+NOTE: This program is included in the distribution.
+
+
+\begin{verbatim}
+#include <stdio.h>
+#include <stdlib.h>
+#include "MSTK.h"
+#include "test.h"
+
+int main(int argc, char *argv[]) {
+ int i, idx, idx2, ok, edir, nv, ne;
+ double xyz[3];
+ char meshname[256];
+ Mesh_ptr mesh;
+ MVertex_ptr v;
+ MEdge_ptr e;
+ MFace_ptr f;
+ GEntity_ptr gent;
+ List_ptr fedges;
+  
+
+ /* Initialize MSTK - Always do this even if it does
+    not seem to matter in this version of MSTK */
+
+ MSTK_Init();
+
+ /* Load the mesh */
+
+ strcpy(meshname,argv[1]);
+ strcat(meshname,".mstk");
+
+ mesh = MESH_New(UNKNOWN_REP);
+ ok = MESH_InitFromFile(mesh,meshname);
+ if (!ok) {
+   fprintf(stderr,"Cannot file input file %s\n\n\n",meshname);
+   exit(-1);
+ }
+
+ /* Print some info about the mesh */
+
+ nv = MESH_Num_Vertices(mesh);
+ for (i = 0; i < nv; i++) {
+  v = MESH_Vertex(mesh,i);
+
+  /* Basic info */
+  printf("\n");
+  printf("Vertex: 0x%-x   ID: %-d   ",v,MV_ID(v));
+  
+  /* Classification w.r.t. geometric model */
+    
+  if (MV_GEntDim(v) == -1)
+    fprintf(stderr,"Unknown Classification\n");
+  else {
+   printf("GEntID: %-d   GEntDim: %-d\n",MV_GEntID(v),MV_GEntDim(v));
+   if ((gent = MV_GEntity(v)))
+     printf("Model entity pointer: 0x%-x\n",gent);   
+  }
+
+  /* Coordinates */
+  MV_Coords(v,xyz);
+  printf("Coords: %16.8lf %16.8lf %16.8lf\n",xyz[0],xyz[1],xyz[2]);
+ }
+
+ idx = 0;
+ while (f = MESH_Next_Face(mesh,&idx)) {
+
+  /* Basic info */
+  printf("\n");
+  printf("Face: 0x%-x   ID: %-d   ",f,MF_ID(f)); 
+  
+  /* Classification w.r.t. geometric model */
+
+  if (MF_GEntDim(f) == -1)
+   fprintf(stderr,"Unknown Classification\n");
+  else {
+   printf("GEntID: %-d   GEntDim: %-d\n",MF_GEntID(f),MF_GEntDim(f));
+   if ((gent = MF_GEntity(f)))
+    printf("Model entity pointer: 0x%-x\n",gent);
+  }
+  printf("\n");
+
+  /* Edges of face */
+  fedges = MF_Edges(f,1,0);
+  ne = List_Num_Entries(fedges);
+  printf("Edges: %-d\n",ne);
+  printf("Object       ID     GEntID  GEntDim   Vertex IDs\n");
+  idx2 = 0; i = 0;
+  while (e = List_Next_Entry(fedges,&idx2)) {
+   edir = MF_EdgeDir_i(f,i);
+   if (edir) 
+    printf("0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
+           e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+           MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
+   else 
+    printf("0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
+           e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+           MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
+   i++;
+  }
+  printf("\n");
+  List_Delete(fedges);
+ }
+
+ /* Write out a copy of the mesh */
+
+ strcpy(meshname,argv[1]);
+ strcat(meshname,"-copy.mstk");
+ MESH_WriteToFile(mesh,meshname);
+
+ /* No need to delete a mesh if program ends right afterwards */
+
+ MESH_Delete(mesh);
+ return 1;
+}
+\end{verbatim}
 
 \end{document}
