@@ -26,6 +26,7 @@ extern "C" {
     r->gdim = 3;
     r->gid = 0;
     r->gent = (GEntity_ptr) NULL;
+    r->AttInsList = NULL;
     r->sameadj = (void *) NULL;
     r->downadj = (void *) NULL;
 
@@ -38,8 +39,21 @@ extern "C" {
   }
 
   void MR_Delete(MRegion_ptr r, int keep) {
+    int idx;
+    MAttIns_ptr attins;
+
     if (r->dim != MDELREGION)
       MESH_Rem_Region(r->mesh,r);
+
+    if (!keep) {
+      if (r->AttInsList) {
+	idx = 0;
+	while ((attins = List_Next_Entry(r->AttInsList,&idx)))
+	  MAttIns_Delete(attins);
+	List_Delete(r->AttInsList);
+      }
+    }
+
     (*MR_Delete_jmp[r->repType])(r,keep);
   }
 
