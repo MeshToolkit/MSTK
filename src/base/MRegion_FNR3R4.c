@@ -86,7 +86,7 @@ extern "C" {
   }
 
   List_ptr MR_Vertices_FNR3R4(MRegion_ptr r) {
-    int i, j, n, mkr, found, diradj0, diropp, edir;
+    int i, j, n, mkr, found, diradj0, diropp, edir, fdir;
     MFace_ptr face, fadj0, fopp;
     MEdge_ptr edge;
     MVertex_ptr vert, rv0, rvopp0;
@@ -97,9 +97,10 @@ extern "C" {
 
     switch (downadj->nf) {
     case 4: /* Tet */
-      /* Add vertices of first face as is to list of region vertices */
-      face = List_Entry(downadj->rfaces,0);
-      rvertices = MF_Vertices(face,1);
+      /* Add vertices of first face to list of region vertices */
+      face = List_Entry(downadj->rfaces,0); /* first face */
+      fdir = downadj->fdirs & 1;    /* Sense in which face is used in region */
+      rvertices = MF_Vertices(face,!fdir);
       n = 3;
 
       face = List_Entry(downadj->rfaces,1);
@@ -116,9 +117,10 @@ extern "C" {
       return rvertices;
       break;
     case 6: /* Hex */
-      /* Add vertices of first face as is */
-      face = List_Entry(downadj->rfaces,0);
-      rvertices = MF_Vertices(face,1);
+      /* Add vertices of first face */
+      face = List_Entry(downadj->rfaces,0); /* first face */
+      fdir = downadj->fdirs & 1;    /* Sense in which face is used in region */
+      rvertices = MF_Vertices(face,!fdir);
       rv0 = List_Entry(rvertices,0);
       
       
@@ -182,11 +184,14 @@ extern "C" {
       return rvertices;
       break;
     default: /* Pyramids, Prisms, General Polyhedra */
+      /* We should do separate procedures for pyramids and prisms */
       mkr = MSTK_GetMarker();
 
-      /* Add vertices of first face as is */
-      face = List_Entry(downadj->rfaces,0);
-      rvertices = MF_Vertices(face,1);
+      /* Add vertices of first face */
+      face = List_Entry(downadj->rfaces,0); /* first face */
+      fdir = downadj->fdirs & 1;    /* Sense in which face is used in region */
+
+      rvertices = MF_Vertices(face,!fdir); 
       List_Mark(rvertices,mkr);
 
       for (i = 1; i < downadj->nf-1; i++) {
@@ -213,7 +218,7 @@ extern "C" {
   }
 
   List_ptr MR_Edges_FNR3R4(MRegion_ptr r) {
-    int i, j, n, mkr;
+    int i, j, n, mkr, fdir;
     MFace_ptr face;
     MEdge_ptr edge;
     List_ptr redges, fedges;
@@ -225,8 +230,10 @@ extern "C" {
     case 4: /* Tet */
       mkr = MSTK_GetMarker();
 
-      face = List_Entry(downadj->rfaces,0);
-      redges = MF_Edges(face,1,0);
+      face = List_Entry(downadj->rfaces,0); /* first face */
+      fdir = downadj->fdirs & 1;    /* Sense in which face is used in region */
+
+      redges = MF_Edges(face,!fdir,0);
       List_Mark(redges,mkr);
       n = 3;
 
@@ -242,7 +249,7 @@ extern "C" {
       }
       List_Delete(fedges);
 
-      face = List_Entry(downadj->rfaces,1);
+      face = List_Entry(downadj->rfaces,2);
       fedges = MF_Edges(face,1,0);
       for (i = 0; i < 3 && n < 6; i++) { 
 	edge = List_Entry(fedges,i);
@@ -263,9 +270,11 @@ extern "C" {
       n = 0;
       mkr = MSTK_GetMarker();
 
-      /* Add edges of first face as is */
-      face = List_Entry(downadj->rfaces,0);
-      redges = MF_Edges(face,1,0);
+      /* Add edges of first face */
+      face = List_Entry(downadj->rfaces,0); /* first face */
+      fdir = downadj->fdirs & 1;    /* Sense in which face is used in region */
+
+      redges = MF_Edges(face,!fdir,0);
       List_Mark(redges,mkr);
       n = 4;
 
@@ -288,11 +297,14 @@ extern "C" {
       return redges;
       break;
     default: /* Pyramids, Prisms, General Polyhedra */
+      /* We should do separate procedures for pyramids and prisms */
       mkr = MSTK_GetMarker();
 
-      /* Add edges of first face as is */
-      face = List_Entry(downadj->rfaces,0);
-      redges = MF_Edges(face,1,0);
+      /* Add edges of first face */
+      face = List_Entry(downadj->rfaces,0); /* first face */
+      fdir = downadj->fdirs & 1;    /* Sense in which face is used in region */
+
+      redges = MF_Edges(face,!fdir,0);
       List_Mark(redges,mkr);
 
       for (i = 1; i < downadj->nf-1; i++) {
