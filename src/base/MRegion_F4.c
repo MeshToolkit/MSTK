@@ -14,11 +14,56 @@ extern "C" {
   }
 
   void MR_Delete_F4(MRegion_ptr r) {
-    MR_Delete_FNR3R4(r);
+    MRegion_DownAdj_FN *downadj;
+    MFace_ptr f;
+    MEdge_ptr e;
+    List_ptr fedges;
+    int i, j, nf, ne;
+
+    downadj = (MRegion_DownAdj_FN *) r->downadj;
+
+    nf = List_Num_Entries(downadj->rfaces);
+    for (i = 0; i < nf; i++) {
+      f = List_Entry(downadj->rfaces,i);
+      
+      fedges = MF_Edges(f,1,0);
+      ne = List_Num_Entries(fedges);
+      for (j = 0; j < ne; j++) {
+	e = List_Entry(fedges,j);
+	ME_Rem_Region(e,r);
+      }
+      List_Delete(fedges);
+    }
+    List_Delete(downadj->rfaces);
+    MSTK_free(downadj);
+
+    MSTK_free(r);
   }
 
   void MR_Set_Faces_F4(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
-    MR_Set_Faces_FNR3R4(r,nf,rfaces,dirs);
+    int i, j, ne;
+    MRegion_DownAdj_FN *downadj;
+    MEdge_ptr e;
+    List_ptr fedges;
+
+    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    downadj->nf = nf;
+    downadj->fdirs = 0;
+    downadj->rfaces = List_New(nf);
+
+    for (i = 0; i < nf; i++) {
+      downadj->fdirs = downadj->fdirs | (dirs[i] << i);
+      List_Add(downadj->rfaces,rfaces[i]);
+      
+      fedges = MF_Edges(rfaces[i],1,0);
+      ne = List_Num_Entries(fedges);
+      for (j = 0; j < ne; j++) {
+	e = List_Entry(fedges,j);
+	ME_Add_Region(e,r);
+	ME_Rem_Face(e,rfaces[i]);
+      }
+      List_Delete(fedges);
+    }
   }
 
   void MR_Set_Vertices_F4(MRegion_ptr r, int nv, MVertex_ptr *mvertices) {

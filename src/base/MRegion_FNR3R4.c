@@ -20,7 +20,7 @@ extern "C" {
     downadj->rfaces = NULL;
   }
 
-  void MR_Delete_FNR3R4(MRegion_ptr r) {
+  void MR_Delete_F1F3R3R4(MRegion_ptr r) {
     MRegion_DownAdj_FN *downadj;
     MFace_ptr f;
     int i, nf;
@@ -38,7 +38,7 @@ extern "C" {
     MSTK_free(r);
   }
 
-  void MR_Set_Faces_FNR3R4(MRegion_ptr r, int nf, MFace_ptr *rfaces,int *dirs){
+  void MR_Set_Faces_F1F3R3R4(MRegion_ptr r, int nf, MFace_ptr *rfaces,int *dirs){
     int i;
     MRegion_DownAdj_FN *downadj;
 
@@ -56,7 +56,7 @@ extern "C" {
 
   void MR_Set_Vertices_FNR3R4(MRegion_ptr r, int nv, MFace_ptr *mvertices) {
 #ifdef DEBUG
-    MSTK_Report("MF_Rem_AdjRegion",
+    MSTK_Report("MR_Set_Vertices_FNR3R4",
 		"Function call not suitable for this representation",WARN);
 #endif    
   }

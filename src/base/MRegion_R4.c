@@ -14,11 +14,11 @@ extern "C" {
   }
 
   void MR_Delete_R4(MRegion_ptr r) {
-    MR_Delete_FNR3R4(r);
+    MR_Delete_F1F3R3R4(r);
   }
 
   void MR_Set_Faces_R4(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
-    MR_Set_Faces_FNR3R4(r,nf,rfaces,dirs);
+    MR_Set_Faces_F1F3R3R4(r,nf,rfaces,dirs);
   }
 
   void MR_Set_Vertices_R4(MRegion_ptr r, int nv, MFace_ptr *mvertices) {
