@@ -91,6 +91,12 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
       }
       while (strcmp(temp_str,"endcomm") != 0);
     }
+    else if (strcmp(temp_str,"codename") == 0) { 
+      fscanf(fp,"%s",temp_str);
+    }
+    else if (strcmp(temp_str,"simdate") == 0) {
+      fscanf(fp,"%s",temp_str);
+    }
     else if (strcmp(temp_str,"nodes") == 0) {
 
       /* READ NODES */
