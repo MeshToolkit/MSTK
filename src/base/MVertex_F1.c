@@ -111,10 +111,11 @@ extern "C" {
 
   List_ptr MV_Edges_F1(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
-    List_ptr vedges;
+    List_ptr vedges=NULL;
 
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    vedges = List_Copy(upadj->vedges);
+    if (upadj->ne)
+      vedges = List_Copy(upadj->vedges);
     return vedges;
   }
 
