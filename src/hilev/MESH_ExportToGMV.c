@@ -53,7 +53,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   fprintf(fp,"codename MSTK_V_1.3\n");
   ctime = time(&ctime);
-  strftime(date_str,sizeof(date_str),"%m/%d/%Y %H:%M %Z",localtime(&ctime));
+  strftime(date_str,sizeof(date_str),"%m/%d/%Y",localtime(&ctime));
   fprintf(fp,"simdate %s\n",date_str);
 
   fprintf(fp,"nodev %d\n",nv);
