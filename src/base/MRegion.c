@@ -9,9 +9,9 @@
 extern "C" {
 #endif
 
- int mrtype_nv[7]={0,0,4,5,6,8,-1};
- int mrtype_ne[7]={0,0,6,8,9,12,-1};
- int mrtype_nf[7]={0,0,4,5,5,6,-1};
+ int mrtype_nv[6]={0,4,5,6,8,-1};
+ int mrtype_ne[6]={0,6,8,9,12,-1};
+ int mrtype_nf[6]={0,4,5,5,6,-1};
 
   MRegion_ptr MR_New(Mesh_ptr mesh) {
     MRegion_ptr r;
@@ -63,6 +63,26 @@ extern "C" {
     (*MR_Restore_jmp[r->repType])(r);
   }
 
+
+  /* Delete region without worrying about other entities that are
+     pointing to it. TO BE USED ONLY BY MESH_DELETE FUNCTION WHERE ALL
+     ELEMENTS WILL GET DELETED. BAD THINGS WILL HAPPEN IF USED
+     ELSEWHERE !!!! */
+
+  void MR_Destroy_For_MESH_Delete(MRegion_ptr r) {
+    int idx;
+    MAttIns_ptr attins;
+
+    if (r->AttInsList) {
+      idx = 0;
+      while ((attins = List_Next_Entry(r->AttInsList,&idx)))
+	MAttIns_Delete(attins);
+      List_Delete(r->AttInsList);
+    }
+
+    (*MR_Destroy_For_MESH_Delete_jmp[r->repType])(r);
+  }
+
   void MR_Set_RepType(MRegion_ptr r, RepType rtype) {
     r->repType = rtype;
     (*MR_Set_RepType_jmp[r->repType])(r);
@@ -88,8 +108,8 @@ extern "C" {
     (*MR_Set_Faces_jmp[r->repType])(r,nf,mfaces,dirs);
   }
 
-  void MR_Set_Vertices(MRegion_ptr r, int nv, MFace_ptr *mvertices) {
-    (*MR_Set_Vertices_jmp[r->repType])(r,nv,mvertices);
+  void MR_Set_Vertices(MRegion_ptr r, int nv, MFace_ptr *mvertices, int nf, int **template) {
+    (*MR_Set_Vertices_jmp[r->repType])(r,nv,mvertices,nf,template);
   }
 
   Mesh_ptr MR_Mesh(MRegion_ptr r) {
@@ -116,6 +136,8 @@ extern "C" {
     int nt, i;
     MFace_ptr face;
     MRegion_DownAdj_FN *downadj;
+
+    /* SHOULDN'T THIS BE IN A SPECIFIC REPRESENTATION RATHER THAN HERE ?? */
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
     switch (downadj->nf) {
@@ -144,11 +166,31 @@ extern "C" {
   }
 
   int MR_Num_Vertices(MRegion_ptr r) {
-    return mrtype_nv[MR_ElementType(r)];
+    List_ptr rverts;
+    int nrv;
+
+    rverts = MR_Vertices(r);
+    nrv = List_Num_Entries(rverts);
+    List_Delete(rverts);
+
+    if (r->repType != R1 || r->repType != R2)
+      MSTK_Report("MR_Num_Vertices","Inefficient to use this routine for this representation",WARN);
+
+    return nrv;
   }
 
   int MR_Num_Edges(MRegion_ptr r) {
-    return mrtype_ne[MR_ElementType(r)];
+    List_ptr redges;
+    int nre;
+
+    redges = MR_Edges(r);
+    nre = List_Num_Entries(redges);
+    List_Delete(redges);
+
+    if (r->repType != R1 || r->repType != R2)
+      MSTK_Report("MR_Num_Vertices","Inefficient to use this routine for this representation",WARN);
+
+    return nre;
   }
 
   int MR_Num_Faces(MRegion_ptr r) {

@@ -35,16 +35,20 @@ extern "C" {
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
 
     if (r->dim != MDELREGION) {
-      nv = downadj->nv;
-      for (i = 0; i < nv; i++) {
-	v = List_Entry(downadj->rvertices,i);
-	MV_Rem_Region(v,r);
+      if (downadj) {
+	nv = downadj->nv;
+	for (i = 0; i < nv; i++) {
+	  v = List_Entry(downadj->rvertices,i);
+	  MV_Rem_Region(v,r);
+	}
       }
       
-      nr = sameadj->nradj;
-      for (i = 0; i < nr; i++) {
-	r2 = List_Entry(sameadj->aregions,i);
-	MR_Rem_AdjRegion_R2(r,r2);
+      if (sameadj) {
+	nr = sameadj->nradj;
+	for (i = 0; i < nr; i++) {
+	  r2 = List_Entry(sameadj->aregions,i);
+	  MR_Rem_AdjRegion_R2(r,r2);
+	}
       }
     }
 
@@ -57,11 +61,17 @@ extern "C" {
       r->dim = MDELREGION;
 #endif
 
-      List_Delete(downadj->rvertices);
-      MSTK_free(downadj);
+      if (downadj) {
+	if (downadj->rvertices)
+	  List_Delete(downadj->rvertices);
+	MSTK_free(downadj);
+      }
       
-      List_Delete(sameadj->aregions);
-      MSTK_free(sameadj);
+      if (sameadj) {
+	if (sameadj->aregions)
+	  List_Delete(sameadj->aregions);
+	MSTK_free(sameadj);
+      }
 
       MSTK_free(r);
     }
@@ -95,7 +105,29 @@ extern "C" {
   }
 
 
-  void MR_Set_Vertices_R2(MRegion_ptr r, int nv, MVertex_ptr *rvertices) {
+  void MR_Destroy_For_MESH_Delete_R2(MRegion_ptr r) {
+    MRegion_DownAdj_R1R2 *downadj;
+    MRegion_SameAdj_R2 *sameadj;
+
+    downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
+    if (downadj) {
+      if (downadj->rvertices)
+	List_Delete(downadj->rvertices);
+      MSTK_free(downadj);
+    }
+    
+    sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
+    if (sameadj) {
+      if (sameadj->aregions)
+	List_Delete(sameadj->aregions);
+      MSTK_free(sameadj);
+    }
+    
+    MSTK_free(r);
+  }
+
+  void MR_Set_Vertices_R2(MRegion_ptr r, int nv, MVertex_ptr *rvertices, int nf,
+			  int **template) {
     int i;
     MRegion_DownAdj_R1R2 *downadj;
 

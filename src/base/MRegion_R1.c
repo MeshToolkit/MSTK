@@ -26,24 +26,29 @@ extern "C" {
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
 
     if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
-      nv = downadj->nv;
-      for (i = 0; i < nv; i++) {
-	v = List_Entry(downadj->rvertices,i);
-	MV_Rem_Region(v,r);
+      if (downadj) {
+	nv = downadj->nv;
+	for (i = 0; i < nv; i++) {
+	  v = List_Entry(downadj->rvertices,i);
+	  MV_Rem_Region(v,r);
+	}
       }
     }
-      
+    
     if (keep) {
       MSTK_KEEP_DELETED = 1;
       r->dim = MDELREGION;
     }
     else {
 #ifdef DEBUG
-	r->dim = MDELREGION;
+      r->dim = MDELREGION;
 #endif
 
-      List_Delete(downadj->rvertices);
-      MSTK_free(downadj);
+      if (downadj) {
+	if (downadj->rvertices)
+	  List_Delete(downadj->rvertices);
+	MSTK_free(downadj);
+      }
 
       MSTK_free(r);
     }
@@ -67,8 +72,22 @@ extern "C" {
     }
   }
 
+  void MR_Destroy_For_MESH_Delete_R1(MRegion_ptr r) {
+    MRegion_DownAdj_R1R2 *downadj;
 
-  void MR_Set_Vertices_R1(MRegion_ptr r, int nv, MVertex_ptr *rvertices) {
+    downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
+    if (downadj) {
+      if (downadj->rvertices)
+	List_Delete(downadj->rvertices);
+      MSTK_free(downadj);
+    }
+
+    MSTK_free(r);
+  }
+
+
+  void MR_Set_Vertices_R1(MRegion_ptr r, int nv, MVertex_ptr *rvertices, int nf,
+			  int **template) {
     int i;
     MRegion_DownAdj_R1R2 *downadj;
 

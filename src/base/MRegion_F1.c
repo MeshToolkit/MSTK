@@ -21,12 +21,16 @@ extern "C" {
     MR_Restore_F1F3R3R4(r);
   }
 
-  void MR_Set_Faces_F1(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
-    MR_Set_Faces_F1F3R3R4(r,nf,rfaces,dirs);
+  void MR_Destroy_For_MESH_Delete_F1(MRegion_ptr r) {
+    MR_Destroy_For_MESH_Delete_FNR3R4(r);
   }
 
-  void MR_Set_Vertices_F1(MRegion_ptr r, int nv, MFace_ptr *mvertices) {
-    MR_Set_Vertices_FNR3R4(r,nv,mvertices);
+  void MR_Set_Faces_F1(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
+    MR_Set_Faces_FNR3R4(r,nf,rfaces,dirs);
+  }
+
+  void MR_Set_Vertices_F1(MRegion_ptr r, int nv, MFace_ptr *mvertices, int nf, int **template) {
+    MR_Set_Vertices_FNR3R4(r,nv,mvertices,nf,template);
   }
 
   int MR_Num_Faces_F1(MRegion_ptr r) {
