@@ -26,7 +26,7 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
       
-    if (MEnt_Dim(r) != MDELETED) { /* if regn hasnt been temporarily deleted */
+    if (r->dim != MDELETED) { /* if regn hasnt been temporarily deleted */
       if (downadj) {
 	idx = 0;
 	while ((f = List_Next_Entry(downadj->rfaces,&idx)))
@@ -110,7 +110,7 @@ extern "C" {
     int vgdim[MAXPV3], vgid[MAXPV3], egdim[12], egid[12], sgn;
     int fedirs[4], redirs[12], evgdim[2], evgid[2], nfe;
     List_ptr fverts, fregs;
-    Mesh_ptr mesh = MEnt_Mesh(r);
+    Mesh_ptr mesh = r->mesh;
     MRType regtype;
 
 
