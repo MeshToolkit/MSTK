@@ -85,6 +85,7 @@ extern "C" {
   int MV_Num_Regions_R1(MVertex_ptr v);
   int MV_Num_Regions_R2(MVertex_ptr v);
   int MV_Num_Regions_R4(MVertex_ptr v);
+  int MV_Num_Regions_R1R2(MVertex_ptr v);
   int MV_Num_Regions_R3R4(MVertex_ptr v);
 #ifdef DEBUG
   static int (*MV_Num_Regions_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
@@ -92,8 +93,8 @@ extern "C" {
    MV_Num_Regions_R2, MV_Num_Regions_R4};
 #else
   static int (*MV_Num_Regions_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
-  {MV_Num_Regions_F1, MV_Num_Regions_F4, MV_Num_Regions_R1, 
-   MV_Num_Regions_R2, MV_Num_Regions_R3R4};
+  {MV_Num_Regions_F1, MV_Num_Regions_F4, MV_Num_Regions_R1R2, 
+   MV_Num_Regions_R1R2, MV_Num_Regions_R3R4};
 #endif
 
   List_ptr MV_AdjVertices_F1(MVertex_ptr v);
@@ -142,6 +143,7 @@ extern "C" {
   List_ptr MV_Regions_R1(MVertex_ptr v);
   List_ptr MV_Regions_R2(MVertex_ptr v);
   List_ptr MV_Regions_R4(MVertex_ptr v);
+  List_ptr MV_Regions_R1R2(MVertex_ptr v);
   List_ptr MV_Regions_R3R4(MVertex_ptr v);
 #ifdef DEBUG
   static List_ptr (*MV_Regions_jmp[MSTK_MAXREP])(MVertex_ptr) = 
@@ -149,7 +151,7 @@ extern "C" {
    MV_Regions_R4};
 #else
   static List_ptr (*MV_Regions_jmp[MSTK_MAXREP])(MVertex_ptr) = 
-  {MV_Regions_F1, MV_Regions_F4, MV_Regions_R1, MV_Regions_R2, 
+  {MV_Regions_F1, MV_Regions_F4, MV_Regions_R1R2, MV_Regions_R1R2, 
    MV_Regions_R3R4};
 #endif
 
@@ -194,36 +196,64 @@ extern "C" {
   void MV_Add_Face_R1(MVertex_ptr v, MFace_ptr f);
   void MV_Add_Face_R2(MVertex_ptr v, MFace_ptr f);
   void MV_Add_Face_R4(MVertex_ptr v, MFace_ptr f);
+  void MV_Add_Face_R1R2(MVertex_ptr v, MFace_ptr f);
+#ifdef DEBUG
   static void (*MV_Add_Face_jmp[MSTK_MAXREP])(MVertex_ptr v, MFace_ptr f) =
   {MV_Add_Face_F1, MV_Add_Face_F4, MV_Add_Face_R1, MV_Add_Face_R2, 
    MV_Add_Face_R4};
+#else
+  static void (*MV_Add_Face_jmp[MSTK_MAXREP])(MVertex_ptr v, MFace_ptr f) =
+  {MV_Add_Face_F1, MV_Add_Face_F4, MV_Add_Face_R1R2, MV_Add_Face_R1R2, 
+   MV_Add_Face_R4};
+#endif
 
   void MV_Rem_Face_F1(MVertex_ptr v, MFace_ptr f);
   void MV_Rem_Face_F4(MVertex_ptr v, MFace_ptr f);
   void MV_Rem_Face_R1(MVertex_ptr v, MFace_ptr f);
   void MV_Rem_Face_R2(MVertex_ptr v, MFace_ptr f);
   void MV_Rem_Face_R4(MVertex_ptr v, MFace_ptr f);
+  void MV_Rem_Face_R1R2(MVertex_ptr v, MFace_ptr f);
+#ifdef DEBUG
   static void (*MV_Rem_Face_jmp[MSTK_MAXREP])(MVertex_ptr v, MFace_ptr f) =
   {MV_Rem_Face_F1, MV_Rem_Face_F4, MV_Rem_Face_R1, MV_Rem_Face_R2, 
    MV_Rem_Face_R4};
+#else
+  static void (*MV_Rem_Face_jmp[MSTK_MAXREP])(MVertex_ptr v, MFace_ptr f) =
+  {MV_Rem_Face_F1, MV_Rem_Face_F4, MV_Rem_Face_R1R2, MV_Rem_Face_R1R2, 
+   MV_Rem_Face_R4};
+#endif
 
   void MV_Add_Region_F1(MVertex_ptr v, MRegion_ptr r);
   void MV_Add_Region_F4(MVertex_ptr v, MRegion_ptr r);
   void MV_Add_Region_R1(MVertex_ptr v, MRegion_ptr r);
   void MV_Add_Region_R2(MVertex_ptr v, MRegion_ptr r);
+  void MV_Add_Region_R1R2(MVertex_ptr v, MRegion_ptr r);
   void MV_Add_Region_R4(MVertex_ptr v, MRegion_ptr r);
+#ifdef DEBUG
   static void (*MV_Add_Region_jmp[MSTK_MAXREP])(MVertex_ptr v, MRegion_ptr r) =
   {MV_Add_Region_F1, MV_Add_Region_F4, MV_Add_Region_R1, MV_Add_Region_R2, 
    MV_Add_Region_R4};
+#else
+  static void (*MV_Add_Region_jmp[MSTK_MAXREP])(MVertex_ptr v, MRegion_ptr r) =
+  {MV_Add_Region_F1, MV_Add_Region_F4, MV_Add_Region_R1R2, MV_Add_Region_R1R2, 
+   MV_Add_Region_R4};
+#endif
 
   void MV_Rem_Region_F1(MVertex_ptr v, MRegion_ptr r);
   void MV_Rem_Region_F4(MVertex_ptr v, MRegion_ptr r);
   void MV_Rem_Region_R1(MVertex_ptr v, MRegion_ptr r);
   void MV_Rem_Region_R2(MVertex_ptr v, MRegion_ptr r);
+  void MV_Rem_Region_R1R2(MVertex_ptr v, MRegion_ptr r);
   void MV_Rem_Region_R4(MVertex_ptr v, MRegion_ptr r);
+#ifdef DEBUG
   static void (*MV_Rem_Region_jmp[MSTK_MAXREP])(MVertex_ptr v, MRegion_ptr r) =
   {MV_Rem_Region_F1, MV_Rem_Region_F4, MV_Rem_Region_R1, MV_Rem_Region_R2, 
    MV_Rem_Region_R4};
+#else
+  static void (*MV_Rem_Region_jmp[MSTK_MAXREP])(MVertex_ptr v, MRegion_ptr r) =
+  {MV_Rem_Region_F1, MV_Rem_Region_F4, MV_Rem_Region_R1R2, MV_Rem_Region_R1R2, 
+   MV_Rem_Region_R4};
+#endif
 
   MVertex_ptr MVs_Merge_FN(MVertex_ptr v1, MVertex_ptr v2);
   MVertex_ptr MVs_Merge_R1R2(MVertex_ptr v1, MVertex_ptr v2);

@@ -7,6 +7,7 @@ extern "C" {
 
   /* #include "gmtk.h" */
 #include "MSTK_types.h"
+#include "MSTK_externs.h"
 #include "MSTK_util.h"
 #include "List.h"
 #include "MSTK_malloc.h"
@@ -97,6 +98,34 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void ME_Destroy_For_MESH_Delete(MEdge_ptr r);
   void MV_Destroy_For_MESH_Delete(MVertex_ptr r);
 
+
+  /* Init/Free data common to all entities */
+  void MEnt_Init_CmnData(MEntity_ptr ent);
+  void MEnt_Free_CmnData(MEntity_ptr ent);
+
+  /* Set Entity dimension */
+  void MEnt_Set_Dim(MEntity_ptr ent, MType dim);
+
+  /* Set the mesh that entity belongs to */
+  void MEnt_Set_Mesh(MEntity_ptr ent, Mesh_ptr mesh);
+
+  /* Mark entity as volatile/temporary in reduced representations */
+  void MEnt_Set_Volatile(MEntity_ptr ent);
+
+  /* Mark an entity as deleted - 
+     no update of topology or association with a mesh */
+
+  void MEnt_Set_DelFlag(MEntity_ptr ent);
+  void MEnt_Rem_DelFlag(MEntity_ptr ent);
+ 
+  /* Setting RepType for entities */
+
+  /* This just sets the data */
+  void MEnt_Set_RepType_Data(MEntity_ptr mentity, RepType rtype);
+
+  /* This calls M*_Set_RepType based on the dimension of the entity */
+  void MEnt_Set_RepType(MEntity_ptr mentity, RepType rtype);
+  
 
   /* Private functions for defining instance of attributes, i.e., objects 
      carry the actual attribute value for some mesh entity */

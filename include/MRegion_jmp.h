@@ -10,6 +10,19 @@ extern "C" {
 
 #ifdef DEBUG
 
+
+
+  int MR_Set_GInfo_Auto_FNR3R4(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_F1(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_F4(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_R1(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_R2(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_R4(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_R1R2(MRegion_ptr r);
+  static int (*MR_Set_GInfo_Auto_jmp[MSTK_MAXREP])(MRegion_ptr) = 
+  {MR_Set_GInfo_Auto_F1, MR_Set_GInfo_Auto_F4, MR_Set_GInfo_Auto_R1,
+   MR_Set_GInfo_Auto_R2, MR_Set_GInfo_Auto_R4};
+
 void MR_Set_RepType_F1(MRegion_ptr r);
 void MR_Set_RepType_F4(MRegion_ptr r);
 void MR_Set_RepType_R1(MRegion_ptr r);
@@ -68,6 +81,8 @@ void MR_Set_Vertices_R2(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf,
 			int **rfvtemplate);
 void MR_Set_Vertices_R4(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf,
 			int **rfvtemplate);
+void MR_Set_Vertices_R1R2(MRegion_ptr r, int nv, MVertex_ptr *mvertices, 
+			  int nf, int **rfvtemplate);
 void MR_Set_Vertices_FNR3R4(MRegion_ptr r, int nv, MVertex_ptr *mvertices, 
 			    int nf, int **rfvtemplate);
 static void 
@@ -81,6 +96,7 @@ List_ptr MR_Vertices_F4(MRegion_ptr r);
 List_ptr MR_Vertices_R1(MRegion_ptr r);
 List_ptr MR_Vertices_R2(MRegion_ptr r);
 List_ptr MR_Vertices_R4(MRegion_ptr r);
+List_ptr MR_Vertices_R1R2(MRegion_ptr r);
 List_ptr MR_Vertices_FNR3R4(MRegion_ptr r);
 static List_ptr (*MR_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Vertices_F1, MR_Vertices_F4, MR_Vertices_R1, MR_Vertices_R2, 
@@ -91,7 +107,9 @@ List_ptr MR_Edges_F4(MRegion_ptr r);
 List_ptr MR_Edges_R1(MRegion_ptr r);
 List_ptr MR_Edges_R2(MRegion_ptr r);
 List_ptr MR_Edges_R4(MRegion_ptr r);
-List_ptr MR_Edges_FNR3R4(MRegion_ptr r);
+List_ptr MR_Edges_FN(MRegion_ptr r);
+List_ptr MR_Edges_R1R2(MRegion_ptr r);
+List_ptr MR_Edges_R3R4(MRegion_ptr r);
 static List_ptr (*MR_Edges_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Edges_F1, MR_Edges_F4, MR_Edges_R1, MR_Edges_R2, MR_Edges_R4};
 
@@ -100,6 +118,7 @@ List_ptr MR_Faces_F4(MRegion_ptr r);
 List_ptr MR_Faces_R1(MRegion_ptr r);
 List_ptr MR_Faces_R2(MRegion_ptr r);
 List_ptr MR_Faces_R4(MRegion_ptr r);
+List_ptr MR_Faces_R1R2(MRegion_ptr r);
 List_ptr MR_Faces_FNR3R4(MRegion_ptr r);
 static List_ptr (*MR_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Faces_F1, MR_Faces_F4, MR_Faces_R1, MR_Faces_R2, MR_Faces_R4};
@@ -119,6 +138,7 @@ int MR_FaceDir_F4(MRegion_ptr r, MFace_ptr f);
 int MR_FaceDir_R1(MRegion_ptr r, MFace_ptr f);
 int MR_FaceDir_R2(MRegion_ptr r, MFace_ptr f);
 int MR_FaceDir_R4(MRegion_ptr r, MFace_ptr f);
+int MR_FaceDir_R1R2(MRegion_ptr r, MFace_ptr f);
 int MR_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f);
 static int (*MR_FaceDir_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f) =
 {MR_FaceDir_F1, MR_FaceDir_F4, MR_FaceDir_R1, MR_FaceDir_R2, 
@@ -161,6 +181,7 @@ void MR_Replace_Vertex_F4(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 void MR_Replace_Vertex_R1(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 void MR_Replace_Vertex_R2(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 void MR_Replace_Vertex_R4(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
+void MR_Replace_Vertex_R1R2(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 void MR_Replace_Vertex_FNR3R4(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 static void 
 (*MR_Replace_Vertex_jmp[MSTK_MAXREP])(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv)=
@@ -172,6 +193,7 @@ void MR_Replace_Vertex_i_F4(MRegion_ptr r, int i, MVertex_ptr nuv);
 void MR_Replace_Vertex_i_R1(MRegion_ptr r, int i, MVertex_ptr nuv);
 void MR_Replace_Vertex_i_R2(MRegion_ptr r, int i, MVertex_ptr nuv);
 void MR_Replace_Vertex_i_R4(MRegion_ptr r, int i, MVertex_ptr nuv);
+void MR_Replace_Vertex_i_R1R2(MRegion_ptr r, int i, MVertex_ptr nuv);
 void MR_Replace_Vertex_i_FNR3R4(MRegion_ptr r, int i, MVertex_ptr nuv);
 static void 
 (*MR_Replace_Vertex_i_jmp[MSTK_MAXREP])(MRegion_ptr r, int i, MVertex_ptr nuv) =
@@ -203,6 +225,7 @@ int MR_Num_Faces_F4(MRegion_ptr r);
 int MR_Num_Faces_R1(MRegion_ptr r);
 int MR_Num_Faces_R2(MRegion_ptr r);
 int MR_Num_Faces_R4(MRegion_ptr r);
+int MR_Num_Faces_R1R2(MRegion_ptr r);
 int MR_Num_Faces_FNR3R4(MRegion_ptr r);
 static int (*MR_Num_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Num_Faces_FNR3R4, MR_Num_Faces_FNR3R4, MR_Num_Faces_R1, MR_Num_Faces_R2,
@@ -213,6 +236,7 @@ int MR_UsesFace_F4(MRegion_ptr r, MFace_ptr f);
 int MR_UsesFace_R1(MRegion_ptr r, MFace_ptr f);
 int MR_UsesFace_R2(MRegion_ptr r, MFace_ptr f);
 int MR_UsesFace_R4(MRegion_ptr r, MFace_ptr f);
+int MR_UsesFace_R1R2(MRegion_ptr r, MFace_ptr f);
 int MR_UsesFace_FNR3R4(MRegion_ptr r, MFace_ptr f);
 static int (*MR_UsesFace_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f) =
 {MR_UsesFace_F1, MR_UsesFace_F4, MR_UsesFace_R1, MR_UsesFace_R2, 
@@ -223,7 +247,9 @@ int MR_UsesEdge_F4(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesEdge_R1(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesEdge_R2(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesEdge_R4(MRegion_ptr r, MEdge_ptr e);
-int MR_UsesEdge_FNR3R4(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesEdge_FN(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesEdge_R1R2(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesEdge_R3R4(MRegion_ptr r, MEdge_ptr e);
 static int (*MR_UsesEdge_jmp[MSTK_MAXREP])(MRegion_ptr r, MEdge_ptr e) =
 {MR_UsesEdge_F1, MR_UsesEdge_F4, MR_UsesEdge_R1, MR_UsesEdge_R2, 
  MR_UsesEdge_R4}; 
@@ -233,12 +259,23 @@ int MR_UsesVertex_F4(MRegion_ptr r, MVertex_ptr e);
 int MR_UsesVertex_R1(MRegion_ptr r, MVertex_ptr e);
 int MR_UsesVertex_R2(MRegion_ptr r, MVertex_ptr e);
 int MR_UsesVertex_R4(MRegion_ptr r, MVertex_ptr e);
+int MR_UsesVertex_R1R2(MRegion_ptr r, MVertex_ptr e);
 int MR_UsesVertex_FNR3R4(MRegion_ptr r, MVertex_ptr e);
 static int (*MR_UsesVertex_jmp[MSTK_MAXREP])(MRegion_ptr r, MVertex_ptr e) =
 {MR_UsesVertex_F1, MR_UsesVertex_F4, MR_UsesVertex_R1, MR_UsesVertex_R2, 
  MR_UsesVertex_R4}; 
 
+
+
 #else
+
+
+
+  int MR_Set_GInfo_Auto_FNR3R4(MRegion_ptr r);
+  int MR_Set_GInfo_Auto_R1R2(MRegion_ptr r);
+  static int (*MR_Set_GInfo_Auto_jmp[MSTK_MAXREP])(MRegion_ptr) = 
+  {MR_Set_GInfo_Auto_FNR3R4, MR_Set_GInfo_Auto_FNR3R4, MR_Set_GInfo_Auto_R1R2,
+   MR_Set_GInfo_Auto_R1R2, MR_Set_GInfo_Auto_FNR3R4};
 
 void MR_Set_RepType_FNR3R4(MRegion_ptr r);
 void MR_Set_RepType_R1(MRegion_ptr r);
@@ -279,34 +316,36 @@ static void
 
 void MR_Set_Vertices_FNR3R4(MRegion_ptr r, int nv, MVertex_ptr *mvertices,
 			    int nf, int **rfvtemplate);
-void MR_Set_Vertices_R1(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf,
-			int **rfvtemplate);
-void MR_Set_Vertices_R2(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf,
-			int **rfvtemplate);
+void MR_Set_Vertices_R1R2(MRegion_ptr r, int nv, MVertex_ptr *mvertices, 
+			  int nf, int **rfvtemplate);
 static void 
 (*MR_Set_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r, int nv, MVertex_ptr *mvertices,
 				    int nf, int **rfvtemplate) =
-{MR_Set_Vertices_FNR3R4, MR_Set_Vertices_FNR3R4, MR_Set_Vertices_R1, 
- MR_Set_Vertices_R2, MR_Set_Vertices_FNR3R4};
+{MR_Set_Vertices_FNR3R4, MR_Set_Vertices_FNR3R4, MR_Set_Vertices_R1R2, 
+ MR_Set_Vertices_R1R2, MR_Set_Vertices_FNR3R4};
 
 List_ptr MR_Vertices_FNR3R4(MRegion_ptr r);
 List_ptr MR_Vertices_R1(MRegion_ptr r);
 List_ptr MR_Vertices_R2(MRegion_ptr r);
+List_ptr MR_Vertices_R1R2(MRegion_ptr r);
 static List_ptr (*MR_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r) =
-{MR_Vertices_FNR3R4, MR_Vertices_FNR3R4, MR_Vertices_R1, MR_Vertices_R2, 
+{MR_Vertices_FNR3R4, MR_Vertices_FNR3R4, MR_Vertices_R1R2, MR_Vertices_R1R2, 
  MR_Vertices_FNR3R4};
 
-List_ptr MR_Edges_FNR3R4(MRegion_ptr r);
+List_ptr MR_Edges_FN(MRegion_ptr r);
 List_ptr MR_Edges_R1(MRegion_ptr r);
 List_ptr MR_Edges_R2(MRegion_ptr r);
+List_ptr MR_Edges_R1R2(MRegion_ptr r);
+List_ptr MR_Edges_R3R4(MRegion_ptr r);
 static List_ptr (*MR_Edges_jmp[MSTK_MAXREP])(MRegion_ptr r) =
-{MR_Edges_FNR3R4, MR_Edges_FNR3R4, MR_Edges_R1, MR_Edges_R2, MR_Edges_FNR3R4};
+{MR_Edges_FN, MR_Edges_FN, MR_Edges_R1R2, MR_Edges_R1R2, MR_Edges_R3R4};
 
 List_ptr MR_Faces_FNR3R4(MRegion_ptr r);
 List_ptr MR_Faces_R1(MRegion_ptr r);
 List_ptr MR_Faces_R2(MRegion_ptr r);
+List_ptr MR_Faces_R1R2(MRegion_ptr r);
 static List_ptr (*MR_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
-{MR_Faces_FNR3R4, MR_Faces_FNR3R4, MR_Faces_R1, MR_Faces_R2, MR_Faces_FNR3R4};
+{MR_Faces_FNR3R4, MR_Faces_FNR3R4, MR_Faces_R1R2, MR_Faces_R1R2, MR_Faces_FNR3R4};
 
 List_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r);
 List_ptr MR_AdjRegions_R1(MRegion_ptr r);
@@ -318,15 +357,17 @@ static List_ptr (*MR_AdjRegions_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 int MR_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f);
 int MR_FaceDir_R1(MRegion_ptr r, MFace_ptr f);
 int MR_FaceDir_R2(MRegion_ptr r, MFace_ptr f);
+int MR_FaceDir_R1R2(MRegion_ptr r, MFace_ptr f);
 static int (*MR_FaceDir_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f) =
-{MR_FaceDir_FNR3R4, MR_FaceDir_FNR3R4, MR_FaceDir_R1, MR_FaceDir_R2, 
+{MR_FaceDir_FNR3R4, MR_FaceDir_FNR3R4, MR_FaceDir_R1R2, MR_FaceDir_R1R2, 
  MR_FaceDir_FNR3R4};
 
 int MR_FaceDir_i_FNR3R4(MRegion_ptr r, int i);
 int MR_FaceDir_i_R1(MRegion_ptr r, int i);
 int MR_FaceDir_i_R2(MRegion_ptr r, int i);
+int MR_FaceDir_i_R1R2(MRegion_ptr r, int i);
 static int (*MR_FaceDir_i_jmp[MSTK_MAXREP])(MRegion_ptr r, int i) =
-{MR_FaceDir_i_FNR3R4, MR_FaceDir_i_FNR3R4, MR_FaceDir_i_R1, MR_FaceDir_i_R2, 
+{MR_FaceDir_i_FNR3R4, MR_FaceDir_i_FNR3R4, MR_FaceDir_i_R1R2, MR_FaceDir_i_R1R2, 
  MR_FaceDir_i_FNR3R4};
 
 void MR_Replace_Face_FNR3R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
@@ -348,18 +389,20 @@ static void
 void MR_Replace_Vertex_FNR3R4(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 void MR_Replace_Vertex_R1(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 void MR_Replace_Vertex_R2(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
+void MR_Replace_Vertex_R1R2(MRegion_ptr r, MVertex_ptr v,MVertex_ptr nuv);
 static void 
 (*MR_Replace_Vertex_jmp[MSTK_MAXREP])(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv) =
-{MR_Replace_Vertex_FNR3R4, MR_Replace_Vertex_FNR3R4, MR_Replace_Vertex_R1, 
- MR_Replace_Vertex_R2, MR_Replace_Vertex_FNR3R4};
+{MR_Replace_Vertex_FNR3R4, MR_Replace_Vertex_FNR3R4, MR_Replace_Vertex_R1R2, 
+ MR_Replace_Vertex_R1R2, MR_Replace_Vertex_FNR3R4};
 
 void MR_Replace_Vertex_i_FNR3R4(MRegion_ptr r, int i, MVertex_ptr nuv);
 void MR_Replace_Vertex_i_R1(MRegion_ptr r, int i, MVertex_ptr nuv);
 void MR_Replace_Vertex_i_R2(MRegion_ptr r, int i, MVertex_ptr nuv);
+void MR_Replace_Vertex_i_R1R2(MRegion_ptr r, int i, MVertex_ptr nuv);
 static void 
 (*MR_Replace_Vertex_i_jmp[MSTK_MAXREP])(MRegion_ptr r, int i, MVertex_ptr nuv) =
 {MR_Replace_Vertex_i_FNR3R4, MR_Replace_Vertex_i_FNR3R4, 
- MR_Replace_Vertex_i_R1, MR_Replace_Vertex_i_R2, MR_Replace_Vertex_i_FNR3R4};
+ MR_Replace_Vertex_i_R1R2, MR_Replace_Vertex_i_R1R2, MR_Replace_Vertex_i_FNR3R4};
 
 void MR_Add_AdjRegion_FNR3R4(MRegion_ptr r, int facenum, MRegion_ptr aregion);
 void MR_Add_AdjRegion_R1(MRegion_ptr r, int facenum, MRegion_ptr aregion);
@@ -378,30 +421,35 @@ static void (*MR_Rem_AdjRegion_jmp[MSTK_MAXREP])(MRegion_ptr r, MRegion_ptr areg
 int MR_Num_Faces_FNR3R4(MRegion_ptr r);
 int MR_Num_Faces_R1(MRegion_ptr r);
 int MR_Num_Faces_R2(MRegion_ptr r);
+int MR_Num_Faces_R1R2(MRegion_ptr r);
 static int (*MR_Num_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
-{MR_Num_Faces_FNR3R4, MR_Num_Faces_FNR3R4, MR_Num_Faces_R1, MR_Num_Faces_R2,
+{MR_Num_Faces_FNR3R4, MR_Num_Faces_FNR3R4, MR_Num_Faces_R1R2, MR_Num_Faces_R1R2,
  MR_Num_Faces_FNR3R4};
 
 int MR_UsesFace_FNR3R4(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesFace_R1(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesFace_R2(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesFace_R1R2(MRegion_ptr r, MEdge_ptr e);
 static int (*MR_UsesFace_jmp[MSTK_MAXREP])(MRegion_ptr r, MEdge_ptr e) =
-{MR_UsesFace_FNR3R4, MR_UsesFace_FNR3R4, MR_UsesFace_R1, MR_UsesFace_R2, 
+{MR_UsesFace_FNR3R4, MR_UsesFace_FNR3R4, MR_UsesFace_R1R2, MR_UsesFace_R1R2, 
  MR_UsesFace_FNR3R4}; 
 
-int MR_UsesEdge_FNR3R4(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesEdge_FN(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesEdge_R1(MRegion_ptr r, MEdge_ptr e);
 int MR_UsesEdge_R2(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesEdge_R1R2(MRegion_ptr r, MEdge_ptr e);
+int MR_UsesEdge_R3R4(MRegion_ptr r, MEdge_ptr e);
 static int (*MR_UsesEdge_jmp[MSTK_MAXREP])(MRegion_ptr r, MEdge_ptr e) =
-{MR_UsesEdge_FNR3R4, MR_UsesEdge_FNR3R4, MR_UsesEdge_R1, MR_UsesEdge_R2, 
- MR_UsesEdge_FNR3R4}; 
+{MR_UsesEdge_FN, MR_UsesEdge_FN, MR_UsesEdge_R1R2, MR_UsesEdge_R1R2, 
+ MR_UsesEdge_R3R4}; 
 
 int MR_UsesVertex_FNR3R4(MRegion_ptr r, MVertex_ptr e);
 int MR_UsesVertex_R1(MRegion_ptr r, MVertex_ptr e);
 int MR_UsesVertex_R2(MRegion_ptr r, MVertex_ptr e);
+int MR_UsesVertex_R1R2(MRegion_ptr r, MVertex_ptr e);
 static int (*MR_UsesVertex_jmp[MSTK_MAXREP])(MRegion_ptr r, MEdge_ptr e) =
-{MR_UsesVertex_FNR3R4, MR_UsesVertex_FNR3R4, MR_UsesVertex_R1, 
- MR_UsesVertex_R2, MR_UsesVertex_FNR3R4}; 
+{MR_UsesVertex_FNR3R4, MR_UsesVertex_FNR3R4, MR_UsesVertex_R1R2, 
+ MR_UsesVertex_R1R2, MR_UsesVertex_FNR3R4}; 
 
 #endif
 
