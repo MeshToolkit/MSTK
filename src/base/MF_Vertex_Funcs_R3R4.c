@@ -70,7 +70,7 @@ extern "C" {
   List_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v0) {
     MFace_DownAdj_R3R4 *downadj;
     List_ptr fverts;
-    int i, k, nv, fnd;
+    int i, k=0, nv, fnd=0;
 
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
     nv = downadj->nv;

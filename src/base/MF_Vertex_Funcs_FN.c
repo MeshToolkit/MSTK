@@ -11,7 +11,7 @@ extern "C" {
 
 
   List_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
-    int i, k, ne, edir, fnd=0;
+    int i, k=0, ne, edir, fnd=0;
     List_ptr fverts;
     MEdge_ptr e;
     MVertex_ptr v;
