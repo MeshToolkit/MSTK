@@ -215,6 +215,11 @@ extern "C" {
   {MV_Rem_Region_F1, MV_Rem_Region_F4, MV_Rem_Region_R1, MV_Rem_Region_R2, 
    MV_Rem_Region_R4};
 
+  MVertex_ptr MVs_Merge_FN(MVertex_ptr v1, MVertex_ptr v2);
+  MVertex_ptr MVs_Merge_R1R2(MVertex_ptr v1, MVertex_ptr v2);
+  MVertex_ptr MVs_Merge_R3R4(MVertex_ptr v1, MVertex_ptr v2);
+  static MVertex_ptr (*MVs_Merge_jmp[MSTK_MAXREP])(MVertex_ptr v1, MVertex_ptr v2) =
+  {MVs_Merge_FN, MVs_Merge_FN, MVs_Merge_R1R2, MVs_Merge_R1R2, MVs_Merge_R3R4};
 
 
 #ifdef __cplusplus
