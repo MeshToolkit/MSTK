@@ -4,14 +4,24 @@
 
 
 MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
-  int i, k1, k2, nfe1, nfe2, *fedir1, *fedir2, *fedir3;
+  int i, k1, k2, nfe1, nfe2, *fedir1, *fedir2, *fedir3, gdim, gid;
   MEdge_ptr *fe1, *fe2, *fe3;
   MFace_ptr  nuface;
   Mesh_ptr   mesh;
   List_ptr   fedges;
 
   mesh = MF_Mesh(f1);
-  
+  gid = MF_GEntID(f1);
+  gdim = MF_GEntDim(f1);
+
+  if (mesh != MF_Mesh(f2)) {
+    MSTK_Report("MFs_Join","Faces not from same mesh",ERROR);
+    return 0;
+  }
+  else if (gid != MF_GEntID(f1) || gdim != MF_GEntDim(f1)) {
+    MSTK_Report("MFs_Join","Faces not from same geometric entity",ERROR);
+    return 0;
+  }
 
   nfe1 = MF_Num_Edges(f1);
   nfe2 = MF_Num_Edges(f2);
@@ -65,6 +75,8 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   nuface = MF_New(mesh);
   MF_Set_Edges(nuface,(nfe1+nfe2-2),fe3,fedir3);
 
+  MF_Set_GEntDim(nuface,gdim);
+  MF_Set_GEntID(nuface,gid);
 
   free(fe1); free(fedir1);
   free(fe2); free(fedir2);

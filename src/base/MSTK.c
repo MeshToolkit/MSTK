@@ -14,12 +14,6 @@ extern "C" {
   int MSTK_lastbit = -1;
 
   void MSTK_Init() {
-#ifdef DEBUG
-    List_ptr l = List_New(10);
-    List_PrintID(l);
-    List_Delete(l);
-#endif
-
 
   }
 

@@ -72,7 +72,7 @@ extern "C" {
   }
 
   Mesh_ptr MR_Mesh(MRegion_ptr r) {
-    r->mesh;
+    return r->mesh;
   }
 
   int MR_ID(MRegion_ptr r) {
@@ -81,6 +81,10 @@ extern "C" {
 
   int MR_GEntDim(MRegion_ptr r) {
     return r->gdim;
+  }
+
+  int MR_GEntID(MRegion_ptr r) {
+    return r->gid;
   }
 
   GEntity_ptr MR_GEntity(MRegion_ptr r) {

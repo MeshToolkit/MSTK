@@ -76,6 +76,10 @@ extern "C" {
     return e->gdim;
   }
 
+  int ME_GEntID(MEdge_ptr e) {
+    return e->gid;
+  }
+
   GEntity_ptr ME_GEntity(MEdge_ptr e) {
     return e->gent;
   }

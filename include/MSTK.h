@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
   /* #include "gmtk.h" */
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "MSTK_util.h"
 #include "List.h"
@@ -65,6 +66,7 @@ void        MSTK_Init(void);
   Mesh_ptr MV_Mesh(MVertex_ptr mv);
   int MV_ID(MVertex_ptr mvertex);
   int MV_GEntDim(MVertex_ptr mvertex);
+  int MV_GEntID(MVertex_ptr mvertex);
   GEntity_ptr MV_GEntity(MVertex_ptr mvertex);
 
   void MV_Coords(MVertex_ptr mvertex, double *xyz);
@@ -97,6 +99,7 @@ void        MSTK_Init(void);
   Mesh_ptr ME_Mesh(MEdge_ptr medge);
   int ME_ID(MEdge_ptr medge);
   int ME_GEntDim(MEdge_ptr medge);
+  int ME_GEntID(MEdge_ptr medge);
   GEntity_ptr ME_GEntity(MEdge_ptr medge);
   int ME_Num_Faces(MEdge_ptr medge);
   int ME_Num_Regions(MEdge_ptr medge);
@@ -137,6 +140,7 @@ void        MSTK_Init(void);
   Mesh_ptr MF_Mesh(MFace_ptr mf);
   int MF_ID(MFace_ptr mface);
   int MF_GEntDim(MFace_ptr mface);
+  int MF_GEntID(MFace_ptr mface);
   GEntity_ptr MF_GEntity(MFace_ptr mface);
   int MF_Num_Vertices(MFace_ptr mface);
   int MF_Num_Edges(MFace_ptr mface);
@@ -182,6 +186,7 @@ void        MSTK_Init(void);
   Mesh_ptr MR_Mesh(MRegion_ptr mregion);
   int MR_ID(MRegion_ptr mregion);
   int MR_GEntDim(MRegion_ptr mregion);
+  int MR_GEntID(MRegion_ptr mregion);
   GEntity_ptr MR_GEntity(MRegion_ptr mregion);
 
   int MR_Num_Vertices(MRegion_ptr mregion);
@@ -250,6 +255,13 @@ int ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
 /* Higher level Mesh Query Operators                                  */
 /**********************************************************************/
 
+
+
+/**********************************************************************/
+/* Element quality evaluation                                         */
+/**********************************************************************/
+
+  void MF_CondNums(MFace_ptr f, double *condnums);
 
 /*******************************************/
 /* UTILITIES                               */

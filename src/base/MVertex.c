@@ -79,6 +79,10 @@ extern "C" {
     return v->gdim;
   }
 
+  int MV_GEntID(MVertex_ptr v) {
+    return v->gid;
+  }
+
   GEntity_ptr MV_GEntity(MVertex_ptr v) {
     return v->gent;
   }

@@ -97,6 +97,10 @@ extern "C" {
     return f->gdim;
   }
 
+  int MF_GEntID(MFace_ptr f) {
+    return f->gid;
+  }
+
   GEntity_ptr MF_GEntity(MFace_ptr f) {
     return f->gent;
   }
