@@ -23,6 +23,7 @@ extern "C" {
     v->gdim = 4; /* Nonsensical value since we don't know what it is */
     v->gid  = 0;
     v->gent = (GEntity_ptr) NULL;
+    v->AttInsList = NULL;
     v->xyz[0] = v->xyz[1] = v->xyz[2] = 0.0;
     v->upadj = NULL;
     v->sameadj = NULL;
@@ -36,8 +37,21 @@ extern "C" {
   } 
 
   void MV_Delete(MVertex_ptr v, int keep) {
+    int idx;
+    MAttIns_ptr attins;
+
     if (v->dim != MDELVERTEX)
       MESH_Rem_Vertex(v->mesh,v);
+
+    if (!keep) {
+      if (v->AttInsList) {
+	idx = 0;
+	while ((attins = List_Next_Entry(v->AttInsList,&idx)))
+	  MAttIns_Delete(attins);
+	List_Delete(v->AttInsList);
+      }
+    }
+
     (*MV_Delete_jmp[v->repType])(v,keep);
   }
 
