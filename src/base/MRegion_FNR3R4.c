@@ -96,7 +96,7 @@ extern "C" {
 
       List_Add(downadj->rfaces,rfaces[i]);
 
-      if (MEnt_RepType(r) != F4) 
+      if (r->repType != F4) 
 	MF_Add_Region(rfaces[i],r,!dirs[i]);
     }
   }
