@@ -260,7 +260,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	    attrib = outattribs[i];
 	    
 	    MAttrib_Get_Name(attrib,attname);
-	    
+	    atttype = MAttrib_Get_Type(attrib);
+	    attentdim = MAttrib_Get_EntDim(attrib);
+ 
 	    fprintf(fp,"%s ",attname);
 	    if (attentdim == MVERTEX) {
 	      fprintf(fp," 1 \n");
@@ -285,7 +287,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	    else {
 	      fprintf(fp," 0 \n");
 	      
-	      for (jr = 0, k = 0; jr < nf; jr++) {
+	      for (jr = 0, k = 0; jr < nr; jr++) {
 		region = MESH_Region(mesh,jr);
 		
 		MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
