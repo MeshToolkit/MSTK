@@ -31,15 +31,16 @@ extern "C" {
     MVertex_ptr v;
     MRegion_ptr r2;
 
+    downadj = (MRegion_DownAdj_R1R2 *) r->downadj;    
+    sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
+
     if (r->dim != MDELREGION) {
-      downadj = (MRegion_DownAdj_R1R2 *) r->downadj;    
       nv = downadj->nv;
       for (i = 0; i < nv; i++) {
 	v = List_Entry(downadj->rvertices,i);
 	MV_Rem_Region(v,r);
       }
       
-      sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
       nr = sameadj->nradj;
       for (i = 0; i < nr; i++) {
 	r2 = List_Entry(sameadj->aregions,i);
