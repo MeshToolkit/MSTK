@@ -47,7 +47,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     nr = mesh->nr;
     i = 0;
     while ((mr = List_Next_Entry(mesh->mregion,&i))) {
-      MR_Delete(mr);
+      MR_Delete(mr,0);
     }
     List_Delete(mesh->mregion);
   }
@@ -55,7 +55,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     nf = mesh->nf;
     i = 0;
     while ((mf = List_Next_Entry(mesh->mface,&i))) {
-      MF_Delete(mf);
+      MF_Delete(mf,0);
     }
     List_Delete(mesh->mface);
   }
@@ -63,7 +63,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     ne = mesh->ne;
     i = 0;
     while ((me = List_Next_Entry(mesh->medge,&i))) {
-      ME_Delete(me);
+      ME_Delete(me,0);
     }
     List_Delete(mesh->medge);
   }
@@ -71,7 +71,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     nv = mesh->nv;
     i = 0;
     while ((mv = List_Next_Entry(mesh->mvertex,&i))) {
-      MV_Delete(mv);
+      MV_Delete(mv,0);
     }
     List_Delete(mesh->mvertex);
   }
@@ -163,19 +163,31 @@ MRegion_ptr MESH_Region(Mesh_ptr mesh, int i) {
 }
 
 MVertex_ptr  MESH_Next_Vertex(Mesh_ptr mesh, int *index) {
-  return (MVertex_ptr) List_Next_Entry(mesh->mvertex, index);
+  if (mesh->mvertex)
+    return (MVertex_ptr) List_Next_Entry(mesh->mvertex, index);
+  else
+    return NULL;
 }
 
 MEdge_ptr MESH_Next_Edge(Mesh_ptr mesh, int *index) {
-  return (MEdge_ptr) List_Next_Entry(mesh->medge, index);
+  if (mesh->medge)
+    return (MEdge_ptr) List_Next_Entry(mesh->medge, index);
+  else
+    return NULL;
 }
 
 MFace_ptr MESH_Next_Face(Mesh_ptr mesh, int *index) {
-  return (MFace_ptr) List_Next_Entry(mesh->mface, index);
+  if (mesh->mface)
+    return (MFace_ptr) List_Next_Entry(mesh->mface, index);
+  else
+    return NULL;
 }
 
 MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
-  return (MRegion_ptr) List_Next_Entry(mesh->mregion, index);
+  if (mesh->mregion)
+    return (MRegion_ptr) List_Next_Entry(mesh->mregion, index);
+  else
+    return NULL;
 }
 
 void MESH_Add_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
