@@ -15,6 +15,7 @@ extern "C" {
     int nv, ne, nf, nr;
     List_ptr mvertex, medge, mface, mregion;
     GModel_ptr geom;
+    List_ptr AttribList;
     int max_vid, max_eid, max_fid, max_rid;
   } Mesh, *Mesh_ptr;
 #else
@@ -26,9 +27,17 @@ extern "C" {
   Mesh_ptr   MESH_New(RepType type);
   int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
   void       MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
+  void       MESH_Delete(Mesh_ptr mesh);
   
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);
+
+  int         MESH_Num_Attribs(Mesh_ptr mesh);
+  MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i);
+  MAttrib_ptr MESH_Next_Attrib(Mesh_ptr mesh, int *index);
+  MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, char *name);
+  void        MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
+  void        MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
 
   int        MESH_Num_Vertices(Mesh_ptr mesh);
   int        MESH_Num_Edges(Mesh_ptr mesh);
