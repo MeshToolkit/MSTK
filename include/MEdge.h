@@ -11,28 +11,25 @@ extern "C" {
 
 #ifdef _H_MEdge_Private
   typedef struct MEdge {
-    int id;
-    int marker;
-    Mesh_ptr mesh;
-    char dim;
-    char gdim;
-    int gid;
-    GEntity_ptr gent;
-    List_ptr AttInsList;
-    RepType repType;
+
+    /* Common data structure for all mesh entities */
+
+    MEntity_Data_ptr entdat;
+
+    /* Specific to mesh edges */
+
     void *upadj;
     MVertex_ptr vertex[2];
+
   } MEdge, *MEdge_ptr;
 
   /*----- Upward adjacency definitions --------*/
 
   typedef struct MEdge_UpAdj_F1 {
-    unsigned int nf;
     List_ptr efaces;
   } MEdge_UpAdj_F1;
 
   typedef struct MEdge_UpAdj_F4 {
-    unsigned int nel;
     List_ptr elements;
   } MEdge_UpAdj_F4;
 #else
@@ -44,6 +41,7 @@ extern "C" {
   void ME_Set_GEntity(MEdge_ptr medge, GEntity_ptr gent);
   void ME_Set_GEntDim(MEdge_ptr medge, int gdim);
   void ME_Set_GEntID(MEdge_ptr medge, int gid);
+  int  ME_Derive_GInfo(MEdge_ptr medge);
   void ME_Set_ID(MEdge_ptr medge, int id);
 
   void ME_Set_Vertex(MEdge_ptr medge, int i, MVertex_ptr vertex);

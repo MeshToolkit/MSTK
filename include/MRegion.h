@@ -13,17 +13,15 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
 #ifdef _H_MRegion_Private
   typedef struct MRegion {
-    int id;
-    int marker;
-    Mesh_ptr mesh;
-    char dim;
-    char gdim;
-    int gid;
-    GEntity_ptr gent;
-    List_ptr AttInsList;
-    RepType repType;
+
+    /* Common data structure for all mesh entities */
+
+    MEntity_Data_ptr entdat;
+
+    /* Specific to mesh regions */
     void *sameadj;
     void *downadj;
+
   } MRegion, *MRegion_ptr;
 
   /*----- Upward adjacency definitions --------*/
@@ -33,25 +31,22 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
   /*----- Same Level adjacency definitions ------*/
 
   typedef struct MRegion_SameAdj_R2 {
-    int nradj;
     MRegion_ptr *aregions;
   } MRegion_SameAdj_R2;
 
   /*----- Downward adjacency definitions --------*/
 
   typedef struct MRegion_DownAdj_FN {
-    unsigned char nf;
     unsigned int *fdirs;
     MFace_ptr *rfaces;
   } MRegion_DownAdj_FN;
 
   typedef struct MRegion_DownAdj_R1R2 {
-    unsigned char nv;
     MVertex_ptr *rvertices;
+    int **fvtemplate;
   } MRegion_DownAdj_R1R2;
 
   typedef struct MRegion_DownAdj_R3R4 {
-    unsigned char nf;
     unsigned int *fdirs;
     MFace_ptr *rfaces;
   } MRegion_DownAdj_R3R4;

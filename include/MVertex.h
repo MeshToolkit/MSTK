@@ -10,68 +10,57 @@ extern "C" {
 #include "List.h"
 
 #ifdef _H_MVertex_Private
+
   typedef struct MVertex {
-    int id;
-    int marker;
-    Mesh_ptr mesh;
-    char dim;
-    char gdim;
-    int gid;
-    GEntity_ptr gent;
-    List_ptr AttInsList;
-    RepType repType;
+
+    /* Common data structure for all mesh entities */
+
+    MEntity_Data_ptr entdat;
+
+    /* specific to mesh vertices */
+
     void *upadj;
     void *sameadj;
     double xyz[3];
+
   } MVertex, *MVertex_ptr;
 
     /*----- Upward adjacency definitions --------*/
 
   typedef struct MVertex_UpAdj_F1F4 {
-    unsigned int ne;
     List_ptr vedges;
   } MVertex_UpAdj_F1F4;
 
   typedef struct MVertex_UpAdj_F2 {
-    unsigned int nr;
     List_ptr vregions;
   } MVertex_UpAdj_F2;
 
   typedef struct MVertex_UpAdj_F3 {
-    unsigned int nf;
     List_ptr vfaces;
   } MVertex_UpAdj_F3;
 
   typedef struct MVertex_UpAdj_F5 {
-    unsigned int ne;
-    unsigned int nf;
-    unsigned int nr;
     List_ptr vedges;
     List_ptr vfaces;
     List_ptr vregions;
   } MVertex_UpAdj_F5;
 
   typedef struct MVertex_UpAdj_F6 {
-    unsigned int nf;
-    unsigned int nr;
     List_ptr vfaces;
     List_ptr vregions;
   } MVertex_UpAdj_F6;
 
   typedef struct MVertex_UpAdj_R1R2 {
-    unsigned int nel;
     List_ptr velements;
   } MVertex_UpAdj_R1R2;
 
   typedef struct MVertex_UpAdj_R3R4 {
-    unsigned int nf;
     List_ptr vfaces;
   } MVertex_UpAdj_R3R4;
 
   /*-------  Same Level adjacency definitions --------*/
 
   typedef struct MVertex_SameAdj_R2R4 {
-    unsigned int nvadj;
     List_ptr adjverts;
   } MVertex_SameAdj_R2R4;
 

@@ -10,18 +10,17 @@ extern "C" {
 
 #ifdef _H_MFace_Private
   typedef struct MFace {
-    int id;
-    int marker;
-    Mesh_ptr mesh;
-    char dim;
-    char gdim;
-    int gid;
-    GEntity_ptr gent;
-    List_ptr AttInsList;
-    RepType repType;
+
+    /* Common data structure for all mesh entities */
+
+    MEntity_Data_ptr entdat;
+
+    /* Specific to mesh faces */
+
     void *upadj;
     void *sameadj;
     void *downadj;
+
   } MFace, *MFace_ptr;
 
   /*----- Upward adjacency definitions --------*/
@@ -37,22 +36,19 @@ extern "C" {
   /*----- Same Level adjacency definitions ------*/
 
   typedef struct MFace_SameAdj_R2R4 {
-    unsigned char nadj;
     List_ptr adjfaces;
   } MFace_SameAdj_R2R4;
 
   /*----- Downward adjacency definitions --------*/
 
   typedef struct MFace_DownAdj_FN {
-    unsigned char ne;
     int edirs;
     List_ptr fedges;
   } MFace_DownAdj_FN;
 
-  typedef struct MFace_DownAdj_R3R4 {
-    unsigned char nv;
+  typedef struct MFace_DownAdj_RN {
     List_ptr *fvertices;
-  } MFace_DownAdj_R3R4;
+  } MFace_DownAdj_RN;
   
 #else
   typedef void *MFace_ptr;
