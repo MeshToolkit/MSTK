@@ -8,6 +8,53 @@
 extern "C" {
 #endif
 
+  int MF_Set_GInfo_Auto_FN(MFace_ptr f) {
+    int i, ne, same, fgdim, fgid, egdim, egid, egdim0, egid0;
+    MEdge_ptr e;
+    MFace_DownAdj_FN *downadj;
+
+    downadj = (MFace_DownAdj_FN *) f->downadj;
+    ne = List_Num_Entries(downadj->fedges);
+
+    same = 1;
+    fgdim = -1;
+    fgid = -1;
+
+    e = List_Entry(downadj->fedges,0);    
+    egid0 = ME_GEntID(e);
+    egdim0 = ME_GEntDim(e);
+
+    for (i = 1; i < ne; i++) {
+      e = List_Entry(downadj->fedges,i);
+      egid = ME_GEntID(e);
+      egdim = ME_GEntDim(e);
+      if (egdim == egdim0 && egid == egid0)
+	continue; /* all edges have same classification so far */
+      else {
+	same = 0;
+	if (egdim > fgdim) {
+	  fgdim = egdim;
+	  fgid = egid;
+	}
+      }
+    }
+    if (same) {
+      fgdim = egdim0;
+      fgid = egid;
+    }
+     
+    if (fgdim == -1)
+      fgdim = 4;
+    MEnt_Set_GEntDim(f,fgdim);
+    MEnt_Set_GEntID(f,fgid);
+
+    if (fgdim == 4)
+      return 0;
+    else
+      return 1;
+  }
+
+
   void MF_Set_Edges_FN(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
     int i;
     MFace_DownAdj_FN *downadj;
@@ -18,8 +65,6 @@ extern "C" {
 #endif
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
-
-    downadj->ne = n;
     downadj->edirs = 0;
     downadj->fedges = List_New(n);
     
@@ -134,14 +179,14 @@ extern "C" {
     int j, k, ne, ncom, dir, *olddirs, *newdirs, rev;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
-    ne = downadj->ne;
+    ne = List_Num_Entries(downadj->fedges);
 
     if (ne == 0)
       MSTK_Report("MF_Replace_Edge_i","No initial set of edges for face",
 		  ERROR);
 
-    oldedges = (MEdge_ptr *) malloc(nold*sizeof(MEdge_ptr));
-    olddirs  = (int *) malloc(nold*sizeof(int));
+    oldedges = (MEdge_ptr *) MSTK_malloc(nold*sizeof(MEdge_ptr));
+    olddirs  = (int *) MSTK_malloc(nold*sizeof(int));
     for (j = 0; j < nold; j++) {
       k = (i+j)%ne;
       oldedges[j] = List_Entry(downadj->fedges,k);
@@ -163,8 +208,8 @@ extern "C" {
       MSTK_Report("MF_Replace_Edge_i","Mismatched set of edges",ERROR);
 
 
-    newedges = (MEdge_ptr *) malloc(nnu*sizeof(MEdge_ptr));
-    newdirs  = (int *) malloc(nnu*sizeof(MEdge_ptr));
+    newedges = (MEdge_ptr *) MSTK_malloc(nnu*sizeof(MEdge_ptr));
+    newdirs  = (int *) MSTK_malloc(nnu*sizeof(MEdge_ptr));
     lastv = vold_0;
     for (j = 0; j < nnu; j++) {
       k = rev ? nnu-1-j : j;
@@ -246,9 +291,6 @@ extern "C" {
       }
     }
       
-    /* ncom edges were replaced existing edges, others were added */
-    downadj->ne = ne;  /* also equal to "downadj->ne - nold + nnu" */ 
-
     /* Update upward adjacencies */
     for (j = 0; j < nold; j++) {
       ME_Rem_Face(oldedges[j],f);
@@ -257,10 +299,10 @@ extern "C" {
       ME_Add_Face(newedges[j],f);
     }
 
-    free(oldedges);
-    free(olddirs);
-    free(newedges);
-    free(newdirs);
+    MSTK_free(oldedges);
+    MSTK_free(olddirs);
+    MSTK_free(newedges);
+    MSTK_free(newdirs);
   }
 
 
@@ -274,7 +316,7 @@ extern "C" {
     MEdge_ptr fedge;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
-    ne = downadj->ne;
+    ne = List_Num_Entries(downadj->fedges);
 
     if (ne == 0)
       MSTK_Report("MF_Replace_Edge_F1","No initial set of edges for face",
@@ -282,7 +324,7 @@ extern "C" {
 
     /* Order the old edges in the direction of the face */
 
-    eindex = (int *) malloc(nold*sizeof(int));
+    eindex = (int *) MSTK_malloc(nold*sizeof(int));
 
     for (i = 0; i < nold; i++) {           
       for (j = 0, found = 0; j < ne; j++)
@@ -293,7 +335,7 @@ extern "C" {
 	}
       if (!found) {
 	MSTK_Report("MF_Replace_Edge","Edge not found in face",ERROR);
-	free(eindex);
+	MSTK_free(eindex);
 	return;
       }
     }
@@ -333,15 +375,15 @@ extern "C" {
 	  
     MF_Replace_Edges_i_FN(f, nold, istart, nnu, nuedges);
 
-    free(eindex);
+    MSTK_free(eindex);
   }
 
 
 
 
-
   int MF_Num_Edges_FN(MFace_ptr f) {
-    return ((MFace_DownAdj_FN *) f->downadj)->ne;
+    List_ptr fedges = ((MFace_DownAdj_FN *) f->downadj)->fedges;
+    return List_Num_Entries(fedges);
   }	
 
   List_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
@@ -357,7 +399,7 @@ extern "C" {
       if (dir)
 	return List_Copy(downadj->fedges);
       else {
-	n = downadj->ne;
+	n = List_Num_Entries(downadj->fedges);
 	fedges = List_New(n);
 	for (i = n-1; i >= 0; i--)
 	  List_Add(fedges,List_Entry(downadj->fedges,i));
@@ -365,7 +407,7 @@ extern "C" {
       }
     }
     else {
-      n = downadj->ne;
+      n = List_Num_Entries(downadj->fedges);
       fnd = 0;
       for (i = 0; i < n; i++) {
 	e = List_Entry(downadj->fedges,i);
@@ -397,7 +439,7 @@ extern "C" {
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
     
-    n = downadj->ne;
+    n = List_Num_Entries(downadj->fedges);
     for (i = 0; i < n; i++) {
       if (List_Entry(downadj->fedges,i) == e)
 	return ((downadj->edirs)>>i) & 1;
