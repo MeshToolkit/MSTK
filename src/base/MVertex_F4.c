@@ -14,37 +14,24 @@ extern "C" {
     MVertex_UpAdj_F1F4 *upadj;
 
     upadj = v->upadj = (MVertex_UpAdj_F1F4 *) MSTK_malloc(sizeof(MVertex_UpAdj_F1F4));
-    upadj->ne = (unsigned int) 0;
-    upadj->vedges = List_New(10);
+    upadj->vedges = List_New(5);
   }
 
   void MV_Delete_F4(MVertex_ptr v, int keep) {
     MVertex_UpAdj_F1F4 *upadj;
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      v->dim = MDELVERTEX;
-    }
-    else {
-#ifdef DEBUG
-      v->dim = MDELVERTEX;
-#endif
-
+    if (!keep) {
       upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
       if (upadj) {
 	if (upadj->vedges)
 	  List_Delete(upadj->vedges);
 	MSTK_free(upadj);
       }
-
-      MSTK_free(v);
     }
   }
 
   void MV_Restore_F4(MVertex_ptr v) {
-    if (v->dim != MDELVERTEX)
-      return;
-    v->dim = MVERTEX;
+    MEnt_Set_Dim(v,MVERTEX);
   }
 
   void MV_Destroy_For_MESH_Delete_F4(MVertex_ptr v) {
@@ -56,16 +43,16 @@ extern "C" {
 	List_Delete(upadj->vedges);
       MSTK_free(upadj);
     }
-
-    MSTK_free(v);
   }
 
   int MV_Num_AdjVertices_F4(MVertex_ptr v) {
-    return ((MVertex_UpAdj_F1F4 *) v->upadj)->ne;
+    List_ptr vedges = ((MVertex_UpAdj_F1F4 *) v->upadj)->vedges;
+    return List_Num_Entries(vedges);
   }
 
   int MV_Num_Edges_F4(MVertex_ptr v) {
-    return ((MVertex_UpAdj_F1F4 *) v->upadj)->ne;
+    List_ptr vedges = ((MVertex_UpAdj_F1F4 *) v->upadj)->vedges;
+    return List_Num_Entries(vedges);
   }
 
   int MV_Num_Faces_F4(MVertex_ptr v) {
@@ -112,7 +99,7 @@ extern "C" {
     if (vedges == 0)
       return 0;
 
-    ne = upadj->ne;
+    ne = List_Num_Entries(vedges);
     adjv = List_New(ne);
     for (i = 0; i < ne; i++) {
       vedge = List_Entry(vedges,i);
@@ -142,11 +129,11 @@ extern "C" {
     MRegion_ptr region;
 
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    ne = upadj->ne;
     vedges = upadj->vedges;
+    ne = List_Num_Entries(vedges);
 
     n = 0;
-    vfaces = List_New(10);
+    vfaces = List_New(ne);
     mkr = MSTK_GetMarker();
 
     for (i = 0; i < ne; i++) {
@@ -214,11 +201,11 @@ extern "C" {
     MRegion_ptr region;
 
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    ne = upadj->ne;
     vedges = upadj->vedges;
+    ne = List_Num_Entries(vedges);
 
     n = 0;
-    vregions = List_New(10);
+    vregions = List_New(ne);
     mkr = MSTK_GetMarker();
 
     for (i = 0; i < ne; i++) {
@@ -272,7 +259,6 @@ extern "C" {
     if (upadj->vedges == NULL)
       upadj->vedges = List_New(10);
     List_Add(upadj->vedges,e);
-    (upadj->ne)++;
   }
 
   void MV_Rem_Edge_F4(MVertex_ptr v, MEdge_ptr e) {
@@ -282,8 +268,7 @@ extern "C" {
 
     if (upadj->vedges == NULL)
       return;
-    if (List_Rem(upadj->vedges,e))
-      (upadj->ne)--;
+    List_Rem(upadj->vedges,e);
   }
 
   void MV_Add_Face_F4(MVertex_ptr v, MFace_ptr f) {
