@@ -279,8 +279,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	    atttype = MAttrib_Get_Type(attrib);
 	    attentdim = MAttrib_Get_EntDim(attrib);
  
-	    fprintf(fp,"%s ",attname);
 	    if (attentdim == MVERTEX || attentdim == MALLTYPE) {
+	      fprintf(fp,"%s ",attname);
 	      fprintf(fp," 1 \n");
 	      
 	      for (jv = 0, k = 0; jv < nv; jv++) {
@@ -301,6 +301,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	      }
 	    }
 	    if (attentdim == MREGION || attentdim == MALLTYPE) {
+	      fprintf(fp,"%s ",attname);
 	      fprintf(fp," 0 \n");
 	      
 	      for (jr = 0, k = 0; jr < nr; jr++) {
@@ -539,8 +540,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	    atttype = MAttrib_Get_Type(attrib);
 	    attentdim = MAttrib_Get_EntDim(attrib);
 	    
-	    fprintf(fp,"%s ",attname);
 	    if (attentdim == MVERTEX || attentdim == MALLTYPE) {
+	      fprintf(fp,"%s ",attname);
 	      fprintf(fp," 1 \n");
 	      
 	      for (jv = 0, k = 0; jv < nv; jv++) {
@@ -561,6 +562,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	      }
 	    }
 	    if (attentdim == MFACE || attentdim == MALLTYPE) {
+	      fprintf(fp,"%s ",attname);
 	      fprintf(fp," 0 \n");
 	      
 	      for (jf = 0, k = 0; jf < nf; jf++) {
