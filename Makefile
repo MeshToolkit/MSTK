@@ -14,13 +14,10 @@ ifeq ($(ARCHOS),i686_linux)
 endif
 
 DEVROOT = $(HOME)/develop
-MSTK_UTIL := $(HOME)/develop/mstkutil/1.0
-DMALLOC := $(HOME)/develop/dmalloc/dmalloc-4.6.0
+MSTK_UTIL := $(DEVROOT)/mstkutil/1.0
 
 LIBDIR = ./lib
 MSTK_UTIL_INC = -I$(MSTK_UTIL)/include
-DMALLOCINC = $(DMALLOC)
-
 
 INCDIR = -I./include $(MSTK_UTIL_INC) 
 
