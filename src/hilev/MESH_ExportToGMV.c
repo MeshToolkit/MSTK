@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "MSTK.h"
 
@@ -21,25 +22,22 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   MRegion_ptr           region;
   MAttrib_ptr           attrib, *outattribs;
   MAttType              atttype;
-  char                  attname[256];
+  char                  attname[256], matname[256], date_str[256];
   int                   jv, jr, jf, nf, nr, gmodel, nrf, nrv, nfv, dir;
   int			i, found, k, len, suff, nmeshatt, noutatt, ival;
   int                   nalloc, ngregions, ngfaces,fnum,fid,vid, nv, icr;
   int                   attentdim, j;
   double		vxyz[3], rval;
   void                 *pval;
-  char                  matname[256];
   FILE		        *fp;
+  time_t                ctime;
 
-  /* Although the GMV template for tets is 0,2,1,3, LAGRIT thinks it is
-     0,1,2,3 and GMV does not seem to care */
+  int			ftmpl[2][4] =   {{0,1,2,-1},{0,1,2,3}};
 
-  int			ftmpl[2][8] =   {{0,1,2,-1,-1,-1,-1,-1},
-					 {0,1,2,3,-1,-1,-1,-1}};
-
-  int			rtmpl[4][8] =   {{0,1,2,3,-1,-1,-1,-1},
-					 {4,0,1,2,3,-1,-1,-1},
+  int			rtmpl[5][8] =   {{0,2,1,3,-1,-1,-1,-1},
+					 {1,2,3,4,0,-1,-1,-1},
 					 {3,4,5,0,1,2,-1,-1},
+					 {-1,-1,-1,-1,-1,-1,-1,-1},
 					 {4,5,6,7,0,1,2,3}};
 
   gmodel = 0;
@@ -53,13 +51,17 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   fprintf(fp,"gmvinput ascii\n");
   nv = MESH_Num_Vertices(mesh);
 
+  fprintf(fp,"codename MSTK_V_1.3\n");
+  ctime = time(&ctime);
+  strftime(date_str,sizeof(date_str),"%m/%d/%Y %H:%M %Z",localtime(&ctime));
+  fprintf(fp,"simdate %s\n",date_str);
+
   fprintf(fp,"nodev %d\n",nv);
-  vid = 0;
   for (jv = 0; jv < nv; jv++) {
     vertex = MESH_Vertex(mesh,jv);
     MV_Coords(vertex,vxyz);
     fprintf(fp,"% 5.9f % 5.9f % 5.9f\n",vxyz[0],vxyz[1],vxyz[2]);
-    MV_Set_ID(vertex,vid++);
+    MV_Set_ID(vertex,(jv+1));
   }
 
 
@@ -76,22 +78,35 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       region = MESH_Region(mesh, jr);
       rverts = MR_Vertices(region);
       nrv = List_Num_Entries(rverts);
+      nrf = MR_Num_Faces(region);
       switch (nrv) {
       case 4:
 	rtype = TET;
 	fprintf(fp,"tet 4 ");
 	break;
       case 5:
-        rtype = PYRAMID;
-	fprintf(fp,"pyramid 5 ");
+	if (nrf == 5) {
+	  rtype = PYRAMID;
+	  fprintf(fp,"pyramid 5 ");
+	}
+	else 
+	  rtype = POLYHED;
 	break;
       case 6:
-	rtype = PRISM;
-	fprintf(fp,"prism 6 ");
+	if (nrf == 5) { /* need additional check to fully verify */
+	  rtype = PRISM;
+	  fprintf(fp,"prism 6 ");
+	}
+	else
+	  rtype = POLYHED;
 	break;
       case 8:
-	rtype = HEX;
-	fprintf(fp,"hex 8 ");
+	if (nrf == 6) {
+	  rtype = HEX;
+	  fprintf(fp,"hex 8 ");
+	}
+	else
+	  rtype = POLYHED;
         break;
       default:
 	rtype = POLYHED;
@@ -99,8 +114,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       }
       if (rtype != POLYHED) {
 	for (jv = 0; jv < nrv; jv++) {
-	  vertex = List_Entry(rverts,rtmpl[rtype-1][jv]);
-	  fprintf(fp," % 8d",MV_ID(vertex)+1);
+	  vertex = List_Entry(rverts,rtmpl[nrv-4][jv]);
+	  fprintf(fp," % 8d",MV_ID(vertex));
 	}
 	fprintf(fp,"\n");
 	List_Delete(rverts);
@@ -123,7 +138,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
 	  for (jv = 0; jv < nfv; jv++) {
 	    vertex = List_Entry(fverts,jv);
-	    fprintf(fp," %8d",MV_ID(vertex)+1);
+	    fprintf(fp," %8d",MV_ID(vertex));
 	  }
 	  fprintf(fp,"\n");
 	  List_Delete(fverts);
@@ -351,7 +366,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	for (jv = 0; jv < nfv; jv++) {
 	  vertex = List_Entry(fverts,jv);
 	  vid = MV_ID(vertex);
-	  fprintf(fp," % 8d",vid+1);
+	  fprintf(fp," % 8d",vid);
 	}
 	
 	fprintf(fp," 0  0 ");
@@ -379,7 +394,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	for (jv = 0; jv < nfv; jv++) {
 	  vertex = List_Entry(fverts,jv);
 	  vid = MV_ID(vertex);
-	  fprintf(fp," % 8d",vid+1);
+	  fprintf(fp," % 8d",vid);
 	}
 
 	fprintf(fp,"\n");
