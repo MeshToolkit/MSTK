@@ -41,6 +41,26 @@ extern "C" {
     List_Replace(downadj->fvertices,v,nuv);
   }
 
+  void MF_Insert_Vertex_R3R4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
+    MFace_DownAdj_R3R4 *downadj;
+
+    downadj = f->downadj;
+    if (downadj->nv == 0)
+      downadj->fvertices = List_New(4);
+
+    List_Insert(downadj->fvertices,nuv,b4v);
+  }
+
+  void MF_Insert_Vertex_i_R3R4(MFace_ptr f, MVertex_ptr nuv, int i) {
+    MFace_DownAdj_R3R4 *downadj;
+
+    downadj = f->downadj;
+    if (downadj->nv == 0)
+      downadj->fvertices = List_New(4);
+
+    List_Inserti(downadj->fvertices,nuv,i);
+  }
+
   int MF_Num_Vertices_R3R4(MFace_ptr f) {
     MFace_DownAdj_R3R4 *downadj;
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
