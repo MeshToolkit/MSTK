@@ -1,8 +1,6 @@
 #ifndef _H_TYPESMSTK
 #define _H_TYPESMSTK
 
-#define MSTK_UNKNOWN -1
-
 #ifdef   __cplusplus
 extern "C" {
 #endif
@@ -31,28 +29,17 @@ extern "C" {
   typedef void     *GEntity_ptr;
 #endif
 
-#define MSTK_VER    1.0
-
-#define MSTK_MAXREP 10
 typedef enum RepType {UNKNOWN_REP=-1, F1=0, F4, R1, R2, R4} RepType;
-
 
 typedef enum MFType {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
 typedef enum MRType {RDELETED=-1, RUNKNOWN=0, TET, PYRAMID, PRISM, HEX, POLYHED} MRType;
 
-typedef enum MType {MVERTEX=0, MEDGE, MFACE, MREGION} MType;
-typedef enum VType {VIGNORE=21, VPARENT=41, VDELETED=61} VType;
+typedef enum MType {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3} MType;
 
 
 /* typedefs needed for attributes */
 typedef enum AttType {INT=0, VINT, VINT2, DOUBLE, VDOUBLE, VDOUBLE2, CHAR, VCHAR} AttType;
 typedef enum Rank {SCALAR=4001, VECTOR, TENSOR} Rank;
-typedef enum Interp {CONSTANT=5001, COPY, SEQUENCE, LINEAR, LOG, ASINH, MAX,
-		     MIN, USER, AND, OR, INCMAX} Interp;
-
-/********
-typedef enum ElType {DELETED=-1, UNKNOWN=0, TRI=3, QUAD, TET, PYRAMID, PRISM, HEX, POLYGON, POLYHED} ElType;
-*********/
 
 
 #ifdef __cplusplus

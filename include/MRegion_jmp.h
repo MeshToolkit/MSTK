@@ -20,14 +20,23 @@ static void (*MR_Set_RepType_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Set_RepType_F1, MR_Set_RepType_F4, MR_Set_RepType_R1, 
  MR_Set_RepType_R2, MR_Set_RepType_R4};
 
-void MR_Delete_F1(MRegion_ptr r);
-void MR_Delete_F4(MRegion_ptr r);
-void MR_Delete_R1(MRegion_ptr r);
-void MR_Delete_R2(MRegion_ptr r);
-void MR_Delete_R4(MRegion_ptr r);
-void MR_Delete_F1F3R3R4(MRegion_ptr r);
-static void (*MR_Delete_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+void MR_Delete_F1(MRegion_ptr r, int keep);
+void MR_Delete_F4(MRegion_ptr r, int keep);
+void MR_Delete_R1(MRegion_ptr r, int keep);
+void MR_Delete_R2(MRegion_ptr r, int keep);
+void MR_Delete_R4(MRegion_ptr r, int keep);
+void MR_Delete_F1F3R3R4(MRegion_ptr r, int keep);
+static void (*MR_Delete_jmp[MSTK_MAXREP])(MRegion_ptr r, int keep) =
 {MR_Delete_F1, MR_Delete_F4, MR_Delete_R1, MR_Delete_R2, MR_Delete_R4};
+
+void MR_Restore_F1(MRegion_ptr r);
+void MR_Restore_F4(MRegion_ptr r);
+void MR_Restore_R1(MRegion_ptr r);
+void MR_Restore_R2(MRegion_ptr r);
+void MR_Restore_R4(MRegion_ptr r);
+void MR_Restore_F1F3R3R4(MRegion_ptr r);
+static void (*MR_Restore_jmp[MSTK_MAXREP])(MRegion_ptr r) = 
+{MR_Restore_F1, MR_Restore_F4, MR_Restore_R1, MR_Restore_R2, MR_Restore_R4};
 
 void MR_Set_Faces_F1(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
 void MR_Set_Faces_F4(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs);
@@ -222,13 +231,21 @@ static void (*MR_Set_RepType_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Set_RepType_FNR3R4, MR_Set_RepType_FNR3R4, MR_Set_RepType_R1, 
  MR_Set_RepType_R2, MR_Set_RepType_FNR3R4};
 
-void MR_Delete_F1F3R3R4(MRegion_ptr r);
-void MR_Delete_F4(MRegion_ptr r);
-void MR_Delete_R1(MRegion_ptr r);
-void MR_Delete_R2(MRegion_ptr r);
-static void (*MR_Delete_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+void MR_Delete_F1F3R3R4(MRegion_ptr r, int keep);
+void MR_Delete_F4(MRegion_ptr r, int keep);
+void MR_Delete_R1(MRegion_ptr r, int keep);
+void MR_Delete_R2(MRegion_ptr r, int keep);
+static void (*MR_Delete_jmp[MSTK_MAXREP])(MRegion_ptr r, int keep) =
 {MR_Delete_F1F3R3R4, MR_Delete_F4, MR_Delete_R1, MR_Delete_R2, 
  MR_Delete_F1F3R3R4};
+
+void MR_Restore_F1F3R3R4(MRegion_ptr r);
+void MR_Restore_F4(MRegion_ptr r);
+void MR_Restore_R1(MRegion_ptr r);
+void MR_Restore_R2(MRegion_ptr r);
+static void (*MR_Restore_jmp[MSTK_MAXREP])(MRegion_ptr r) = 
+{MR_Restore_F1F3R3R4, MR_Restore_F4, MR_Restore_R1, MR_Restore_R2, 
+ MR_Restore_F1F3R3R4};
 
 void MR_Set_Faces_F1F3R3R4(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);
 void MR_Set_Faces_F4(MRegion_ptr r,int nf,MFace_ptr *mfaces,int *dirs);

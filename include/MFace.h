@@ -70,10 +70,12 @@ extern "C" {
   void MF_Set_Vertices(MFace_ptr f, int n, MVertex_ptr *verts);
 
   /* Can be called by higher level mesh modification operators */
-  void MF_Replace_Edge(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int dir);
+  void MF_Replace_Edge(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
   void MF_Replace_Vertex(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv);
-  void MF_Replace_Edge_i(MFace_ptr f, int i, MEdge_ptr e, int dir);
+  void MF_Replace_Edge_i(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
   void MF_Replace_Vertex_i(MFace_ptr f, int i, MVertex_ptr v);
+  void MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
+  void MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
 
   int MF_ID(MFace_ptr f);
   int MF_GEntDim(MFace_ptr f);

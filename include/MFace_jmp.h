@@ -24,25 +24,25 @@ static void
   {MF_Set_Edges_F1, MF_Set_Edges_F4, MF_Set_Edges_R1, MF_Set_Edges_R2, 
    MF_Set_Edges_R4};
 
-void MF_Replace_Edge_FN(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_F1(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_F4(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_R1(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_R2(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_R4(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir);
+void MF_Replace_Edge_FN(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_F1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_F4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_R1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_R2(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_R4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
 static void (*MF_Replace_Edge_jmp[MSTK_MAXREP])
-     (MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir) =
+     (MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) =
 {MF_Replace_Edge_F1, MF_Replace_Edge_F4, MF_Replace_Edge_R1, 
  MF_Replace_Edge_R2, MF_Replace_Edge_R4};
 
-void MF_Replace_Edge_i_FN(MFace_ptr f, int i, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_i_F1(MFace_ptr f, int i, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_i_F4(MFace_ptr f, int i, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_i_R1(MFace_ptr f, int i, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_i_R2(MFace_ptr f, int i, MEdge_ptr nue, int nudir);
-void MF_Replace_Edge_i_R4(MFace_ptr f, int i, MEdge_ptr nue, int nudir);
+void MF_Replace_Edge_i_FN(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_i_F1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_i_F4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_i_R1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_i_R2(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edge_i_R4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
 static void 
-(*MF_Replace_Edge_i_jmp[MSTK_MAXREP])(MFace_ptr f, int i, MEdge_ptr nue, int nudir)=
+(*MF_Replace_Edge_i_jmp[MSTK_MAXREP])(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs)=
 {MF_Replace_Edge_i_F1, MF_Replace_Edge_i_F4, MF_Replace_Edge_i_R1, 
  MF_Replace_Edge_i_R2, MF_Replace_Edge_i_R4};
 
@@ -78,6 +78,29 @@ static void
 (*MF_Replace_Vertex_jmp[MSTK_MAXREP])(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) =
 {MF_Replace_Vertex_F1, MF_Replace_Vertex_F4, MF_Replace_Vertex_R1, 
  MF_Replace_Vertex_R2, MF_Replace_Vertex_R4};
+
+
+void MF_Insert_Vertex_F1(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v);
+void MF_Insert_Vertex_F4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v);
+void MF_Insert_Vertex_R1(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v);
+void MF_Insert_Vertex_R2(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v);
+void MF_Insert_Vertex_R4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v);
+void MF_Insert_Vertex_R3R4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v);
+static void 
+(*MF_Insert_Vertex_jmp[MSTK_MAXREP])(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) =
+{MF_Insert_Vertex_F1, MF_Insert_Vertex_F4, MF_Insert_Vertex_R1, 
+ MF_Insert_Vertex_R2, MF_Insert_Vertex_R4};
+
+void MF_Insert_Vertex_i_F1(MFace_ptr f, MVertex_ptr nuv, int i);
+void MF_Insert_Vertex_i_F4(MFace_ptr f, MVertex_ptr nuv, int i);
+void MF_Insert_Vertex_i_R1(MFace_ptr f, MVertex_ptr nuv, int i);
+void MF_Insert_Vertex_i_R2(MFace_ptr f, MVertex_ptr nuv, int i);
+void MF_Insert_Vertex_i_R4(MFace_ptr f, MVertex_ptr nuv, int i);
+void MF_Insert_Vertex_i_R3R4(MFace_ptr f, MVertex_ptr nuv, int i);
+static void 
+(*MF_Insert_Vertex_i_jmp[MSTK_MAXREP])(MFace_ptr f, MVertex_ptr nuv, int i) =
+{MF_Insert_Vertex_i_F1, MF_Insert_Vertex_i_F4, MF_Insert_Vertex_i_R1, 
+ MF_Insert_Vertex_i_R2, MF_Insert_Vertex_i_R4};
 
 int MF_Num_Vertices_F1(MFace_ptr f);
 int MF_Num_Vertices_F4(MFace_ptr f);
@@ -326,6 +349,7 @@ static MRegion_ptr (*MF_Region_jmp[MSTK_MAXREP])(MFace_ptr f, int side) =
 
 
 void MF_Dummy1(MFace_ptr f);
+void MF_Dummy2a(MFace_ptr f, int i);
 
 
 void MF_Set_RepType_F1(MFace_ptr f);
@@ -335,11 +359,17 @@ static void (*MF_Set_RepType_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Set_RepType_F1, MF_Set_RepType_F4, MF_Dummy1, MF_Dummy1,
  MF_Set_RepType_R4};
 
-void MF_Delete_F1(MFace_ptr f);
-void MF_Delete_F4(MFace_ptr f);
-void MF_Delete_R4(MFace_ptr f);
-static void (*MF_Delete_jmp[MSTK_MAXREP])(MFace_ptr f) = 
-{MF_Delete_F1, MF_Delete_F4, MF_Dummy1, MF_Dummy1, MF_Delete_R4};
+void MF_Delete_F1(MFace_ptr f, int keep);
+void MF_Delete_F4(MFace_ptr f, int keep);
+void MF_Delete_R4(MFace_ptr f, int keep);
+static void (*MF_Delete_jmp[MSTK_MAXREP])(MFace_ptr f, int keep) = 
+{MF_Delete_F1, MF_Delete_F4, MF_Dummy2a, MF_Dummy2a, MF_Delete_R4};
+
+void MF_Restore_F1(MFace_ptr f);
+void MF_Restore_F4(MFace_ptr f);
+void MF_Restore_R4(MFace_ptr f);
+static void (*MF_Restore_jmp[MSTK_MAXREP])(MFace_ptr f) = 
+{MF_Restore_F1, MF_Restore_F4, MF_Dummy1, MF_Dummy1, MF_Restore_R4};
 
 int MF_Num_AdjFaces_F1(MFace_ptr f);
 int MF_Num_AdjFaces_F4(MFace_ptr f);

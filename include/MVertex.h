@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
 
@@ -85,6 +86,7 @@ extern "C" {
   /*-------- Interface Declarations -----------*/
 
   MVertex_ptr MV_New(Mesh_ptr mesh);
+  void MV_Delete(MVertex_ptr mvertex, int keep);
   void MV_Set_Coords(MVertex_ptr mvertex, double *xyz);
   void MV_Set_GEntity(MVertex_ptr mvertex, GEntity_ptr gent);
   void MV_Set_GEntID(MVertex_ptr mvertex, int gid);

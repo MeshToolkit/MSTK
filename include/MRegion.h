@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
 
@@ -60,6 +61,7 @@ extern "C" {
 
 
   MRegion_ptr MR_New(Mesh_ptr mesh);
+  void MR_Delete(MRegion_ptr r, int keep);
   void MR_Set_GEntity(MRegion_ptr r, GEntity_ptr gent);
   void MR_Set_GEntID(MRegion_ptr r, int gid);
   void MR_Set_ID(MRegion_ptr r, int id);

@@ -1,6 +1,7 @@
 #ifndef _H_Mesh
 #define _H_Mesh
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
 

@@ -1,5 +1,6 @@
 #define _H_MEdge_Private
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "MEdge.h"
 
@@ -8,16 +9,22 @@ extern "C" {
 #endif
 
   void ME_Dummy1(MEdge_ptr e);
+  void ME_Dummy2(MEdge_ptr e, int i);
 
   void ME_Set_RepType_F1(MEdge_ptr e);
   void ME_Set_RepType_F4(MEdge_ptr e);
   static void (*ME_Set_RepType_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Set_RepType_F1, ME_Set_RepType_F4, ME_Dummy1, ME_Dummy1, ME_Dummy1};
 
-  void ME_Delete_F1(MEdge_ptr e);
-  void ME_Delete_F4(MEdge_ptr e);
-  static void (*ME_Delete_jmp[MSTK_MAXREP])(MEdge_ptr e) = 
-  {ME_Delete_F1, ME_Delete_F4, ME_Dummy1, ME_Dummy1, ME_Dummy1};
+  void ME_Delete_F1(MEdge_ptr e, int keep);
+  void ME_Delete_F4(MEdge_ptr e, int keep);
+  static void (*ME_Delete_jmp[MSTK_MAXREP])(MEdge_ptr e, int keep) = 
+  {ME_Delete_F1, ME_Delete_F4, ME_Dummy2, ME_Dummy2, ME_Dummy2};
+
+  void ME_Restore_F1(MEdge_ptr e);
+  void ME_Restore_F4(MEdge_ptr e);
+  static void (*ME_Restore_jmp[MSTK_MAXREP])(MEdge_ptr e) = 
+  {ME_Restore_F1, ME_Restore_F4, ME_Dummy1, ME_Dummy1, ME_Dummy1};
 
   int ME_Num_Faces_F1(MEdge_ptr e);
   int ME_Num_Faces_F4(MEdge_ptr e);

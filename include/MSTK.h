@@ -15,7 +15,7 @@ extern "C" {
 
 /*******************************************************************/
 
-void        MSTK_Init(void);
+void        MSTK_Init();
 
 /********************************************************************/
 /*        MESH OBJECT OPERATORS                                     */
@@ -53,7 +53,8 @@ void        MSTK_Init(void);
 /********************************************************************/
 
   MVertex_ptr MV_New(Mesh_ptr mesh);
-  void MV_Delete(MVertex_ptr mvertex);
+  void MV_Delete(MVertex_ptr mvertex, int keep);
+  void MV_Restore(MVertex_ptr mvertex);
   void MV_Set_RepType(MVertex_ptr mvertex, RepType reptype);
   void MV_Set_Coords(MVertex_ptr mvertex, double *xyz);
   void MV_Set_GEntity(MVertex_ptr mvertex, GEntity_ptr gent);
@@ -86,7 +87,8 @@ void        MSTK_Init(void);
 /********************************************************************/
 
   MEdge_ptr ME_New(Mesh_ptr mesh);
-  void ME_Delete(MEdge_ptr medge);
+  void ME_Delete(MEdge_ptr medge, int keep);
+  void ME_Restore(MEdge_ptr medge);
   void ME_Set_RepType(MEdge_ptr medge, RepType reptype);
   void ME_Set_GEntity(MEdge_ptr medge, GEntity_ptr gent);
   void ME_Set_GEntDim(MEdge_ptr medge, int gdim);
@@ -120,7 +122,8 @@ void        MSTK_Init(void);
 /*        MESH FACE OPERATORS                                       */
 /********************************************************************/
   MFace_ptr MF_New(Mesh_ptr mesh);
-  void MF_Delete(MFace_ptr mface);
+  void MF_Delete(MFace_ptr mface, int keep);
+  void MF_Restore(MFace_ptr mface);
   void MF_Set_RepType(MFace_ptr mface, RepType reptype);
   void MF_Set_GEntity(MFace_ptr mface, GEntity_ptr gent);
   void MF_Set_GEntDim(MFace_ptr mface, int gdim);
@@ -132,10 +135,12 @@ void        MSTK_Init(void);
   void MF_Set_Vertices(MFace_ptr mface, int n, MVertex_ptr *verts);
 
   /* Can be called by higher level mesh modification operators */
-  void MF_Replace_Edge(MFace_ptr mface, MEdge_ptr edge, MEdge_ptr nuedge, int dir);
+  void MF_Replace_Edge(MFace_ptr mface, MEdge_ptr edge, int nnu, MEdge_ptr *nuedges, int *nudirs);
   void MF_Replace_Vertex(MFace_ptr mface, MVertex_ptr mvertex, MVertex_ptr nuvertex);
-  void MF_Replace_Edge_i(MFace_ptr mface, int i, MEdge_ptr nuedge, int dir);
+  void MF_Replace_Edge_i(MFace_ptr mface, int i, int nnu, MEdge_ptr *nuedge, int *nudirs);
   void MF_Replace_Vertex_i(MFace_ptr mface, int i, MVertex_ptr nuvertex);
+  void MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
+  void MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
 
   Mesh_ptr MF_Mesh(MFace_ptr mf);
   int MF_ID(MFace_ptr mface);
@@ -165,7 +170,8 @@ void        MSTK_Init(void);
 /********************************************************************/
 
   MRegion_ptr MR_New(Mesh_ptr mesh);
-  void MR_Delete(MRegion_ptr mregion);
+  void MR_Delete(MRegion_ptr mregion, int keep);
+  void MR_Restore(MRegion_ptr mregion);
   void MR_Set_RepType(MRegion_ptr mregion, RepType reptype);
   void MR_Set_GEntity(MRegion_ptr mregion, GEntity_ptr gent);
   void MR_Set_GEntDim(MRegion_ptr mregion, int gdim);
@@ -215,10 +221,12 @@ void        MSTK_Init(void);
 
   int MEnt_ID(MEntity_ptr mentity);
   int MEnt_Dim(MEntity_ptr mentity);
+  int MEnt_OrigDim(MEntity_ptr mentity);
   Mesh_ptr MEnt_Mesh(MEntity_ptr mentity);
   int MEnt_GEntDim(MEntity_ptr mentity);
   GEntity_ptr MEnt_GEntity(MEntity_ptr mentity);
   
+  void MEnt_Delete(MEntity_ptr mentity, int keep);
 
   /************************************************************************/
   /* ENTITY MARKING                                                       */

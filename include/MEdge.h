@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
 
@@ -38,6 +39,7 @@ extern "C" {
 #endif
 
   MEdge_ptr ME_New(Mesh_ptr mesh);
+  void ME_Delete(MEdge_ptr medge, int keep);
   void ME_Set_GEntity(MEdge_ptr medge, GEntity_ptr gent);
   void ME_Set_GEntDim(MEdge_ptr medge, int gdim);
   void ME_Set_GEntID(MEdge_ptr medge, int gid);

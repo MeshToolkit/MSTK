@@ -1,5 +1,6 @@
 #define _H_MVertex_Private
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "MVertex.h"
 
@@ -18,13 +19,21 @@ extern "C" {
   {MV_Set_RepType_F1, MV_Set_RepType_F4, MV_Set_RepType_R1, 
    MV_Set_RepType_R2, MV_Set_RepType_R4};
 
-  void MV_Delete_F1(MVertex_ptr v);
-  void MV_Delete_F4(MVertex_ptr v);
-  void MV_Delete_R1(MVertex_ptr v);
-  void MV_Delete_R2(MVertex_ptr v);
-  void MV_Delete_R4(MVertex_ptr v);
-  static void (*MV_Delete_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  void MV_Delete_F1(MVertex_ptr v, int keep);
+  void MV_Delete_F4(MVertex_ptr v, int keep);
+  void MV_Delete_R1(MVertex_ptr v, int keep);
+  void MV_Delete_R2(MVertex_ptr v, int keep);
+  void MV_Delete_R4(MVertex_ptr v, int keep);
+  static void (*MV_Delete_jmp[MSTK_MAXREP])(MVertex_ptr v, int keep) = 
   {MV_Delete_F1, MV_Delete_F4, MV_Delete_R1, MV_Delete_R2, MV_Delete_R4};
+
+  void MV_Restore_F1(MVertex_ptr v);
+  void MV_Restore_F4(MVertex_ptr v);
+  void MV_Restore_R1(MVertex_ptr v);
+  void MV_Restore_R2(MVertex_ptr v);
+  void MV_Restore_R4(MVertex_ptr v);
+  static void (*MV_Restore_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  {MV_Restore_F1, MV_Restore_F4, MV_Restore_R1, MV_Restore_R2, MV_Restore_R4};
 
   int MV_Num_AdjVertices_F1(MVertex_ptr v);
   int MV_Num_AdjVertices_F4(MVertex_ptr v);

@@ -12,9 +12,14 @@ extern "C" {
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 
-  /*
-  void MSTK_Init();
-  */
+/* If MSTK_KEEP_DELETED is 1, then entities will only be marked as deleted */
+
+extern int MSTK_KEEP_DELETED;
+
+/* Don't want users to see this */
+
+typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-10} MDelType;
+
 
 /* THIS FILE HAS ADDITIONAL FUNCTIONS THAT THE NORMAL USER NEED NOT SEE */
 

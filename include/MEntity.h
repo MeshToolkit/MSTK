@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
 
@@ -28,9 +29,12 @@ extern "C" {
 
   int MEnt_ID(MEntity_ptr mentity);
   int MEnt_Dim(MEntity_ptr mentity);
+  int MEnt_OrigDim(MEntity_ptr mentity);
   Mesh_ptr MEnt_Mesh(MEntity_ptr mentity);
   int MEnt_GEntDim(MEntity_ptr mentity);
   GEntity_ptr MEnt_GEntity(MEntity_ptr mentity);
+
+  void MEnt_Delete(MEntity_ptr mentity, int keep);
 
   void MEnt_Mark(MEntity_ptr ent, int mkr);
   int  MEnt_IsMarked(MEntity_ptr ent, int mkr);
