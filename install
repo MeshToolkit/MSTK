@@ -1,0 +1,79 @@
+#!/bin/sh
+
+if [ "$1" == "" ]
+then
+  echo "USAGE: install version_number"
+  exit
+fi
+
+VER=$1
+
+ARCHOS=i686_linux
+
+INSTALLDIR=$HOME
+
+#----------- DO NOT EDIT BELOW THIS LINE --------------------------------------
+
+LIBDIR=./lib
+INCDIR=./include 
+
+if [ ! -d $INSTALLDIR/include ]
+then
+  mkdir -p $INSTALLDIR/include
+fi
+
+if [ ! -d $INSTALLDIR/lib/$ARCHOS ]
+then
+  mkdir -p $INSTALLDIR/lib/$ARCHOS
+fi
+
+ans=y
+if [ -f $INSTALLDIR/include/MSTK-$VER.h ]
+then
+  echo $INSTALLDIR/include/MSTK-$VER.h " exists!! Overwrite?"
+  read ans
+fi
+
+if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+then
+  cp $INCDIR/MSTK.h $INSTALLDIR/include/MSTK-$VER.h
+  if [ -f $INSTALLDIR/include/MSTK.h ]
+  then
+    rm $INSTALLDIR/include/MSTK.h
+  fi
+  ln -s $INSTALLDIR/include/MSTK-$VER.h $INSTALLDIR/include/MSTK.h
+fi
+
+ans=y
+if [ -f $INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a ]
+then
+  echo "$INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a exists!! Overwrite?"
+  read ans
+fi
+
+if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+then
+  cp $LIBDIR/$ARCHOS/libmstk.a $INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a
+  if [ -f $INSTALLDIR/lib/$ARCHOS/libmstk.a ]
+  then
+    rm  $INSTALLDIR/lib/$ARCHOS/libmstk.a
+  fi
+  ln -s $INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a $INSTALLDIR/lib/$ARCHOS/libmstk.a 
+fi
+
+ans=y
+if [ -f $INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a ]
+then
+  echo "$INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a exists!! Overwrite?"
+  read ans
+fi
+
+if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+then
+  cp $LIBDIR/$ARCHOS/libmstk-d.a $INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a
+  if [ -f $INSTALLDIR/lib/$ARCHOS/libmstk-d.a ]
+  then
+    rm  $INSTALLDIR/lib/$ARCHOS/libmstk-d.a
+  fi
+  ln -s $INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a $INSTALLDIR/lib/$ARCHOS/libmstk-d.a 
+fi
