@@ -18,16 +18,14 @@ extern "C" {
     MFace_ptr f;
     MEdge_ptr e;
     List_ptr fedges;
-    int i, j, nf, ne;
+    int i, j, idx, ne;
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
 
-    if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
+    if (MEnt_Dim(r) != MDELETED) { /* if regn hasnt been temporarily deleted */
       if (downadj) {
-	nf = List_Num_Entries(downadj->rfaces);
-	for (i = 0; i < nf; i++) {
-	  f = List_Entry(downadj->rfaces,i);
-	  
+	idx = 0;
+	while ((f = List_Next_Entry(downadj->rfaces,&idx))) {	  
 	  fedges = MF_Edges(f,1,0);
 	  ne = List_Num_Entries(fedges);
 	  for (j = 0; j < ne; j++) {
@@ -39,22 +37,12 @@ extern "C" {
       }
     }
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      r->dim = MDELREGION;
-    }
-    else {
-#ifdef DEBUG
-      r->dim = MDELREGION;
-#endif
-
+    if (!keep) {
       if (downadj) {
 	if (downadj->rfaces)
 	  List_Delete(downadj->rfaces);
 	MSTK_free(downadj);
       }
-      
-      MSTK_free(r);
     }
   }
 
@@ -63,18 +51,12 @@ extern "C" {
     MFace_ptr f;
     MEdge_ptr e;
     List_ptr fedges;
-    int i, j, nf, ne;
-
-    if (r->dim != MDELREGION)
-      return;
-
-    r->dim = MREGION;
+    int i, j, idx, ne;
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
 
-    nf = List_Num_Entries(downadj->rfaces);
-    for (i = 0; i < nf; i++) {
-      f = List_Entry(downadj->rfaces,i);
+    idx = 0;
+    while ((f = List_Next_Entry(downadj->rfaces,&idx))) {
 
       fedges = MF_Edges(f,1,0);
       ne = List_Num_Entries(fedges);
@@ -88,6 +70,10 @@ extern "C" {
 
   void MR_Destroy_For_MESH_Delete_F4(MRegion_ptr r) {
     MR_Destroy_For_MESH_Delete_FNR3R4(r);
+  }
+
+  int MR_Set_GInfo_Auto_F4(MRegion_ptr r) {
+    return MR_Set_GInfo_Auto_FNR3R4(r);
   }
 
   void MR_Set_Faces_F4(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
@@ -113,7 +99,7 @@ extern "C" {
   }
 
   List_ptr MR_Edges_F4(MRegion_ptr r) {
-    return MR_Edges_FNR3R4(r);
+    return MR_Edges_FN(r);
   }
 
   List_ptr MR_Faces_F4(MRegion_ptr r) {
@@ -161,7 +147,7 @@ extern "C" {
   }
 
   int MR_UsesEdge_F4(MRegion_ptr r, MEdge_ptr e) {
-    return MR_UsesEdge_FNR3R4(r,e);
+    return MR_UsesEdge_FN(r,e);
   }
 
   int MR_UsesVertex_F4(MRegion_ptr r, MVertex_ptr v) {

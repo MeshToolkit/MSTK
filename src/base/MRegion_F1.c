@@ -25,6 +25,10 @@ extern "C" {
     MR_Destroy_For_MESH_Delete_FNR3R4(r);
   }
 
+  int MR_Set_GInfo_Auto_F1(MRegion_ptr r) {
+    return MR_Set_GInfo_Auto_FNR3R4(r);
+  }
+
   void MR_Set_Faces_F1(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
     MR_Set_Faces_FNR3R4(r,nf,rfaces,dirs);
   }
@@ -48,7 +52,7 @@ extern "C" {
   }
 
   List_ptr MR_Edges_F1(MRegion_ptr r) {
-    return MR_Edges_FNR3R4(r);
+    return MR_Edges_FN(r);
   }
 
   List_ptr MR_Faces_F1(MRegion_ptr r) {
@@ -96,7 +100,7 @@ extern "C" {
   }
 
   int MR_UsesEdge_F1(MRegion_ptr r, MEdge_ptr e) {
-    return MR_UsesEdge_FNR3R4(r,e);
+    return MR_UsesEdge_FN(r,e);
   }
 
   int MR_UsesVertex_F1(MRegion_ptr r, MVertex_ptr v) {
