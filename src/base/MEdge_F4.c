@@ -103,7 +103,7 @@ extern "C" {
       ent = (MEntity_ptr) List_Entry(upadj->elements,i);
       dim = MEnt_Dim(ent);
       if (dim == MFACE) {
-	if (!MEnt_IsMarked(ent,j)) {
+	if (!MEnt_IsMarked(ent,mkr)) {
 	  MEnt_Mark(ent,mkr);
 	  List_Add(efaces,ent);
 	  nf++;
@@ -116,7 +116,7 @@ extern "C" {
 	for (j = 0; j < nrf; j++) {
 	  rface = List_Entry(rfaces,j);
 
-	  if (!MEnt_IsMarked(rface,j)) {
+	  if (!MEnt_IsMarked(rface,mkr)) {
 	    if (MF_UsesEntity(rface,e,1)) {
 	      MEnt_Mark(rface,mkr);
 	      List_Add(efaces,rface);
