@@ -13,32 +13,295 @@
 extern "C" {
 #endif
 
+
+  void MEnt_Init_CmnData(MEntity_ptr ent) {
+    ent->entdat = (MEntity_Data *) MSTK_malloc(sizeof(MEntity_Data));
+
+    ent->entdat->mesh = NULL;
+    ent->entdat->dim_id = 0;
+    ent->entdat->rtype_gdim_gid = 0;
+    ent->entdat->marker = 0;
+    ent->entdat->AttInsList = 0;
+  }
+
+  void MEnt_Free_CmnData(MEntity_ptr ent) {    
+    MEnt_Rem_AllAttVals(ent);
+    MSTK_free(ent->entdat);
+  }
+
+  void MEnt_Set_Mesh(MEntity_ptr ent, Mesh_ptr mesh) {
+    ent->entdat->mesh = mesh;
+  }
+
+  Mesh_ptr MEnt_Mesh(MEntity_ptr ent) {
+    return ent->entdat->mesh;
+  }
+
+
+  /* The first bit (from the right) in ent->dim_id contains flag
+     indicating if the entity is alive or deleted. Bit 2 indicates if
+     the entity is temporary/volatile or permanent (edges in all
+     reduced representations are temporary).Bits 3,4,5 combined
+     contain the dimension of the entity. If this number is greater
+     than or equal to 4, it means the dimension of the entity is
+     undefined. The rest of the bits encode the entity ID. Since this
+     is an unsigned int (32 bits), the max ID can be 2^(32-5)-1 =
+     134217727 (approx. 134.2 million entities of each type) */
+
+
+  /* MESH ENTITY ID */
+
+  void MEnt_Set_Dim(MEntity_ptr ent, int dim) {
+    unsigned int data = ent->entdat->dim_id;
+
+    if (dim == MDELETED)
+      data = data | 1; /* Set the first bit to 1 */
+    else {
+      /* zero out bits 3,4,5 by bitwise AND with inverse of 0...011100 (28) */
+      data = (data & ~28); 
+      data = (data | dim<<2); /* set bits 3,4,5 */
+    }
+
+    ent->entdat->dim_id = data;
+  }
+
   MType MEnt_Dim(MEntity_ptr ent) {
-    if (ent->dim < 0)
+    int del_flag=0, dim=0;
+    unsigned int data = ent->entdat->dim_id;
+
+    del_flag = data & 1; /* check the first bit */
+    if (del_flag)
       return MDELETED;
+    
+    dim = (data >> 2) & 7; /* check bits 2,3 and 4 */
+    if (dim <= 3)
+      return dim;
     else
-      return ent->dim;
+      return MUNKNOWNTYPE;
+  }
+
+  void MEnt_Set_Volatile(MEntity_ptr ent) {
+    unsigned int data = ent->entdat->dim_id;
+
+    data = data | 2; /* 2 is 0000.....00010, i.e. second bit is 1 */
+  }
+
+  int MEnt_IsVolatile(MEntity_ptr ent) {
+    unsigned int data = ent->entdat->dim_id;
+    
+    return (data & 2);
   }
 
   MType MEnt_OrigDim(MEntity_ptr ent) {
-    if (ent->dim < 0)
-      return -(ent->dim/10)-1;
-    else {
-      MSTK_Report("MEnt_OrigDim","This is not a deleted entity",WARN);
-      return (ent->dim);
-    }
+    int del_flag=0, dim=0;
+    unsigned int data = ent->entdat->dim_id;
+
+    del_flag = data & 1;
+    dim = (data>>2) & 7;
+
+    if (!del_flag)
+      MSTK_Report("MEnt_OrigDim","This is not a deleted entity",WARN);    
+
+    if (dim <= 3)
+      return dim;
+    else 
+      return MUNKNOWNTYPE;
   }	
 
-  int MEnt_ID(MEntity_ptr ent) {
-    return (ent->id);
+
+
+  /* MESH ENTITY ID */
+
+  void MEnt_Set_ID(MEntity_ptr ent, int id) {
+    unsigned int data = ent->entdat->dim_id;
+
+    if (id > 134217727 )
+      MSTK_Report("MEnt_SetID","ID too large",WARN);
+
+    /* Zero out all but the first 5 bits by bitwise AND with 0..11111 (31) */
+    data = (data & 31);
+    
+    /* Set the ID */
+    data = (data | (id<<5));
+
+    ent->entdat->dim_id = data;
   }
+
+
+  int MEnt_ID(MEntity_ptr ent) {
+    unsigned int data = ent->entdat->dim_id;
+    return (data>>5);
+  }
+
+
+
+
+  /* The first 4 bits (from the right) in ent->reptype_gdim_gid encode
+     the representation type (maximum of 14; 15, i.e., 1111 is
+     reserved to indicate that it is an unknown representation). The
+     next 3 bits from the right contain the dimension of the geometric
+     model entity that the mesh entity is classified on. If this
+     number is greater than 3 (specifically 7 or binary 111), then the
+     dimension of the geometric entity is unknown. The rest of the
+     bits are reserved for the ID of the geometric model entity */
+
+  /* MESH ENTITY REPRESENTATION TYPE */
+
+  void MEnt_Set_RepType_Data(MEntity_ptr ent, RepType rtype) {
+    unsigned int data = ent->entdat->rtype_gdim_gid;
+
+    /* first zero out the first four bits */
+    data = data & ~(15);
+
+    if (rtype == UNKNOWN_REP) 
+      data = data | 15; /* Set the first 4 bits to 1 */
+    else
+      data = data | rtype;
+
+    ent->entdat->rtype_gdim_gid = data;
+  }
+
+  void MEnt_Set_RepType(MEntity_ptr ent, RepType rtype) {
+    unsigned int dim, data = ent->entdat->dim_id;
+
+    /* Get the dimension of the entity */
+
+    dim = (data>>1) & 7;
+
+    switch (dim) {
+    case MVERTEX:
+      MV_Set_RepType(ent,rtype);
+      break;
+    case MEDGE:
+      ME_Set_RepType(ent,rtype);
+      break;
+    case MFACE:
+      MF_Set_RepType(ent,rtype);
+      break;
+    case MREGION:
+      MR_Set_RepType(ent,rtype);
+      break;
+    default:
+      break;
+    }
+  }
+
+  RepType MEnt_RepType(MEntity_ptr ent) {
+    int rtype=0;
+    unsigned int data = ent->entdat->rtype_gdim_gid;
+
+    rtype = data & 15;
+    
+    if (rtype == 15)
+      return UNKNOWN_REP;
+    else
+      return rtype;
+  }
+
+
+
+  /* MODEL ENTITY DIMENSION */
+
+  void MEnt_Set_GEntDim(MEntity_ptr ent, int gdim) {
+    unsigned int data = ent->entdat->rtype_gdim_gid;
+
+    /* zero out bits 5,6,7 by doing a bitwise AND with inverse of
+       0...01110000 (7<<4) */
+
+    data = data & ~(7<<4);  
+
+    /* now set these bits to the model entity dimension */
+
+    if (gdim <= 3)
+      data = data | (gdim<<4);
+    else
+      data = data | (7<<4);  /* set all 3 bits to 1 */
+
+    ent->entdat->rtype_gdim_gid = data;
+  }
+    
+
+  int MEnt_GEntDim(MEntity_ptr ent) {
+    int gdim=0;
+    unsigned int data = ent->entdat->rtype_gdim_gid;
+
+    gdim = (data>>4) & 7;
+
+    if (gdim <= 3)
+      return gdim;
+    else
+      return 4; /* Code for unknown type */
+  }
+
+
+  /* MODEL ENTITY ID */
+
+  void MEnt_Set_GEntID(MEntity_ptr ent, int gid) {
+    unsigned int data = ent->entdat->rtype_gdim_gid;
+
+    /* first zero out all bits higher than the 7th bit by performing a
+       bitwise AND with 127 (0...01111111) */
+    data = data & 127;
+
+    if (gid == -1)
+      data = data | ~(127); /* all bits higher than 7 are 1 */
+    else
+      data = data | (gid<<7);
+    
+    ent->entdat->rtype_gdim_gid = data;
+  }
+
+  int MEnt_GEntID(MEntity_ptr ent) {
+    unsigned int data = ent->entdat->rtype_gdim_gid;
+    return (data>>7);
+  }
+
+  /* MODEL ENTITY PTR - We won't store it explicitly */
+  
+  void MEnt_Set_GEntity(MEntity_ptr ent, GEntity_ptr gent) {
+    /* When we have the appropriate functions we should set GEntDim
+       and GEntID using this info */
+  }
+
+  GEntity_ptr MEnt_GEntity(MEntity_ptr ent) {
+    /* When we have the appropriate fucntions we should get GEntity
+       from the GEntDim and GEntID info */
+
+    return NULL;
+  }
+
+
+
+  /* ENTITY DELETION */
+
+  /* Mark an entity as deleted */
+
+  void MEnt_Set_DelFlag(MEntity_ptr ent) {
+
+    /* Set first bit to 1 to indicate that this is a deleted entity */    
+
+    ent->entdat->dim_id = ent->entdat->dim_id | 1;
+  }
+    
+  /* Mark an entity as undeleted or restored or alive */
+
+  void MEnt_Rem_DelFlag(MEntity_ptr ent) {
+
+    /* Set first bit to 0 to indicate that this is a valid entity */    
+
+    ent->entdat->dim_id = ent->entdat->dim_id & 0;
+  }
+    
+
+  /* Delete an entity */
 
   void MEnt_Delete(MEntity_ptr ent, int keep) {
     MType dim;
+    unsigned int data = ent->entdat->dim_id;
 
-    dim = MEnt_Dim(ent);
-    if (dim < 0)
-      dim = MEnt_OrigDim(ent);
+    /* Get the dimension of the entity */
+
+    dim = (data>>1) & 7;
 
     switch (dim) {
     case MVERTEX:
@@ -58,26 +321,34 @@ extern "C" {
     }
   }
 
+
+
+
+  /* ENTITY MARKERS */
+
+
   int MEnt_IsMarked(MEntity_ptr ent, int markerID) {
-    return (ent->marker & 1<<(markerID-1));
+    return (ent->entdat->marker & 1<<(markerID-1));
   }
 
   void MEnt_Mark(MEntity_ptr ent, int markerID) {
 #ifdef DEBUG
-    if (ent->dim < MVERTEX && ent->dim > MREGION)
+    int dim = MEnt_Dim(ent);
+    if (dim < MVERTEX && dim > MREGION)
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",ERROR);
 #endif
 
-    ent->marker = ent->marker | 1<<(markerID-1);
+    ent->entdat->marker = ent->entdat->marker | 1<<(markerID-1);
   }
 
   void MEnt_Unmark(MEntity_ptr ent, int markerID) {
 #ifdef DEBUG
-    if (ent->dim < MVERTEX && ent->dim > MREGION)
+    int dim = MEnt_Dim(ent);
+    if (dim < MVERTEX && dim > MREGION)
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",ERROR);
 #endif
 
-    ent->marker = ent->marker & ~(1<<(markerID-1));
+    ent->entdat->marker = ent->entdat->marker & ~(1<<(markerID-1));
   }
 
   void List_Mark(List_ptr list, int markerID) {
@@ -101,8 +372,16 @@ extern "C" {
   }
 
 
+
+
+
+  /* ATTRIBUTES */
+
+
   /* Set value of attribute */
-  void MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, double lval, void *pval) {
+
+  void MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
+		       double lval, void *pval) {
     int idx, found;
     MType attentdim, entdim;
     MAttIns_ptr attins;
@@ -114,10 +393,10 @@ extern "C" {
     if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
 	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
 
-      if (!ent->AttInsList)
-	ent->AttInsList = List_New(3);
+      attinslist = ent->entdat->AttInsList;
+      if (!attinslist)
+	ent->entdat->AttInsList = attinslist = List_New(3);
       
-      attinslist = ent->AttInsList;
       idx = 0; found = 0;
       while ((attins = List_Next_Entry(attinslist,&idx))) {
 	if (MAttIns_Attrib(attins) == attrib) {
@@ -128,7 +407,7 @@ extern "C" {
       
       if (!found) {
 	attins = MAttIns_New(attrib);
-	List_Add(attinslist,attins);
+	attinslist = List_Add(attinslist,attins);
       }
       
       MAttIns_Set_Value(attins, ival, lval, pval);
@@ -139,6 +418,7 @@ extern "C" {
   }
 
   /* Clear value of attribute */
+
   void MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
     int i, idx, found;
     MType attentdim, entdim;
@@ -151,10 +431,10 @@ extern "C" {
     if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
 	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
 
-      if (!ent->AttInsList)
+      attinslist = ent->entdat->AttInsList;
+      if (!attinslist)
 	return;
     
-      attinslist = ent->AttInsList;
       idx = 0; i = 0; found = 0;
       while ((attins = List_Next_Entry(attinslist,&idx))) {
 	if (MAttIns_Attrib(attins) == attrib) {
@@ -171,17 +451,37 @@ extern "C" {
       List_Remi(attinslist,i);
       MAttIns_Delete(attins);
     }
-    else {
-      MSTK_Report("MEnt_Rem_AttVal",
-		  "Attribute not suitable for this entity type",ERROR);
+    else
       return;
-    }
  
+  }
+
+  /* Clear value of attribute */
+
+  void MEnt_Rem_AllAttVals(MEntity_ptr ent) {
+    int i, idx, found;
+    MAttrib_ptr attrib;
+    MType attentdim, entdim;
+    MAttIns_ptr attins;
+    List_ptr attinslist;
+    
+    attinslist = ent->entdat->AttInsList;
+    if (!attinslist)
+      return;
+    
+    idx = 0;
+    while ((attins = List_Next_Entry(attinslist,&idx)))
+      MAttIns_Delete(attins);
+    List_Delete(attinslist);
+
+    ent->entdat->AttInsList = NULL;
   }
 
 
   /* Query the value of the attribute */
-  int MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, double *lval, void **pval) {
+
+  int MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
+		      double *lval, void **pval) {
     int idx, found;
     MType attentdim, entdim;
     MAttIns_ptr attins;
@@ -197,10 +497,10 @@ extern "C" {
     if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
 	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
 
-      if (!ent->AttInsList)
+      attinslist = ent->entdat->AttInsList;
+      if (!attinslist)
 	return 0;
       
-      attinslist = ent->AttInsList;
       idx = 0; found = 0;
       while ((attins = List_Next_Entry(attinslist,&idx))) {
 	if (MAttIns_Attrib(attins) == attrib) {
@@ -216,11 +516,8 @@ extern "C" {
 
       return 1;
     }
-    else {
-      MSTK_Report("MEnt_Get_AttVal",
-		  "Attribute not suitable for this entity type",ERROR);
+    else
       return 0;
-    }
 
   }
   
