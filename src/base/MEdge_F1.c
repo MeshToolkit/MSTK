@@ -13,43 +13,30 @@ extern "C" {
     MEdge_UpAdj_F1 *upadj;
 
     upadj = e->upadj = (MEdge_UpAdj_F1 *) MSTK_malloc(sizeof(MEdge_UpAdj_F1));
-    upadj->nf = 0;
-    upadj->efaces = List_New(10);
+    upadj->efaces = List_New(2);
   }
 
   void ME_Delete_F1(MEdge_ptr e, int keep) {
     MEdge_UpAdj_F1 *upadj;
 
-    if (e->dim != MDELEDGE) { /* if edge has not been temporarily deleted */
+    if (MEnt_Dim(e) != MDELETED) { /* if edge hasnt been temporarily deleted */
       MV_Rem_Edge(e->vertex[0],e);
       MV_Rem_Edge(e->vertex[1],e);
     }
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      e->dim = MDELEDGE;
-    }
-    else {
-#ifdef DEBUG
-      e->dim = MDELEDGE;
-#endif
-
+    if (!keep) {
       upadj = (MEdge_UpAdj_F1 *) e->upadj;
       if (upadj) {
 	if (upadj->efaces)
 	  List_Delete(upadj->efaces);
 	MSTK_free(upadj);
       }
-      
-      MSTK_free(e);
     }
   }
 
   void ME_Restore_F1(MEdge_ptr e) {
-    if (e->dim != MDELEDGE)
-      return;
 
-    e->dim = MEDGE;
+    MEnt_Set_Dim(e,MEDGE);
     MV_Add_Edge(e->vertex[0],e);
     MV_Add_Edge(e->vertex[1],e);
   }
@@ -63,12 +50,11 @@ extern "C" {
 	List_Delete(upadj->efaces);
       MSTK_free(upadj);
     }
-      
-    MSTK_free(e);
   }
 
   int ME_Num_Faces_F1(MEdge_ptr e) {
-    return ((MEdge_UpAdj_F1 *)e->upadj)->nf;
+    List_ptr efaces = ((MEdge_UpAdj_F1 *)e->upadj)->efaces;
+    return List_Num_Entries(efaces);
   }
 
   int ME_Num_Regions_F1(MEdge_ptr e) {
@@ -89,22 +75,27 @@ extern "C" {
   }
 
   List_ptr ME_Faces_F1(MEdge_ptr e) {
-    return List_Copy(((MEdge_UpAdj_F1 *)e->upadj)->efaces);
+    List_ptr efaces = ((MEdge_UpAdj_F1 *)e->upadj)->efaces; 
+    if (efaces && List_Num_Entries(efaces))
+      return List_Copy(efaces);
+    else
+      return NULL;
   }
 
   List_ptr ME_Regions_F1(MEdge_ptr e) {
     MEdge_UpAdj_F1 *upadj; 
-    int i, j, nr, mkr;
+    int i, j, nr, nf, mkr;
     List_ptr eregs;
     MFace_ptr eface;
     MRegion_ptr freg;
  
     upadj = (MEdge_UpAdj_F1 *) e->upadj;
-    nr = 0;
-    eregs = List_New(10);
+    nf = List_Num_Entries(upadj->efaces);
+    eregs = List_New(nf);
+   
     mkr = MSTK_GetMarker();
-
-    for (i = 0; i < upadj->nf; i++) {
+    nr = 0;
+    for (i = 0; i < nf; i++) {
       eface = List_Entry(upadj->efaces,i);
 
       for (j = 0; j < 2; j++) {
@@ -136,7 +127,6 @@ extern "C" {
     if (upadj->efaces == NULL)
       upadj->efaces = List_New(10);
     List_Add(upadj->efaces,f);
-    (upadj->nf)++;
   }
 
   void ME_Rem_Face_F1(MEdge_ptr e, MFace_ptr f) {
@@ -145,8 +135,7 @@ extern "C" {
 
     upadj = (MEdge_UpAdj_F1 *) e->upadj;
 
-    ok = List_Rem(upadj->efaces,f);
-    if (ok) (upadj->nf)--;
+    List_Rem(upadj->efaces,f);
   }
 
   void ME_Add_Region_F1(MEdge_ptr e, MRegion_ptr r) {
