@@ -25,9 +25,9 @@ extern "C" {
     MFace_ptr f;
     int i, nf;
 
-    if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
       downadj = (MRegion_DownAdj_FN *) r->downadj;
       
+    if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
       nf = List_Num_Entries(downadj->rfaces);
       for (i = 0; i < nf; i++) {
 	f = List_Entry(downadj->rfaces,i);
@@ -119,10 +119,10 @@ extern "C" {
   }
 
   List_ptr MR_Vertices_FNR3R4(MRegion_ptr r) {
-    int i, j, n, mkr, found, diradj0, diropp, edir, fdir;
+    int i, j, n, mkr, found, diradj0=0, diropp=0, edir, fdir;
     MFace_ptr face, fadj0, fopp;
     MEdge_ptr edge;
-    MVertex_ptr vert, rv0, rvopp0;
+    MVertex_ptr vert, rv0, rvopp0=NULL;
     List_ptr rvertices, fverts, fedges;
     MRegion_DownAdj_FN *downadj;
 
@@ -427,8 +427,8 @@ extern "C" {
     MRegion_DownAdj_FN *downadj;
     MFace_ptr f;
 
-    f = List_Entry(downadj->rfaces,i);
     downadj = (MRegion_DownAdj_FN *) r->downadj;
+    f = List_Entry(downadj->rfaces,i);
     downadj->fdirs = (downadj->fdirs & ~(1<<i)); /* set bit i to 0 */
     downadj->fdirs = (downadj->fdirs | (nudir<<i)); /* set to nudir*/
     List_Replacei(downadj->rfaces,i,nuf);
