@@ -15,18 +15,18 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
   MEdge_ptr fedges[MAXPV3*2], me, *vedge=NULL;
   MVertex_ptr vtx[MAXPV3], mv;
   int **rfv_template=NULL;
-  int i, j, k, k1, ic, nnodes, nvtx, nrf, nfe, vid, evid[2];
-  int status, pnum, opp_pnum, matinfo=0, onwhat;
+  int i, j, k, k1, ic, nnodes=0, nvtx, nrf, nfe, vid, evid[2];
+  int status, pnum, opp_pnum, matinfo=0, onwhat, ival;
   int rfdirs[MAXPF3], fedirs[MAXPV2], *vfdir=NULL, *vedir=NULL, fid, opp_fid;
-  int done, found, ncells, edgnum, fcnum, num_faces, ileft, iright;
+  int done, found, ncells=0, edgnum, fcnum, num_faces=0, ileft, iright;
   int **vface2d_data=NULL, **vface3d_data=NULL, vface2d=0, vface3d=0;
-  int cells_present=0, faces_present=0, non_vface_cells=0;
+  int cells_present=0, faces_present=0, non_vface_cells=0, nodes_read=0;
   double (*xyzarr)[3], xyz[3];
-  char temp_str[256], cell_str[256], data_type[256];
+  char temp_str[256], cell_str[256], data_type[256], mesg_str[256];;
 
   int ftmpl[2][4] = {{0,1,2,-1},{0,1,2,3}};
-  int rtmpl[5][8] = {{3,0,1,2,-1,-1,-1,-1},
-		     {4,0,1,2,3,-1,-1,-1},
+  int rtmpl[5][8] = {{0,2,1,3,-1,-1,-1,-1},
+		     {1,2,3,4,0,-1,-1,-1},
 		     {3,4,5,0,1,2,-1,-1},
 		     {-1,-1,-1,-1,-1,-1,-1,-1},  /* dummy 7 node element */
 		     {4,5,6,7,0,1,2,3}};
@@ -64,104 +64,12 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
   
 
 
-  status = fscanf(fp,"%s",temp_str);
-  if (status == EOF) {
-    MSTK_Report("MESH_ImportFromGMV",
-		"Premature end of file while looking for node data",
-		ERROR);
-    return 0;
-  }
 
 
-  /* READ COMMENTS IF THEY EXIST */
-
-  if (strcmp(temp_str,"comments") == 0) {
-    do {
-      status = fscanf(fp,"%s",temp_str);
-      if (status == EOF) {
-	MSTK_Report("MESH_ImportFromGMV",
-		    "Premature end of file while reading comments",
-		    ERROR);
-	return 0;
-      }
-    }
-    while (strcmp(temp_str,"endcomm") != 0);
-
-    status = fscanf(fp,"%s",temp_str);
-    if (status == EOF) {
-      MSTK_Report("MESH_ImportFromGMV",
-		  "Premature end of file while reading comments",
-		  ERROR);
-      return 0;
-    }
-  }
-
-
-
-  /* READ NODES */
-
-  if (strcmp(temp_str,"nodes") == 0) {
-    status = fscanf(fp,"%d",&nnodes);
-    if (status == EOF) {
-      MSTK_Report("MESH_ImportFromGMV",
-		  "Premature end of file while reading nodes",ERROR);
-      return 0;
-    }
-
-    xyzarr = (double (*)[3]) malloc(nnodes*sizeof(double [3]));
-
-    for (j = 0; j < 3; j++) 
-      for (i = 0; i < nnodes; i++) {
-	status = fscanf(fp,"%lf",&(xyzarr[i][j]));
-	if (status == EOF) {
-	  MSTK_Report("MESH_ImportFromGMV",
-		      "Premature end of file while reading nodes",ERROR);
-	  return 0;
-	}
-      }
-
-    for (i = 0; i < nnodes; i++) {
-      mv = MV_New(mesh);
-      MV_Set_Coords(mv,xyzarr[i]);
-
-      MV_Set_ID(mv,i+1);
-    }
-
-    free(xyzarr);
-  }
-  else if (strcmp(temp_str,"nodev") == 0) {
-    status = fscanf(fp,"%d",&nnodes);
-    if (status == EOF) {
-      MSTK_Report("MESH_ImportFromGMV",
-		  "Premature end of file while reading nodes",ERROR);
-      return 0;
-    }
-
-    for (i = 0; i < nnodes; i++) {
-      status = fscanf(fp,"%lf %lf %lf",&(xyz[0]),&(xyz[1]),&xyz[2]);
-      if (status == EOF) {
-	MSTK_Report("MESH_ImportFromGMV","Premature end of file",ERROR);
-	return 0;
-      }
-
-      mv = MV_New(mesh);
-      MV_Set_Coords(mv,xyz);
-
-      MV_Set_ID(mv,i+1);
-    }
-  }
-  else {
-    MSTK_Report("MESH_ImportFromGMV","Expect node info first",ERROR);
-    fclose(fp);
-    return 0;
-  }
-
-
-  
   /* READ THE REST OF THE FILE */
 
 
-  done = 0;
+  done = 0; 
   while (!done) {
     status = fscanf(fp,"%s",temp_str);
     if (status == EOF)
@@ -169,7 +77,81 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 		  WARN);
 
 
-    if (strcmp(temp_str,"cells") == 0) {
+    /* READ COMMENTS IF THEY EXIST */
+    
+    if (strcmp(temp_str,"comments") == 0) {
+      do {
+	status = fscanf(fp,"%s",temp_str);
+	if (status == EOF) {
+	  MSTK_Report("MESH_ImportFromGMV",
+		      "Premature end of file while reading comments",
+		      ERROR);
+	  return 0;
+	}
+      }
+      while (strcmp(temp_str,"endcomm") != 0);
+    }
+    else if (strcmp(temp_str,"nodes") == 0) {
+
+      /* READ NODES */
+
+      status = fscanf(fp,"%d",&nnodes);
+      if (status == EOF) {
+	MSTK_Report("MESH_ImportFromGMV",
+		    "Premature end of file while reading nodes",ERROR);
+	return 0;
+      }
+      
+      xyzarr = (double (*)[3]) malloc(nnodes*sizeof(double [3]));
+      
+      for (j = 0; j < 3; j++) 
+	for (i = 0; i < nnodes; i++) {
+	  status = fscanf(fp,"%lf",&(xyzarr[i][j]));
+	  if (status == EOF) {
+	    MSTK_Report("MESH_ImportFromGMV",
+			"Premature end of file while reading nodes",ERROR);
+	    return 0;
+	  }
+	}
+      
+      for (i = 0; i < nnodes; i++) {
+	mv = MV_New(mesh);
+	MV_Set_Coords(mv,xyzarr[i]);
+	
+	MV_Set_ID(mv,i+1);
+      }
+      
+      free(xyzarr);
+
+      nodes_read = 1;
+    }
+    else if (strcmp(temp_str,"nodev") == 0) {
+
+      /* READ NODES */
+
+      status = fscanf(fp,"%d",&nnodes);
+      if (status == EOF) {
+	MSTK_Report("MESH_ImportFromGMV",
+		    "Premature end of file while reading nodes",ERROR);
+	return 0;
+      }
+      
+      for (i = 0; i < nnodes; i++) {
+	status = fscanf(fp,"%lf %lf %lf",&(xyz[0]),&(xyz[1]),&xyz[2]);
+	if (status == EOF) {
+	  MSTK_Report("MESH_ImportFromGMV","Premature end of file",ERROR);
+	  return 0;
+	}
+	
+	mv = MV_New(mesh);
+	MV_Set_Coords(mv,xyz);
+	
+	MV_Set_ID(mv,i+1);
+      }
+
+      nodes_read = 1;
+    }
+    else if (strcmp(temp_str,"cells") == 0) {
 
       /* READ CELLS */
       
@@ -179,6 +161,10 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 		    WARN);
 
       cells_present = 1;
+
+      if (!nodes_read) 
+	MSTK_Report("MESH_ImportFromGMV","Nodes must precede cells",ERROR);
+
 
       status = fscanf(fp,"%d",&ncells);
       if (status == EOF) {
@@ -479,6 +465,10 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
     }
     else if (strcmp(temp_str,"vfaces") == 0) {
 
+      if (!nodes_read)
+	MSTK_Report("MESH_ImportFromGMV",
+		    "Nodes must precede vfaces",ERROR);
+
       /* EDGE/FACE DEFINITION FOR VFACE2D/VFACE3D */
       
       status = fscanf(fp,"%d",&num_faces);
@@ -616,6 +606,9 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
     }
     else if (strcmp(temp_str,"faces") == 0) {
 
+      if (!nodes_read)
+	MSTK_Report("MESH_ImportFromGMV","Nodes must precede faces",ERROR);
+
       /* POLYGONAL FACES */
 
       if (cells_present) {
@@ -712,9 +705,14 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
       }
 
     }
-    else if (strcmp(temp_str,"material") == 0) {
+    else if (strncmp(temp_str,"material",8) == 0) {
       int nmats, matnum;
       char matname[10];
+
+      if (strcmp(temp_str,"material") != 0) {
+        sprintf(mesg_str,"Keyword should be 'material' not '%s'. Accepting for now...",temp_str);
+        MSTK_Report("MESH_ImportFromGMV",mesg_str,ERROR);
+      }
 
       matinfo = 1;
 
@@ -782,13 +780,21 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	MSTK_Report("MESH_ImportFromGMV","Unrecognized entity for material IDs",ERROR);
       }
     }
-    else if (strcmp(temp_str,"velocities") == 0) {
+    else if (strncmp(temp_str,"velocit",7) == 0) {
+      if (strcmp(temp_str,"velocity") != 0) {
+        sprintf(mesg_str,"Keyword should be 'velocity' not '%s'. Accepting for now...",temp_str);
+        MSTK_Report("MESH_ImportFromGMV",mesg_str,ERROR);
+      }
     }
-    else if (strcmp(temp_str,"variable") == 0) {
-      int varsdone, ival;
+    else if (strncmp(temp_str,"variable",8) == 0) {
+      int varsdone;
       MAttrib_ptr matt;
       double rval;
       
+      if (strcmp(temp_str,"variable") != 0) {
+        sprintf(mesg_str,"Keyword should be 'variable' not '%s'. Accepting for now...",temp_str);
+        MSTK_Report("MESH_ImportFromGMV",mesg_str,ERROR);
+      }
 
       varsdone = 0;
       while (!varsdone) {
@@ -1009,10 +1015,19 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
     else if (strcmp(temp_str,"endgmv") == 0) 
       done = 1;
     else if (strcmp(temp_str,"nodeids") == 0) {
+      MSTK_Report("MESH_ImportFromGMV","Separate Nodeids found. Ignoring",WARN);
+      for (i = 0; i < nnodes; i++)
+	status = fscanf(fp,"%d",&ival);
     }
     else if (strcmp(temp_str,"cellids") == 0) {
+      MSTK_Report("MESH_ImportFromGMV","Separate Nodeids found. Ignoring",WARN);
+      for (i = 0; i < ncells; i++)
+	status = fscanf(fp,"%d",&ival);
     }
     else if (strcmp(temp_str,"faceids") == 0) {
+      MSTK_Report("MESH_ImportFromGMV","Separate Nodeids found. Ignoring",WARN);
+      for (i = 0; i < num_faces; i++)
+	status = fscanf(fp,"%d",&ival);
     }
     else {
       MSTK_Report("MESH_ImportFromGMV","Unrecognized keyword",ERROR);
