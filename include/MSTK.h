@@ -23,8 +23,8 @@ void        MSTK_Init(void);
 
   Mesh_ptr   MESH_New(RepType type);
   void       MESH_Delete(Mesh_ptr mesh);
-  int        MESH_InitFromFile(Mesh_ptr mesh, char *filename);
-  void       MESH_WriteToFile(Mesh_ptr mesh, char *filename);
+  int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
+  void       MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
 
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);

@@ -299,7 +299,7 @@ int  MESH_ChangeRepType(Mesh_ptr mesh, RepType nureptype){
 }
 
 /* File name should have the .msk extension - will not check here */
-int MESH_InitFromFile(Mesh_ptr mesh, char *filename) {
+int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   FILE *fp;
   char inp_rtype[16], temp_str[256], fltype_str[16], rltype_str[16];
   int i, j, found, NV, NE, NF, NR, nav, nar, gdim, gid;
@@ -708,7 +708,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, char *filename) {
   return 1;
 }
 
-void MESH_WriteToFile(Mesh_ptr mesh, char *filename) {
+void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   FILE *fp;
   char mesg[80];
   int i, j;
