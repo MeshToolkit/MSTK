@@ -27,8 +27,9 @@ extern "C" {
     int i, nvadj;
     MVertex_ptr adjv;
 
+    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+
     if (v->dim != MDELVERTEX) { /* if vertex has not been temporarily deleted*/
-      sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
       nvadj = sameadj->nvadj;
       for (i = 0; i < nvadj; i++) {
 	adjv = List_Entry(sameadj->adjverts,i);
