@@ -1,5 +1,8 @@
 
-ARCHOS := $(shell ($(HOME)/bin/getarch))
+# For now we are just compiling on i686_linux
+#ARCHOS := $(shell ($(HOME)/bin/getarch))
+
+ARCHOS = i686_linux
 
 ifeq ($(ARCHOS),i686_linux)
   CC = gcc
