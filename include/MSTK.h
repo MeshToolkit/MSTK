@@ -8,6 +8,7 @@ extern "C" {
   /* #include "gmtk.h" */
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
+#include "MSTK_externs.h"
 #include "MSTK_util.h"
 #include "List.h"
 #include "MSTK_malloc.h"
@@ -113,6 +114,7 @@ void        MSTK_Init();
   void ME_Set_GEntity(MEdge_ptr medge, GEntity_ptr gent);
   void ME_Set_GEntDim(MEdge_ptr medge, int gdim);
   void ME_Set_GEntID(MEdge_ptr medge, int gid);
+  int  ME_Set_GInfo_Auto(MEdge_ptr medge);
   void ME_Set_ID(MEdge_ptr medge, int id);
 
   void ME_Set_Vertex(MEdge_ptr medge, int i, MVertex_ptr vertex);
@@ -132,11 +134,13 @@ void        MSTK_Init();
   List_ptr ME_Regions(MEdge_ptr medge);
 
 
-  MEdge_ptr MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2);
+  MEdge_ptr MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2);  
 
   double ME_Len(MEdge_ptr e);
   double ME_LenSqr(MEdge_ptr e);
   void   ME_Vec(MEdge_ptr e, double *evec);
+
+  int MEs_AreSame(MEdge_ptr e1, MEdge_ptr e2);
 
 /********************************************************************/
 /*        MESH FACE OPERATORS                                       */
@@ -148,6 +152,7 @@ void        MSTK_Init();
   void MF_Set_GEntity(MFace_ptr mface, GEntity_ptr gent);
   void MF_Set_GEntDim(MFace_ptr mface, int gdim);
   void MF_Set_GEntID(MFace_ptr mface, int gid);
+  int  MF_Set_GInfo_Auto(MFace_ptr mface);
   void MF_Set_ID(MFace_ptr mface, int id);
 
   /* These can be called by a user/application after calling MF_New() */
@@ -182,7 +187,7 @@ void        MSTK_Init();
   MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts);
   MFace_ptr MEs_CommonFace(int ne, MEdge_ptr *fedges);
 
-
+  int MFs_AreSame(MFace_ptr f1, MFace_ptr f2);
 
 
   void MF_Coords(MFace_ptr mface, int *n, double (*xyz)[3]);
@@ -200,6 +205,7 @@ void        MSTK_Init();
   void MR_Set_GEntity(MRegion_ptr mregion, GEntity_ptr gent);
   void MR_Set_GEntDim(MRegion_ptr mregion, int gdim);
   void MR_Set_GEntID(MRegion_ptr mregion, int gid);
+  int  MR_Set_GInfo_Auto(MRegion_ptr mregion);
   void MR_Set_ID(MRegion_ptr mregion, int id);
 
   /* Can be called by user/application after creating region by MR_New(); */
@@ -242,18 +248,26 @@ void        MSTK_Init();
 
   void MEnt_Set_GEntity(MEntity_ptr mentity, GEntity_ptr gent);
   void MEnt_Set_GEntDim(MEntity_ptr mentity, int gdim);
+  void MEnt_Set_GEntID(MEntity_ptr mentity, int gid);
   void MEnt_Set_ID(MEntity_ptr mentity, int id);
+  void MEnt_Set_RepType(MEntity_ptr mentity, RepType rtype);
 
-  int MEnt_ID(MEntity_ptr mentity);
-  MType MEnt_Dim(MEntity_ptr mentity);
-  MType MEnt_OrigDim(MEntity_ptr mentity);
-  Mesh_ptr MEnt_Mesh(MEntity_ptr mentity);
-  int MEnt_GEntDim(MEntity_ptr mentity);
+  int         MEnt_ID(MEntity_ptr mentity);
+  MType       MEnt_Dim(MEntity_ptr mentity);
+  MType       MEnt_OrigDim(MEntity_ptr mentity);
+  int         MEnt_IsVolatile(MEntity_ptr mentity);
+  Mesh_ptr    MEnt_Mesh(MEntity_ptr mentity);
+  int         MEnt_GEntDim(MEntity_ptr mentity);
+  int         MEnt_GEntID(MEntity_ptr mentity);
   GEntity_ptr MEnt_GEntity(MEntity_ptr mentity);
+  RepType     MEnt_RepType(MEntity_ptr mentity);
   
-  void  MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, double lval, void *pval);
+  void  MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
+			double lval, void *pval);
   void  MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
-  int  MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, double *lval, void **pval);  
+  int   MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
+			double *lval, void **pval);  
+  void  MEnt_Rem_AllAttVals(MEntity_ptr);
 
   void MEnt_Delete(MEntity_ptr mentity, int keep);
 
