@@ -17,7 +17,7 @@ extern "C" {
       MSTK_Report("MF_Set_Edges_FN","Currently, only 32 edges supported per face",ERROR);
 #endif
 
-    downadj = (MFace_DownAdj_FN *) f->downadj
+    downadj = (MFace_DownAdj_FN *) f->downadj;
 
     downadj->ne = n;
     downadj->edirs = 0;
