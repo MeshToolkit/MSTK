@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
   fprintf(stderr,"\n");
 
 
-  /* Initialize MSTK - Always do this even if it does seem to
+  /* Initialize MSTK - Always do this even if it does not seem to
      matter in this version of MSTK */
 
   MSTK_Init();
