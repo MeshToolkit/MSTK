@@ -31,16 +31,16 @@ then
 fi
 
 
+# INSTALL THE INCLUDE FILES
 
 if [ ! -d $INSTALL_INCDIR ]
 then
   mkdir -p $INSTALL_INCDIR
 fi
-ln -sf $INSTALL_INCDIR $INSTALL_INCDIR_DEFAULT 
 
-if [ ! -d $INSTALL_LIBDIR ]
+if [ "$default" == "y" ]
 then
-  mkdir -p $INSTALL_LIBDIR
+  ln -sf $INSTALL_INCDIR $INSTALL_INCDIR_DEFAULT 
 fi
 
 ans=y
@@ -56,7 +56,15 @@ then
      $LOCAL_INCDIR/MSTK_types.h $INSTALL_INCDIR
 fi
 
+
+# INSTALL THE LIBRARIES
+
 ans=y
+if [ ! -d $INSTALL_LIBDIR ]
+then
+  mkdir -p $INSTALL_LIBDIR
+fi
+
 if [ -f $INSTALL_LIBDIR/libmstk-$VER.a ]
 then
   echo "$INSTALL_LIBDIR/libmstk-$VER.a exists!! Overwrite?"
