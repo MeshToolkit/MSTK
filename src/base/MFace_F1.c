@@ -24,38 +24,70 @@ extern "C" {
     downadj->fedges = NULL;
   }
 
-  void MF_Delete_F1(MFace_ptr f) {
+  void MF_Delete_F1(MFace_ptr f, int keep) {
     MFace_UpAdj_F1F3 *upadj;
     MFace_DownAdj_FN *downadj;
     MEdge_ptr e;
     int i, ne;
 
-    upadj = (MFace_UpAdj_F1F3 *) f->upadj;
-    MSTK_free(upadj);
+    downadj = (MFace_DownAdj_FN *) f->downadj;
+
+    if (f->dim != MDELFACE) { /* if face has not been temporarily deleted */
+      ne = List_Num_Entries(downadj->fedges);
+      for (i = 0; i < ne; i++) {
+	e = List_Entry(downadj->fedges,i);
+	ME_Rem_Face(e,f);
+      }
+    }
+
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      f->dim = MDELFACE;
+    }
+    else {
+#ifdef DEBUG
+      f->dim = MDELFACE;
+#endif
+
+      upadj = (MFace_UpAdj_F1F3 *) f->upadj;
+      MSTK_free(upadj);
+
+      List_Delete(downadj->fedges);
+      MSTK_free(downadj);
+      
+      MSTK_free(f);
+    }
+  }
+
+  void MF_Restore_F1(MFace_ptr f) {
+    MFace_DownAdj_FN *downadj;
+    MEdge_ptr e;
+    int i, ne;
+
+    if (f->dim != MDELFACE)
+      return;
+
+    f->dim = MFACE;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
     ne = List_Num_Entries(downadj->fedges);
     for (i = 0; i < ne; i++) {
       e = List_Entry(downadj->fedges,i);
-      ME_Rem_Face(e,f);
+      ME_Add_Face(e,f);
     }
-    List_Delete(downadj->fedges);
-    MSTK_free(downadj);
-
-    MSTK_free(f);
   }
 
   void MF_Set_Edges_F1(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
     MF_Set_Edges_FN(f,n,e,dir);
   }
 
-  void MF_Replace_Edge_F1(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir) {
-    MF_Replace_Edge_FN(f,e,nue,nudir);
+  void MF_Replace_Edge_F1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
+    MF_Replace_Edge_FN(f,e,nnu,nuedges,nudirs);
   }
 
-  void MF_Replace_Edge_i_F1(MFace_ptr f, int i, MEdge_ptr nue, int nudir) {
-    MF_Replace_Edge_i_FN(f,i,nue,nudir);
+  void MF_Replace_Edge_i_F1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudir) {
+    MF_Replace_Edge_i_FN(f,i,nnu,nuedges,nudir);
   }
 
   void MF_Set_Vertices_F1(MFace_ptr f, int n, MVertex_ptr *v) {
@@ -73,6 +105,18 @@ extern "C" {
   void MF_Replace_Vertex_i_F1(MFace_ptr f, int i, MVertex_ptr nuv) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",WARN);
+#endif
+  }
+
+  void MF_Insert_Vertex_F1(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
+#ifdef DEBUG
+    MSTK_Report("MF_Insert_Vertex","Function call not suitable for this representation",WARN);
+#endif
+  }
+
+  void MF_Insert_Vertex_i_F1(MFace_ptr f, MVertex_ptr nuv, int i) {
+#ifdef DEBUG
+    MSTK_Report("MF_Insert_Vertex_i","Function call not suitable for this representation",WARN);
 #endif
   }
 

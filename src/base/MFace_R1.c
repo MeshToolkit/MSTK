@@ -14,7 +14,7 @@ extern "C" {
   }
 
 
-  void MF_Delete_R1(MFace_ptr f) {
+  void MF_Delete_R1(MFace_ptr f, int keep) {
     MSTK_Report("MF_Delete_R1","Not Implemented",ERROR);
   }
 
@@ -24,13 +24,13 @@ extern "C" {
 #endif
   }
 
-  void MF_Replace_Edge_R1(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int dir) {
+  void MF_Replace_Edge_R1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edge","Function call not suitable for this representation",WARN);
 #endif
   }
 
-  void MF_Replace_Edge_i_R1(MFace_ptr f, int i, MEdge_ptr nue, int dir) {
+  void MF_Replace_Edge_i_R1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edge","Function call not suitable for this representation",WARN);
 #endif
@@ -46,6 +46,14 @@ extern "C" {
 
   void MF_Replace_Vertex_i_R1(MFace_ptr f, int i, MVertex_ptr nuv) {
     MSTK_Report("MF_Replace_Vertex","Not implemented for this representation",WARN);
+  }
+
+  void MF_Insert_Vertex_R1(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
+    MSTK_Report("MF_Insert_Vertex_R1","Not implemented for this representation",WARN);
+  }
+
+  void MF_Insert_Vertex_i_R1(MFace_ptr f, MVertex_ptr nuv, int i) {
+    MSTK_Report("MF_Insert_Vertex_i_R1","Not implemented for this representation",WARN);
   }
 
   void MF_Add_Region_R1(MFace_ptr f, MRegion_ptr r, int side) {

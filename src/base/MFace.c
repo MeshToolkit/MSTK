@@ -35,9 +35,16 @@ extern "C" {
     return f;
   }
 
-  void MF_Delete(MFace_ptr f) {
-    MESH_Rem_Face(f->mesh,f);
-    (*MF_Delete_jmp[f->repType])(f);
+  void MF_Delete(MFace_ptr f, int keep) {
+    if (f->dim != MDELFACE)
+      MESH_Rem_Face(f->mesh,f);
+    (*MF_Delete_jmp[f->repType])(f, keep);
+  }
+
+  void MF_Restore(MFace_ptr f) {
+    if (f->dim == MDELFACE)
+      MESH_Add_Face(f->mesh,f);
+    (*MF_Restore_jmp[f->repType])(f);
   }
 
   void MF_Set_RepType(MFace_ptr f, RepType rtype) {
@@ -65,12 +72,12 @@ extern "C" {
     (*MF_Set_Edges_jmp[f->repType])(f,n,edges,dir);
   }
 
-  void MF_Replace_Edge(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir) {
-    (*MF_Replace_Edge_jmp[f->repType])(f,e,nue,nudir);
+  void MF_Replace_Edge(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
+    (*MF_Replace_Edge_jmp[f->repType])(f,e,nnu,nuedges,nudirs);
   }
 
-  void MF_Replace_Edge_i(MFace_ptr f, int i, MEdge_ptr nue, int nudir) {
-    (*MF_Replace_Edge_i_jmp[f->repType])(f,i,nue,nudir);
+  void MF_Replace_Edge_i(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
+    (*MF_Replace_Edge_i_jmp[f->repType])(f,i,nnu,nuedges,nudirs);
   }
 
   void MF_Set_Vertices(MFace_ptr f, int n, MVertex_ptr *verts) {
@@ -83,6 +90,14 @@ extern "C" {
 
   void MF_Replace_Vertex_i(MFace_ptr f, int i, MVertex_ptr nuv) {
     (*MF_Replace_Vertex_i_jmp[f->repType])(f,i,nuv);
+  }
+
+  void MF_Insert_Vertex(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
+    (*MF_Insert_Vertex_jmp[f->repType])(f,nuv,b4v);
+  }
+
+  void MF_Insert_Vertex_i(MFace_ptr f, MVertex_ptr nuv, int i) {
+    (*MF_Insert_Vertex_i_jmp[f->repType])(f,nuv,i);
   }
 
   Mesh_ptr MF_Mesh(MFace_ptr f) {
@@ -179,6 +194,10 @@ extern "C" {
   }
 
   void MF_Dummy1(MFace_ptr f) {
+    return;
+  }
+
+  void MF_Dummy2a(MFace_ptr f, int i) {
     return;
   }
 

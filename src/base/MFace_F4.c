@@ -19,24 +19,44 @@ extern "C" {
     downadj->fedges = NULL;
   }
 
-  void MF_Delete_F4(MFace_ptr f) {
+  void MF_Delete_F4(MFace_ptr f, int keep) {
     MFace_DownAdj_FN *downadj;
+    int i, ne;
+    MEdge_ptr e;
 
-    downadj = (MFace_DownAdj_FN *) f->downadj;
-    List_Delete(downadj->fedges);
-    MSTK_free(downadj);
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      f->dim = MDELFACE;
+    }
+    else {
+#ifdef DEBUG
+      f->dim = MDELFACE;
+#endif
+
+      downadj = (MFace_DownAdj_FN *) f->downadj;
+      List_Delete(downadj->fedges);
+      MSTK_free(downadj);
+
+      MSTK_free(f);
+    }
+  }
+
+  void MF_Restore_F4(MFace_ptr f) {
+    if (f->dim != MDELFACE)
+      return;
+    f->dim = MFACE;
   }
 
   void MF_Set_Edges_F4(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
     MF_Set_Edges_FN(f,n,e,dir);
   }
 
-  void MF_Replace_Edge_F4(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int dir) {
-    MF_Replace_Edge_FN(f,e,nue,dir);
+  void MF_Replace_Edge_F4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
+    MF_Replace_Edge_FN(f,e,nnu,nuedges,nudirs);
   }
 
-  void MF_Replace_Edge_i_F4(MFace_ptr f, int i, MEdge_ptr nue, int dir) {
-    MF_Replace_Edge_i_FN(f,i,nue,dir);
+  void MF_Replace_Edge_i_F4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
+    MF_Replace_Edge_i_FN(f,i,nnu,nuedges,nudirs);
   }
 
   void MF_Set_Vertices_F4(MFace_ptr f, int n, MVertex_ptr *v) {
@@ -54,6 +74,18 @@ extern "C" {
   void MF_Replace_Vertex_F4(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",WARN);
+#endif
+  }
+
+  void MF_Insert_Vertex_F4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
+#ifdef DEBUG
+    MSTK_Report("MF_Insert_Vertex","Function call not suitable for this representation",WARN);
+#endif
+  }
+
+  void MF_Insert_Vertex_i_F4(MFace_ptr f, MVertex_ptr nuv, int i) {
+#ifdef DEBUG
+    MSTK_Report("MF_Insert_Vertex_i","Function call not suitable for this representation",WARN);
 #endif
   }
 

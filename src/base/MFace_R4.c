@@ -15,22 +15,64 @@ extern "C" {
     MFace_DownAdj_R3R4 *downadj;
 
     upadj = f->upadj =(MFace_UpAdj_R3R4 *) MSTK_malloc(sizeof(MFace_UpAdj_R3R4));
-    upadj->fregions[0] = upadj->fregions[1] = (MRegion_ptr) NULL;
+    upadj->fregions[0] = (MRegion_ptr) NULL;
+    upadj->fregions[1] = (MRegion_ptr) NULL;
     downadj = (MFace_DownAdj_R3R4 *) MSTK_malloc(sizeof(MFace_DownAdj_R3R4));
     downadj->nv = 0;
     downadj->fvertices = NULL;
   }
 
-  void MF_Delete_R4(MFace_ptr f) {
+  void MF_Delete_R4(MFace_ptr f, int keep) {
     MFace_UpAdj_R3R4 *upadj;
     MFace_DownAdj_R3R4 *downadj;
-
-    upadj  = (MFace_UpAdj_R3R4 *) f->upadj;
-    MSTK_free(upadj);
+    int i, nv;
+    MVertex_ptr v;
 
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
-    List_Delete(downadj->fvertices);
-    MSTK_free(downadj);
+
+    if (f->dim != MDELFACE) { /* if face has not been temporarily deleted */
+      nv = downadj->nv;
+      for (i = 0; i < nv; i++) {
+	v = List_Entry(downadj->fvertices,i);
+	MV_Rem_Face(v,f);
+      }
+    }
+
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      f->dim = MDELFACE;
+    }
+    else {
+#ifdef DEBUG
+      f->dim = MDELFACE;
+#endif
+
+      upadj  = (MFace_UpAdj_R3R4 *) f->upadj;
+      MSTK_free(upadj);
+
+      List_Delete(downadj->fvertices);
+      MSTK_free(downadj);
+
+      MSTK_free(f);
+    }
+  }
+
+  void MF_Restore_R4(MFace_ptr f) {
+    MFace_DownAdj_R3R4 *downadj;
+    int i, nv;
+    MVertex_ptr v;
+
+    if (f->dim != MDELFACE)
+      return;
+
+    f->dim = MFACE;
+
+    downadj = (MFace_DownAdj_R3R4 *) f->downadj;
+    nv = downadj->nv;
+    for (i = 0; i < nv; i++) {
+      v = List_Entry(downadj->fvertices,i);
+      MV_Add_Face(v,f);
+    }
   }
   
 
@@ -41,14 +83,14 @@ extern "C" {
 #endif
   }
 
-  void MF_Replace_Edge_i_R4(MFace_ptr f, int i, MEdge_ptr nue, int nudir) {
+  void MF_Replace_Edge_i_R4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edge",
 		"Function call not suitable for this representation",WARN);
 #endif
   }
 
-  void MF_Replace_Edge_R4(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int nudir) {
+  void MF_Replace_Edge_R4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edge",
 		"Function call not suitable for this representation",WARN);
@@ -65,6 +107,14 @@ extern "C" {
 
   void MF_Replace_Vertex_i_R4(MFace_ptr f, int i, MVertex_ptr nuv) {
     MF_Replace_Vertex_i_R3R4(f,i,nuv);
+  }
+
+  void MF_Insert_Vertex_R4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
+    MF_Insert_Vertex_R3R4(f,nuv,b4v);
+  }
+
+  void MF_Insert_Vertex_i_R4(MFace_ptr f, MVertex_ptr nuv, int i) {
+    MF_Insert_Vertex_i_R3R4(f,nuv,i);
   }
 
   void MF_Add_Region_R4(MFace_ptr f, MRegion_ptr r, int side) {
