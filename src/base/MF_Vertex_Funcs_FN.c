@@ -75,7 +75,7 @@ extern "C" {
     MFace_DownAdj_FN *downadj;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
-    ne = downadj->ne;
+    ne = List_Num_Entries(downadj->fedges);
     fverts = List_New(ne);
 
     if (!v0) {
@@ -123,7 +123,7 @@ extern "C" {
 
     /* We have to check only ne-1 edges since they form a loop */
     downadj = (MFace_DownAdj_FN *) f->downadj;
-    ne = downadj->ne;
+    ne = List_Num_Entries(downadj->fedges);
     for (i = 0; i < ne-1; i++) {
       e = List_Entry(downadj->fedges,i);
       if (ME_UsesEntity(e,v,0))
