@@ -1,0 +1,285 @@
+\documentclass[12pt]{article}
+
+% TeX calculates margins from a point 1 inch from the top and 1 inch
+% from the left of the page. So the total left margin for instance is
+% the 'oddsidemargin' + 1 inch.
+%
+%\setlength{\textwidth}{4.5in}
+%\setlength{\textheight}{7.0in}
+%\setlength{\evensidemargin}{0.0in}
+%\setlength{\oddsidemargin}{0.0in}
+%\setlength{\topmargin}{0.5in}
+
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{wrapfig}
+\usepackage{algorithmic}
+\usepackage[boxed]{algorithm}
+\usepackage{rotating}
+\usepackage{multicol}
+%\usepackage{times}
+
+%\displaybreak[0]       %% Break permitted but not encouraged
+
+\begin{document}
+
+\title{MSTK: Mesh Toolkit, v 1.0} 
+
+
+\author{Rao V. Garimella \\
+  Mathematical Modeling and Analysis (T-7), Theoretical Division, \\
+  Los Alamos National Laboratory, Los Alamos, NM, USA. \\ E-mail:
+  rao@lanl.gov}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\newpage
+
+\section{MSTK IO File Format}
+
+\subsection{ASCII File Format}
+
+\begin{verse}
+\# \textit{This is a comment} \\
+\# \textit{The string ``MSTK'' and File version number (1.0)} \\
+\vspace{1ex}
+ 
+MSTK Ver %
+\vspace{1ex}
+
+\# \textit{char *Mfilename - Geometric model file related to mesh} 
+\vspace{1ex}
+
+Mfilename
+\vspace{1ex}
+
+\# \textit{char *reptype - Type of representation} \\  
+\# \textit{int NV, NE, NF, NR - Number of vertices, edges, face, regions} \\
+\vspace{1ex}
+
+RepType \hspace{0.5ex} NV \hspace{0.5ex} NE \hspace{0.5ex} NF \hspace{0.5ex} NR \\
+\hspace{2ex}
+
+\# \textit{\textbf{VERTEX INFO}} \\
+\# \textit{Each record has} \\
+\# \textit{double X,Y,Z Coordinates} \\
+\# \textit{int Mdim - Topological type or dimension of model entity that} \\
+\# \textit{\hspace{4.7em} the vertex is on} \\
+\# \textit{int Mid - ID of model entity the vertex is on} \\
+\# \textit{int Mdim and Mid can be -1 if model information is absent} 
+\vspace{1ex}
+
+X\_Coord \hspace{0.5ex} Y\_Coord \hspace{0.5ex} Z\_Coord \hspace{0.5ex} Mdim \hspace{0.5ex} Mid \\
+X\_Coord \hspace{0.5ex} Y\_Coord \hspace{0.5ex} Z\_Coord \hspace{0.5ex} Mdim \hspace{0.5ex} Mid \\
+. . . \\
+\# \textit{Repeated NV times}
+\vspace{2ex}
+
+\# \textit{\textbf{EDGE INFO} - present only if NE $\ne$ 0} \\
+\# \textit{Each edge record has} \\
+\# \textit{int Vid\_1, Vid\_2  - IDs of first, second vertex of edge} \\
+\# \textit{int Mdim, Mid}
+\vspace{1ex}
+
+Vid\_1 \hspace{0.5ex} Vid\_2 \hspace{0.5ex} Mdim \hspace{0.5ex} Mid \\
+Vid\_1 \hspace{0.5ex} Vid\_2 \hspace{0.5ex} Mdim \hspace{0.5ex} Mid \\
+. . . \\
+\# \textit{Repeated NEdges times}
+\vspace{2ex}
+
+\newpage
+\# \textit{\textbf{FACE INFO} - present only if NF $\ne$ 0} \\
+\# \textit{char *FLtype - Dimension of lower order entity describing faces} \\
+\# \textit{Values: Vertex, Edge (case insensitive), e.g. VeRteX or EDGE} \\
+\vspace{1ex}
+
+FLtype 
+\vspace{1ex}
+
+\# \textit{If face described by vertices, then each face record has} \\
+\# \textit{int NFV - Number of face vertices} \\
+\# \textit{int Vid\_1 - ID of first vertex of face} \\
+\# \textit{int Vid\_2 - ID of second vertex of face} \\
+\# . . . \\
+\# \textit{int Vid\_1 - ID of NFV'th vertex of face} \\
+\# \textit{int Mdim, Mid} 
+\vspace{1ex}
+
+NFV \hspace{0.5ex} Vid\_1 \hspace{0.5ex} Vid\_2 \hspace{0.5ex} ... \hspace{0.5ex} Vid\_NFV \hspace{0.5ex} Mdim \hspace{0.5ex} Mid \\
+NFV \hspace{0.5ex} Vid\_1 \hspace{0.5ex} Vid\_2 \hspace{0.5ex} ... \hspace{0.5ex} Vid\_NFV \hspace{0.5ex} Mdim \hspace{0.5ex} Mid \\
+. . . \\
+\# \textit{Repeated NFaces times}
+\vspace{2ex}\vspace{1ex}
+
+\# \textit{If face described by edges, then each face record has} \\
+\# \textit{int NFE - Number of face edges} \\
+\# \textit{int $\pm$Eid\_1 - signed ID of first edge of face} \\
+\# \textit{int $\pm$Eid\_2 - signed ID of second edge of face} \\
+\# . . . \\
+\# \textit{int $\pm$Eid\_NFE - signed ID of NFE'th edge of face} \\
+\# \textit{int Mdim, Mid} \\
+\# \\
+\# \textit{if sign of edge is +, face uses edge in direction it was defined} \\
+\# \textit{if sign of edge is -, face uses edge in opposite direction} \\
+\vspace{1ex}
+
+NFE \hspace{0.5ex} $\pm$Eid\_1 \hspace{0.5ex} $\pm$Eid\_2 \hspace{0.5ex} ... \hspace{0.5ex} $\pm$Eid\_NFE \hspace{0.5ex} Mdim Mid \\
+NFE \hspace{0.5ex} $\pm$Eid\_1 \hspace{0.5ex} $\pm$Eid\_2 \hspace{0.5ex} ... \hspace{0.5ex} $\pm$Eid\_NFE \hspace{0.5ex} Mdim Mid \\
+. . . \\
+\# \textit{Repeated NFaces times}
+\vspace{2ex}\vspace{1ex}
+
+
+\# \textit{\textbf{REGION INFO} - present only if NR $\ne$ 0} \\
+\# \textit{char *RLtype - Dimension of Lower order entity describing region} \\
+\# \textit{Values: Vertex, Face (case insensitive), e.g. VERtex or faCE}
+\vspace{1ex}
+
+RLtype
+\vspace{1ex}
+
+\# \textit{if region described by vertices, then each region record has} \\
+\# \textit{int NRV - Number of region vertices} \\
+\# \textit{int Vid\_1 - ID of first vertex of region} \\
+\# \textit{int Vid\_2 - ID of second vertex of region} \\
+\# . . . \\
+\# \textit{int Vid\_NFE - ID of NRV'th vertex of region} \\
+\# \textit{int Mid, (NOTE: Mdim is not specified, since it has to be 3)}
+\vspace{1ex}
+
+NRV \hspace{0.5ex} Vid\_1 \hspace{0.5ex} Vid\_2 \hspace{0.5ex} ... \hspace{0.5ex} Vid\_NRV \hspace{0.5ex} Mid \\
+NRV \hspace{0.5ex} Vid\_1 \hspace{0.5ex} Vid\_2 \hspace{0.5ex} ... \hspace{0.5ex} Vid\_NRV \hspace{0.5ex} Mid \\
+. . . \\
+\# \textit{Repeat NR times} 
+\vspace{3ex}
+
+\# \textit{if region described by faces, then each region record has} \\
+\# \textit{int NRF - Number of region faces} \\
+\# \textit{int Fid\_1 - signed ID of first face of region} \\
+\# \textit{int Fid\_2 - signed ID of second face of region} \\
+\# . . . \\
+\# \textit{int Fid\_NRF - signed ID of NRF'th face of region} \\
+\# \textit{int Mdim, Mid} \\
+\#  \\
+\# \textit{if sign of face is +, face normal points out of region} \\
+\# \textit{if sign of edge is -, face normal points into region}
+\vspace{1ex}
+
+NRF \hspace{0.5ex} $\pm$Fid\_1 \hspace{0.5ex} $\pm$Fid\_2 \hspace{0.5ex} ... \hspace{0.5ex} $\pm$Fid\_NRF \hspace{0.5ex} Mid \\
+NRF \hspace{0.5ex} $\pm$Fid\_1 \hspace{0.5ex} $\pm$Fid\_2 \hspace{0.5ex} ... \hspace{0.5ex} $\pm$Fid\_NRF \hspace{0.5ex} Mid \\
+. . . \\
+\# \textit{Repeated NR times} 
+\vspace{2ex}
+
+\# \textit{\textbf{VERTEX ATTRIBUTES}} \\
+\# \textit{int NVA - Number of Vertex attributes} \\
+\# \\
+\# \textit{char *VA\_name\_1 - Name of first vertex attribute} \\
+\# \textit{int VA\_type\_1 - Type of first vertex attribute} \\
+\# \textit{int VA\_dim\_1 - Dimension of first vertex attribute} \\
+\# \\
+\# \textit{char *VA\_name\_2 - Name of second vertex attribute} \\
+\# \textit{int VA\_type\_2 - Type of second vertex attribute} \\
+\# \textit{int VA\_dim\_2 - Dimension of first vertex attribute} \\
+\# \\
+\# . . .\\
+\# \\
+\# \textit{char *VA\_name\_NVA - Name of NVA'th vertex attribute} \\
+\# \textit{int VA\_type\_NVA - Type of NVA'th vertex attribute} \\
+\# \textit{int VA\_dim\_NVA - Dimension of NVA'th vertex attribute} \\
+\# \\
+\# \textit{VA\_type can be 1 (int), 2 (double), 3 (string)} \\
+\# \textit{VA\_dim = 1 for scalars, VA\_dim = length of vector for vector} \\
+\# \textit{VA\_dim can only be 1 when VA\_type is string}
+\vspace{1ex}
+
+NVA \hspace{0.5ex} \\
+VA\_name\_1 \hspace{0.5ex} VA\_type\_1 \hspace{0.5ex} VA\_dim\_1 \\ 
+VA\_name\_2 \hspace{0.5ex} VA\_type\_2 \hspace{0.5ex} VA\_dim\_2 \\
+. \\
+VA\_dim\_NVA \hspace{0.5ex} VA\_type\_NVA \hspace{0.5ex} VA\_dim\_2  
+\vspace{1ex}
+
+\# \textit{For each vertex attribute record, list of attribute values} \\
+\# \textit{E.G., there are 3 attributes for each vertex:} \\
+\# \textit{a scalar int, a vector of 3 doubles and a string}
+
+VA\_int \hspace{0.5ex} VA\_double\_1 \hspace{0.5ex} VA\_double\_2 \hspace{0.5ex} VA\_double\_3 \hspace{0.5ex} VA\_string \\
+VA\_int \hspace{0.5ex} VA\_double\_1 \hspace{0.5ex} VA\_double\_2 \hspace{0.5ex} VA\_double\_3 \hspace{0.5ex} VA\_string \\
+. \\
+. \\
+. \\
+\# \textit{Repeated NV times}
+\vspace{2ex}
+
+\newpage
+\# \textit{\textbf{EDGE ATTRIBUTES}} \\
+\# \textit{Similar to Vertex attribute description}
+\vspace{1ex}
+
+NEA \hspace{0.5ex} \\
+EA\_name\_1 \hspace{0.5ex} EA\_type\_1 \hspace{0.5ex} EA\_dim\_1 \\ 
+EA\_name\_2 \hspace{0.5ex} EA\_type\_2 \hspace{0.5ex} EA\_dim\_2 \\
+. \\
+EA\_dim\_NEA \hspace{0.5ex} EA\_type\_NEA \hspace{0.5ex} EA\_dim\_2  
+\vspace{1ex}
+
+\# \textit{For each edge attribute record, list of attribute values} \\
+\# \textit{E.G., a scalar int, a scalar double and a string}
+\vspace{1ex}
+
+EA\_int \hspace{0.5ex} EA\_double \hspace{0.5ex} EA\_string \\
+EA\_int \hspace{0.5ex} EA\_double \hspace{0.5ex} EA\_string \\
+. . . \\
+\# \textit{Repeated NE times}
+\vspace{2ex}
+
+\# \textit{\textbf{FACE ATTRIBUTES}} \\
+\# \textit{Similar to Vertex attribute description}
+\vspace{1ex}
+
+NFA \hspace{0.5ex} \\
+FA\_name\_1 \hspace{0.5ex} FA\_type\_1 \hspace{0.5ex} FA\_dim\_1 \\ 
+FA\_name\_2 \hspace{0.5ex} FA\_type\_2 \hspace{0.5ex} FA\_dim\_2 \\
+. \\
+FA\_dim\_NFA \hspace{0.5ex} FA\_type\_NEA \hspace{0.5ex} FA\_dim\_2  
+\vspace{1ex}
+
+\# \textit{For each face attribute record, list of attribute values} \\
+\# \textit{E.G., a vector of 2 doubles and a string}
+\vspace{1ex}
+
+FA\_double\_1 \hspace{0.5ex} FA\_double\_2 \\
+FA\_double\_1 \hspace{0.5ex} FA\_double\_2 \\
+. . . \\
+\# \textit{Repeated NF times}
+\vspace{2ex}
+
+\newpage
+\# \textit{\textbf{REGION ATTRIBUTES}} \\
+\# \textit{Similar to Vertex attribute description}
+\vspace{1ex}
+
+NRA \hspace{0.5ex} \\
+RA\_name\_1 \hspace{0.5ex} RA\_type\_1 \hspace{0.5ex} RA\_dim\_1 \\ 
+RA\_name\_2 \hspace{0.5ex} RA\_type\_2 \hspace{0.5ex} RA\_dim\_2 \\
+. \\
+RA\_dim\_NRA \hspace{0.5ex} RA\_type\_NRA \hspace{0.5ex} RA\_dim\_NRA 
+\vspace{1ex}
+
+\# \textit{For each Region attribute record, list of attribute values} \\
+\# \textit{E.G., a vector of 3 ints}
+\vspace{1ex}
+
+RA\_int\_1 \hspace{0.5ex} RA\_int\_2 \hspace{0.5ex} RA\_int\_3 \\
+RA\_int\_1 \hspace{0.5ex} RA\_int\_2 \hspace{0.5ex} RA\_int\_3 \\
+. . .\\
+\# \textit{Repeated NR times}
+\vspace{2ex}
+
+\end{verse}
+
+\end{document}
