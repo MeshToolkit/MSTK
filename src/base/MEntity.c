@@ -13,11 +13,46 @@ extern "C" {
 #endif
 
   int MEnt_Dim(MEntity_ptr ent) {
-    return (ent->dim);
+    if (ent->dim < 0)
+      return MDELETED;
+    else
+      return ent->dim;
   }
+
+  int MEnt_OrigDim(MEntity_ptr ent) {
+    if (ent->dim < 0)
+      return -(ent->dim/10)-1;
+    else {
+      MSTK_Report("MEnt_OrigDim","This is not a deleted entity",WARN);
+      return (ent->dim);
+    }
+  }	
 
   int MEnt_ID(MEntity_ptr ent) {
     return (ent->id);
+  }
+
+  void MEnt_Delete(MEntity_ptr ent, int keep) {
+    int dim;
+
+    dim = MEnt_Dim(ent);
+    if (dim < 0)
+      dim = MEnt_OrigDim(ent);
+
+    switch (dim) {
+    case MVERTEX:
+      MV_Delete(ent,keep);
+      break;
+    case MEDGE:
+      ME_Delete(ent,keep);
+      break;
+    case MFACE:
+      MF_Delete(ent,keep);
+      break;
+    case MREGION:
+      MR_Delete(ent,keep);
+      break;
+    }
   }
 
   int MEnt_IsMarked(MEntity_ptr ent, int markerID) {
