@@ -21,6 +21,11 @@ extern "C" {
     if (!v)
       return;
 
+    if (MEnt_Dim(v) != MVERTEX && MEnt_OrigDim(v) != MVERTEX) {
+      fprintf(stderr,"NOT A VERTEX!\n");
+      return;
+    }
+
     fprintf(stderr,"\n");
     fprintf(stderr,"Vertex: 0x%-x   ID: %-d   ",(unsigned int)v,MV_ID(v));
     
@@ -113,9 +118,15 @@ extern "C" {
     List_ptr efaces, eregions;
     int idx, nf, nr;
     GEntity_ptr gent;
+    double xyz[3];
 
     if (!e)
       return;
+
+    if (MEnt_Dim(e) != MEDGE && MEnt_OrigDim(e) != MEDGE) {
+      fprintf(stderr,"NOT AN EDGE!\n");
+      return;
+    }
 
     fprintf(stderr,"\n");
     fprintf(stderr,"Edge: 0x%-x   ID: %-d   ",(unsigned int)e,ME_ID(e));
@@ -140,9 +151,18 @@ extern "C" {
       v0 = ME_Vertex(e,0);
       fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)v0,
 	      MV_ID(v0),MV_GEntID(v0),MV_GEntDim(v0));
+      if (lvl > 1) {
+	MV_Coords(v0,xyz);
+        fprintf(stderr,"Coordinates: %16.8lf %16.8lf %16.8lf\n",xyz[0],xyz[1],xyz[2]);
+      }
+
       v1 = ME_Vertex(e,1);
       fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)v1,
 	      MV_ID(v1),MV_GEntID(v1),MV_GEntDim(v1));
+      if (lvl > 1) {
+	MV_Coords(v1,xyz);
+        fprintf(stderr,"Coordinates: %16.8lf %16.8lf %16.8lf\n",xyz[0],xyz[1],xyz[2]);
+      }
 
       if (lvl > 1) {
 	/* Print upward adjacency information as well */
@@ -200,6 +220,11 @@ extern "C" {
 
     if (!f)
       return;
+
+    if (MEnt_Dim(f) != MFACE && MEnt_OrigDim(f) != MFACE) {
+      fprintf(stderr,"NOT A FACE\n");
+      return;
+    }
 
     fprintf(stderr,"\n");
     fprintf(stderr,"Face: 0x%-x   ID: %-d   ",(unsigned int)f,MF_ID(f));
@@ -308,6 +333,11 @@ extern "C" {
 
     if (!r)
       return;
+
+    if (MEnt_Dim(r) != MREGION && MEnt_OrigDim(r) != MREGION) {
+      fprintf(stderr,"NOT A REGION\n");
+      return;
+    }
 
     fprintf(stderr,"\n");
     fprintf(stderr,"Region: 0x%-x   ID: %-d   ",(unsigned int)r,MF_ID(r));
