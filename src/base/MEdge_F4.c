@@ -13,44 +13,30 @@ extern "C" {
     MEdge_UpAdj_F4 *upadj;
 
     upadj = e->upadj = (MEdge_UpAdj_F4 *) MSTK_malloc(sizeof(MEdge_UpAdj_F4));
-    upadj->nel = 0;
-    upadj->elements = List_New(10);
+    upadj->elements = List_New(5);
   }
 
   void ME_Delete_F4(MEdge_ptr e, int keep) {
     MEdge_UpAdj_F4 *upadj;
 
-    if (e->dim != MDELEDGE) { /* if edge has not been temporarily deleted */
+    if (MEnt_Dim(e) != MDELETED) { /* if edge hasnt been temporarily deleted */
       MV_Rem_Edge(e->vertex[0],e);
       MV_Rem_Edge(e->vertex[1],e);
     }
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      e->dim = MDELEDGE;
-    }
-    else {
-#ifdef DEBUG
-      e->dim = MDELEDGE;
-#endif
-
+    if (!keep) {
       upadj = (MEdge_UpAdj_F4 *) e->upadj;
       if (upadj) {
 	if (upadj->elements)
 	  List_Delete(upadj->elements);
 	MSTK_free(upadj);
       }
-      
-      MSTK_free(e);
     }
   }
 
   void ME_Restore_F4(MEdge_ptr e) {
  
-    if (e->dim != MDELEDGE)
-      return;
-
-    e->dim = MEDGE;
+    MEnt_Set_Dim(e,MEDGE);
 
     MV_Add_Edge(e->vertex[0],e);
     MV_Add_Edge(e->vertex[1],e);
@@ -65,8 +51,6 @@ extern "C" {
 	List_Delete(upadj->elements);
       MSTK_free(upadj);
     }
-      
-    MSTK_free(e);
   }
 
   int ME_Num_Faces_F4(MEdge_ptr e) {
@@ -110,11 +94,12 @@ extern "C" {
 
     upadj = (MEdge_UpAdj_F4 *) e->upadj;
 
-    efaces = List_New(10);
+    nel = List_Num_Entries(upadj->elements);
+
+    efaces = List_New(nel);
     nf = 0;
     mkr = MSTK_GetMarker();
 
-    nel = upadj->nel;
     for (i = 0; i < nel; i++) {
       ent = (MEntity_ptr) List_Entry(upadj->elements,i);
       dim = MEnt_Dim(ent);
@@ -166,10 +151,11 @@ extern "C" {
 
     upadj = (MEdge_UpAdj_F4 *) e->upadj;
     
-    nr = 0;
-    eregs = List_New(10);
+    nel = List_Num_Entries(upadj->elements);
 
-    nel = upadj->nel;
+    nr = 0;
+    eregs = List_New(nel);
+
     for (i = 0; i < nel; i++) {
       ent = List_Entry(upadj->elements,i);
       if (MEnt_Dim(ent) == MREGION) {
@@ -194,7 +180,6 @@ extern "C" {
     if (upadj->elements == NULL)
       upadj->elements = List_New(10);
     List_Add(upadj->elements,f);
-    (upadj->nel)++;
   }
 
   void ME_Rem_Face_F4(MEdge_ptr e, MFace_ptr f) {
@@ -204,8 +189,7 @@ extern "C" {
 
     upadj = (MEdge_UpAdj_F4 *) e->upadj;
 
-    ok = List_Rem(upadj->elements,f);
-    if (ok) (upadj->nel)--;
+    List_Rem(upadj->elements,f);
   }
 
   void ME_Add_Region_F4(MEdge_ptr e, MRegion_ptr r) {
@@ -215,7 +199,6 @@ extern "C" {
     if (upadj->elements == NULL)
       upadj->elements = List_New(10);
     List_Add(upadj->elements,r);
-    (upadj->nel)++;
   }
 
   void ME_Rem_Region_F4(MEdge_ptr e, MRegion_ptr r) {
@@ -224,7 +207,6 @@ extern "C" {
 
     upadj = (MEdge_UpAdj_F4 *) e->upadj;
     ok = List_Rem(upadj->elements,r);
-    if (ok) (upadj->nel)--;
   }
 
 #ifdef __cplusplus
