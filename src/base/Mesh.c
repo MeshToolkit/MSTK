@@ -29,6 +29,7 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->mface = (List_ptr) NULL;
   newmesh->mregion = (List_ptr) NULL;
   newmesh->geom = (GModel_ptr) NULL;
+  newmesh->AttribList = (List_ptr) NULL;
 
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
 
@@ -42,6 +43,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
+  MAttrib_ptr attrib;
 
   if (mesh->mregion) {
     nr = mesh->nr;
@@ -75,6 +77,14 @@ void MESH_Delete(Mesh_ptr mesh) {
     }
     List_Delete(mesh->mvertex);
   }
+  
+  if (mesh->AttribList) {
+    i = 0;
+    while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
+      MAttrib_Delete(attrib);
+    List_Delete(mesh->AttribList);
+  }
+
   free(mesh);
 }
 
@@ -91,23 +101,74 @@ GModel_ptr MESH_GModel(Mesh_ptr mesh) {
   return mesh->geom;
 }
 
-RepType    MESH_RepType(Mesh_ptr mesh) {
+RepType MESH_RepType(Mesh_ptr mesh) {
   return mesh->reptype;
 }
 
-int        MESH_Num_Vertices(Mesh_ptr mesh) {
+
+int MESH_Num_Attribs(Mesh_ptr mesh) {
+  if (mesh->AttribList)
+    return List_Num_Entries(mesh->AttribList);
+  else
+    return 0;
+}
+
+MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i) {
+  if (mesh->AttribList)
+    return List_Entry(mesh->AttribList,i);
+  else
+    return NULL;
+}
+  
+MAttrib_ptr MESH_Next_Attrib(Mesh_ptr mesh, int *index) {
+  if (mesh->AttribList)
+    return List_Next_Entry(mesh->AttribList,index);
+  else
+    return NULL;
+}
+
+MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, char *name) {
+  if (mesh->AttribList) {
+    int idx = 0;
+    MAttrib_ptr attrib;
+    char attname[256];
+    
+    while ((attrib = List_Next_Entry(mesh->AttribList,&idx))) {
+      MAttrib_Get_Name(attrib,attname);
+      if (strcmp(name,attname) == 0)
+	return attrib;
+    }
+  }
+  
+  return NULL;
+}
+
+void MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
+  if (!mesh->AttribList)
+    mesh->AttribList = List_New(3);
+  
+  List_Add(mesh->AttribList,attrib);
+}
+
+void MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
+  if (mesh->AttribList)
+    List_Rem(mesh->AttribList,attrib);
+}
+
+
+int MESH_Num_Vertices(Mesh_ptr mesh) {
   return mesh->nv;
 }
 
-int        MESH_Num_Edges(Mesh_ptr mesh) {
+int MESH_Num_Edges(Mesh_ptr mesh) {
   return mesh->ne;
 }
 
-int        MESH_Num_Faces(Mesh_ptr mesh) {
+int MESH_Num_Faces(Mesh_ptr mesh) {
   return mesh->nf;
 }
 
-int        MESH_Num_Regions(Mesh_ptr mesh) {
+int MESH_Num_Regions(Mesh_ptr mesh) {
   return mesh->nr;
 }
 
@@ -117,7 +178,7 @@ int        MESH_Num_Elements(Mesh_ptr mesh) {
 }
 */
 
-MVertex_ptr  MESH_Vertex(Mesh_ptr mesh, int i) {
+MVertex_ptr MESH_Vertex(Mesh_ptr mesh, int i) {
   if (i >= mesh->nv) {
 #ifdef DEBUG
     MSTK_Report("Mesh_Vertex","Non-existent vertex requested\n",ERROR);
@@ -162,7 +223,7 @@ MRegion_ptr MESH_Region(Mesh_ptr mesh, int i) {
     return (MRegion_ptr) List_Entry(mesh->mregion, i);
 }
 
-MVertex_ptr  MESH_Next_Vertex(Mesh_ptr mesh, int *index) {
+MVertex_ptr MESH_Next_Vertex(Mesh_ptr mesh, int *index) {
   if (mesh->mvertex)
     return (MVertex_ptr) List_Next_Entry(mesh->mvertex, index);
   else
@@ -197,8 +258,10 @@ void MESH_Add_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
   mesh->mvertex = List_Add(mesh->mvertex, (void *) v);
   mesh->nv = List_Num_Entries(mesh->mvertex);
 
-  (mesh->max_vid)++;
-  MV_Set_ID(v,mesh->max_vid);
+  if (MV_ID(v) == 0) { /* New Vertex */
+    (mesh->max_vid)++;
+    MV_Set_ID(v,mesh->max_vid);
+  }
 }
 
 void MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e){
@@ -212,9 +275,10 @@ void MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e){
   mesh->medge = List_Add(mesh->medge, (void *) e);
   mesh->ne = List_Num_Entries(mesh->medge);
 
-  (mesh->max_eid)++;
-  ME_Set_ID(e,mesh->max_eid);
-  
+  if (ME_ID(e) == 0) { /* New edge */
+    (mesh->max_eid)++;
+    ME_Set_ID(e,mesh->max_eid);
+  }
 }    
      
 void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
@@ -235,8 +299,10 @@ void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
   mesh->mface = List_Add(mesh->mface, (void *) f);
   mesh->nf = List_Num_Entries(mesh->mface);
 
-  (mesh->max_fid)++;
-  MF_Set_ID(f,mesh->max_fid);
+  if (MF_ID(f) == 0) { /* New face */
+    (mesh->max_fid)++;
+    MF_Set_ID(f,mesh->max_fid);
+  }
 }    
      
 void MESH_Add_Region(Mesh_ptr mesh, MRegion_ptr r){
@@ -246,8 +312,10 @@ void MESH_Add_Region(Mesh_ptr mesh, MRegion_ptr r){
   mesh->mregion = List_Add(mesh->mregion, (void *) r);
   mesh->nr = List_Num_Entries(mesh->mregion);
 
-  (mesh->max_rid)++;
-  MR_Set_ID(r,mesh->max_rid);
+  if (MR_ID(r) == 0) { /* New region */
+    (mesh->max_rid)++;
+    MR_Set_ID(r,mesh->max_rid);
+  }
 }    
      
 void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
@@ -313,9 +381,9 @@ int  MESH_ChangeRepType(Mesh_ptr mesh, RepType nureptype){
 int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   FILE *fp;
   char inp_rtype[16], temp_str[256], fltype_str[16], rltype_str[16];
-  int i, j, found, NV, NE, NF, NR, nav, nar, gdim, gid;
+  int i, j, found, NV=0, NE=0, NF=0, NR=0, nav, nar, gdim, gid;
   int vid1, vid2, eid, fid, rid, adjvid, adjrid, adjv_flag;
-  int nfv, max_nfv, nfe, max_nfe, nrv, max_nrv, nrf, max_nrf;
+  int nfv, max_nfv=0, nfe, max_nfe=0, nrv, max_nrv=0, nrf, max_nrf=0;
   int *fedirs, *rfdirs;
   double ver, xyz[3];
   MVertex_ptr mv, ev1, ev2, adjv, *fverts, *rverts;
@@ -406,7 +474,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    MSTK_Report("MESH_InitFromFile","Adjacent vertex ID mismatch",ERROR);
 #endif
 	  
-	  MV_Add_AdjVertex(mv,adjv);
+	  MV_Add_AdjVertex(mesh->mvertex,adjv);
 	}
       }
     }
@@ -919,12 +987,12 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	mrverts = MR_Vertices(mr);
 	for (j = 0; j < nrv; j++) {
 	  mv = List_Entry(mrverts,j);
-	  mvid = MV_ID(mf);
+	  mvid = MV_ID(mv);
 	  fprintf(fp,"%d ",mvid);
 	}
 	List_Delete(mrverts);
 	
-	gdim = MF_GEntDim(mr);
+	gdim = MR_GEntDim(mr);
 	gid = MR_GEntID(mr);
 
 	fprintf(fp,"\t%d %d\n",gdim,gid);
