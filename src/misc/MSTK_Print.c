@@ -340,7 +340,6 @@ extern "C" {
 	else 
 	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)f,
 		  -MF_ID(f),MF_GEntID(f),ME_GEntDim(f));
-	i++;
       }
       fprintf(stderr,"\n");
       List_Delete(rfaces);
