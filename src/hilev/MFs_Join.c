@@ -26,12 +26,12 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   nfe1 = MF_Num_Edges(f1);
   nfe2 = MF_Num_Edges(f2);
 
-  fe1 = (MEdge_ptr *) malloc(nfe1*sizeof(MEdge_ptr));
-  fedir1 = (int *) malloc(nfe1*sizeof(int));
-  fe2 = (MEdge_ptr *) malloc(nfe2*sizeof(MEdge_ptr));
-  fedir2 = (int *) malloc(nfe2*sizeof(int));
-  fe3 = (MEdge_ptr *) malloc((nfe1+nfe2-2)*sizeof(MEdge_ptr));
-  fedir3 = (int *) malloc((nfe1+nfe2-2)*sizeof(int));
+  fe1 = (MEdge_ptr *) MSTK_malloc(nfe1*sizeof(MEdge_ptr));
+  fedir1 = (int *) MSTK_malloc(nfe1*sizeof(int));
+  fe2 = (MEdge_ptr *) MSTK_malloc(nfe2*sizeof(MEdge_ptr));
+  fedir2 = (int *) MSTK_malloc(nfe2*sizeof(int));
+  fe3 = (MEdge_ptr *) MSTK_malloc((nfe1+nfe2-2)*sizeof(MEdge_ptr));
+  fedir3 = (int *) MSTK_malloc((nfe1+nfe2-2)*sizeof(int));
 
   fedges = MF_Edges(f1,1,0);
   for (i = 0, k1 = -1; i < nfe1; i++) {
@@ -78,9 +78,9 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   MF_Set_GEntDim(nuface,gdim);
   MF_Set_GEntID(nuface,gid);
 
-  free(fe1); free(fedir1);
-  free(fe2); free(fedir2);
-  free(fe3); free(fedir3);
+  MSTK_free(fe1); MSTK_free(fedir1);
+  MSTK_free(fe2); MSTK_free(fedir2);
+  MSTK_free(fe3); MSTK_free(fedir3);
 
   return nuface;
 }
