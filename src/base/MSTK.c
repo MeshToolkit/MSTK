@@ -12,8 +12,11 @@ extern "C" {
   unsigned int MSTK_marker = 0;
   int MSTK_MAXBITS = 8*sizeof(unsigned int);
   int MSTK_lastbit = -1;
+  
+  int MSTK_KEEP_DELETED;
 
   void MSTK_Init() {
+    MSTK_KEEP_DELETED = 0;
 
     MV_Print(0,0);
     ME_Print(0,0);
