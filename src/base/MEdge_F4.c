@@ -145,15 +145,6 @@ extern "C" {
   void ME_Add_Face_F4(MEdge_ptr e, MFace_ptr f) {
     MEdge_UpAdj_F4 *upadj;
 
-#ifdef DEBUG
-    /* Can't really check this since the downward adjacencies are not complete */
-    /*
-    if (MF_Region(f,0) || MF_Region(f,1))
-      MSTK_Report("ME_Add_Face",
-		  "Only faces without regions must be added",ERROR);
-    */
-#endif
-
     upadj = (MEdge_UpAdj_F4 *) e->upadj;
 
     if (upadj->elements == NULL)
@@ -166,15 +157,6 @@ extern "C" {
     MEdge_UpAdj_F4 *upadj;
     List_ptr fregs;
     int ok;
-
-#ifdef DEBUG
-    if (fregs = MF_Regions(f)) {
-      List_Delete(fregs);
-      MSTK_Report("ME_Rem_Face","Only faces without regions can be removed",
-		  ERROR);
-      return;
-    }
-#endif
 
     upadj = (MEdge_UpAdj_F4 *) e->upadj;
 
