@@ -1001,7 +1001,8 @@ returned with a cw ordering (See Figure~\ref{fig:face_def}).
   only relevant for full representations in MSTK.
   
 \item[]\textbf{\textit{void} MR\_Set\_Vertices(\textit{MRegion\_ptr}
-    mregion, \textit{int} nv, \textit{MVertex\_ptr} *mvertices):} Set
+    mregion, \textit{int} nv, \textit{MVertex\_ptr} *mvertices, 
+    \textit{int} nf, \textit{int} **rfv\_template):} Set
   the vertices of the region. This routine will collect/build all
   lower order topological information (edges, edge directions in the
   face) as needed by the face. For standard elements, the vertices
@@ -1013,7 +1014,7 @@ returned with a cw ordering (See Figure~\ref{fig:face_def}).
   pointers to integer array $i$. The first entry of each
   \textbf{rfv\_template$[i]$} represents the number of vertices in that
   face and the remaining entries represent the list of vertices of the
-  face listed so that the face defined by them points outward.
+  face listed so that the face defined by them points out of the region.
   
 \item[]\textbf{\textit{void} MR\_Replace\_Face(\textit{MRegion\_ptr}
     mregion, \textit{MFace\_ptr} mface, \textit{MFace\_ptr} nuface,
