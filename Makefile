@@ -13,8 +13,8 @@ ifeq ($(ARCHOS),i686_linux)
   LDFLAGS := -lm
 endif
 
-DEVROOT = $(HOME)/develop
-MSTK_UTIL := $(DEVROOT)/mstkutil/1.0
+TOPDIR = $(HOME)/develop
+MSTK_UTIL := $(TOPDIR)/mstkutil/1.0
 
 LIBDIR = ./lib
 MSTK_UTIL_INC = -I$(MSTK_UTIL)/include
