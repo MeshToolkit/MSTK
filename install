@@ -20,6 +20,18 @@ INSTALL_LIBDIR=$INSTALL_TOPDIR/lib/$ARCHOS
 INSTALL_INCDIR=$INSTALL_TOPDIR/include/mstk-$VER
 INSTALL_INCDIR_DEFAULT=$INSTALL_TOPDIR/include/mstk
 
+# MAKE THIS THE DEFAULT VERSION?
+
+default=n
+echo "Do you want to make the installed version the default?"
+read ans
+if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+then
+  default=y
+fi
+
+
+
 if [ ! -d $INSTALL_INCDIR ]
 then
   mkdir -p $INSTALL_INCDIR
@@ -54,6 +66,10 @@ fi
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
   cp $LOCAL_LIBDIR/libmstk.a $INSTALL_LIBDIR/libmstk-$VER.a
+fi
+
+if [ "$default" == "y" ]
+then
   ln -sf $INSTALL_LIBDIR/libmstk-$VER.a $INSTALL_LIBDIR/libmstk.a 
 fi
 
@@ -67,6 +83,10 @@ fi
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
   cp $LOCAL_LIBDIR/libmstk-d.a $INSTALL_LIBDIR/libmstk-d-$VER.a
+fi
+
+if [ "$default" == "y" ]
+then
   ln -sf $INSTALL_LIBDIR/libmstk-d-$VER.a $INSTALL_LIBDIR/libmstk-d.a 
 fi
 
