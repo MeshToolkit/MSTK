@@ -10,62 +10,64 @@ VER=$1
 
 ARCHOS=i686_linux
 
-INSTALLDIR=$HOME
+INSTALL_TOPDIR=$HOME
 
 #----------- DO NOT EDIT BELOW THIS LINE --------------------------------------
 
-LIBDIR=./lib
-INCDIR=./include 
+LOCAL_LIBDIR=./lib/$ARCHOS
+LOCAL_INCDIR=./include/
+INSTALL_LIBDIR=$INSTALL_TOPDIR/lib/$ARCHOS
+INSTALL_INCDIR=$INSTALL_TOPDIR/include/mstk-$VER
+INSTALL_INCDIR_DEFAULT=$INSTALL_TOPDIR/include/mstk
 
-if [ ! -d $INSTALLDIR/include ]
+if [ ! -d $INSTALL_INCDIR ]
 then
-  mkdir -p $INSTALLDIR/include
+  mkdir -p $INSTALL_INCDIR
 fi
+ln -sf $INSTALL_INCDIR $INSTALL_INCDIR_DEFAULT 
 
-if [ ! -d $INSTALLDIR/lib/$ARCHOS ]
+if [ ! -d $INSTALL_LIBDIR ]
 then
-  mkdir -p $INSTALLDIR/lib/$ARCHOS
+  mkdir -p $INSTALL_LIBDIR
 fi
 
 ans=y
-if [ -f $INSTALLDIR/include/MSTK-$VER.h ]
+if [ -f $INSTALL_INCDIR/MSTK.h ]
 then
-  echo $INSTALLDIR/include/MSTK-$VER.h " exists!! Overwrite?"
+  echo $INSTALL_INCDIR/MSTK.h " exists!! Overwrite?"
   read ans
 fi
 
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
-  cp $INCDIR/MSTK.h $INSTALLDIR/include/MSTK-$VER.h
-  cp $INCDIR/MSTK_defines.h $INSTALLDIR/include/MSTK_defines-$VER.h
-  cp $INCDIR/MSTK_types.h $INSTALLDIR/include/MSTK_types-$VER.h
-  ln -sf $INSTALLDIR/include/MSTK-$VER.h $INSTALLDIR/include/MSTK.h
-  ln -sf $INSTALLDIR/include/MSTK_defines-$VER.h $INSTALLDIR/include/MSTK_defines.h
-  ln -sf $INSTALLDIR/include/MSTK_types-$VER.h $INSTALLDIR/include/MSTK_types.h
+  cp $LOCAL_INCDIR/MSTK.h $LOCAL_INCDIR/MSTK_defines.h \
+     $LOCAL_INCDIR/MSTK_types.h $INSTALL_INCDIR
 fi
 
 ans=y
-if [ -f $INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a ]
+if [ -f $INSTALL_LIBDIR/libmstk-$VER.a ]
 then
-  echo "$INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a exists!! Overwrite?"
+  echo "$INSTALL_LIBDIR/libmstk-$VER.a exists!! Overwrite?"
   read ans
 fi
 
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
-  cp $LIBDIR/$ARCHOS/libmstk.a $INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a
-  ln -sf $INSTALLDIR/lib/$ARCHOS/libmstk-$VER.a $INSTALLDIR/lib/$ARCHOS/libmstk.a 
+  cp $LOCAL_LIBDIR/libmstk.a $INSTALL_LIBDIR/libmstk-$VER.a
+  ln -sf $INSTALL_LIBDIR/libmstk-$VER.a $INSTALL_LIBDIR/libmstk.a 
 fi
 
 ans=y
-if [ -f $INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a ]
+if [ -f $INSTALL_LIBDIR/libmstk-d-$VER.a ]
 then
-  echo "$INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a exists!! Overwrite?"
+  echo "$INSTALL_LIBDIR/libmstk-d-$VER.a exists!! Overwrite?"
   read ans
 fi
 
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
-  cp $LIBDIR/$ARCHOS/libmstk-d.a $INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a
-  ln -sf $INSTALLDIR/lib/$ARCHOS/libmstk-d-$VER.a $INSTALLDIR/lib/$ARCHOS/libmstk-d.a 
+  cp $LOCAL_LIBDIR/libmstk-d.a $INSTALL_LIBDIR/libmstk-d-$VER.a
+  ln -sf $INSTALL_LIBDIR/libmstk-d-$VER.a $INSTALL_LIBDIR/libmstk-d.a 
 fi
+
+
