@@ -31,10 +31,12 @@ extern "C" {
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
 
     if (f->dim != MDELFACE) { /* if face has not been temporarily deleted */
-      nv = downadj->nv;
-      for (i = 0; i < nv; i++) {
-	v = List_Entry(downadj->fvertices,i);
-	MV_Rem_Face(v,f);
+      if (downadj) {
+	nv = downadj->nv;
+	for (i = 0; i < nv; i++) {
+	  v = List_Entry(downadj->fvertices,i);
+	  MV_Rem_Face(v,f);
+	}
       }
     }
 
@@ -48,10 +50,14 @@ extern "C" {
 #endif
 
       upadj  = (MFace_UpAdj_R3R4 *) f->upadj;
-      MSTK_free(upadj);
+      if (upadj)
+	MSTK_free(upadj);
 
-      List_Delete(downadj->fvertices);
-      MSTK_free(downadj);
+      if (downadj) {
+	if (downadj->fvertices)
+	  List_Delete(downadj->fvertices);
+	MSTK_free(downadj);
+      }
 
       MSTK_free(f);
     }
@@ -75,6 +81,23 @@ extern "C" {
     }
   }
   
+  void MF_Destroy_For_MESH_Delete_R4(MFace_ptr f) {
+    MFace_UpAdj_R3R4 *upadj;
+    MFace_DownAdj_R3R4 *downadj;
+
+    upadj  = (MFace_UpAdj_R3R4 *) f->upadj;
+    if (upadj)
+      MSTK_free(upadj);
+
+    downadj = (MFace_DownAdj_R3R4 *) f->downadj;
+    if (downadj) {
+      if (downadj->fvertices)
+	List_Delete(downadj->fvertices);
+      MSTK_free(downadj);
+    }
+
+    MSTK_free(f);
+  }
 
   void MF_Set_Edges_R4(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
 #ifdef DEBUG

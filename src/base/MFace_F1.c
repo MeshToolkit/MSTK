@@ -33,10 +33,14 @@ extern "C" {
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
     if (f->dim != MDELFACE) { /* if face has not been temporarily deleted */
-      ne = List_Num_Entries(downadj->fedges);
-      for (i = 0; i < ne; i++) {
-	e = List_Entry(downadj->fedges,i);
-	ME_Rem_Face(e,f);
+      if (downadj) {
+	if (downadj->fedges) {
+	  ne = List_Num_Entries(downadj->fedges);
+	  for (i = 0; i < ne; i++) {
+	    e = List_Entry(downadj->fedges,i);
+	    ME_Rem_Face(e,f);
+	  }
+	}
       }
     }
 
@@ -50,11 +54,13 @@ extern "C" {
 #endif
 
       upadj = (MFace_UpAdj_F1F3 *) f->upadj;
-      MSTK_free(upadj);
+      if (upadj)
+	MSTK_free(upadj);
 
-      List_Delete(downadj->fedges);
-      MSTK_free(downadj);
-      
+      if (downadj) {
+	List_Delete(downadj->fedges);
+	MSTK_free(downadj);
+      }
       MSTK_free(f);
     }
   }
@@ -78,6 +84,24 @@ extern "C" {
     }
   }
 
+  void MF_Destroy_For_MESH_Delete_F1(MFace_ptr f) {
+    MFace_UpAdj_F1F3 *upadj;
+    MFace_DownAdj_FN *downadj;
+
+    upadj = (MFace_UpAdj_F1F3 *) f->upadj;
+    if (upadj)
+      MSTK_free(upadj);
+    
+    downadj = (MFace_DownAdj_FN *) f->downadj;
+    if (downadj) {
+      if (downadj->fedges)
+	List_Delete(downadj->fedges);
+      MSTK_free(downadj);
+    }
+    
+    MSTK_free(f);
+  }
+
   void MF_Set_Edges_F1(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
     MF_Set_Edges_FN(f,n,e,dir);
   }
@@ -91,9 +115,7 @@ extern "C" {
   }
 
   void MF_Set_Vertices_F1(MFace_ptr f, int n, MVertex_ptr *v) {
-#ifdef DEBUG
-    MSTK_Report("MF_Set_Vertices","Function call not suitable for this representation",WARN);
-#endif
+    MF_Set_Vertices_FN(f,n,v);
   }
 
   void MF_Replace_Vertex_F1(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {

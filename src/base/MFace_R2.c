@@ -18,6 +18,10 @@ extern "C" {
     MSTK_Report("MF_Delete_R2","Not Implemented",ERROR);
   }
 
+  void MF_Destroy_For_MESH_Delete_R2(MFace_ptr f) {
+    MSTK_Report("MF_Delete_R1","Not Implemented",ERROR);
+  }
+
   void MF_Set_Edges_R2(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
 #ifdef DEBUG
     MSTK_Report("MF_Set_Edges","Function call not suitable for this representation",WARN);
