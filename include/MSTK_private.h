@@ -35,6 +35,10 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r);
 
 
+  void       MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
+  void       MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
+
+
 /*
   void MV_Set_RepType(MVertex_ptr v, RepType rtype);
 */
@@ -82,6 +86,15 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   void MR_Add_AdjRegion(MRegion_ptr r, int facenum, MRegion_ptr ar);
   void MR_Rem_AdjRegion(MRegion_ptr r, MRegion_ptr ar);
+
+  /* Private functions for defining instance of attributes, i.e., objects 
+     carry the actual attribute value for some mesh entity */
+
+  MAttIns_ptr MAttIns_New(MAttrib_ptr attrib);
+  MAttrib_ptr MAttIns_Attrib(MAttIns_ptr att);
+  void        MAttIns_Set_Value(MAttIns_ptr att, int ival, double rval, void *pval);
+  int         MAttIns_Get_Value(MAttIns_ptr att, int *ival, double *rval, void **pval);
+  void        MAttIns_Delete(MAttIns_ptr att);
 
 
 #ifdef __cplusplus
