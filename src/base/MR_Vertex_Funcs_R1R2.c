@@ -20,6 +20,7 @@ extern "C" {
     same = 1;
     rgdim = -1;
     rgid = -1;
+    vgid = -1;
 
     v = List_Entry(downadj->rvertices,0);    
     vgid0 = MV_GEntID(v);

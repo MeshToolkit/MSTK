@@ -170,7 +170,7 @@ extern "C" {
   }
 
   int MFs_AreSame(MFace_ptr f1, MFace_ptr f2) {
-    RepType RTYPE;
+    RepType RTYPE = MEnt_RepType(f1);
     return (*MFs_AreSame_jmp[RTYPE])(f1,f2);
   }
 

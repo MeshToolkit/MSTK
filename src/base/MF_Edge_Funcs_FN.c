@@ -19,6 +19,7 @@ extern "C" {
     same = 1;
     fgdim = -1;
     fgid = -1;
+    egid = -1;
 
     e = List_Entry(downadj->fedges,0);    
     egid0 = ME_GEntID(e);

@@ -21,6 +21,7 @@ extern "C" {
     same = 1;
     rgdim = -1;
     rgid = -1;
+    fgid = -1;
 
     f = List_Entry(downadj->rfaces,0);    
     fgid0 = MF_GEntID(f);

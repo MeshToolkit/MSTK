@@ -28,7 +28,7 @@ extern "C" {
     MEntity_ptr ent;
     MFace_ptr face, lstface;
     MRegion_ptr reg;
-    List_ptr rfaces, vfaces1, efaces, vregs0, vregs1, cmnregs;
+    List_ptr rfaces, vfaces1, efaces, vregs0, vregs1, cmnregs=NULL;
 
     efaces = List_New(0);
 

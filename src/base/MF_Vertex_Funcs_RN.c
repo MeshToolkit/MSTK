@@ -21,6 +21,7 @@ extern "C" {
     same = 1;
     fgdim = -1;
     fgid = -1;
+    vgid = -1;
 
     v = List_Entry(downadj->fvertices,0);    
     vgid0 = MV_GEntID(v);

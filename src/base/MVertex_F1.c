@@ -132,7 +132,7 @@ extern "C" {
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
     vedges = upadj->vedges;
     if (!upadj->vedges)
-      return;
+      return NULL;
     ne = List_Num_Entries(vedges);
 
     n = 0;
@@ -179,7 +179,7 @@ extern "C" {
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
     vedges = upadj->vedges;
     if (!upadj->vedges)
-      return;
+      return NULL;
     ne = List_Num_Entries(upadj->vedges);
 
     n = 0;

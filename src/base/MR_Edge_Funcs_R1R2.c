@@ -11,7 +11,7 @@ extern "C" {
 
   List_ptr MR_Edges_R1R2(MRegion_ptr r) {
     MRegion_DownAdj_R1R2 *downadj;
-    int i, j, k, i2, j2, iv0, iv1, iv02, iv12, nv, ne, nf, nfv, found, nfv2;
+    int i, j, i2, j2, iv0, iv1, iv02, iv12, nv, ne, nf, nfv, found, nfv2;
     MRType regtype;
     MVertex_ptr v0, v1;
     MEdge_ptr edge;
@@ -40,7 +40,7 @@ extern "C" {
 	  
 	  found = 0;
 	  for (i2 = 0; i2 < i; i2++) {
-	    nfv2 = downadj->fvtemplate[k+1][0];
+	    nfv2 = downadj->fvtemplate[i2+1][0];
 	    for (j2 = 0; j2 < nfv2; j2++) {
 	      iv02 = downadj->fvtemplate[i2+1][j2+1];
 	      iv12 = downadj->fvtemplate[i2+1][(j2+1)%nfv2+1];

@@ -13,7 +13,7 @@ extern "C" {
     MVertex_ptr v, rv;
     MRegion_ptr r;
     List_ptr vregs, rverts, fregs;
-    int nfv, nr, idx, i, fnd, idx1;
+    int nfv, nr, idx, i, fnd=0, idx1;
     
     v = List_Entry(downadj->fvertices,0);
     vregs = MV_Regions(v);

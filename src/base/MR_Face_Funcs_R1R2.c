@@ -83,7 +83,7 @@ extern "C" {
   int MR_FaceDir_R1R2(MRegion_ptr r, MFace_ptr f) {
     MRegion_DownAdj_R1R2 *downadj;
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    int fvids[MAXPV2], nfv, nfv2, idx, i, j, k, dir, fnd, same, nf;
+    int fvids[MAXPV2], nfv, nfv2, idx, i, j, k, dir=-1, fnd, same, nf;
     List_ptr fverts;
     MVertex_ptr v;
 
@@ -116,7 +116,7 @@ extern "C" {
 	   face of the region and are they in the same or reverse
 	   order */
 
-	for (j = 0, fnd = 0; !fnd && (j < nfv); j++)
+	for (j = 0, fnd = 0, k = -1; !fnd && (j < nfv); j++)
 	  if (downadj->fvtemplate[1+i][1+j] == fvids[0]) {
 	    if (downadj->fvtemplate[1+i][1+(j+1)%nfv] == fvids[1]) {
 	      fnd = 1;
@@ -169,7 +169,7 @@ extern "C" {
 	   face of the region and are they in the same or reverse
 	   order */
 
-	for (j = 0, fnd = 0; !fnd && (j < nfv); j++)
+	for (j = 0, fnd = 0, k = -1; !fnd && (j < nfv); j++)
 	  if (MSTK_rfv_template[rgtyp][i][1+j] == fvids[0]) {
 	    if (MSTK_rfv_template[rgtyp][i][1+(j+1)%nfv] == fvids[1]) {
 	      fnd = 1;
