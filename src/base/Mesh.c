@@ -49,7 +49,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     nr = mesh->nr;
     i = 0;
     while ((mr = List_Next_Entry(mesh->mregion,&i))) {
-      MR_Delete(mr,0);
+      MR_Destroy_For_MESH_Delete(mr);
     }
     List_Delete(mesh->mregion);
   }
@@ -57,7 +57,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     nf = mesh->nf;
     i = 0;
     while ((mf = List_Next_Entry(mesh->mface,&i))) {
-      MF_Delete(mf,0);
+      MF_Destroy_For_MESH_Delete(mf);
     }
     List_Delete(mesh->mface);
   }
@@ -65,7 +65,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     ne = mesh->ne;
     i = 0;
     while ((me = List_Next_Entry(mesh->medge,&i))) {
-      ME_Delete(me,0);
+      ME_Destroy_For_MESH_Delete(me);
     }
     List_Delete(mesh->medge);
   }
@@ -73,7 +73,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     nv = mesh->nv;
     i = 0;
     while ((mv = List_Next_Entry(mesh->mvertex,&i))) {
-      MV_Delete(mv,0);
+      MV_Destroy_For_MESH_Delete(mv);
     }
     List_Delete(mesh->mvertex);
   }
@@ -127,7 +127,7 @@ MAttrib_ptr MESH_Next_Attrib(Mesh_ptr mesh, int *index) {
     return NULL;
 }
 
-MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, char *name) {
+MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, const char *name) {
   if (mesh->AttribList) {
     int idx = 0;
     MAttrib_ptr attrib;
@@ -249,6 +249,147 @@ MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
     return (MRegion_ptr) List_Next_Entry(mesh->mregion, index);
   else
     return NULL;
+}
+
+  /* The current implementation of following four functions,
+     MESH_*FromID, relies on the fact the the mesh entities are stored
+     in linear arrays. So go to the (ID-1)'th element in the list. If
+     it is a static mesh, this will be the element with the right
+     ID. If not, search before this (ID-1)'th upto the beginning of
+     the list. Chances are some elements got deleted and the list got
+     compressed. If still not found, search after the (ID-1)'th entry
+     upto the end of the list. This should be quite efficient for
+     static meshes and modestly efficient for dynamic meshes. However,
+     if we use a different data structure to store mesh entities (like
+     a tree), the efficiency may decrease. So, use with care!!!! */
+
+
+MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
+  MVertex_ptr mv;
+
+  if (id < 1)
+    return NULL;
+
+  istart = id-1;
+  if (istart < mesh->nv) {
+    mv = (MVertex_ptr) List_Entry(mesh->mvertex,istart);
+    if (MV_ID(mv) == id)
+      return mv;
+  }
+  else
+    istart = mesh->nv-1;
+  
+    
+  for (j = istart; j >= 0; j--) {
+    mv = (MVertex_ptr) List_Entry(mesh->mvertex,j);
+    if (MV_ID(mv) == id)
+      return mv;
+  }
+
+  for (j = istart; j < mesh->nv; j++) {
+    mv = (MVertex_ptr) List_Entry(mesh->mvertex,j);
+    if (MV_ID(mv) == id)
+      return mv;
+  }
+
+  return NULL;
+}
+
+MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
+  MEdge_ptr me;
+
+  if (id < 1)
+    return NULL;
+
+  istart = id-1;
+  if (istart < mesh->ne) {
+    me = (MEdge_ptr) List_Entry(mesh->medge,istart);
+    if (ME_ID(me) == id)
+      return me;
+  }
+  else
+    istart = mesh->ne-1;
+  
+    
+  for (j = istart; j >= 0; j--) {
+    me = (MEdge_ptr) List_Entry(mesh->medge,j);
+    if (ME_ID(me) == id)
+      return me;
+  }
+
+  for (j = istart; j < mesh->ne; j++) {
+    me = (MEdge_ptr) List_Entry(mesh->medge,j);
+    if (ME_ID(me) == id)
+      return me;
+  }
+
+  return NULL;
+}
+
+MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
+  MFace_ptr mf;
+
+  if (id < 1)
+    return NULL;
+
+  istart = id-1;
+  if (istart < mesh->nf) {
+    mf = (MFace_ptr) List_Entry(mesh->mface,istart);
+    if (MF_ID(mf) == id)
+      return mf;
+  }
+  else
+    istart = mesh->nf-1;
+  
+    
+  for (j = istart; j >= 0; j--) {
+    mf = (MFace_ptr) List_Entry(mesh->mface,j);
+    if (MF_ID(mf) == id)
+      return mf;
+  }
+
+  for (j = istart; j < mesh->nf; j++) {
+    mf = (MFace_ptr) List_Entry(mesh->mface,j);
+    if (MF_ID(mf) == id)
+      return mf;
+  }
+
+  return NULL;
+}
+
+MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
+  MRegion_ptr mr;
+
+  if (id < 1)
+    return NULL;
+
+  istart = id-1;
+  if (istart < mesh->nr) {
+    mr = (MRegion_ptr) List_Entry(mesh->mregion,istart);
+    if (MR_ID(mr) == id)
+      return mr;
+  }
+  else
+    istart = mesh->nr-1;
+  
+    
+  for (j = istart; j >= 0; j--) {
+    mr = (MRegion_ptr) List_Entry(mesh->mregion,j);
+    if (MR_ID(mr) == id)
+      return mr;
+  }
+
+  for (j = istart; j < mesh->nr; j++) {
+    mr = (MRegion_ptr) List_Entry(mesh->mregion,j);
+    if (MR_ID(mr) == id)
+      return mr;
+  }
+
+  return NULL;
 }
 
 void MESH_Add_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
@@ -377,14 +518,14 @@ int  MESH_ChangeRepType(Mesh_ptr mesh, RepType nureptype){
   return 1;
 }
 
-/* File name should have the .msk extension - will not check here */
+/* File name should have the .mstk extension - will not check here */
 int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   FILE *fp;
   char inp_rtype[16], temp_str[256], fltype_str[16], rltype_str[16];
   int i, j, found, NV=0, NE=0, NF=0, NR=0, nav, nar, gdim, gid;
   int vid1, vid2, eid, fid, rid, adjvid, adjrid, adjv_flag;
   int nfv, max_nfv=0, nfe, max_nfe=0, nrv, max_nrv=0, nrf, max_nrf=0;
-  int *fedirs, *rfdirs;
+  int *fedirs, *rfdirs, status;
   double ver, xyz[3];
   MVertex_ptr mv, ev1, ev2, adjv, *fverts, *rverts;
   MEdge_ptr me, *fedges;
@@ -397,18 +538,26 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     return 0;
   }
 
-  fscanf(fp,"%s %lf",temp_str,&ver);
+  status = fscanf(fp,"%s %lf",temp_str,&ver);
   if (strcmp(temp_str,"MSTK") != 0) {
     MSTK_Report("MESH_InitFromFile","Not a MSTK file",ERROR);
     fclose(fp);
     return 0;
   }
+  if (status == EOF)
+    MSTK_Report("MESH_InitFromFile",
+		"Premature end of file before any mesh data is read",FATAL);
 
   if (ver != MSTK_VER) {
     MSTK_Report("MESH_InitFromFile","Version mismatch",WARN);
   }
 
-  fscanf(fp,"%s %d %d %d %d\n",inp_rtype,&(mesh->nv),&(mesh->ne),&(mesh->nf),&(mesh->nr));
+  status = fscanf(fp,"%s %d %d %d %d\n",inp_rtype,
+		  &(mesh->nv),&(mesh->ne),&(mesh->nf),&(mesh->nr));
+  if (status == EOF)
+    MSTK_Report("MESH_InitFromFile",
+		"Premature end of file before any mesh data is read",FATAL);
+
 
   found = 0;
   for (i = 0; i < MSTK_MAXREP; i++) {
@@ -431,19 +580,27 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
   if (mesh->reptype >= R1 && mesh->reptype <= R4) {
     if (mesh->ne)
-      MSTK_Report("Mesh_InitFromFile","Representation does not allow edges",WARN);
+      MSTK_Report("Mesh_InitFromFile",
+		  "Representation does not allow edges",WARN);
   }
 
 
-  fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"vertices",8) == 0) {
+  status = fscanf(fp,"%s",temp_str);
+  if (status == EOF)
+    MSTK_Report("MESH_InitFromFile",
+		"Premature end of file while looking for vertex data",FATAL);
+
+  if (strncmp(temp_str,"vertices",8) == 0) {
 
     NV = mesh->nv;
     mesh->mvertex = List_New(NV);
 
     for (i = 0; i < NV; i++) {
-      fscanf(fp,"%lf %lf %lf %d %d",&xyz[0],&xyz[1],&xyz[2],&gdim,&gid);
-      
+      status = fscanf(fp,"%lf %lf %lf %d %d",&xyz[0],&xyz[1],&xyz[2],&gdim,&gid);
+      if (status == EOF)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file while reading vertices",FATAL);
+
       mv = MV_New(mesh);
       MV_Set_Coords(mv,xyz);
       
@@ -454,24 +611,48 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
   }
   else {
-    MSTK_Report("MESH_InitFromFile","Vertex information should be listed first",ERROR);
+    MSTK_Report("MESH_InitFromFile",
+		"Vertex information should be listed first",ERROR);
     fclose(fp);
     return 0;
   }
 
 
-  fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"adjvertices",11) == 0) {
+  status = fscanf(fp,"%s",temp_str);
+  if (status == EOF) {
+    if (mesh->ne || mesh->nf || mesh->nr)
+      MSTK_Report("MESH_InitFromFile",
+		  "Premature end of file after vertex data",FATAL);
+    else
+      return 0;
+  }
+
+
+
+  /* ADJACENT VERTEX DATA */
+
+  if (strncmp(temp_str,"adjvertices",11) == 0) {
     adjv_flag = 1;
     if (mesh->reptype == R2 || mesh->reptype == R4) {
       for (i = 0; i < NV; i++) {
-	fscanf(fp,"%d",&nav);
+	status = fscanf(fp,"%d",&nav);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading adjacent vertices",
+		      FATAL);
+
 	for (j = 0; j < nav; j++) {
-	  fscanf(fp,"%d",&adjvid);
+	  status = fscanf(fp,"%d",&adjvid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading adjacent vertices"
+			,FATAL);
+
 	  adjv = List_Entry(mesh->mvertex,adjvid-1);
 #ifdef DEBUG
 	  if (MV_ID(adjv) != adjvid)
-	    MSTK_Report("MESH_InitFromFile","Adjacent vertex ID mismatch",ERROR);
+	    MSTK_Report("MESH_InitFromFile","Adjacent vertex ID mismatch",
+			ERROR);
 #endif
 	  
 	  MV_Add_AdjVertex(mesh->mvertex,adjv);
@@ -480,7 +661,12 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
     else {
       for (i = 0; i < NV; i++) {
-	fscanf(fp,"%d",&nav);
+	status = fscanf(fp,"%d",&nav);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading adjacent vertices",
+		      FATAL);
+	
 	for (j = 0; j < nav; j++)
 	  fscanf(fp,"%d",&adjvid);
       }
@@ -489,20 +675,39 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   else {
     adjv_flag = 0;
     if (mesh->reptype == R2 || mesh->reptype == R4) {
-      MSTK_Report("MESH_InitFromFile","Expected adjacent vertex information",ERROR);
+      MSTK_Report("MESH_InitFromFile",
+		  "Expected adjacent vertex information",ERROR);
     }
   }
     
-  if (adjv_flag)
-    fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"edges",5) == 0) {
+
+  if (adjv_flag) {
+    status = fscanf(fp,"%s",temp_str);
+    if (status == EOF) {
+      if (mesh->ne || mesh->nf || mesh->nr)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature fnd of file after adjacent vertex data",FATAL);
+      else
+	return 1;
+    }
+  }
+
+
+
+  /* EDGE DATA */
+
+  if (strncmp(temp_str,"edges",5) == 0) {
 
     NE = mesh->ne;
     mesh->medge = List_New(NE);
 
     if (mesh->reptype >= F1 || mesh->reptype <= F4) {
       for (i = 0; i < NE; i++) {
-	fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
+	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading edges",FATAL);
+
 	ev1 = List_Entry(mesh->mvertex,vid1-1);
 	ev2 = List_Entry(mesh->mvertex,vid2-1);
 #ifdef DEBUG
@@ -522,8 +727,12 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
     }
     else {
-      for (i = 0; i < NE; i++)
-	fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
+      for (i = 0; i < NE; i++) {
+	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading edges",FATAL);
+      }
     }
   }
   else {
@@ -533,24 +742,44 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
   }
   
-  fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"face",4) == 0) {
-    if (strncasecmp(temp_str,"faces",5) != 0) 
+  status = fscanf(fp,"%s",temp_str);
+  if (status == EOF) {
+    if (mesh->nf || mesh->nr) {
+      MSTK_Report("MESH_InitFromFile",
+		  "Premature end of file after edge data",FATAL);
+    }
+    else
+      return 1;
+  }
+
+
+
+  /* FACE DATA */
+
+  if (strncmp(temp_str,"face",4) == 0) {
+    if (strncmp(temp_str,"faces",5) != 0) 
       MSTK_Report("MESH_InitFromFile","Expected keyword \"faces\"",ERROR);
     
     NF = mesh->nf;
     mesh->mface = List_New(NF);
 
-    fscanf(fp,"%s",fltype_str);
+    status = fscanf(fp,"%s",fltype_str);
+    if (status == EOF)
+      MSTK_Report("MESH_InitFromFile",
+		  "Premature end of file while reading faces",FATAL);
 
-    if (strncasecmp(fltype_str,"vertex",6) == 0) {      
+    if (strncmp(fltype_str,"vertex",6) == 0) {      
       if (mesh->reptype >= R1 && mesh->reptype <= R4) {
 
 	fverts = NULL;
 	for (i = 0; i < NF; i++) {
 	  mf = MF_New(mesh);
 
-	  fscanf(fp,"%d",&nfv);
+	  status = fscanf(fp,"%d",&nfv);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading faces",FATAL);
+
 	  if (fverts) {
 	    if (nfv > max_nfv) {
 	      max_nfv = nfv;
@@ -563,7 +792,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  
 	  for (j = 0; j < nfv; j++) {
-	    fscanf(fp,"%d",&vid1);
+	    status = fscanf(fp,"%d",&vid1);
+	    if (status == EOF)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Premature end of file while reading face vertex data",FATAL);
+
 	    fverts[j] = List_Entry(mesh->mvertex,vid1-1);
 #ifdef DEBUG
 	    if (MV_ID(fverts[j]) != vid1)
@@ -572,7 +805,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  MF_Set_Vertices(mf,nfv,fverts);  
 
-	  fscanf(fp,"%d %d",&gdim,&gid);
+	  status = fscanf(fp,"%d %d",&gdim,&gid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile","Premature end of file",FATAL);
 	  
 	  MF_Set_GEntID(mf,gid);
 	  MF_Set_GEntDim(mf,gdim);
@@ -583,19 +818,25 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_free(fverts);
       }
       else {
-	MSTK_Report("MESH_InitFromFile","Expected face description in terms of vertices",ERROR);
+	MSTK_Report("MESH_InitFromFile",
+		    "Expected face description in terms of vertices",ERROR);
         fclose(fp);
 	return 0;
       }
     }
-    else if (strncasecmp(fltype_str,"edge",4) == 0) {
+    else if (strncmp(fltype_str,"edge",4) == 0) {
       if (mesh->reptype >= F1 && mesh->reptype <= F4) { 
 
 	fedges = NULL;	fedirs = NULL;
 	for (i = 0; i < NF; i++) {
 	  mf = MF_New(mesh);
 
-	  fscanf(fp,"%d",&nfe);
+	  status = fscanf(fp,"%d",&nfe);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading face edge data",
+			FATAL);
+
 	  if (fedges) {
 	    if (nfe > max_nfe) {
 	      max_nfe = nfe;
@@ -610,7 +851,12 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  
 	  for (j = 0; j < nfe; j++) {
-	    fscanf(fp,"%d",&eid);
+	    status = fscanf(fp,"%d",&eid);
+	    if (status == EOF)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Premature end of file while reading face edge data",
+			  FATAL);
+
 	    fedirs[j] = eid > 0 ? 1 : 0;
 	    fedges[j] = List_Entry(mesh->medge,abs(eid)-1);
 #ifdef DEBUG
@@ -621,7 +867,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  
 	  MF_Set_Edges(mf,nfe,fedges,fedirs);
 	  
-	  fscanf(fp,"%d %d",&gdim,&gid);
+	  status = fscanf(fp,"%d %d",&gdim,&gid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading faces",FATAL);
 	  
 	  MF_Set_GEntDim(mf,gdim);
 	  MF_Set_GEntID(mf,gid);
@@ -634,7 +883,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	}
       }
       else {
-	MSTK_Report("MESH_InitFromFile","Expect face description in terms of vertices",ERROR);
+	MSTK_Report("MESH_InitFromFile",
+		    "Expect face description in terms of vertices",ERROR);
 	return 0;
       }
     }
@@ -648,23 +898,42 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   
   
-  fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"region",6) == 0) {
-    if (strncasecmp(temp_str,"regions",7) != 0) 
+  status = fscanf(fp,"%s",temp_str);
+  if (status == EOF) {
+    if (mesh->nr != 0)
+      MSTK_Report("MESH_InitFromFile",
+		  "Premature end of file after face data",FATAL);
+    else
+      return 1;
+  }
+
+
+  /* REGION DATA */
+
+  if (strncmp(temp_str,"region",6) == 0) {
+    if (strncmp(temp_str,"regions",7) != 0) 
       MSTK_Report("MESH_InitFromFile","Expected keyword \"regions\"",ERROR);
 
     NR = mesh->nr;
     mesh->mregion = List_New(NR);
 
-    fscanf(fp,"%s",rltype_str);
+    status = fscanf(fp,"%s",rltype_str);
+    if (status == EOF)
+      MSTK_Report("MESH_InitFromFile",
+		  "Premature end of file while reading regions",FATAL);
 
-    if (strncasecmp(rltype_str,"vertex",6) == 0) {
+    if (strncmp(rltype_str,"vertex",6) == 0) {
       if (mesh->reptype == R1 || mesh->reptype == R2) {
 	rverts = NULL;
 	for (i = 0; i < NR; i++) {
 	  mr = MR_New(mesh);
 	  
-	  fscanf(fp,"%d",&nrv);
+	  status = fscanf(fp,"%d",&nrv);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading region vertex data"
+			,FATAL);
+
 	  if (rverts) {
 	    if (nrv > max_nrv) {
 	      max_nrv = nrv;
@@ -677,16 +946,24 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  
 	  for (j = 0; j < nrv; j++) {
-	    fscanf(fp,"%d",&vid1);
+	    status = fscanf(fp,"%d",&vid1);
+	    if (status == EOF)
+	      MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading region vertex data",
+			  FATAL);
+
 	    rverts[j] = List_Entry(mesh->mvertex,vid1-1);
 #ifdef DEBUG
 	    if (MV_ID(rverts[j]) != vid1)
 	      MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",ERROR);
 #endif
 	  }
-	  MR_Set_Vertices(mr,nrv,rverts);  
+	  MR_Set_Vertices(mr,nrv,rverts,0,NULL);  
 	  
-	  fscanf(fp,"%d %d",&gdim,&gid);
+	  status = fscanf(fp,"%d %d",&gdim,&gid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading regions",FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
 
@@ -698,19 +975,25 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_free(rverts);
       }
       else {
-	MSTK_Report("MESH_InitFromFile","Expected region description in terms of faces",ERROR);
+	MSTK_Report("MESH_InitFromFile",
+		    "Expected region description in terms of faces",ERROR);
         fclose(fp);
 	return 0;
       }
     }
-    else if (strncasecmp(rltype_str,"face",4) == 0) {
+    else if (strncmp(rltype_str,"face",4) == 0) {
       if (mesh->reptype != R1 && mesh->reptype != R2) {
 	rfaces = NULL;
 	rfdirs = NULL;
 	for (i = 0; i < NR; i++) {
 	  mr = MR_New(mesh);
 	  
-	  fscanf(fp,"%d",&nrf);
+	  status = fscanf(fp,"%d",&nrf);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading region face data",
+			FATAL);
+
 	  if (rfaces) {
 	    if (nrf > max_nrf) {
 	      max_nrf = nrf;
@@ -725,7 +1008,12 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	
 	  for (j = 0; j < nrf; j++) {
-	    fscanf(fp,"%d",&fid);
+	    status = fscanf(fp,"%d",&fid);
+	    if (status == EOF)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Premature end of file while reading region face data"
+			  ,FATAL);
+
 	    rfdirs[j] = fid > 0 ? 1 : 0;
 	    rfaces[j] = List_Entry(mesh->mface,abs(fid)-1);
 #ifdef DEBUG
@@ -736,7 +1024,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  
 	  MR_Set_Faces(mr,nrf,rfaces,rfdirs);
 	  
-	  fscanf(fp,"%d %d",&gdim,&gid);
+	  status = fscanf(fp,"%d %d",&gdim,&gid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading faces",FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
 
@@ -751,27 +1042,50 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
     }
     else {
-      MSTK_Report("MESH_InitFromFile","Expected region description in terms of vertices",ERROR);
+      MSTK_Report("MESH_InitFromFile",
+		  "Expected region description in terms of vertices",ERROR);
       fclose(fp);
       return 0;
     }
   }
 
-  fscanf(fp,"%s",temp_str);
-  if (strncasecmp(temp_str,"adjregions",10) == 0) {
+  status = fscanf(fp,"%s",temp_str);
+  if (status == EOF) {
+    if (mesh->reptype == R2)
+      MSTK_Report("MESH_InitFromFile",
+		  "Premature end of file after reading regions",FATAL);
+    else
+      return 1;
+  }
+
+
+  /* ADJACENT REGION DATA */
+
+  if (strncmp(temp_str,"adjregions",10) == 0) {
     if (mesh->reptype == R2) {
       for (i = 0; i < NR; i++) {
 	mr = List_Entry(mesh->mregion,i);
 
-	fscanf(fp,"%d",&nar);
+	status = fscanf(fp,"%d",&nar);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading adjacent regions",
+		      FATAL);
+
 	for (j = 0; j < nar; j++) {
-	  fscanf(fp,"%d",&adjrid);
+	  status = fscanf(fp,"%d",&adjrid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading ajdacent regions",
+			FATAL);
+
 	  if (adjrid == 0)
 	    continue;
 	  adjr = List_Entry(mesh->mregion,adjrid-1);
 #ifdef DEBUG
 	  if (MR_ID(adjr) != rid)
-	    MSTK_Report("MESH_InitFromFile","Adjacent region ID mismatch",ERROR);
+	    MSTK_Report("MESH_InitFromFile",
+			"Adjacent region ID mismatch",ERROR);
 #endif
 
 	  MR_Add_AdjRegion(mr,j,adjr);
@@ -780,9 +1094,19 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
     else {
       for (i = 0; i < NR; i++) {
-	fscanf(fp,"%d",&nar);
-	for (j = 0; j < nar; j++)
+	status = fscanf(fp,"%d",&nar);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading adjacent regions",
+		      FATAL);
+
+	for (j = 0; j < nar; j++) {
 	  fscanf(fp,"%d",&rid);
+	  if (status == EOF)
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading adjacent regions",
+			FATAL);
+	}
       }
     }
   }
@@ -798,7 +1122,7 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   int i, j;
   int gdim, gid;
   int mvid, mvid0, mvid1, mvid2, mrid2, meid, mfid;
-  int nav, nar, nfe, nfv, nrf, nrv, dir;
+  int nav, nar, nfe, nfv, nrf, nrv, dir=0;
   double xyz[3];
   MVertex_ptr mv, mv0, mv1, mv2;
   MEdge_ptr me;
@@ -908,7 +1232,7 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	for (j = 0; j < nfe; j++) {
 	  me = List_Entry(mfedges,j);
 	  dir = MF_EdgeDir_i(mf,j);
-	  meid = dir ? ME_ID(me) : -ME_ID(me);
+	  meid = (dir == 1) ? ME_ID(me) : -ME_ID(me);
 	  fprintf(fp,"%d ",meid);
 	}
 	List_Delete(mfedges);
@@ -964,7 +1288,7 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	for (j = 0; j < nrf; j++) {
 	  mf = List_Entry(mrfaces,j);
 	  dir = MR_FaceDir_i(mr,j);
-	  mfid = dir ? MF_ID(mf) : -MF_ID(mf);
+	  mfid = (dir == 1) ? MF_ID(mf) : -MF_ID(mf);
 	  fprintf(fp,"%d ",mfid);
 	}
 	List_Delete(mrfaces);
