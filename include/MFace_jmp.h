@@ -24,27 +24,27 @@ static void
   {MF_Set_Edges_F1, MF_Set_Edges_F4, MF_Set_Edges_R1, MF_Set_Edges_R2, 
    MF_Set_Edges_R4};
 
-void MF_Replace_Edge_FN(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_F1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_F4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_R1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_R2(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_R4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-static void (*MF_Replace_Edge_jmp[MSTK_MAXREP])
-     (MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) =
-{MF_Replace_Edge_F1, MF_Replace_Edge_F4, MF_Replace_Edge_R1, 
- MF_Replace_Edge_R2, MF_Replace_Edge_R4};
+void MF_Replace_Edges_FN(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_F1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_F4(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_R1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_R2(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_R4(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+static void (*MF_Replace_Edges_jmp[MSTK_MAXREP])
+     (MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges)=
+{MF_Replace_Edges_F1, MF_Replace_Edges_F4, MF_Replace_Edges_R1, 
+ MF_Replace_Edges_R2, MF_Replace_Edges_R4};
 
-void MF_Replace_Edge_i_FN(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_F1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_F4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_R1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_R2(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_R4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
+void MF_Replace_Edges_i_FN(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_F1(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_F4(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_R1(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_R2(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_R4(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
 static void 
-(*MF_Replace_Edge_i_jmp[MSTK_MAXREP])(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs)=
-{MF_Replace_Edge_i_F1, MF_Replace_Edge_i_F4, MF_Replace_Edge_i_R1, 
- MF_Replace_Edge_i_R2, MF_Replace_Edge_i_R4};
+(*MF_Replace_Edges_i_jmp[MSTK_MAXREP])(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) = 
+{MF_Replace_Edges_i_F1, MF_Replace_Edges_i_F4, MF_Replace_Edges_i_R1, 
+ MF_Replace_Edges_i_R2, MF_Replace_Edges_i_R4};
 
 void MF_Set_Vertices_F1(MFace_ptr f, int n, MVertex_ptr *v);
 void MF_Set_Vertices_F4(MFace_ptr f, int n, MVertex_ptr *v);
@@ -227,24 +227,6 @@ static void
   {MF_Set_Edges_FN, MF_Set_Edges_FN, MF_Set_Edges_R1, MF_Set_Edges_R2, 
    MF_Set_Edges_R4};
 
-void MF_Replace_Edge_FN(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_R1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_R2(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_R4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs);
-static void (*MF_Replace_Edge_jmp[MSTK_MAXREP])
-     (MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) =
-{MF_Replace_Edge_FN, MF_Replace_Edge_FN, MF_Replace_Edge_R1, 
- MF_Replace_Edge_R2, MF_Replace_Edge_R4};
-
-void MF_Replace_Edge_i_FN(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_R1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_R2(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-void MF_Replace_Edge_i_R4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs);
-static void 
-(*MF_Replace_Edge_i_jmp[MSTK_MAXREP])(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs)=
-{MF_Replace_Edge_i_FN, MF_Replace_Edge_i_FN, MF_Replace_Edge_i_R1, 
- MF_Replace_Edge_i_R2, MF_Replace_Edge_i_R4};
-
 void MF_Set_Vertices_F1(MFace_ptr f, int n, MVertex_ptr *v);
 void MF_Set_Vertices_F4(MFace_ptr f, int n, MVertex_ptr *v);
 void MF_Set_Vertices_R1(MFace_ptr f, int n, MVertex_ptr *v);
@@ -254,6 +236,26 @@ static void
 (*MF_Set_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int n, MVertex_ptr *v) = 
 {MF_Set_Vertices_F1, MF_Set_Vertices_F4, MF_Set_Vertices_R1, 
  MF_Set_Vertices_R2, MF_Set_Vertices_R3R4};
+
+void MF_Replace_Edges_FN(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_F1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_F4(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_R1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_R2(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_R4(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+static void (*MF_Replace_Edges_jmp[MSTK_MAXREP])
+     (MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges)=
+{MF_Replace_Edges_FN, MF_Replace_Edges_FN, MF_Replace_Edges_R1, 
+ MF_Replace_Edges_R2, MF_Replace_Edges_R4};
+
+void MF_Replace_Edges_i_FN(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_R1(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_R2(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+void MF_Replace_Edges_i_R4(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges);
+static void 
+(*MF_Replace_Edges_i_jmp[MSTK_MAXREP])(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) = 
+{MF_Replace_Edges_i_FN, MF_Replace_Edges_i_FN, MF_Replace_Edges_i_R1, 
+ MF_Replace_Edges_i_R2, MF_Replace_Edges_i_R4};
 
 void MF_Replace_Vertex_i_F1(MFace_ptr f, int i, MVertex_ptr v);
 void MF_Replace_Vertex_i_F4(MFace_ptr f, int i, MVertex_ptr v);
@@ -326,9 +328,9 @@ static List_ptr (*MF_Edges_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v
 
 int MF_EdgeDir_FN(MFace_ptr f, MEdge_ptr e);
 int MF_EdgeDir_R1R2(MFace_ptr f, MEdge_ptr e);
-int MF_EdgeDir_R4(MFace_ptr f, MEdge_ptr e);
+int MF_EdgeDir_R3R4(MFace_ptr f, MEdge_ptr e);
 static int (*MF_EdgeDir_jmp[MSTK_MAXREP])(MFace_ptr f, MEdge_ptr e) =
-{MF_EdgeDir_FN, MF_EdgeDir_FN, MF_EdgeDir_R1R2, MF_EdgeDir_R1R2, MF_EdgeDir_R4};
+{MF_EdgeDir_FN, MF_EdgeDir_FN, MF_EdgeDir_R1R2, MF_EdgeDir_R1R2, MF_EdgeDir_R3R4};
 
 int MF_EdgeDir_i_FN(MFace_ptr f, int i);
 int MF_EdgeDir_i_R1R2(MFace_ptr f, int i);
