@@ -589,6 +589,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   if (status == EOF)
     MSTK_Report("MESH_InitFromFile",
 		"Premature end of file while looking for vertex data",FATAL);
+  else if (status == 0)
+    MSTK_Report("MESH_InitFromFile",
+		"Error in reading vertex data",FATAL);
 
   if (strncmp(temp_str,"vertices",8) == 0) {
 
@@ -600,6 +603,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       if (status == EOF)
 	MSTK_Report("MESH_InitFromFile",
 		    "Premature end of file while reading vertices",FATAL);
+      else if (status == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Error in reading vertex data",FATAL);
 
       mv = MV_New(mesh);
       MV_Set_Coords(mv,xyz);
@@ -640,6 +646,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent vertices",
 		      FATAL);
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading adjacent vertex data",FATAL);
 
 	for (j = 0; j < nav; j++) {
 	  status = fscanf(fp,"%d",&adjvid);
@@ -647,6 +656,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading adjacent vertices"
 			,FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading adjacent vertex data",FATAL);
 
 	  adjv = List_Entry(mesh->mvertex,adjvid-1);
 #ifdef DEBUG
@@ -666,6 +678,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent vertices",
 		      FATAL);
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading adjacent vertex data",FATAL);
 	
 	for (j = 0; j < nav; j++)
 	  fscanf(fp,"%d",&adjvid);
@@ -686,7 +701,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF) {
       if (mesh->ne || mesh->nf || mesh->nr)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature fnd of file after adjacent vertex data",FATAL);
+		    "Premature end of file after adjacent vertex data",FATAL);
       else
 	return 1;
     }
@@ -707,6 +722,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading edges",FATAL);
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading edge data",FATAL);
 
 	ev1 = List_Entry(mesh->mvertex,vid1-1);
 	ev2 = List_Entry(mesh->mvertex,vid2-1);
@@ -732,6 +750,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading edges",FATAL);
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading edge data",FATAL);
       }
     }
   }
@@ -779,6 +800,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading faces",FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading face data",FATAL);
 
 	  if (fverts) {
 	    if (nfv > max_nfv) {
@@ -795,7 +819,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    status = fscanf(fp,"%d",&vid1);
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
-			  "Premature end of file while reading face vertex data",FATAL);
+			  "Premature end of file while reading face data",
+			  FATAL);
+	    else if (status == 0)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Error in reading edge data",FATAL);
 
 	    fverts[j] = List_Entry(mesh->mvertex,vid1-1);
 #ifdef DEBUG
@@ -807,7 +835,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
-	    MSTK_Report("MESH_InitFromFile","Premature end of file",FATAL);
+	    MSTK_Report("MESH_InitFromFile",
+			"Premature end of file while reading face data",FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading face data",FATAL);
 	  
 	  MF_Set_GEntID(mf,gid);
 	  MF_Set_GEntDim(mf,gdim);
@@ -836,6 +868,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading face edge data",
 			FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading face data",FATAL);
 
 	  if (fedges) {
 	    if (nfe > max_nfe) {
@@ -856,6 +891,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	      MSTK_Report("MESH_InitFromFile",
 			  "Premature end of file while reading face edge data",
 			  FATAL);
+	    else if (status == 0)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Error in reading face data",FATAL);
 
 	    fedirs[j] = eid > 0 ? 1 : 0;
 	    fedges[j] = List_Entry(mesh->medge,abs(eid)-1);
@@ -871,6 +909,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading faces",FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading face data",FATAL);
 	  
 	  MF_Set_GEntDim(mf,gdim);
 	  MF_Set_GEntID(mf,gid);
@@ -906,6 +947,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     else
       return 1;
   }
+  else if (status == 0)
+    MSTK_Report("MESH_InitFromFile",
+		"Error in reading region data",FATAL);
 
 
   /* REGION DATA */
@@ -921,6 +965,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF)
       MSTK_Report("MESH_InitFromFile",
 		  "Premature end of file while reading regions",FATAL);
+    else if (status == 0)
+      MSTK_Report("MESH_InitFromFile",
+		  "Error in reading region data",FATAL);
 
     if (strncmp(rltype_str,"vertex",6) == 0) {
       if (mesh->reptype == R1 || mesh->reptype == R2) {
@@ -931,8 +978,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d",&nrv);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading region vertex data"
+			"Premature end of file while reading region data"
 			,FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading region data",FATAL);
 
 	  if (rverts) {
 	    if (nrv > max_nrv) {
@@ -949,8 +999,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    status = fscanf(fp,"%d",&vid1);
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
-		      "Premature end of file while reading region vertex data",
+		      "Premature end of file while reading region data",
 			  FATAL);
+	    else if (status == 0)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Error in reading region data",FATAL);
 
 	    rverts[j] = List_Entry(mesh->mvertex,vid1-1);
 #ifdef DEBUG
@@ -964,6 +1017,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading regions",FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading region data",FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
 
@@ -991,8 +1047,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d",&nrf);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading region face data",
+			"Premature end of file while reading region data",
 			FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading region data",FATAL);
 
 	  if (rfaces) {
 	    if (nrf > max_nrf) {
@@ -1011,8 +1070,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    status = fscanf(fp,"%d",&fid);
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
-			  "Premature end of file while reading region face data"
-			  ,FATAL);
+			  "Premature end of file while reading region data",
+			  FATAL);
+	    else if (status == 0)
+	      MSTK_Report("MESH_InitFromFile",
+			  "Error in reading region data",FATAL);
 
 	    rfdirs[j] = fid > 0 ? 1 : 0;
 	    rfaces[j] = List_Entry(mesh->mface,abs(fid)-1);
@@ -1028,6 +1090,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading faces",FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading region data",FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
 
@@ -1071,6 +1136,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent regions",
 		      FATAL);
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading adjacent region data",FATAL);
 
 	for (j = 0; j < nar; j++) {
 	  status = fscanf(fp,"%d",&adjrid);
@@ -1078,7 +1146,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading ajdacent regions",
 			FATAL);
-
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading adjacent region data",FATAL);
+	  
 	  if (adjrid == 0)
 	    continue;
 	  adjr = List_Entry(mesh->mregion,adjrid-1);
@@ -1099,13 +1170,19 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent regions",
 		      FATAL);
-
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading adjacent region data",FATAL);
+	
 	for (j = 0; j < nar; j++) {
 	  fscanf(fp,"%d",&rid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading adjacent regions",
 			FATAL);
+	  else if (status == 0)
+	    MSTK_Report("MESH_InitFromFile",
+			"Error in reading adjacent region data",FATAL);
 	}
       }
     }
