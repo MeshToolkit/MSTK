@@ -67,9 +67,9 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   }
 
   
-  MF_Delete(f1);
-  MF_Delete(f2);
-  ME_Delete(e);
+  MF_Delete(f1,0);
+  MF_Delete(f2,0);
+  ME_Delete(e,0);
 
 
   nuface = MF_New(mesh);

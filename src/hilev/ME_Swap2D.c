@@ -78,9 +78,9 @@ int ME_Swap2D(MEdge_ptr eswp, MEdge_ptr *enew, MFace_ptr fnew[2]) {
 
   /* Delete old configuration */
 
-  MF_Delete(f[0]);
-  MF_Delete(f[1]);
-  ME_Delete(eswp);
+  MF_Delete(f[0],0);
+  MF_Delete(f[1],0);
+  ME_Delete(eswp,0);
 
   /* Create new configuration */
   *enew = ME_New(mesh);
