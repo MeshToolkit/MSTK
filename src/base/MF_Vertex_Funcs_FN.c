@@ -9,6 +9,63 @@
 extern "C" {
 #endif
 
+  void MF_Set_Vertices_FN(MFace_ptr f, int n, MVertex_ptr *v) {
+    int i, vgdim[MAXPV2], vgid[MAXPV2], fedirs[MAXPV2], egdim, egid;
+    MEdge_ptr fedges[MAXPV2];
+    Mesh_ptr mesh = MF_Mesh(f);
+
+    for (i = 0; i < n; i++) {
+      vgdim[i] = MV_GEntDim(v[i]);
+      vgid[i] = MV_GEntID(v[i]);
+    }
+
+    for (i = 0; i < n; i++) {
+      egdim = 4;
+      egid = 0;
+
+      fedges[i] = MVs_CommonEdge(v[i],v[(i+1)%n]);
+      if (fedges[i]) {
+	fedirs[i] = (ME_Vertex(fedges[i],0) == v[i]) ? 1 : 0;
+      }
+      else {
+	fedirs[i] = 1;
+	fedges[i] = ME_New(mesh);
+	
+	ME_Set_Vertex(fedges[i],0,v[i]);
+	ME_Set_Vertex(fedges[i],1,v[(i+1)%n]);
+
+	if (vgdim[i] > vgdim[(i+1)%n]) {
+	  egdim = vgdim[i];
+	  egid = vgid[i];
+	}
+	else if (vgdim[(i+1)%n] > vgdim[i]) {
+	  egdim = vgdim[(i+1)%n];
+	  egid = vgid[i];
+	}
+	else { /* vgdim[i] == vgdim[(i+1)%n] */
+	  if (vgdim[i] == 0) {
+	    /* Both vertices are classified on model vertices. Cannot
+	       say on what entity, the edge should be classified */
+	    MSTK_Report("MF_Set_Vertices_FN",
+			"Cannot determine edge classification. Guessing...",
+			WARN);
+	    egdim = 1;
+	    egid = 0;
+	  }
+	  else {
+	    egdim = vgdim[i];
+	    egid = vgid[i];
+	  }
+	}
+
+	ME_Set_GEntDim(fedges[i],egdim);
+	ME_Set_GEntID(fedges[i],egid);
+      }
+    }
+
+    MF_Set_Edges(f, n, fedges, fedirs);
+  }
+
 
   List_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
     int i, k=0, ne, edir, fnd=0;
