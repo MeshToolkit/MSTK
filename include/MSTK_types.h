@@ -34,7 +34,7 @@ extern "C" {
 #define MSTK_VER    1.0
 
 #define MSTK_MAXREP 10
-typedef enum RepType {UNKNOWN_REP=-1, F1=0, F2, F3, F4, F5, F6, R1, R2, R3, R4} RepType;
+typedef enum RepType {UNKNOWN_REP=-1, F1=0, F4, R1, R2, R4} RepType;
 
 
 typedef enum MFType {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
