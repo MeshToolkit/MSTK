@@ -24,7 +24,7 @@
 
 \begin{document}
 
-\title{MSTK: Mesh Toolkit, v 1.2 - DRAFT} 
+\title{MSTK: Mesh Toolkit, v 1.3 - DRAFT} 
 
 
 \author{Rao V. Garimella \\
@@ -61,10 +61,10 @@ time.
 \par MSTK will eventually support distributed meshes for parallel
 computing. However, this is still not in place.
 
-\par MSTK will soon allow applications to attach application or field data
-to entities. This data may be integers, reals (doubles), integer
-vectors, real (double) vectors, integer tensors, real (double tensors)
-and pointers. 
+\par To support numerical analysis and other applications, MSTK allows
+applications to attach application or field data to entities. This
+data may be integers, reals (doubles), integer vectors, real (double)
+vectors, integer tensors, real (double tensors) and pointers.
 
 \par The basis for development of MSTK is laid out in the following paper:
 
@@ -80,37 +80,43 @@ format will be described in the last section.
 \section{MSTK Data Types}
 
 \begin{description}
-\item[]\textbf{\textit{List\_ptr}}: Handle to a List object
+\item[]\textbf{\textit{List\_ptr}}: Handle to a List object.
 
 \item[]\textbf{\textit{Mesh\_ptr}}: Handle to a Mesh object.
 
 \item[]\textbf{\textit{MVertex\_ptr}}: Handle to a Mesh Vertex object (Topological
-Dimension 0)
+Dimension 0).
 
-\item[]\textbf{\textit{MEdge\_ptr}}: Handle to a Mesh Edge object (Topological Dimension 1)
+\item[]\textbf{\textit{MEdge\_ptr}}: Handle to a Mesh Edge object (Topological Dimension 1).
 
-\item[]\textbf{\textit{MFace\_ptr}}: Handle to a Mesh Face object (Topological Dimension 2)
+\item[]\textbf{\textit{MFace\_ptr}}: Handle to a Mesh Face object (Topological Dimension 2).
 
-\item[]\textbf{\textit{MRegion\_ptr}}: Handle to Mesh Region object (Topological Dimension 3)
+\item[]\textbf{\textit{MRegion\_ptr}}: Handle to Mesh Region object (Topological Dimension 3).
+  
+\item[]\textbf{\textit{MEntity\_ptr}}: Handle to a generic Mesh Entity
+  object. Any of the above types of entities can be cast as
+  \textit{MEntity\_ptr}.
 
-\item[]\textbf{\textit{MEntity\_ptr}}: Handle to a generic Mesh Entity object. Any of
-the above types of entities can be cast as \textit{MEntity\_ptr}
+\item[]\textbf{\textit{GModel\_ptr}}: Handle to a Geometric Model object.
+\item[]\textbf{\textit{GEntity\_ptr}}: Handle to a Geometric Entity object.
 
-\item[]\textbf{\textit{GModel\_ptr}}: Handle to a Geometric Model object
-\item[]\textbf{\textit{GEntity\_ptr}}: Handle to a Geometric Entity object
-
+\item[]\textbf{\textit{MAttrib\_ptr}}: Handle to a mesh attribute.
   
 \item[]\textbf{\textit{RepType}}: Enumerated type describing the type
   of mesh representation.  Can be UNKNOWN\_REP, F1, F4, R1, R2, R4.
   See Appendix~\ref{app:reptypes} for schematics of these
-  representations \textit{Currently only representation types F1 and
-    F4 are supported}
+  representations. \textit{Currently only representation types F1 and
+    F4 are supported}.
 
-\item[]\textbf{\textit{MFType}}: Enumerated type for mesh face type
-Can be FDELETED, FUNKNOWN, TRI, QUAD, POLYGON
+\item[]\textbf{\textit{MType}}: Enumerated type for mesh entity type. Can be MDELETED, MVERTEX, MEDGE, MFACE, MREGION, MUNKNOWNTYPE, MALLTYPE.
 
-\item[]\textbf{\textit{MRType}}: Enumerated type for mesh region type
-Can be RDELETED, RUNKNOWN, TET, PYRAMID, PRISM, HEX, POLYHED
+\item[]\textbf{\textit{MFType}}: Enumerated type for mesh face type.
+Can be FDELETED, FUNKNOWN, TRI, QUAD, POLYGON.
+
+\item[]\textbf{\textit{MRType}}: Enumerated type for mesh region type.
+Can be RDELETED, RUNKNOWN, TET, PYRAMID, PRISM, HEX, POLYHED.
+
+\item[]\textbf{\textit{AttType}}: Enumerated type for attribute data. Can be INT, DOUBLE or POINTER
 \end{description}
 
 \newpage
@@ -127,11 +133,12 @@ new set with an initial size, \textit{inisize}. If \textit{inisize} is
 0, the initial size is set to be 10.
 
 \item[]\textbf{\textit{void} List\_Delete(\textit{List\_ptr} l):} Delete a set.
-
-\item[]\textbf{\textit{List\_ptr} List\_Compress(\textit{List\_ptr} l):} Compress
-a set.  Doing this while an algorithm is iterating through the set can
-currently cause problems!! Calling \textbf{List\_Compress} could change the
-pointer for the set due to reallocation.
+  
+\item[]\textbf{\textit{List\_ptr} List\_Compress(\textit{List\_ptr}
+    l):} Compress a set.  Doing this while an algorithm is iterating
+  through the set can currently cause problems!! Calling
+  \textbf{List\_Compress} could change the pointer for the set due to
+  reallocation.
 
 \item[]\textbf{\textit{List\_ptr} List\_Copy(\textit{List\_ptr} l):} Return a
 copy of a set.
@@ -182,7 +189,7 @@ the set is reached.
 The value of the iteration index i will be modified by the routine on
 each call to indicate where in the set it is. This value should not be
 modified externally while iterating through the set. Also, no specific
-meaning be derived from from the iteration index by other applications
+meaning should be derived from the iteration index by other applications
 since the internal implementation and interpretation of the index may
 change at any time.
 
@@ -222,10 +229,68 @@ which is the work of high level mesh generation routines.
 const char *filename):} Initialize or read a mesh from file into the
 given mesh object. Returns 1 if successful, 0 otherwise.
 
-\item[]\textbf{\textit{void} MESH\_WriteToFile(\textit{Mesh\_ptr} mesh,
-const char *filename):} Save a mesh to a filename. The file is created
-if it does not exists. It is recommended that the .mstk extension be
-used for MSTK mesh files.  However, there is no such requirement.
+\item[]\textbf{\textit{int} MESH\_ImportFromFile(\textit{Mesh\_ptr}
+    mesh, const char *filename, const char *format):} Import a mesh
+  data from an external file format and construct MSTK mesh. Currently
+  the only format supported is the
+  GMV\footnote{\texttt{http://www-xdiv.lanl.gov/XCM/gmv/GMVHome.html}}
+  file format. The routine imports as many attributes as it can from
+  the input file. It also uses special attributes or keywords as data
+  about element and node classification.  For GMV files, the routine
+  uses the ``material'' data to indicate region or face classification
+  depending on the dimensionality of the mesh. If ``material'' data is
+  not specified, it uses the ``itetclr'' attribute to assign region or
+  face classification. It also uses the ``icr'' keyword describing the
+  number of constraints on a node to interpret if the node is
+  classified on a model region, model face, model edge or a model
+  vertex. The ``itetclr'' and ``icr'' keywords are usually present in
+  meshes generated by
+  LAGRIT\footnote{\texttt{http://lagrit.lanl.gov'}}.
+
+  
+\item[]\textbf{\textit{int} MESH\_BuildClassfn(\textit{Mesh\_ptr}
+    mesh):} Build classification information for mesh entities if only
+  partial information is present. In other words, if the only data
+  known is the IDs of geometric model entities (``material regions'')
+  of the highest level mesh entities (faces or regions), then this
+  procedure will build information about the type of geometric model
+  entities that the lower dimension entities are on. Faces will be
+  classified as being on a model face (external or interior) or inside
+  model region. Edges will be classified as being on a model edge,
+  model face or in a model region. Vertices will be classified as
+  being on a model vertex, model edge, model face or in a model
+  region. If no classification data is associated with even the
+  highest level entities, the procedure will assume that all the
+  highest level entities are classified on one model entitiy of that
+  dimension. If partial information is available for lower order
+  entities, this routine will not destroy that information. In the
+  future, the procedure will be more sophisticated, incorporating
+  features such as classifying mesh edges as being on model edges if
+  the dihedral angle between the boundary faces connected to it is
+  very large.
+  
+\item[]\textbf{\textit{void} MESH\_WriteToFile(\textit{Mesh\_ptr}
+    mesh, const char *filename):} Save a mesh to a filename. The file
+  is created if it does not exists. It is recommended that the .mstk
+  extension be used for MSTK mesh files.  However, there is no such
+  requirement.
+  
+%% \item[]\textbf{\textit{void} MESH\_ExportToFile(\textit{Mesh\_ptr}
+%%     mesh, const char *filname, const char *format, int natt, char
+%%     **attnames):} Export a mesh to an external file format. Currently,
+%%   the formats supported are the GMV file (format string: ``gmv'') and
+%%   Data Explorer\footnote{\texttt{http://opendx.org}} (format string:
+%%   ``dx''). Only integer and double attributes of the mesh are exported
+%%   to the files.
+  
+\item[]\textbf{\textit{void} MESH\_ExportToFile(\textit{Mesh\_ptr}
+    mesh, const char *filname, const char *format, int natt, char
+    **attnames):} Export a mesh to an external file format. Currently,
+  the only format supported is the GMV file format (format string:
+  ``gmv''). Only integer and double attributes of the mesh are
+  exported to the files.
+
+\item[]
 
 \item[]\textbf{\textit{GModel\_ptr} MESH\_GModel(\textit{Mesh\_ptr} mesh):}
 Return a handle to the underlying geometric model. If there is no
@@ -233,6 +298,8 @@ geometric model associated with the mesh, NULL pointer is returned.
 
 \item[]\textbf{\textit{RepType} MESH\_RepType(\textit{Mesh\_ptr} mesh):}
 Representation type currently being used by the mesh.
+
+\item[]
 
 \item[]\textbf{\textit{int} MESH\_Num\_Vertices(\textit{Mesh\_ptr} mesh):}
 Number of vertices in the mesh.
@@ -258,6 +325,7 @@ carefully.
 \item[]\textbf{\textit{int} MESH\_Num\_Regions(\textit{Mesh\_ptr} mesh):}
 Number of regions in the mesh.
 
+\item[]
 
 \item[]\textbf{\textit{MVertex\_ptr} MESH\_Vertex(\textit{Mesh\_ptr} mesh,
 \textit{int} i):} Return the i'th vertex in the mesh. Returns NULL if i
@@ -278,6 +346,7 @@ MESH\_Num\_Faces).
 \textit{int} i):} Return the i'th region in the mesh. Returns NULL if i
 $<$ 0 or i $>$ number of mesh region.
 
+\item[]
 
 \item[]\textbf{\textit{MVertex\_ptr} MESH\_Next\_Vertex(\textit{Mesh\_ptr}
 mesh, \textit{int} *idx):} Returns the next vertex while iterating
@@ -290,7 +359,6 @@ edges of the mesh. See the routine List\_Next\_Entry above for an
 explanation of how the iteration works.  The routine always returns
 NULL for reduced representations.
 
-
 \item[]\textbf{\textit{MFace\_ptr} MESH\_Next\_Face(\textit{Mesh\_ptr} mesh,
 \textit{int} *idx):} Returns the next face while iterating through the
 faces of the mesh. See the routine \textbf{List\_Next\_Entry} above for
@@ -298,37 +366,57 @@ an explanation of how the iteration works.  Only faces explicitly
 represented in the mesh are returned for reduced representation (See
 explanation for \textbf{MESH\_Num\_Faces}).
 
+\item[]\textbf{\textit{MRegion\_ptr}
+    MESH\_Next\_Region(\textit{Mesh\_ptr} mesh, \textit{int} *idx):}
+  Returns the next region while iterating through the regions of the
+  mesh. See the routine \textbf{List\_Next\_Entry} above for an
+  explanation of how the iteration works.
+  
+\item[]
 
-\item[]\textbf{\textit{void} MESH\_Add\_Vertex(\textit{Mesh\_ptr} mesh,
-\textit{MVertex\_ptr} v):} Add a vertex to the mesh. It is assumed that
-the vertex and its coordinates set are properly defined.
+\item[]\textbf{\textit{MVertex\_ptr}
+    MESH\_VertexFromID(\textit{Mesh\_ptr} mesh, \textit{int} id):}
+  Return mesh vertex with given ID if it exists; return NULL
+  otherwise.
+  
+\item[]\textbf{\textit{MEdge\_ptr} MESH\_EdgeFromID(\textit{Mesh\_ptr}
+    mesh, \textit{int} id):} Return mesh edge with given ID if it
+  exists; return NULL otherwise. This routine will return NULL for all
+  reduced representations.
 
-\item[]\textbf{\textit{void} MESH\_Add\_Edge(\textit{Mesh\_ptr} mesh,
-\textit{MEdge\_ptr} e):} Add an edge to the mesh. It is assumed that
-the edge is and its topology is defined.
+\item[]\textbf{\textit{MFace\_ptr} MESH\_FaceFromID(\textit{Mesh\_ptr}
+    mesh, \textit{int} i):} Return mesh face with given ID if it
+  exists; return NULL otherwise. If faces are not explicitly
+  represented in the mesh, it will return NULL.
 
-\item[]\textbf{\textit{void} MESH\_Add\_Face(\textit{Mesh\_ptr} mesh,
-\textit{MFace\_ptr} f):} Add a face to the mesh. It is assumed that the
-face and its topology is properly defined.
 
-\item[]\textbf{\textit{void} MESH\_Add\_Region(\textit{Mesh\_ptr} mesh,
-\textit{MRegion\_ptr} r):} Add a region to the mesh. It is assumed that
-the region and its topology is properly defined.
+\item[]\textbf{\textit{MRegion\_ptr}
+    MESH\_RegionFromID(\textit{Mesh\_ptr} mesh, \textit{int} id):}
+  Return mesh region with given ID if it exists; return NULL
+  otherwise.
 
-\item[]\textbf{\textit{void} MESH\_Rem\_Vertex(\textit{Mesh\_ptr} mesh,
-\textit{MVertex\_ptr} v):} Remove vertex from mesh. Vertex is not
-deleted and must be deleted afterward separately.
+\item[]
 
-\item[]\textbf{\textit{void} MESH\_Rem\_Edge(\textit{Mesh\_ptr} mesh,
-\textit{MEdge\_ptr} e):} Remove edge from mesh. Edge is not deleted and
-must be deleted afterward separately.
+\item[]\textbf{\textit{int} MESH\_Num\_Attribs(\textit{Mesh\_ptr}
+    mesh):} Number of attributes associated with the mesh.
+  
+\item[]\textbf{\textit{MAttrib\_ptr} MESH\_Attrib(\textit{Mesh\_ptr}
+    mesh, \textit{int} i):} Return the i'th attribute in the mesh.
+  Returns NULL if i $<$ 0 or i $>$ number of mesh attributes.
+ 
+\item[]\textbf{\textit{MAttrib\_ptr}
+    MESH\_Next\_Attrib(\textit{Mesh\_ptr} mesh, \textit{int} *index):}
+  Returns the next attribute while iterating through the attributes of
+  the mesh. See the routine List\_Next\_Entry above for an explanation
+  of how the iteration works.
+  
+\item[]\textbf{\textit{MAttrib\_ptr}
+    MESH\_AttribByName(\textit{Mesh\_ptr} mesh, \textit{const char}
+    *name):} Return a mesh attribute with given name if it exisists in
+  the mesh. Returns NULL if mesh has no such attribute.
 
-\item[]\textbf{\textit{void} MESH\_Rem\_Face(\textit{Mesh\_ptr} mesh,
-\textit{MFace\_ptr} f):} Remove face from mesh. Face is not deleted and
-must be deleted afterward separately.
-
-\item[]\textbf{\textit{void} MESH\_Rem\_Region(\textit{Mesh\_ptr} mesh,
-\textit{MRegion\_ptr} r):} Remove region from mesh. Region is not deleted and must be deleted afterward separately.
+\item[]
+  
 
 \item[]\textbf{\textit{void} MESH\_Set\_GModel(\textit{Mesh\_ptr} mesh,
 GModel\_ptr geom):} Assign a geometric model handle to the mesh.
@@ -344,27 +432,93 @@ information may be retrievable when switching back to a full
 representation.  (particularly classification information, i.e.,
 relationship of mesh entities to the geometric model).
 
+\item[]
+
+\item[]\textbf{\textit{void} MESH\_Add\_Vertex(\textit{Mesh\_ptr}
+    mesh, \textit{MVertex\_ptr} v):} Add a vertex to the mesh. It is
+  assumed that the vertex and its coordinates set are properly
+  defined. Normally, one need not call this since
+  \textbf{\textit{MV\_New}} will add the vertex to the mesh. Use this
+  only if you know exactly what you are doing.
+
+\item[]\textbf{\textit{void} MESH\_Add\_Edge(\textit{Mesh\_ptr} mesh,
+    \textit{MEdge\_ptr} e):} Add an edge to the mesh. It is assumed
+  that the edge is and its topology is defined. Normally, one need not
+  call this since \textbf{\textit{ME\_New}} will add the edge to the
+  mesh. Use this only if you know exactly what you are doing.
+
+\item[]\textbf{\textit{void} MESH\_Add\_Face(\textit{Mesh\_ptr} mesh,
+    \textit{MFace\_ptr} f):} Add a face to the mesh. It is assumed
+  that the face and its topology is properly defined. Normally, one
+  need not call this since \textbf{\textit{MF\_New}} will add the face
+  to the mesh. Use this only if you know exactly what you are doing.
+
+\item[]\textbf{\textit{void} MESH\_Add\_Region(\textit{Mesh\_ptr}
+    mesh, \textit{MRegion\_ptr} r):} Add a region to the mesh. It is
+  assumed that the region and its topology is properly defined.
+  Normally, one need not call this since \textbf{\textit{MR\_New}}
+  will add the region to the mesh. Use this only if you know exactly
+  what you are doing.
+
+\item[]\textbf{\textit{void} MESH\_Rem\_Vertex(\textit{Mesh\_ptr}
+    mesh, \textit{MVertex\_ptr} v):} Remove vertex from mesh. Vertex
+  is not deleted and must be deleted afterward separately. Normally,
+  one need not call this since \textbf{\textit{MV\_Delete}} will
+  remove the vertex from the mesh. Use this only if you know exactly
+  what you are doing.
+
+\item[]\textbf{\textit{void} MESH\_Rem\_Edge(\textit{Mesh\_ptr} mesh,
+    \textit{MEdge\_ptr} e):} Remove edge from mesh. Edge is not
+  deleted and must be deleted afterward separately. Normally, one need
+  not call this since \textbf{\textit{ME\_Delete}} will remove the
+  edge from the mesh. Use this only if you know exactly what you are
+  doing.
+  
+\item[]\textbf{\textit{void} MESH\_Rem\_Face(\textit{Mesh\_ptr} mesh,
+    \textit{MFace\_ptr} f):} Remove face from mesh. Face is not
+  deleted and must be deleted afterward separately. Normally, one need
+  not call this since \textbf{\textit{MF\_Delete}} will remove the
+  face from the mesh. Use this only if you know exactly what you are
+  doing.
+  
+\item[]\textbf{\textit{void} MESH\_Rem\_Region(\textit{Mesh\_ptr}
+    mesh, \textit{MRegion\_ptr} r):} Remove region from mesh. Region
+  is not deleted and must be deleted afterward separately. Normally,
+  one need not call this since \textbf{\textit{MR\_Delete}} will
+  remove the region from the mesh. Use this only if you know exactly
+  what you are doing.
 \end{description}
 
 \newpage
 \subsection{Mesh Vertex Object}
 
 \begin{description}
-\item[]\textbf{\textit{MVertex\_ptr} MV\_New(\textit{Mesh\_ptr} mesh):}
-Create a new vertex object. No geometric or topological information is
-embedded in the vertex when it is created. The vertex only knows which
-mesh it belongs to. The ID of the vertex is set by this function.
+\item[]\textbf{\textit{MVertex\_ptr} MV\_New(\textit{Mesh\_ptr}
+    mesh):} Create a new vertex object. No geometric or topological
+  information is embedded in the vertex when it is created. The vertex
+  only knows which mesh it belongs to. The ID of the vertex is set by
+  this function.
+  
+\item[]\textbf{\textit{void} MV\_Delete(\textit{MVertex\_ptr} mvertex,
+    \textit{int} keep):} Delete the vertex. If \textbf{keep} is 0, the
+  vertex is removed from the mesh and all topological and geometric
+  information embedded in the vertex is destroyed. If \textbf{keep} is
+  1, the vertex is marked as type \textit{MDELVERTEX} and removed from
+  the mesh but the vertex is not destroyed.
 
-\item[]\textbf{\textit{void} MV\_Delete(\textit{MVertex\_ptr} mvertex):}
-Delete the vertex. Deletes all topological and geometric
-information embedded in the vertex.
+\item[]\textbf{\textit{void} MV\_Restore(\textit{MVertex\_ptr}
+    mvertex):} Restore a deleted vertex. The vertex type is restored
+  from \textit{MDELVERTEX} to \textit{MVERTEX} and the vertex is
+  added back to the mesh.
 
-\item[]\textbf{\textit{void} MV\_Set\_Coords(\textit{MVertex\_ptr} mvertex,
-double *xyz):} Set the coordinates of the vertex.
-
-\item[]\textbf{\textit{void} MV\_Set\_GEntity(\textit{MVertex\_ptr} mvertex,
-GEntity\_ptr gent):} Set the geometric model entity on which vertex is
-classified.
+\item[]
+  
+\item[]\textbf{\textit{void} MV\_Set\_Coords(\textit{MVertex\_ptr}
+    mvertex, double *xyz):} Set the coordinates of the vertex.
+    
+\item[]\textbf{\textit{void} V\_Set\_GEntity(\textit{MVertex\_ptr}
+    mvertex, GEntity\_ptr gent):} Set the geometric model entity on
+  which vertex is classified.
 
 
 \item[]\textbf{\textit{void} MV\_Set\_GEntDim(\textit{MVertex\_ptr} mvertex,
@@ -388,6 +542,8 @@ of given vertex.
 set by the MV\_New operator. Does not check for duplication of edge
 IDs.
 
+\item[]
+
 \item[]\textbf{\textit{Mesh\_ptr} MV\_Mesh(\textit{MVertex\_ptr} mv):}
 Returns the mesh that this vertex belongs to.
 
@@ -410,6 +566,7 @@ classified on. Returns 0 if this information is not known.
 \item[]\textbf{\textit{void} MV\_Coords(\textit{MVertex\_ptr} mvertex,
 double *xyz):} Returns the coordinates of the vertex.
 
+\item[]
 
 \item[]\textbf{\textit{int} MV\_Num\_AdjVertices(\textit{MVertex\_ptr}
 mvertex):} Returns the number of edge connected neighboring vertices of
@@ -443,101 +600,122 @@ List of regions connected to the vertex.
 \subsection{Mesh Edge Object}
 
 \begin{description}
-\item[]\textbf{\textit{MEdge\_ptr} ME\_New(\textit{Mesh\_ptr} mesh):} Create
-a new edge object. No topological information is embedded in the edge
-when it is created. The edge only knows which mesh it belongs
-to. The ID of the edge is set by this function.
+\item[]\textbf{\textit{MEdge\_ptr} ME\_New(\textit{Mesh\_ptr} mesh):}
+  Create a new edge object. No topological information is embedded in
+  the edge when it is created. The edge only knows which mesh it
+  belongs to. The ID of the edge is set by this function.
+  
+\item[]\textbf{\textit{void} ME\_Delete(\textit{MEdge\_ptr} medge,
+    \textit{int} keep):} Delete the edge. If \textbf{keep} is 0, the
+  edge is removed from the mesh and all topological and geometric
+  information embedded in the edge is destroyed. If \textbf{keep} is
+  1, the edge is marked as type \textit{MDELEDGE} and removed from the
+  mesh but the edge is not destroyed. Also, the vertices of this edge
+  no longer point to this edge.
+    
+\item[]\textbf{\textit{void} ME\_Restore(\textit{MEdge\_ptr}
+    medge):} Restore a temporarily deleted edge. The edge type is
+  restored from \textit{MDELEDGE} to \textit{MEDGE} and the edge is
+  added back to the mesh. The vertices of the edge once again point
+  back to the edge.
 
-\item[]\textbf{\textit{void} ME\_Delete(\textit{MEdge\_ptr} medge):} Delete
-the edge. Deletes all topological information embedded in the edge.
-
-\item[]\textbf{\textit{void} ME\_Set\_GEntity(\textit{MEdge\_ptr} medge,
-GEntity\_ptr gent):} Set the geometric model entity on which the edge
-is classified.
-
-\item[]\textbf{\textit{void} ME\_Set\_GEntDim(\textit{MEdge\_ptr} medge,
-\textit{int} gdim):} Set the topological dimension of model entity on
-which edge is classified.
-
-\item[]\textbf{\textit{void} ME\_Set\_GEntID(\textit{MEdge\_ptr} medge,
-\textit{int} gid):} Set ID of model entity on which edge is classified.
-
+\item[]
+  
+\item[]\textbf{\textit{void} ME\_Set\_GEntity(\textit{MEdge\_ptr}
+    medge, GEntity\_ptr gent):} Set the geometric model entity on
+  which the edge is classified.
+  
+\item[]\textbf{\textit{void} ME\_Set\_GEntDim(\textit{MEdge\_ptr}
+    medge, \textit{int} gdim):} Set the topological dimension of model
+  entity on which edge is classified.
+  
+\item[]\textbf{\textit{void} ME\_Set\_GEntID(\textit{MEdge\_ptr}
+    medge, \textit{int} gid):} Set ID of model entity on which edge is
+  classified.
+  
 \item[]\textbf{\textit{void} ME\_Set\_ID(\textit{MEdge\_ptr} medge,
-\textit{int} id):} Explicitly set ID of an edge and overwrite the ID set
-by the ME\_New function. Does not check for duplication of edge IDs.
+    \textit{int} id):} Explicitly set ID of an edge and overwrite the
+  ID set by the ME\_New function. Does not check for duplication of
+  edge IDs.
+  
+\item[]\textbf{\textit{void} ME\_Set\_Vertex(\textit{MEdge\_ptr}
+    medge, \textit{int} i, \textit{MVertex\_ptr} vertex):} Set the
+  i'th vertex of the edge. i can be 0 or 1.
+  
+\item[]\textbf{\textit{void} ME\_Replace\_Vertex(\textit{MEdge\_ptr}
+    medge, \textit{MVertex\_ptr} vert, \textit{MVertex\_ptr} nuvert):}
+  Replace i'th vertex by new vertex.
 
-\item[]\textbf{\textit{void} ME\_Set\_Vertex(\textit{MEdge\_ptr} medge,
-\textit{int} i, \textit{MVertex\_ptr} vertex):} Set the i'th vertex of
-the edge. i can be 0 or 1.
+\item[]
+  
+\item[]\textbf{\textit{Mesh\_ptr} ME\_Mesh(\textit{MEdge\_ptr}
+    medge):} Returns the mesh that this edge belongs to.
+  
+\item[]\textbf{\textit{int} ME\_ID(\textit{MEdge\_ptr} medge):}
+  Returns the ID of the vertex. Returns -1 if not known.
+  
+\item[]\textbf{\textit{int} ME\_GEntDim(\textit{MEdge\_ptr} medge):}
+  Returns the dimension of the geometric model entity that the vertex
+  is classified on. Returns -1 if not known.
+  
+\item[]\textbf{\textit{int} ME\_GEntID(\textit{MEdge\_ptr} medge):}
+  Returns the ID of the geometric model entity that the vertex is
+  classified on.  Returns 0 if this information is not known.
+  
+\item[]\textbf{\textit{GEntity\_ptr} ME\_GEntity(\textit{MEdge\_ptr}
+    medge):} Returns a pointer or handle to the geometric model entity
+  that the vertex is classified on. Returns NULL if this information
+  is not known.
 
-\item[]\textbf{\textit{void} ME\_Replace\_Vertex(\textit{MEdge\_ptr} medge,
-\textit{MVertex\_ptr} vert, \textit{MVertex\_ptr} nuvert):} Replace
-i'th vertex by new vertex.
-
-\item[]\textbf{\textit{Mesh\_ptr} ME\_Mesh(\textit{MEdge\_ptr} medge):}
-Returns the mesh that this edge belongs to.
-
-\item[]\textbf{\textit{int} ME\_ID(\textit{MEdge\_ptr} medge):} Returns the
-ID of the vertex. Returns -1 if not known.
-
-\item[]\textbf{\textit{int} ME\_GEntDim(\textit{MEdge\_ptr} medge):} Returns
-the dimension of the geometric model entity that the vertex is
-classified on. Returns -1 if not known.
-
-\item[]\textbf{\textit{int} ME\_GEntID(\textit{MEdge\_ptr} medge):} Returns
-the ID of the geometric model entity that the vertex is classified on.
-Returns 0 if this information is not known.
-
-\item[]\textbf{\textit{GEntity\_ptr} ME\_GEntity(\textit{MEdge\_ptr} medge):} Returns
-a pointer or handle to the geometric model entity that the vertex is
-classified on. Returns NULL if this information is not known.
-
-\item[]\textbf{\textit{int} ME\_Num\_Faces(\textit{MEdge\_ptr} medge):}
-Returns the number of faces connected to the edge.
-
-\item[]\textbf{\textit{int} ME\_Num\_Regions(\textit{MEdge\_ptr} medge):}
-Returns the number of regions connected to the edge.
-
-\item[]\textbf{\textit{MVertex\_ptr} ME\_Vertex(\textit{MEdge\_ptr} medge,
-\textit{int} i):} Returns the i'th vertex of the edge. i=0 returns the
-first vertex and i=1 returns the second vertex.
-
+\item[]
+  
+\item[]\textbf{\textit{int} ME\_Num\_Faces(\textit{MEdge\_ptr}
+    medge):} Returns the number of faces connected to the edge.
+  
+\item[]\textbf{\textit{int} ME\_Num\_Regions(\textit{MEdge\_ptr}
+    medge):} Returns the number of regions connected to the edge.
+  
+\item[]\textbf{\textit{MVertex\_ptr} ME\_Vertex(\textit{MEdge\_ptr}
+    medge, \textit{int} i):} Returns the i'th vertex of the edge. i=0
+  returns the first vertex and i=1 returns the second vertex.
+  
 \item[]\textbf{\textit{MVertex\_ptr} ME\_OppVertex(\textit{MEdge\_ptr}
-medge, \textit{MVertex\_ptr} ov):} Return the vertex opposite to given
-vertex in edge.
-
+    medge, \textit{MVertex\_ptr} ov):} Return the vertex opposite to
+  given vertex in edge.
+  
 \item[]\textbf{\textit{int} ME\_UsesEntity(\textit{MEdge\_ptr} medge,
-\textit{MEntity\_ptr} mentity, \textit{int} etype):} Check if edge uses
-given lower dimension entity, \textit{mentity}. The dimension of the
-entity is specified by the \textit{etype} variable. For an edge, the
-only lower dimensional entity is a vertex. If the edge uses the
-vertex, the function returns 1; otherwise it returns 0. If any
-other type of entity is specified, the function returns 0.
+    \textit{MEntity\_ptr} mentity, \textit{int} etype):} Check if edge
+  uses given lower dimension entity, \textit{mentity}. The dimension
+  of the entity is specified by the \textit{etype} variable. For an
+  edge, the only lower dimensional entity is a vertex. If the edge
+  uses the vertex, the function returns 1; otherwise it returns 0. If
+  any other type of entity is specified, the function returns 0.
 
+  
+\item[]\textbf{\textit{List\_ptr} ME\_Faces(\textit{MEdge\_ptr}
+    medge):} Returns the set of faces using this edge.
+  
+\item[]\textbf{\textit{List\_ptr} ME\_Regions(\textit{MEdge\_ptr}
+    medge):} Returns the set of regions using this edge.
 
-\item[]\textbf{\textit{List\_ptr} ME\_Faces(\textit{MEdge\_ptr} medge):}
-Returns the set of faces using this edge.
-
-\item[]\textbf{\textit{List\_ptr} ME\_Regions(\textit{MEdge\_ptr} medge):}
-Returns the set of regions using this edge.
-
-
-\item[]\textbf{\textit{MEdge\_ptr} MVs\_CommonEdge(\textit{MVertex\_ptr} v1,
-\textit{MVertex\_ptr} v2):} Return the edge connecting vertices v1 and
-v2, if it exists. If such an edge does not exist, the function returns
-0.
-
+\item[]
+  
+\item[]\textbf{\textit{MEdge\_ptr}
+    MVs\_CommonEdge(\textit{MVertex\_ptr} v1, \textit{MVertex\_ptr}
+    v2):} Return the edge connecting vertices v1 and v2, if it exists.
+  If such an edge does not exist, the function returns 0.
+  
 \item[]\textbf{\textit{double} ME\_Len(\textit{MEdge\_ptr} e):} Return
   the length of the straight line connecting the two vertices of the
   edge.
-
+  
 \item[]\textbf{\textit{double} ME\_LenSqr(\textit{MEdge\_ptr} e):}
   Return the square of the length of the straight line connecting the
   two vertices of the edge.
-
-\item[]\textbf{\textit{void} ME\_Vec(\textit{MEdge\_ptr} e, double *evec):}
-Return the vector going from the first vertex of the edge to the
-second vertex of the edge.
+  
+\item[]\textbf{\textit{void} ME\_Vec(\textit{MEdge\_ptr} e, double
+    *evec):} Return the vector going from the first vertex of the edge
+  to the second vertex of the edge.
 \end{description}
 
 
@@ -551,10 +729,23 @@ a new face object. No topological information is embedded in the face
 when it is created. The face only knows which mesh it belongs
 to. The ID of the face is set by this function.
 
-\item[]\textbf{\textit{void} MF\_Delete(\textit{MFace\_ptr} mface):} Delete
-the face. Delete all topological information embedded in the face.
+\item[]\textbf{\textit{void} MF\_Delete(\textit{MFace\_ptr} mface):}
+  Delete the face. If \textbf{keep} is 0, the face is removed from the
+  mesh and all topological and geometric information embedded in the
+  face is destroyed. If \textbf{keep} is 1, the face is marked as type
+  \textit{MDELFACE} and removed from the mesh but the face is not
+  destroyed. Also, the vertices/edges of this face no longer point up
+  to this face.
+    
+\item[]\textbf{\textit{void} MF\_Restore(\textit{MFace\_ptr}
+    mface):} Restore a temporarily deleted face. The face type is
+  restored from \textit{MDELFACE} to \textit{MFACE} and the face is
+  added back to the mesh. The vertices/edges of the face once again point
+  back to the face.
 
-\item[]\textbf{\textit{void} MF\_Set\_GEntity(\textit{MFace\_ptr} mface, GEntity\_ptr gent):} Set the geometric model entity on which the edge is classified.
+\item[]
+  
+\item[]\textbf{\textit{void} MF\_Set\_GEntity(\textit{MFace\_ptr} mface, GEntity\_ptr gent):} Set the geometric model entity on which the face is classified.
 
 \item[]\textbf{\textit{void} MF\_Set\_GEntDim(\textit{MFace\_ptr} mface,
 \textit{int} gdim):} Set the dimension of the geometric model entity on
@@ -565,8 +756,8 @@ which the face is classified.
 the face is classified.
 
 \item[]\textbf{\textit{void} MF\_Set\_ID(\textit{MFace\_ptr} mface,
-\textit{int} id):} Explicitly set ID of an edge and overwrite the ID
-set by the MF\_New operator. Does not check for duplication of face
+\textit{int} id):} Explicitly set ID of a face and overwrite the ID
+set by the \textbf{MF\_New} operator. Does not check for duplication of face
 IDs.
 
 \item[]\textbf{\textit{void} MF\_Set\_Edges(\textit{MFace\_ptr} mface,
@@ -579,35 +770,58 @@ direction of the face then the entry in the 'dirs' array must be 1;
 otherwise it must be 0. This function is relevant only for full
 representations in MSTK.
 
-\item[]\textbf{\textit{void} MF\_Set\_Vertices(\textit{MFace\_ptr} mface,
-\textit{int} n, \textit{MVertex\_ptr} *verts):} Set the vertices of the
-face. The ordered set of vertices is passed in through an array along
-with the number of vertices. The vertices are assumed to be ordered
-clockwise around the face. This function is relevant only for reduced
-representations in MSTK.
-
-
-\item[]\textbf{\textit{void} MF\_Replace\_Edge(\textit{MFace\_ptr} mface,
-\textit{MEdge\_ptr} edge, \textit{MEdge\_ptr} nuedge, \textit{int}
-dir):} Replace an edge in the face with another edge. The direction
-in which the new edge is used in the face must also be supplied. This
-function is relevant only for full representations in MSTK.
+\item[]\textbf{\textit{void} MF\_Set\_Vertices(\textit{MFace\_ptr}
+    mface, \textit{int} n, \textit{MVertex\_ptr} *verts):} Set the
+  vertices of the face. The ordered set of vertices (ccw around the
+  face) is passed in through an array along with the number of
+  vertices. This routine will collect/build all lower order
+  topological information (edges, edge directions in the face) as needed by the face.
+  
+\item[]\textbf{\textit{void} MF\_Replace\_Edge(\textit{MFace\_ptr}
+    mface, \textit{MEdge\_ptr} edge, \textit{MEdge\_ptr} nuedge,
+    \textit{int} dir):} \textit{THIS FUNCTION HAS BEEN SUPERSEDED BY
+    \textbf{MF\_Replace\_Edges}}.
+  
+\item[]\textbf{\textit{void} MF\_Replace\_Edge\_i(\textit{MFace\_ptr}
+    mface, \textit{int} i, \textit{MEdge\_ptr} nuedge, \textit{int}
+    dir):} \textit{THIS FUNCTION HAS BEEN SUPERSEDED BY
+    \textbf{MF\_Replace\_Edges\_i}}.
+  
+\item[]\textbf{\textit{void} MF\_Replace\_Edges(\textit{MFace\_ptr}
+    mface, \textit{int} nold, \textit{MEdge\_ptr} *oldedges,
+    \textit{int} nnu, \textit{MEdge\_ptr} *nuedges):} Replace a set of
+  edges in the face with another set of edges. The direction in which
+  the new edges are to be used in the face are automatically deduced.
+  This function is relevant only for full representations in MSTK.
+  
+\item[]\textbf{\textit{void} MF\_Replace\_Edges\_i(\textit{MFace\_ptr}
+    mface, \textit{int} nold, \textit{int} i, \textit{int} nnu,
+    \textit{MEdge\_ptr} *nuedges):} Replace the \textit{nold} edges in
+  the face starting with the i'th edge and going ccw around the face
+  with a new set of edges. The directions in which the new edges are
+  used in the face are automatically deduced. This function is
+  relevant only for full representations in MSTK.
 
 \item[]\textbf{\textit{void} MF\_Replace\_Vertex(\textit{MFace\_ptr} mface,
 \textit{MVertex\_ptr} mvertex, \textit{MVertex\_ptr} nuvertex):}
 Replace a vertex in the face with another vertex. This function is
 relevant only for reduced representations in MSTK.
 
-\item[]\textbf{\textit{void} MF\_Replace\_Edge\_i(\textit{MFace\_ptr} mface,
-\textit{int} i, \textit{MEdge\_ptr} nuedge, \textit{int} dir):} Replace
-the i'th edge in the face with another edge. The direction in which the
-new edge is used in the face must also be supplied. This function is
-relevant only for full representations in MSTK.
-
 \item[]\textbf{\textit{void} MF\_Replace\_Vertex\_i(\textit{MFace\_ptr}
 mface, \textit{int} i, \textit{MVertex\_ptr} nuvertex):} Replace the
 i'th vertex in the face with a new vertex. This function is relevant
 only for reduced representations in MSTK.
+
+\item[]\textbf{\textit{void} MF\_Insert\_Vertex(\textit{MFace\_ptr} mface,
+\textit{MVertex\_ptr} nuvertex, \textit{MVertex\_ptr} b4vertex):}
+Insert a vertex in the face before \textbf{b4vertex} w.r.t. a ccw
+ordering of the vertex faces. 
+
+\item[]\textbf{\textit{void} MF\_Replace\_Vertex\_i(\textit{MFace\_ptr}
+mface, \textit{MVertex\_ptr} nuvertex, \textit{int} i):} Insert a new
+vertex before vertex i in the face w.r.t. a ccw ordering of vertices.
+
+\item[]
 
 \item[]\textbf{\textit{Mesh\_ptr} MF\_Mesh(\textit{MFace\_ptr} mf):} Returns the mesh that this mesh belongs to.
 
@@ -618,6 +832,8 @@ only for reduced representations in MSTK.
 \item[]\textbf{\textit{int} MF\_GEntID(\textit{MFace\_ptr} mface):} Returns the ID of the geometric model entity that the vertex is classified on. Returns 0 if this information is not known.
 
 \item[]\textbf{\textit{GEntity\_ptr} MF\_GEntity(\textit{MFace\_ptr} mface):} Returns a pointer or handle to the geometric model entity that the vertex is classified on. Returns NULL if this information is not known.
+
+\item[]
 
 \item[]\textbf{\textit{int} MF\_Num\_Vertices(\textit{MFace\_ptr} mface):} Returns the number of vertices of the face.
 
@@ -681,14 +897,6 @@ the function returns 1; otherwise it returns 0.
 edge. If the face uses the edge in the positive direction the function
 returns 1; otherwise it returns 0;
 
-\item[]\textbf{\textit{int} MF\_UsesEntity(\textit{MFace\_ptr} mface,
-\textit{MEntity\_ptr} mentity, \textit{int} type):} Check if the face
-uses the given lower dimension entity, 'mentity'. The type of the
-entity is specified by the 'etype' variable. For a face, a lower
-dimensional entity can be a vertex or an edge. If the face uses the
-vertex or the edge, the function returns 1; otherwise it returns 0. If
-any other type of entity is specified, the function returns 0.
-
 \item[]\textbf{\textit{List\_ptr} MF\_Regions(\textit{MFace\_ptr} mface):}
 Return the set of regions connected to the face. If the face is not
 used by any regions, the function returns NULL to indicate that the
@@ -699,6 +907,27 @@ set is empty. If not the set may contain one or two regions.
 face. The positive side of the face (side = 1) is the side towards
 which the face normal points. The negative side of the face (side = 0)
 is the opposite side.
+
+\item[]
+
+\item[]\textbf{\textit{int} MF\_UsesEntity(\textit{MFace\_ptr} mface,
+\textit{MEntity\_ptr} mentity, \textit{int} type):} Check if the face
+uses the given lower dimension entity, 'mentity'. The type of the
+entity is specified by the 'etype' variable. For a face, a lower
+dimensional entity can be a vertex or an edge. If the face uses the
+vertex or the edge, the function returns 1; otherwise it returns 0. If
+any other type of entity is specified, the function returns 0.
+
+\item[]\textbf{\textit{MFace\_ptr} MVs\_CommonFace(\textit{int} nv,
+    \textit{MVertex\_ptr} *fverts):} Return a face connected to all
+  the given mesh vertices. Returns NULL if no such face exists.
+
+\item[]\textbf{\textit{MFace\_ptr} MEs\_CommonFace(\textit{int} ne,
+    \textit{MEdge\_ptr} *fedges):} Return a face connected to all
+  the given mesh edges. Returns NULL if no such face exists.
+
+
+\item[]
 
 \item[]\textbf{\textit{void} MF\_Coords(\textit{MFace\_ptr} mface,
 \textit{int} *n, double (*xyz)[3], \textit{int} dir):} Returns the
@@ -712,92 +941,119 @@ returned with a cw ordering (See Figure~\ref{fig:face_def}).
 \subsection{Mesh Region Object}
 
 \begin{description}
-\item[]\textbf{\textit{MRegion\_ptr} MR\_New(\textit{Mesh\_ptr} mesh):}
-Create a new region object. No topological information is embedded in
-the region when it is created. The region only knows which mesh it
-belongs to. The ID of the region is set by this function.
+\item[]\textbf{\textit{MRegion\_ptr} MR\_New(\textit{Mesh\_ptr}
+    mesh):} Create a new region object. No topological information is
+  embedded in the region when it is created. The region only knows
+  which mesh it belongs to. The ID of the region is set by this
+  function.
 
-\item[]\textbf{\textit{void} MR\_Delete(\textit{MRegion\_ptr} mregion):}
-Delete the region. Deletes all topological information embedded in the
-edge.
+\item[]\textbf{\textit{void} MR\_Delete(\textit{MRegion\_ptr} mregion,
+    \textit{int} keep):} Delete the region. Deletes all topological
+  information embedded in the region. If \textbf{keep} is 0, the
+  region is removed from the mesh and all topological and geometric
+  information embedded in the region is destroyed. If \textbf{keep} is
+  1, the region is marked as type \textit{MDELREGION} and removed from
+  the mesh but the region is not destroyed. Also, the vertices, edges
+  and faces of this region no longer point up to this region.
+    
+\item[]\textbf{\textit{void} MR\_Restore(\textit{MRegion\_ptr}
+    mregion):} Restore a temporarily deleted region. The region type
+  is restored from \textit{MDELREGION} to \textit{MREGION} and the
+  region is added back to the mesh. The vertices, edges and faces of
+  the region once again point back to the region.
 
-\item[]\textbf{\textit{void} MR\_Set\_GEntity(\textit{MRegion\_ptr} mregion,
-GEntity\_ptr gent):} Set the geometric model entity on which the edge
-is classified.
-
-\item[]\textbf{\textit{void} MR\_Set\_GEntDim(\textit{MRegion\_ptr} mregion,
-\textit{int} gdim):} Set the dimension of the geometric model entity on
-which the edge is classified.
-
-\item[]\textbf{\textit{void} MR\_Set\_GEntID(\textit{MRegion\_ptr} mregion,
-\textit{int} gid):} Set the ID of the geometric model entity on which
-the edge is classified.
-
-\item[]\textbf{\textit{void} MR\_Set\_ID(\textit{MRegion\_ptr} mregion,
-\textit{int} id):} Explicitly set ID of an edge and overwrite the ID
-set by the \textbf{MR\_New} function. Does not check for duplication
-of region IDs.
-
-\item[]\textbf{\textit{void} MR\_Set\_Faces(\textit{MRegion\_ptr} mregion,
-\textit{int} nf, \textit{MFace\_ptr} *mfaces, \textit{int} *dirs):} Set
-the faces of the region along with their directions. The
-\textit{unordered} set of faces and their directions are passed in
-through arrays along with the number of faces. If the normal of the
-face points out of the region, the associated direction to be passed
-in is 1; otherwise it is 0. This function is only relevant for full
-representations in MSTK.
-
+\item[]
+  
+\item[]\textbf{\textit{void} MR\_Set\_GEntity(\textit{MRegion\_ptr}
+    mregion, GEntity\_ptr gent):} Set the geometric model entity on
+  which the region is classified.
+  
+\item[]\textbf{\textit{void} MR\_Set\_GEntDim(\textit{MRegion\_ptr}
+    mregion, \textit{int} gdim):} Set the dimension of the geometric
+  model entity on which the region is classified.
+  
+\item[]\textbf{\textit{void} MR\_Set\_GEntID(\textit{MRegion\_ptr}
+    mregion, \textit{int} gid):} Set the ID of the geometric model
+  entity on which the region is classified.
+  
+\item[]\textbf{\textit{void} MR\_Set\_ID(\textit{MRegion\_ptr}
+    mregion, \textit{int} id):} Explicitly set ID of a region and
+  overwrite the ID set by the \textbf{MR\_New} function. Does not
+  check for duplication of region IDs.
+  
+\item[]\textbf{\textit{void} MR\_Set\_Faces(\textit{MRegion\_ptr}
+    mregion, \textit{int} nf, \textit{MFace\_ptr} *mfaces,
+    \textit{int} *dirs):} Set the faces of the region along with their
+  directions. The \textit{unordered} set of faces and their directions
+  are passed in through arrays along with the number of faces. If the
+  normal of the face points out of the region, the associated
+  direction to be passed in is 1; otherwise it is 0. This function is
+  only relevant for full representations in MSTK.
+  
 \item[]\textbf{\textit{void} MR\_Set\_Vertices(\textit{MRegion\_ptr}
-mregion, \textit{int} nv, \textit{MVertex\_ptr} *mvertices):} Set the
-vertices of the region. This function is relevant for reduced
-representations only. For standard elements, the vertices must be
-ordered as indicated in Appendix~\ref{app:reg_conventions}. This
-function does not apply for defining general regions since there
-cannot be any implicit ordering.
-
+    mregion, \textit{int} nv, \textit{MVertex\_ptr} *mvertices):} Set
+  the vertices of the region. This routine will collect/build all
+  lower order topological information (edges, edge directions in the
+  face) as needed by the face. For standard elements, the vertices
+  must be ordered as indicated in Appendix~\ref{app:reg_conventions},
+  while \textbf{nf} can be 0 and \textbf{rfv\_template} can be NULL.
+  For non-standard elements, \textbf{nf} is the number of faces of the
+  polyhedron and \textbf{rfv\_template} gives the vertices used in each
+  face. More precisely, \textbf{rfv\_template} has \textbf{nfv}
+  pointers to integer array $i$. The first entry of each
+  \textbf{rfv\_template$[i]$} represents the number of vertices in that
+  face and the remaining entries represent the list of vertices of the
+  face listed so that the face defined by them points outward.
+  
 \item[]\textbf{\textit{void} MR\_Replace\_Face(\textit{MRegion\_ptr}
-mregion, \textit{MFace\_ptr} mface, \textit{MFace\_ptr} nuface,
-\textit{int} dir):} Replace a face of the region with another edge. The
-direction in which the new face is used in the region must also be
-supplied. This function is only relevant for full representations in
-MSTK.
-
+    mregion, \textit{MFace\_ptr} mface, \textit{MFace\_ptr} nuface,
+    \textit{int} dir):} Replace a face of the region with another
+  face. The direction in which the new face is used in the region must
+  also be supplied. This function is only relevant for full
+  representations in MSTK.
+  
 \item[]\textbf{\textit{void} MR\_Replace\_Vertex(\textit{MRegion\_ptr}
-mregion, \textit{MVertex\_ptr} mvertex, \textit{MVertex\_ptr}
-nuvertex):} Replace a vertex of a region with another vertex. This
-function is relevant only for reduced representations in MSTK.
+    mregion, \textit{MVertex\_ptr} mvertex, \textit{MVertex\_ptr}
+    nuvertex):} Replace a vertex of a region with another vertex. This
+  function is relevant only for reduced representations in MSTK.
+  
+\item[]\textbf{\textit{void}
+    MR\_Replace\_Face\_i(\textit{MRegion\_ptr} mregion, \textit{int}
+    i, \textit{MFace\_ptr} mface, \textit{int} dir):} Replace the i'th
+  face in the region with another face.The direction in which the new
+  face is used in the region must also be supplied. This function is
+  only relevant for full representations in MSTK.
+  
+\item[]\textbf{\textit{void}
+    MR\_Replace\_Vertex\_i(\textit{MRegion\_ptr} mregion, \textit{int}
+    i, \textit{MVertex\_ptr} mvertex):} Replace the i'th vertex of the
+  region with another vertex. This function is only relevant for
+  reduced representations in MSTK.
 
-\item[]\textbf{\textit{void} MR\_Replace\_Face\_i(\textit{MRegion\_ptr}
-mregion, \textit{int} i, \textit{MFace\_ptr} mface, \textit{int} dir):}
-Replace the i'th face in the region with another face.The direction in
-which the new face is used in the region must also be supplied. This
-function is only relevant for full representations in MSTK.
+\item[]
 
-\item[]\textbf{\textit{void} MR\_Replace\_Vertex\_i(\textit{MRegion\_ptr}
-mregion, \textit{int} i, \textit{MVertex\_ptr} mvertex):} Replace the
-i'th vertex of the region with another vertex. This function is only
-relevant for reduced representations in MSTK.
-
-
-\item[]\textbf{\textit{Mesh\_ptr} MR\_Mesh(\textit{MRegion\_ptr} mregion):}
-Returns the mesh that the region belongs to.
-
-\item[]\textbf{\textit{int} MR\_ID(\textit{MRegion\_ptr} mregion):} Returns
-the ID of the region. Returns 0 if not known.
-
-\item[]\textbf{\textit{int} MR\_GEntDim(\textit{MRegion\_ptr} mregion):}
-Returns the dimension of the geometric model entity the region is
-classified on. Always returns 3 since a mesh region can be classified
-only on a model region.
-
-\item[]\textbf{\textit{int} MR\_GEntID(\textit{MRegion\_ptr} mregion):}
-Returns the ID of the geometric model entity that the region is
-classified on. Returns 0 if not known.
-
+  
+\item[]\textbf{\textit{Mesh\_ptr} MR\_Mesh(\textit{MRegion\_ptr}
+    mregion):} Returns the mesh that the region belongs to.
+  
+\item[]\textbf{\textit{int} MR\_ID(\textit{MRegion\_ptr} mregion):}
+  Returns the ID of the region. Returns 0 if not known.
+  
+\item[]\textbf{\textit{int} MR\_GEntDim(\textit{MRegion\_ptr}
+    mregion):} Returns the dimension of the geometric model entity the
+  region is classified on. Always returns 3 since a mesh region can be
+  classified only on a model region.
+  
+\item[]\textbf{\textit{int} MR\_GEntID(\textit{MRegion\_ptr}
+    mregion):} Returns the ID of the geometric model entity that the
+  region is classified on. Returns 0 if not known.
+  
 \item[]\textbf{\textit{GEntity\_ptr} MR\_GEntity(\textit{MRegion\_ptr}
-  mregion):} Returns a pointer or handle to the geometric model entity
-  that the vertex is classified on. Returns NULL if this information
-  is not known.
+    mregion):} Returns a pointer or handle to the geometric model
+  entity that the vertex is classified on. Returns NULL if this
+  information is not known.
+
+\item[]
 
 \item[]\textbf{\textit{int} MR\_Num\_Vertices(\textit{MRegion\_ptr}
 mregion):} Returns the number of vertices of a region.
@@ -811,6 +1067,8 @@ Returns the number of faces of a region.
 \item[]\textbf{\textit{int} MR\_Num\_AdjRegions(\textit{MRegion\_ptr}
 mregion):} Returns the number of adjacent regions of a region, i.e.,
 regions sharing a face with this region.
+
+\item[] 
 
 \item[]\textbf{\textit{List\_ptr} MR\_Vertices(\textit{MRegion\_ptr}
 mregion):} Returns the set of vertices of a region. For standard
@@ -838,11 +1096,15 @@ region and returns 0 if the face normal points into the region.
 i'th face. Returns 1 if the face normal points out of the region and
 returns 0 if the face normal points into the region.
 
+
+\item[]
+
 \item[]\textbf{\textit{int} MR\_UsesEntity(\textit{MRegion\_ptr} mregion,
 \textit{MEntity\_ptr} ment, \textit{int} type):} Check if the region
 uses the given lower dimension entity, 'mentity'. The type of the
 entity is
 
+\item[]
 
 \item[]\textbf{\textit{void} MR\_Coords(\textit{MRegion\_ptr} mregion,
 \textit{int} *n, double (*xyz)[3]):} Returns the coordinates of the
@@ -877,20 +1139,77 @@ the ID of a generic entity.
 \item[]\textbf{\textit{int} MEnt\_Dim(\textit{MEntity\_ptr} mentity):}
 Returns the topological dimension or type of generic entity.
 
+\item[]\textbf{\textit{int} MEnt\_OrigDim(\textit{MEntity\_ptr} mentity):}
+Returns the original topological dimension or type of generic entity before it
+was temporarily deleted.
+
 \item[]\textbf{\textit{Mesh\_ptr} MEnt\_Mesh(\textit{MEntity\_ptr} mentity):}
 Returns the mesh that the entity belongs to.
 
-\item[]\textbf{\textit{int} MEnt\_GEntDim(\textit{MEntity\_ptr} mentity):}
-Returns the dimension of the geometric model entity that the entity is
-classified on.
+\item[]\textbf{\textit{int} MEnt\_GEntDim(\textit{MEntity\_ptr}
+    mentity):} Returns the dimension of the geometric model entity
+  that the entity is classified on.
+  
+\item[]\textbf{\textit{GEntity\_ptr}
+    MEnt\_GEntity(\textit{MEntity\_ptr} mentity):} Returns a pointer
+  or handle to geometric model entity that the entity is classified
+  on.
 
-\item[]\textbf{\textit{GEntity\_ptr} MEnt\_GEntity(\textit{MEntity\_ptr} mentity):}
-Returns a pointer or handle to geometric model entity that the entity
-is classified on.
+\item[]
+  
+\item[]\textbf{\textit{void} MEnt\_Set\_AttVal(\textit{MEntity\_ptr}
+    ent, \textit{MAttrib\_ptr} attrib, \textit{int} ival,
+    \textit{double} lval, \textit{void} *pval):} Set the value of an
+  attribute for given mesh entity. Depending on whether the attribute
+  is integer, double or pointer, the appropriate entry in the argument
+  list is specified.
+    
+\item[]\textbf{\textit{void} MEnt\_Rem\_AttVal(\textit{MEntity\_ptr}
+    ent, \textit{MAttrib\_ptr mattrib}:} Clear the value of the given
+  attribute from the entity.
+    
+\item[]\textbf{\textit{int} MEnt\_Get\_AttVal(\textit{MEntity\_ptr}
+    ent, \textit{MAttrib\_ptr} int *ival, double *rval, double
+    **pval):} Get the value of an attribute from an entity.  Depending
+  on the attribute type, either \textbf{ival}, \textbf{rval} or
+  \textbf{pval} is returned.
+
 \end{description}
 
+\newpage
+\subsection{Mesh Attributes}
 
+\begin{description}
+  
+\item[]\textbf{\textit{MAttrib\_ptr} MAttrib\_New(\textit{Mesh\_ptr}
+    mesh, \textit{const char} *att\_name, \textit{MAttType} att\_type,
+    \textit{MType} entdim):} Define a new mesh attribute. Along with
+  the mesh to which this attribute is assigned (\textbf{mesh}) and the
+  name of the attribute (\textbf{att\_name}), the type of the
+  attribute (\textbf{att\_type}) must be specified as \textbf{INT},
+  \textbf{DOUBLE} or \textbf{POINTER}. Also, the dimension of the entity
+    for which the attribute value can be set must be specified as
+    \textbf{MVERTEX}, \textbf{MEDGE}, \textbf{MFACE}, \textbf{MREGION}
+    or \textbf{MALLTYPE}.
 
+\item[]\textbf{\textit{char} *MAttrib\_Get\_Name(\textit{MAttrib\_ptr}
+    attrib, \textit{char} *att\_name):} Get the name of the given attribute.
+  
+\item[]\textbf{\textit{MAttType}
+    MAttrib\_Get\_Type(\textit{MAttrib\_ptr} attrib):} Get the type of
+  the attribute (Can return \textbf{INT}, \textbf{DOUBLE},
+  \textbf{PVAL}).
+  
+\item[]\textbf{\textit{MType}
+    MAttrib\_Get\_EntDim(\textit{MAttrib\_ptr} attrib):} Get the
+  dimension (or type) of entity attribute can be asssigned to. Can be
+  \textbf{MVERTEX}, \textbf{MEDGE}, \textbf{MFACE}, \textbf{MREGION}
+  or \textbf{MALLTYPE}.
+  
+\item[]\textbf{\textit{void} MAttrib\_Delete(\textit{MAttrib\_ptr}
+    attrib):} Delete an attribute.
+
+\end{description}
 
 \newpage
 \subsection{Entity Marks}
