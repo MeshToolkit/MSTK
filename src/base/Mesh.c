@@ -708,8 +708,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       if (mesh->ne || mesh->nf || mesh->nr)
 	MSTK_Report("MESH_InitFromFile",
 		    "Premature end of file after adjacent vertex data",FATAL);
-      else
+      else {
+        fclose(fp);
 	return 1;
+      }
     }
   }
 
@@ -778,8 +780,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	MSTK_Report("MESH_InitFromFile",
 		    "Premature end of file after edge data",FATAL);
       }
-      else
+      else {
+        fclose(fp);
 	return 1;
+      }
     }
   }
 
@@ -959,8 +963,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       if (mesh->nr != 0)
 	MSTK_Report("MESH_InitFromFile",
 		    "Premature end of file after face data",FATAL);
-      else
+      else {
+        fclose(fp);
 	return 1;
+      }
     }
     else if (status == 0)
       MSTK_Report("MESH_InitFromFile",
@@ -1140,8 +1146,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       if (mesh->reptype == R2)
 	MSTK_Report("MESH_InitFromFile",
 		    "Premature end of file after reading regions",FATAL);
-      else
+      else {
+        fclose(fp);
 	return 1;
+      }
     }
   }
 
