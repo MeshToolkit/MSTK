@@ -21,6 +21,7 @@ extern "C" {
 #endif
 #ifndef _H_MEntity_Private
   typedef void     *MEntity_ptr;
+  typedef void     *MEntity_Data_ptr;
 #endif
 #ifndef _H_GModel_Private
   typedef void     *GModel_ptr;
