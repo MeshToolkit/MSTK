@@ -1,0 +1,15 @@
+- What to do for mixed meshes with a reduced representations? Say ones with regions and faces.
+
+1. We can force the representation to be one which explicitly represents regions and faces (regions are made up of faces).
+OR
+2. We can have a general element entity which is either a region or a face or an edge; becomes more complicated but is more general.
+
+- Element node representations have to allow for face-node and region-node representations. If a reduced representation allows regions, faces and nodes, and we built only a surface mesh, we have to have a face-node representation and add the region part later.
+
+
+- Flag to indicate which representation is being used?
+	typedef enum {F1=0, F2, F3, F4, F5, F6, R1, R2, R3, R4} repType;
+	char str[10][5] = {"F1","F2","F3","F4","F5","F6","R1","R2","R4"};
+	repTYpe rtype;
+
+We are going to represent the nmber of upward adjacencies of an entity represented by 'unsigned char' I believe this should be 255 items. Will this be enough for Delaunay meshing?
