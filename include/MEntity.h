@@ -18,6 +18,7 @@ extern "C" {
     char gdim;
     int gid;
     GEntity_ptr gent;
+    List_ptr AttInsList;
   } MEntity, *MEntity_ptr;
 #else
   typedef void *MEntity_ptr;
@@ -41,6 +42,12 @@ extern "C" {
   void MEnt_UnMark(MEntity_ptr ent, int mkr);
   void List_Mark(List_ptr list, int mkr);
   void List_Unmark(List_ptr list, int mkr);
+
+  /* Attributes */
+
+  void  MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, double lval, void *pval);
+  void  MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  int  MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, double *lval, void **pval);
 
   
 #ifdef __cplusplus
