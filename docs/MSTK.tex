@@ -268,6 +268,16 @@ given mesh object. Returns 1 if successful, 0 otherwise.
   features such as classifying mesh edges as being on model edges if
   the dihedral angle between the boundary faces connected to it is
   very large.
+
+
+\item[]\textbf{\textit{int} MESH\_DelInterior(\textit{Mesh\_ptr}
+    mesh):} Delete the interior of a mesh and retain only its
+    boundaries (including interior boundaries). For solid meshes, this
+    results in a surface mesh (i.e., all mesh regions, and  mesh
+    faces, edges and vertices classified on model regions are deleted). For
+    surface meshes, this results in curve mesh. For an edge mesh, only
+    the end vertices are retained (unlikely to be used this
+    way). Undefined for a vertex mesh.
   
 \item[]\textbf{\textit{void} MESH\_WriteToFile(\textit{Mesh\_ptr}
     mesh, const char *filename):} Save a mesh to a filename. The file
