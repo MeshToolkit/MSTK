@@ -13,37 +13,24 @@ extern "C" {
     MVertex_UpAdj_R1R2 *upadj;
 
     upadj = v->upadj = (MVertex_UpAdj_R1R2 *) MSTK_malloc(sizeof(MVertex_UpAdj_R1R2));
-    upadj->nel = (unsigned int) 0;
     upadj->velements = List_New(10);
   }
 
   void MV_Delete_R1(MVertex_ptr v, int keep) {
     MVertex_UpAdj_R1R2 *upadj;
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      v->dim = MDELVERTEX;
-    }
-    else {
-#ifdef DEBUG
-      v->dim = MDELVERTEX;
-#endif
-
+    if (!keep) {
       upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
       if (upadj) {
 	if (upadj->velements)
 	  List_Delete(upadj->velements);
 	MSTK_free(upadj);
       }
-
-      MSTK_free(v);
     }
   }
 
   void MV_Restore_R1(MVertex_ptr v) {
-    if (v->dim != MDELVERTEX)
-      return;
-    v->dim = MVERTEX;
+    MEnt_Set_Dim(v,MVERTEX);
   }
 
   void MV_Destroy_For_MESH_Delete_R1(MVertex_ptr v) {
@@ -55,8 +42,6 @@ extern "C" {
 	List_Delete(upadj->velements);
       MSTK_free(upadj);
     }
-
-    MSTK_free(v);
   }
 
   int MV_Num_AdjVertices_R1(MVertex_ptr v) {
@@ -85,139 +70,175 @@ extern "C" {
   }
 
   int MV_Num_Faces_R1(MVertex_ptr v) {
-    int nf;
-    List_ptr vfaces;
-    
-#ifdef DEBUG
-    MSTK_Report("MV_Num_Faces",
-		"Inefficient to call this routine with this representation",
-		MESG);
-#endif
-    
-    /* Have to account for the fact that this may be a surface mesh */
-    /* Then v->upadj->velements contains faces of vertex which can be
-       retrieved fairly efficiently */
-
-    vfaces = MV_Faces_R1(v);
-    nf = List_Num_Entries(vfaces);
-    List_Delete(vfaces);
-    return nf;
+    return MV_Num_Faces_R1R2(v);
   }
   
   int MV_Num_Regions_R1(MVertex_ptr v) {
-    MVertex_UpAdj_R1R2 *upadj;
-    int i, nr = 0;
-    MEntity_ptr ent;
-
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    for (i = 0; i < upadj->nel; i++) {
-      ent = (MEntity_ptr) List_Entry(upadj->velements,i);
-      if (MEnt_Dim(ent) == MREGION)
-	nr++;
-    }
-    return nr;
+    return MV_Num_Regions_R1R2(v);
   }
 
   List_ptr MV_AdjVertices_R1(MVertex_ptr v) {
-    MSTK_Report("MV_AdjVertices_R1",
-		"Not yet implemented for this representation",MESG);
-    return 0;
+    List_ptr vedges = MV_Edges_R1(v);
+
+    if (vedges) {      
+      int idx = 0, nve = List_Num_Entries(vedges);
+      List_ptr adjv = List_New(nve);
+      MEdge_ptr edge;
+
+      while ((edge = List_Next_Entry(vedges,&idx)))
+	List_Add(adjv,ME_OppVertex(edge,v));
+      List_Delete(vedges);
+      
+      return adjv;
+    }
+    else
+      return NULL;
   }
 
   List_ptr MV_Edges_R1(MVertex_ptr v) {
-    MSTK_Report("MV_Edges_R1",
-		"Not yet implemented for this representation",MESG);
-    return 0;
+    MVertex_UpAdj_R1R2 *upadj;
+    int idx, idx1, idx2, found, nfv;
+    MEntity_ptr ent;
+    MFace_ptr lstface;
+    MEdge_ptr edge, redge, lstedge;
+    MVertex_ptr ev[2];
+    List_ptr redges, vedges, fverts;
+    Mesh_ptr mesh = MEnt_Mesh(v);
+
+    vedges = List_New(0);
+
+    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
+    idx = 0;
+    while ((ent = (MEntity_ptr) List_Next_Entry(upadj->velements,&idx))) {
+      if (MEnt_Dim(ent) == MREGION) {
+
+	redges = MR_Edges(ent);
+
+	idx1 = 0;
+	while ((redge = List_Next_Entry(redges,&idx1))) {
+	  if (ME_UsesEntity(redge,v,MVERTEX)) {
+	    
+	    idx2 = 0; found = 0;
+	    while ((lstedge = List_Next_Entry(vedges,&idx2))) {
+	      if (MEs_AreSame(redge,lstedge)) {
+		found = 1;
+		break;
+	      }
+	    }
+
+	    if (!found) 
+	      List_Add(vedges,redge);
+	  }
+	}
+	
+	List_Delete(redges);
+      }
+      else { /* Must be a face */
+	fverts = MF_Vertices(ent,1,v);
+	nfv = List_Num_Entries(fverts);
+
+	ev[0] = List_Entry(fverts,0);
+	ev[1] = List_Entry(fverts,1);
+
+	idx2 = 0; found = 0;
+	while ((lstedge = List_Next_Entry(vedges,&idx2))) {
+	  if (ME_UsesEntity(lstedge,ev[0],MVERTEX) &&
+	      ME_UsesEntity(lstedge,ev[1],MVERTEX)) {
+	    found = 1;
+	    break;
+	  }
+	}
+
+	if (!found) {
+	  edge = ME_New(mesh);
+	  ME_Set_Vertex(edge,0,ev[0]);
+	  ME_Set_Vertex(edge,1,ev[1]);
+	  ME_Set_GInfo_Auto(edge);
+	  List_Add(vedges,edge);
+	}
+
+	ev[1] = ev[0];
+	ev[0] = List_Entry(fverts,nfv-1);
+
+	idx2 = 0; found = 0;
+	while ((lstedge = List_Next_Entry(vedges,&idx2))) {
+	  if (ME_UsesEntity(lstedge,ev[0],MVERTEX) &&
+	      ME_UsesEntity(lstedge,ev[1],MVERTEX)) {
+	    found = 1;
+	    break;
+	  }
+	}
+
+	if (!found) {
+	  edge = ME_New(mesh);
+	  ME_Set_Vertex(edge,0,ev[0]);
+	  ME_Set_Vertex(edge,1,ev[1]);
+	  ME_Set_GInfo_Auto(edge);
+	  List_Add(vedges,edge);
+	}
+
+	List_Delete(fverts);
+      }
+    }
+
+    if (List_Num_Entries(vedges)) 
+      return vedges;
+    else {
+      List_Delete(vedges);
+      return NULL;
+    }
+      
   }
 
   List_ptr MV_Faces_R1(MVertex_ptr v) {
-    MSTK_Report("MV_Faces_R1",
-		"Not yet implemented for this representation",MESG);
-    return 0;
+    return MV_Faces_R1R2(v);
   }
 
   List_ptr MV_Regions_R1(MVertex_ptr v) {
-    MVertex_UpAdj_R1R2 *upadj;
-    int i, nr = 0, dim;
-    MEntity_ptr ent;
-    List_ptr vregions;
-
-    upadj = (MVertex_UpAdj_R1R2*) v->upadj;
-    vregions = List_New(10);
-
-    for (i = 0; i < upadj->nel; i++) {
-      ent = (MEntity_ptr) List_Entry(upadj->velements,i);
-      if (MEnt_Dim(ent) == MREGION) 
-	List_Add(vregions,ent);
-    }
-    if (nr)
-      return vregions;
-    else {
-      List_Delete(vregions);
-      return 0;
-    }      
+    return MV_Regions_R1R2(v);
   }
 
   void MV_Add_Region_R1(MVertex_ptr v, MRegion_ptr mregion) {
-    MVertex_UpAdj_R1R2 *upadj;
-
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    List_Add(upadj->velements,mregion);
-    (upadj->nel)++;
+    MV_Add_Region_R1R2(v,mregion);
   }
 
   void MV_Rem_Region_R1(MVertex_ptr v, MRegion_ptr mregion) {
-   MVertex_UpAdj_R1R2 *upadj;
-
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    if (List_Rem(upadj->velements,mregion))
-      (upadj->nel)--;
+    MV_Rem_Region_R1R2(v,mregion);
   }
 
   void MV_Add_Face_R1(MVertex_ptr v, MFace_ptr mface) {
-    MVertex_UpAdj_R1R2 *upadj;
-
-    if (MF_Region(mface,0) || MF_Region(mface,1)) {
-      MSTK_Report("MV_Add_Face_R1",
-		 "Can only add faces with no regions in this representation",
-		 ERROR);
-      return;
-    }
-
-    upadj = v->upadj;
-    List_Add(upadj->velements,mface);
-    (upadj->nel)++;
+    MV_Add_Face_R1R2(v,mface);
   }
 
   void MV_Rem_Face_R1(MVertex_ptr v, MFace_ptr mface) {
-    MVertex_UpAdj_R1R2 *upadj;
-
-    upadj = (MVertex_UpAdj_R1R2 *)v->upadj;
-    if (List_Rem(upadj->velements,mface))
-      (upadj->nel)--;
+    MV_Rem_Face_R1R2(v,mface);
   }
 
   void MV_Add_AdjVertex_R1(MVertex_ptr v, MVertex_ptr av) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_AdjVertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Add_AdjVertex",
+		"Function call not suitable for this representation",WARN);
 #endif
   }
 
   void MV_Rem_AdjVertex_R1(MVertex_ptr v, MVertex_ptr av) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_AdjVertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_AdjVertex",
+		"Function call not suitable for this representation",WARN);
 #endif
   }
 
   void MV_Add_Edge_R1(MVertex_ptr v, MEdge_ptr e) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_Edge","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Add_Edge",
+		"Function call not suitable for this representation",WARN);
 #endif
   }
 
   void MV_Rem_Edge_R1(MVertex_ptr v, MEdge_ptr e) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_Edge","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_Edge",
+		"Function call not suitable for this representation",WARN);
 #endif
   }
 
