@@ -85,7 +85,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->AttribList);
   }
 
-  free(mesh);
+  MSTK_free(mesh);
 }
 
 int MESH_SetRepType(Mesh_ptr mesh, RepType type) {
@@ -526,6 +526,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   int vid1, vid2, eid, fid, rid, adjvid, adjrid, adjv_flag;
   int nfv, max_nfv=0, nfe, max_nfe=0, nrv, max_nrv=0, nrf, max_nrf=0;
   int *fedirs, *rfdirs, status;
+  int processed_vertices=0, processed_adjv=0, processed_edges=0;
+  int processed_faces=0, processed_regions=0, processed_adjr=0;
   double ver, xyz[3];
   MVertex_ptr mv, ev1, ev2, adjv, *fverts, *rverts;
   MEdge_ptr me, *fedges;
@@ -615,6 +617,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       
       MV_Set_ID(mv,(i+1));
     }
+
+    processed_vertices = 1;
   }
   else {
     MSTK_Report("MESH_InitFromFile",
@@ -686,6 +690,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  fscanf(fp,"%d",&adjvid);
       }
     }
+
+    processed_adjv = 1;
   }
   else {
     adjv_flag = 0;
@@ -696,7 +702,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
     
 
-  if (adjv_flag) {
+  if (processed_adjv) {
     status = fscanf(fp,"%s",temp_str);
     if (status == EOF) {
       if (mesh->ne || mesh->nf || mesh->nr)
@@ -755,22 +761,26 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 		      "Error in reading edge data",FATAL);
       }
     }
+
+    processed_edges = 1;
   }
   else {
-    if (mesh->reptype >= F1 || mesh->reptype <= F4) {
+    if (mesh->reptype >= F1 && mesh->reptype <= F4) {
       MSTK_Report("MESH_InitFromFile","Expected edge information",ERROR);
       return 0;
     }
   }
   
-  status = fscanf(fp,"%s",temp_str);
-  if (status == EOF) {
-    if (mesh->nf || mesh->nr) {
-      MSTK_Report("MESH_InitFromFile",
-		  "Premature end of file after edge data",FATAL);
+  if (processed_edges) {
+    status = fscanf(fp,"%s",temp_str);
+    if (status == EOF) {
+      if (mesh->nf || mesh->nr) {
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file after edge data",FATAL);
+      }
+      else
+	return 1;
     }
-    else
-      return 1;
   }
 
 
@@ -848,6 +858,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	}
 	if (fverts)
 	  MSTK_free(fverts);
+
+	processed_faces = 1;
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
@@ -922,6 +934,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_free(fedges);
 	  MSTK_free(fedirs);
 	}
+	
+	processed_faces = 1;
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
@@ -931,7 +945,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
   }
   else {
-    if (mesh->reptype >= F1 || mesh->reptype <= F4) {
+    if (mesh->reptype >= F1 && mesh->reptype <= F4) {
       MSTK_Report("MESH_InitFromFile","Expected face information",ERROR);
       fclose(fp);
       return 0;
@@ -939,17 +953,19 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   
   
-  status = fscanf(fp,"%s",temp_str);
-  if (status == EOF) {
-    if (mesh->nr != 0)
+  if (processed_faces) {
+    status = fscanf(fp,"%s",temp_str);
+    if (status == EOF) {
+      if (mesh->nr != 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file after face data",FATAL);
+      else
+	return 1;
+    }
+    else if (status == 0)
       MSTK_Report("MESH_InitFromFile",
-		  "Premature end of file after face data",FATAL);
-    else
-      return 1;
+		  "Error in reading region data",FATAL);
   }
-  else if (status == 0)
-    MSTK_Report("MESH_InitFromFile",
-		"Error in reading region data",FATAL);
 
 
   /* REGION DATA */
@@ -1029,6 +1045,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	}
 	if (rverts)
 	  MSTK_free(rverts);
+
+	processed_regions = 1;
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
@@ -1104,6 +1122,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_free(rfaces);
 	  MSTK_free(rfdirs);
 	}
+
+	processed_regions = 1;
       }
     }
     else {
@@ -1114,13 +1134,15 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
   }
 
-  status = fscanf(fp,"%s",temp_str);
-  if (status == EOF) {
-    if (mesh->reptype == R2)
-      MSTK_Report("MESH_InitFromFile",
-		  "Premature end of file after reading regions",FATAL);
-    else
-      return 1;
+  if (processed_regions) {
+    status = fscanf(fp,"%s",temp_str);
+    if (status == EOF) {
+      if (mesh->reptype == R2)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file after reading regions",FATAL);
+      else
+	return 1;
+    }
   }
 
 
