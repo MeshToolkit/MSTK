@@ -18,6 +18,7 @@ extern "C" {
     char gdim;
     int gid;
     GEntity_ptr gent;
+    List_ptr AttInsList;
     RepType repType;
     void *upadj;
     MVertex_ptr vertex[2];

@@ -20,6 +20,7 @@ extern "C" {
     char gdim;
     int gid;
     GEntity_ptr gent;
+    List_ptr AttInsList;
     RepType repType;
     void *sameadj;
     void *downadj;
