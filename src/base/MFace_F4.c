@@ -114,7 +114,7 @@ extern "C" {
     MRegion_ptr r;
     MEdge_ptr e;
     MFace_DownAdj_FN *downadj;
-    int i, k, nr;
+    int i, k=0, nr;
     
     downadj = (MFace_DownAdj_FN *) f->downadj;
     
@@ -122,20 +122,22 @@ extern "C" {
     e = List_Entry(downadj->fedges,0);
     
     eregs = ME_Regions(e);
-    nr = List_Num_Entries(eregs);
-    
-    k = 0;
-    for (i = 0; i < nr; i++) {
-      r = List_Entry(eregs,i);
-      if (MR_UsesEntity(r,f,2)) {
-	List_Add(fregs,r);
-	k++;
+    if (eregs) {
+      nr = List_Num_Entries(eregs);
+      
+      for (i = 0; i < nr; i++) {
+	r = List_Entry(eregs,i);
+	if (MR_UsesEntity(r,f,2)) {
+	  List_Add(fregs,r);
+	  k++;
+	}
+	if (k == 2)
+	  break;
       }
-      if (k == 2)
-	break;
+      
+      List_Delete(eregs);
     }
-    
-    List_Delete(eregs);
+			
     
     if (k) 
       return fregs;
@@ -156,22 +158,24 @@ extern "C" {
     MSTK_Report("MF_Region_F4","More efficient to use MF_Regions",MESG);
 #endif
     
-    downadj = (MFace_DownAdj_FN *) downadj;
+    downadj = (MFace_DownAdj_FN *) f->downadj;
     e = List_Entry(downadj->fedges,0);
     
     eregs = ME_Regions(e);
-    nr = List_Num_Entries(eregs);
-    
-    r1 = 0;
-    for (i = 0; i < nr; i++) {
-      r = List_Entry(eregs,i);
-      fdir = MR_FaceDir(r,f);
-      if (fdir == !dir) {
-	r1 = r;
-	break;
+    if (eregs) {
+      nr = List_Num_Entries(eregs);
+      
+      r1 = 0;
+      for (i = 0; i < nr; i++) {
+	r = List_Entry(eregs,i);
+	fdir = MR_FaceDir(r,f);
+	if (fdir == !dir) {
+	  r1 = r;
+	  break;
+	}
       }
       List_Delete(eregs);
-      
+	
       return r1;
     }
     
