@@ -1,0 +1,26 @@
+
+for i in  *.c *.h *.cc *.cpp *.cxx *.hxx
+do
+ if [ -f $i ] 
+ then
+   perl -p -i -e "s/Set_ptr/List_ptr/g" $i
+   perl -p -i -e "s/Set_New/List_New/g" $i
+   perl -p -i -e "s/Set_Delete/List_Delete/g" $i
+   perl -p -i -e "s/Set_Compress/List_Compress/g" $i
+   perl -p -i -e "s/Set_Copy/List_Copy/g" $i
+   perl -p -i -e "s/Set_Add/List_Add/g" $i
+   perl -p -i -e "s/Set_ChknAdd/List_ChknAdd/g" $i
+   perl -p -i -e "s/Set_Rem/List_Rem/g" $i
+   perl -p -i -e "s/Set_Remi/List_Remi/g" $i
+   perl -p -i -e "s/Set_Replace/List_Replace/g" $i
+   perl -p -i -e "s/Set_Replacei/List_Replacei/g" $i
+   perl -p -i -e "s/Set_Contains/List_Contains/g" $i
+   perl -p -i -e "s/Set_Locate/List_Locate/g" $i
+   perl -p -i -e "s/Set_Entry/List_Entry/g" $i
+   perl -p -i -e "s/Set_Next_Entry/List_Next_Entry/g" $i
+   perl -p -i -e "s/Set_Num_Entries/List_Num_Entries/g" $i
+   perl -p -i -e "s/Set_Print/List_Print/g" $i
+   perl -p -i -e "s/Set_Mark/List_Mark/g" $i
+   perl -p -i -e "s/Set_Unmark/List_Unmark/g" $i
+ fi
+done
