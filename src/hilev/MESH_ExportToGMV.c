@@ -229,106 +229,110 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  fprintf(fp,"\n");
       }
       fprintf(fp,"\n");
-
-      /* Must write out other attributes that exist on mesh regions 
-	 and mesh nodes */
-
-      if (natt >= 0) {
-	/* Must write out attributes related to mesh faces and mesh nodes */
-	/* If natt is 0, all attributes are to be written out */
-	
-	nmeshatt = MESH_Num_Attribs(mesh);
-
-	if (nmeshatt) {
-	  
-	  outattribs = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
-	  
-	  for (i = 0, k = 0, noutatt = 0; i < nmeshatt; i++) {
-	    attrib = MESH_Attrib(mesh,i);
-	    
-	    attentdim = MAttrib_Get_EntDim(attrib);
-	    if (attentdim != MVERTEX  && attentdim != MREGION && 
-		attentdim != MALLTYPE)
-	      continue;
-	    
-	    atttype = MAttrib_Get_Type(attrib);
-	    if (atttype != INT && atttype != DOUBLE)
-	      continue; /* can't write other types out */
-	    
-	    MAttrib_Get_Name(attrib,attname);
-	    
-	    if (natt) {
-	      found = 0;
-	      for (j = 0; j < natt; j++) {
-		if (strcmp(attname,attnames[j]) == 0) {
-		  found = 1;
-		}
-	      }
-	      if (!found)
-		continue;
-	    }
-	    
-	    outattribs[noutatt] = attrib;
-	    noutatt++;
-	  }
-	  
-	  for (i = 0; i < noutatt; i++) {
-	    attrib = outattribs[i];
-	    
-	    MAttrib_Get_Name(attrib,attname);
-	    atttype = MAttrib_Get_Type(attrib);
-	    attentdim = MAttrib_Get_EntDim(attrib);
- 
-	    if (attentdim == MVERTEX || attentdim == MALLTYPE) {
-	      fprintf(fp,"%s ",attname);
-	      fprintf(fp," 1 \n");
-	      
-	      for (jv = 0, k = 0; jv < nv; jv++) {
-		vertex = MESH_Vertex(mesh,jv);
-		
-		MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
-		
-		if (atttype == INT) {
-		  fprintf(fp,"%d ",ival);
-		  if ((k+1)%10 == 0 && k != nv) fprintf(fp,"\n");
-		  k++;
-		}
-		else if (atttype == DOUBLE) {
-		  fprintf(fp,"%14.7lf ", rval);
-		  if ((k+1)%5 == 0 && k != nv) fprintf(fp,"\n");
-		  k++;
-		}
-	      }
-	    }
-	    if (attentdim == MREGION || attentdim == MALLTYPE) {
-	      fprintf(fp,"%s ",attname);
-	      fprintf(fp," 0 \n");
-	      
-	      for (jr = 0, k = 0; jr < nr; jr++) {
-		region = MESH_Region(mesh,jr);
-		
-		MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
-		
-		if (atttype == INT) {
-		  fprintf(fp,"%d ",ival);
-		  if ((k+1)%10 == 0) fprintf(fp,"\n");
-		  k++;
-		}
-		else if (atttype == DOUBLE) {
-		  fprintf(fp,"%lf ", rval);
-		  if ((k+1)%5 == 0) fprintf(fp,"\n");
-		  k++;
-		}
-	      }
-	    }
-	  }
-	  
-	  free(outattribs);
-	}
-      }
-
-      fprintf(fp,"endvars \n");
     }
+
+
+    /* Must write out other attributes that exist on mesh regions 
+       and mesh nodes */
+    
+    if (natt >= 0) {
+      /* Must write out attributes related to mesh faces and mesh nodes */
+      /* If natt is 0, all attributes are to be written out */
+      
+      nmeshatt = MESH_Num_Attribs(mesh);
+      
+      if (nmeshatt) {
+	
+	outattribs = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
+	
+	for (i = 0, k = 0, noutatt = 0; i < nmeshatt; i++) {
+	  attrib = MESH_Attrib(mesh,i);
+	  
+	  attentdim = MAttrib_Get_EntDim(attrib);
+	  if (attentdim != MVERTEX  && attentdim != MREGION && 
+	      attentdim != MALLTYPE)
+	    continue;
+	  
+	  atttype = MAttrib_Get_Type(attrib);
+	  if (atttype != INT && atttype != DOUBLE)
+	    continue; /* can't write other types out */
+	  
+	  MAttrib_Get_Name(attrib,attname);
+	  
+	  if (natt) {
+	    found = 0;
+	    for (j = 0; j < natt; j++) {
+	      if (strcmp(attname,attnames[j]) == 0) {
+		found = 1;
+	      }
+	    }
+	    if (!found)
+	      continue;
+	  }
+	  
+	  outattribs[noutatt] = attrib;
+	  noutatt++;
+	}
+	
+	if (noutatt && !gmodel)
+	  fprintf(fp,"variable \n");
+	
+	for (i = 0; i < noutatt; i++) {
+	  attrib = outattribs[i];
+	  
+	  MAttrib_Get_Name(attrib,attname);
+	  atttype = MAttrib_Get_Type(attrib);
+	  attentdim = MAttrib_Get_EntDim(attrib);
+	  
+	  if (attentdim == MVERTEX || attentdim == MALLTYPE) {
+	    fprintf(fp,"%s ",attname);
+	    fprintf(fp," 1 \n");
+	    
+	    for (jv = 0, k = 0; jv < nv; jv++) {
+	      vertex = MESH_Vertex(mesh,jv);
+	      
+	      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
+	      
+	      if (atttype == INT) {
+		fprintf(fp,"%d ",ival);
+		if ((k+1)%10 == 0 && k != nv) fprintf(fp,"\n");
+		k++;
+	      }
+	      else if (atttype == DOUBLE) {
+		fprintf(fp,"%14.7lf ", rval);
+		if ((k+1)%5 == 0 && k != nv) fprintf(fp,"\n");
+		k++;
+	      }
+	    }
+	  }
+	  if (attentdim == MREGION || attentdim == MALLTYPE) {
+	    fprintf(fp,"%s ",attname);
+	    fprintf(fp," 0 \n");
+	    
+	    for (jr = 0, k = 0; jr < nr; jr++) {
+	      region = MESH_Region(mesh,jr);
+	      
+	      MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
+	      
+	      if (atttype == INT) {
+		fprintf(fp,"%d ",ival);
+		if ((k+1)%10 == 0) fprintf(fp,"\n");
+		k++;
+	      }
+	      else if (atttype == DOUBLE) {
+		fprintf(fp,"%lf ", rval);
+		if ((k+1)%5 == 0) fprintf(fp,"\n");
+		k++;
+	      }
+	    }
+	  }
+	}
+	  
+	free(outattribs);
+      }
+    }
+
+    fprintf(fp,"endvars \n");
 
     free(gregions);
   }
@@ -491,105 +495,107 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  fprintf(fp,"\n");
       }
       fprintf(fp,"\n");
-
-
-      /* OTHER ATTRIBUTES, MOST PROBABLY REPRESENTING FIELD DATA */
-
-      if (natt >= 0) {
-	/* Must write out attributes related to mesh faces and mesh nodes */
-	
-	nmeshatt = MESH_Num_Attribs(mesh);
-
-	if (nmeshatt) {
-	
-	  outattribs = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
-	  
-	  for (i = 0, k = 0, noutatt = 0; i < nmeshatt; i++) {
-	    attrib = MESH_Attrib(mesh,i);
-	    
-	    attentdim = MAttrib_Get_EntDim(attrib);
-	    if (attentdim != MVERTEX  && attentdim != MFACE &&
-		attentdim != MALLTYPE)
-	      continue;
-	    
-	    atttype = MAttrib_Get_Type(attrib);
-	    if (atttype != INT && atttype != DOUBLE)
-	      continue; /* can't write other types out */
-	    
-	    MAttrib_Get_Name(attrib,attname);
-	    
-	    if (natt) {
-	      found = 0;
-	      for (j = 0; j < natt; j++) {
-		if (strcmp(attname,attnames[j]) == 0) {
-		  found = 1;
-		}
-	      }
-	      if (!found)
-		continue;
-	    }
-	    
-	    outattribs[noutatt] = attrib;
-	    noutatt++;
-	  }
-	  
-	  for (i = 0; i < noutatt; i++) {
-	    attrib = outattribs[i];
-	    
-	    MAttrib_Get_Name(attrib,attname);
-	    atttype = MAttrib_Get_Type(attrib);
-	    attentdim = MAttrib_Get_EntDim(attrib);
-	    
-	    if (attentdim == MVERTEX || attentdim == MALLTYPE) {
-	      fprintf(fp,"%s ",attname);
-	      fprintf(fp," 1 \n");
-	      
-	      for (jv = 0, k = 0; jv < nv; jv++) {
-		vertex = MESH_Vertex(mesh,jv);
-		
-		MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
-		
-		if (atttype == INT) {
-		  fprintf(fp,"%d ",ival);
-		  if ((k+1)%10 == 0 && k != nv) fprintf(fp,"\n");
-		  k++;
-		}
-		else if (atttype == DOUBLE) {
-		  fprintf(fp,"%14.7lf ", rval);
-		  if ((k+1)%5 == 0 && k != nv) fprintf(fp,"\n");
-		  k++;
-		}
-	      }
-	    }
-	    if (attentdim == MFACE || attentdim == MALLTYPE) {
-	      fprintf(fp,"%s ",attname);
-	      fprintf(fp," 0 \n");
-	      
-	      for (jf = 0, k = 0; jf < nf; jf++) {
-		face = MESH_Face(mesh,jf);
-		
-		MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
-		
-		if (atttype == INT) {
-		  fprintf(fp,"%d ",ival);
-		  if ((k+1)%10 == 0) fprintf(fp,"\n");
-		  k++;
-		}
-		else if (atttype == DOUBLE) {
-		  fprintf(fp,"%lf ", rval);
-		  if ((k+1)%5 == 0) fprintf(fp,"\n");
-		  k++;
-		}
-	      }
-	    }
-	  }
-	  
-	  free(outattribs);
-	}
-      }
-
-      fprintf(fp,"endvars \n");
     }
+
+    /* OTHER ATTRIBUTES, MOST PROBABLY REPRESENTING FIELD DATA */
+    
+    if (natt >= 0) {
+      /* Must write out attributes related to mesh faces and mesh nodes */
+      
+      nmeshatt = MESH_Num_Attribs(mesh);
+      
+      if (nmeshatt) {
+	
+	outattribs = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
+	
+	for (i = 0, k = 0, noutatt = 0; i < nmeshatt; i++) {
+	  attrib = MESH_Attrib(mesh,i);
+	  
+	  attentdim = MAttrib_Get_EntDim(attrib);
+	  if (attentdim != MVERTEX  && attentdim != MFACE &&
+	      attentdim != MALLTYPE)
+	    continue;
+	  
+	  atttype = MAttrib_Get_Type(attrib);
+	  if (atttype != INT && atttype != DOUBLE)
+	    continue; /* can't write other types out */
+	  
+	  MAttrib_Get_Name(attrib,attname);
+	  
+	  if (natt) {
+	    found = 0;
+	    for (j = 0; j < natt; j++) {
+	      if (strcmp(attname,attnames[j]) == 0) {
+		found = 1;
+	      }
+	    }
+	    if (!found)
+	      continue;
+	  }
+	  
+	  outattribs[noutatt] = attrib;
+	    noutatt++;
+	}
+	
+	if (noutatt && !gmodel)
+	  fprintf(fp,"variable \n");
+	
+	for (i = 0; i < noutatt; i++) {
+	  attrib = outattribs[i];
+	  
+	  MAttrib_Get_Name(attrib,attname);
+	  atttype = MAttrib_Get_Type(attrib);
+	  attentdim = MAttrib_Get_EntDim(attrib);
+	  
+	  if (attentdim == MVERTEX || attentdim == MALLTYPE) {
+	    fprintf(fp,"%s ",attname);
+	    fprintf(fp," 1 \n");
+	    
+	    for (jv = 0, k = 0; jv < nv; jv++) {
+	      vertex = MESH_Vertex(mesh,jv);
+	      
+	      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
+	      
+	      if (atttype == INT) {
+		fprintf(fp,"%d ",ival);
+		if ((k+1)%10 == 0 && k != nv) fprintf(fp,"\n");
+		k++;
+	      }
+	      else if (atttype == DOUBLE) {
+		fprintf(fp,"%14.7lf ", rval);
+		if ((k+1)%5 == 0 && k != nv) fprintf(fp,"\n");
+		k++;
+	      }
+	    }
+	  }
+	  if (attentdim == MFACE || attentdim == MALLTYPE) {
+	    fprintf(fp,"%s ",attname);
+	    fprintf(fp," 0 \n");
+	    
+	    for (jf = 0, k = 0; jf < nf; jf++) {
+	      face = MESH_Face(mesh,jf);
+	      
+	      MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
+	      
+	      if (atttype == INT) {
+		fprintf(fp,"%d ",ival);
+		if ((k+1)%10 == 0) fprintf(fp,"\n");
+		k++;
+	      }
+	      else if (atttype == DOUBLE) {
+		fprintf(fp,"%lf ", rval);
+		if ((k+1)%5 == 0) fprintf(fp,"\n");
+		k++;
+	      }
+	    }
+	  }
+	}
+	
+	free(outattribs);
+      }
+    }
+    
+    fprintf(fp,"endvars \n");
 
     free(gfaces);
   }
