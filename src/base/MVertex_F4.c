@@ -102,7 +102,7 @@ extern "C" {
   List_ptr MV_Faces_F4(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
     int i, j, k, ne, nf, nr, n, mkr;
-    List_ptr vedges, eregions, rfaces, vfaces;
+    List_ptr vedges, eregions, rfaces, efaces, vfaces;
     MEdge_ptr edge;
     MFace_ptr face;
     MRegion_ptr region;
@@ -119,27 +119,48 @@ extern "C" {
       edge = List_Entry(vedges,i);
 
       eregions = ME_Regions(edge);
-      nr = List_Num_Entries(eregions);
+      if (eregions) {
+	nr = List_Num_Entries(eregions);
 	
-      for (j = 0; j < nr; j++) {
-	region = List_Entry(eregions,j);
-
-	rfaces = MR_Faces(region);
-	nf = List_Num_Entries(rfaces);
-
-	for (k = 0; k < nf; k++) {
-	  face = List_Entry(rfaces,k);
-	  if (!MEnt_IsMarked(face,mkr)) {
-	    if (MF_UsesEntity(face,v,0)) {
-	      MEnt_Mark(face,mkr);
-	      List_Add(vfaces,face);
-	      n++;
+	for (j = 0; j < nr; j++) {
+	  region = List_Entry(eregions,j);
+	  
+	  rfaces = MR_Faces(region);
+	  nf = List_Num_Entries(rfaces);
+	  
+	  for (k = 0; k < nf; k++) {
+	    face = List_Entry(rfaces,k);
+	    if (!MEnt_IsMarked(face,mkr)) {
+	      if (MF_UsesEntity(face,v,0)) {
+		MEnt_Mark(face,mkr);
+		List_Add(vfaces,face);
+		n++;
+	      }
 	    }
 	  }
+	  List_Delete(rfaces);
 	}
-	List_Delete(rfaces);
+	List_Delete(eregions);
       }
-      List_Delete(eregions);
+      else {
+	/* perhaps the edge has boundary faces (not connected to regions) */
+	efaces = ME_Faces(edge);
+	if (efaces) {
+	  nf = List_Num_Entries(efaces);
+	  
+	  for (k = 0; k < nf; k++) {
+	    face = List_Entry(efaces,k);
+	    if (!MEnt_IsMarked(face,mkr)) {
+	      if (MF_UsesEntity(face,v,0)) {
+		MEnt_Mark(face,mkr);
+		List_Add(vfaces,face);
+		n++;
+	      }
+	    }
+	  }
+	  List_Delete(efaces);
+	}
+      }
     }
     List_Unmark(vfaces,mkr);
     MSTK_FreeMarker(mkr);
@@ -158,7 +179,7 @@ extern "C" {
     MEdge_ptr edge;
     MRegion_ptr region;
 
-    upadj = (MVertex_UpAdj_F1F4 *) upadj;
+    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
     ne = upadj->ne;
     vedges = upadj->vedges;
 
@@ -170,18 +191,20 @@ extern "C" {
       edge = List_Entry(vedges,i);
 
       eregions = ME_Regions(edge);
-      nr = List_Num_Entries(eregions);
+      if (eregions) {
+	nr = List_Num_Entries(eregions);
 	
-      for (j = 0; j < nr; j++) {
-	region = List_Entry(eregions,j);
-	if (!MEnt_IsMarked(region,mkr)) {
-	  MEnt_Mark(region,mkr);
-	  List_Add(vregions,region);
-	  n++;
+	for (j = 0; j < nr; j++) {
+	  region = List_Entry(eregions,j);
+	  if (!MEnt_IsMarked(region,mkr)) {
+	    MEnt_Mark(region,mkr);
+	    List_Add(vregions,region);
+	    n++;
+	  }
 	}
+	
+	List_Delete(eregions);
       }
-
-      List_Delete(eregions);
     }
     List_Unmark(vregions,mkr);
     MSTK_FreeMarker(mkr);
