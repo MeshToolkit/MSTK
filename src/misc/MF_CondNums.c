@@ -14,15 +14,15 @@ void MF_CondNums(MFace_ptr f, double *conds) {
   double xyz1[3][3], eps=1.0E-14;
   int i, k, nfv;
   MVertex_ptr vtx[MAXPV2];
-  Set_ptr fverts;
+  List_ptr fverts;
 
   fverts = MF_Vertices(f,1,0);
-  nfv = Set_Num_Entries(fverts);
+  nfv = List_Num_Entries(fverts);
   for (i = 0; i < nfv; i++) {
-    vtx[i] = Set_Entry(fverts,i);
+    vtx[i] = List_Entry(fverts,i);
     MV_Coords(vtx[i],xyz[i]);
   }
-  Set_Delete(fverts);
+  List_Delete(fverts);
     
 
   for (i = 0; i < nfv; i++) {

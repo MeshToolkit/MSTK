@@ -14,7 +14,7 @@ extern "C" {
     MEdge_ptr e;
     MFace_ptr f;
     MRegion_ptr r;
-    Set_ptr vedges, vfaces, vregions;
+    List_ptr vedges, vfaces, vregions;
     int idx, ne, nf, nr;
     GEntity_ptr gent;
     
@@ -48,51 +48,51 @@ extern "C" {
 	
 	
 	vedges = MV_Edges(v);
-	ne = Set_Num_Entries(vedges);
+	ne = List_Num_Entries(vedges);
 	
 	if (ne) {
 	  fprintf(stderr,"Edges:%-d\n",ne);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
 	  idx = 0;
-	  while ((e = Set_Next_Entry(vedges,&idx))) {
+	  while ((e = List_Next_Entry(vedges,&idx))) {
 	    fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d    %-d  %-d\n",
 		    e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		    MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
 	  }
 	  fprintf(stderr,"\n");
-	  Set_Delete(vedges);
+	  List_Delete(vedges);
 	}
 	
 	
 	vfaces = MV_Faces(v);
 	if (vfaces) {
-	  nf = Set_Num_Entries(vfaces);
+	  nf = List_Num_Entries(vfaces);
 	  fprintf(stderr,"Faces: %-d\n",nf);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
-	  while ((f = Set_Next_Entry(vfaces,&idx)))
+	  while ((f = List_Next_Entry(vfaces,&idx)))
 	    fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",f,MF_ID(f),
 		    MF_GEntID(f),ME_GEntDim(f));
 	  fprintf(stderr,"\n");
-	  Set_Delete(vfaces);
+	  List_Delete(vfaces);
 	}
 	
 	
 	vregions= MV_Regions(v);
 	if (vregions) {
-	  nr = Set_Num_Entries(vregions);
+	  nr = List_Num_Entries(vregions);
 	  fprintf(stderr,"Regions: %-d",nr);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
-	  while ((r = Set_Next_Entry(vregions,&idx)))
+	  while ((r = List_Next_Entry(vregions,&idx)))
 	    fprintf(stderr,"0x%-8x %-8d %-8d     %-1d\n",r,MR_ID(r),
 		    MR_GEntID(r),MR_GEntDim(r));
 	  
 	  fprintf(stderr,"\n");
-	  Set_Delete(vregions);      
+	  List_Delete(vregions);      
 	}
       }
     }
@@ -110,7 +110,7 @@ extern "C" {
     MVertex_ptr v0, v1; 
     MFace_ptr f;
     MRegion_ptr r;
-    Set_ptr efaces, eregions;
+    List_ptr efaces, eregions;
     int idx, nf, nr;
     GEntity_ptr gent;
 
@@ -152,32 +152,32 @@ extern "C" {
 
 	efaces = ME_Faces(e);
 	if (efaces) {
-	  nf = Set_Num_Entries(efaces);
+	  nf = List_Num_Entries(efaces);
 	  fprintf(stderr,"Faces: %-d\n",nf);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
-	  while ((f = Set_Next_Entry(efaces,&idx)))
+	  while ((f = List_Next_Entry(efaces,&idx)))
 	    fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",f,MF_ID(f),
 		    MF_GEntID(f),ME_GEntDim(f));
 	  fprintf(stderr,"\n");
-	  Set_Delete(efaces);
+	  List_Delete(efaces);
 	}
 	
 	
 	eregions= ME_Regions(e);
 	if (eregions) {
-	  nr = Set_Num_Entries(eregions);
+	  nr = List_Num_Entries(eregions);
 	  fprintf(stderr,"Regions: %-d",nr);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
-	  while ((r = Set_Next_Entry(eregions,&idx)))
+	  while ((r = List_Next_Entry(eregions,&idx)))
 	    fprintf(stderr,"0x%-8x %-8d %-8d     %-1d\n",r,MR_ID(r),
 		    MR_GEntID(r),MR_GEntDim(r));
 	  
 	  fprintf(stderr,"\n");
-	  Set_Delete(eregions);      
+	  List_Delete(eregions);      
 	}
       }
     }
@@ -193,7 +193,7 @@ extern "C" {
     MVertex_ptr v;
     MEdge_ptr e;
     MRegion_ptr r;
-    Set_ptr fvertices, fedges, fregions;
+    List_ptr fvertices, fedges, fregions;
     int i, edir, idx, ne, nv, nr;
     GEntity_ptr gent;
     double xyz[3];
@@ -220,11 +220,11 @@ extern "C" {
       fprintf(stderr,"\n");
 
       fedges = MF_Edges(f,1,0);
-      ne = Set_Num_Entries(fedges);
+      ne = List_Num_Entries(fedges);
       fprintf(stderr,"Edges: %-d\n",ne);
       fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
       idx = 0; i = 0;
-      while (e = Set_Next_Entry(fedges,&idx)) {
+      while (e = List_Next_Entry(fedges,&idx)) {
 	edir = MF_EdgeDir_i(f,i);
 	if (edir) 
 	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
@@ -237,7 +237,7 @@ extern "C" {
 	i++;
       }
       fprintf(stderr,"\n");
-      Set_Delete(fedges);
+      List_Delete(fedges);
       
       if (lvl > 1) {
 	/* Print more detailed adjacency information as well */
@@ -246,10 +246,10 @@ extern "C" {
 
 	idx = 0;
 	fvertices = MF_Vertices(f,1,0);
-	nv = Set_Num_Entries(fvertices);
+	nv = List_Num_Entries(fvertices);
 	fprintf(stderr,"Vertices: %-d\n",nv);
 	fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
-	while ((v = Set_Next_Entry(fvertices,&idx))) {
+	while ((v = List_Next_Entry(fvertices,&idx))) {
 	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",v,MV_ID(v),
 		    MV_GEntID(v),MV_GEntDim(v));
 	  if (lvl > 2) {
@@ -262,17 +262,17 @@ extern "C" {
 	
 	fregions= MF_Regions(f);
 	if (fregions) {
-	  nr = Set_Num_Entries(fregions);
+	  nr = List_Num_Entries(fregions);
 	  fprintf(stderr,"Regions: %-d",nr);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
-	  while ((r = Set_Next_Entry(fregions,&idx)))
+	  while ((r = List_Next_Entry(fregions,&idx)))
 	    fprintf(stderr,"0x%-8x %-8d %-8d     %-1d\n",r,MR_ID(r),
 		    MR_GEntID(r),MR_GEntDim(r));
 	  
 	  fprintf(stderr,"\n");
-	  Set_Delete(fregions);      
+	  List_Delete(fregions);      
 	}
       }
     }
@@ -280,9 +280,9 @@ extern "C" {
       fprintf(stderr,"\n");
       fprintf(stderr,"Edges: ");
       fedges = MF_Edges(f,1,0);
-      ne = Set_Num_Entries(fedges);
+      ne = List_Num_Entries(fedges);
       for (i = 0; i < ne; i++) {
-	e = Set_Entry(fedges,i);
+	e = List_Entry(fedges,i);
 	edir = MF_EdgeDir_i(f,i);
 	if (edir)
 	  fprintf(stderr," %-d ",ME_ID(e));
@@ -290,7 +290,7 @@ extern "C" {
 	  fprintf(stderr," %-d ",-ME_ID(e));	
       }
       fprintf(stderr,"\n");
-      Set_Delete(fedges);
+      List_Delete(fedges);
     }
 
     fprintf(stderr,"\n");
@@ -300,7 +300,7 @@ extern "C" {
     MVertex_ptr v;
     MEdge_ptr e;
     MFace_ptr f;
-    Set_ptr rvertices, redges, rfaces;
+    List_ptr rvertices, redges, rfaces;
     int i, fdir, idx, ne, nv, nf;
     GEntity_ptr gent;
     double xyz[3];
@@ -329,9 +329,9 @@ extern "C" {
       fprintf(stderr,"Faces:\n");
       fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
       rfaces = MR_Faces(r);
-      nf = Set_Num_Entries(rfaces);
+      nf = List_Num_Entries(rfaces);
       for (i = 0; i < nf; i++) {
-	f = Set_Entry(rfaces,i);
+	f = List_Entry(rfaces,i);
 	fdir = MR_FaceDir_i(r,i);
 	if (fdir)
 	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",f,MF_ID(f),
@@ -342,7 +342,7 @@ extern "C" {
 	i++;
       }
       fprintf(stderr,"\n");
-      Set_Delete(rfaces);
+      List_Delete(rfaces);
       
 
       if (lvl > 1) {
@@ -351,24 +351,24 @@ extern "C" {
 	fprintf(stderr,"\n");
 
 	redges = MR_Edges(r);
-	ne = Set_Num_Entries(redges);
+	ne = List_Num_Entries(redges);
 	fprintf(stderr,"Edges:%-d\n",ne);
 	fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
 	idx = 0; i = 0;
-	while (e = Set_Next_Entry(redges,&idx)) {
+	while (e = List_Next_Entry(redges,&idx)) {
 	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
 		  e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		  MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
 	}
 	fprintf(stderr,"\n");
-	Set_Delete(redges);
+	List_Delete(redges);
       
 	idx = 0;
 	rvertices = MR_Vertices(r);
-	nv = Set_Num_Entries(rvertices);
+	nv = List_Num_Entries(rvertices);
 	fprintf(stderr,"Vertices:%-d\n",nv);
 	fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
-	while ((v = Set_Next_Entry(rvertices,&idx))) {
+	while ((v = List_Next_Entry(rvertices,&idx))) {
 	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",v,MV_ID(v),
 		    MV_GEntID(v),MV_GEntDim(v));
 	  if (lvl > 2) {
@@ -384,9 +384,9 @@ extern "C" {
       fprintf(stderr,"\n");
       fprintf(stderr,"Faces: ");
       rfaces = MR_Faces(r);
-      nf = Set_Num_Entries(rfaces);
+      nf = List_Num_Entries(rfaces);
       for (i = 0; i < nf; i++) {
-	f = Set_Entry(rfaces,i);
+	f = List_Entry(rfaces,i);
 	fdir = MR_FaceDir_i(r,i);
 	if (fdir)
 	  fprintf(stderr," %-d ",MF_ID(f));
@@ -394,7 +394,7 @@ extern "C" {
 	  fprintf(stderr," %-d ",-MF_ID(f));	
       }
       fprintf(stderr,"\n");
-      Set_Delete(rfaces);
+      List_Delete(rfaces);
     }
 
     fprintf(stderr,"\n");
