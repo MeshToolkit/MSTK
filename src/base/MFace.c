@@ -23,6 +23,7 @@ extern "C" {
     f->gdim = 4; /* nonsensical value since we don;t know what it is */
     f->gid = 0;
     f->gent = (GEntity_ptr) NULL;
+    f->AttInsList = NULL;
     f->upadj = (void *) NULL;
     f->sameadj = (void *) NULL;
     f->downadj = (void *) NULL;
@@ -36,8 +37,21 @@ extern "C" {
   }
 
   void MF_Delete(MFace_ptr f, int keep) {
+    int idx;
+    MAttIns_ptr attins;
+
     if (f->dim != MDELFACE)
       MESH_Rem_Face(f->mesh,f);
+
+    if (!keep) {
+      if (f->AttInsList) {
+	idx = 0;
+	while ((attins = List_Next_Entry(f->AttInsList,&idx)))
+	  MAttIns_Delete(attins);
+	List_Delete(f->AttInsList);
+      }
+    }
+
     (*MF_Delete_jmp[f->repType])(f, keep);
   }
 
@@ -72,12 +86,12 @@ extern "C" {
     (*MF_Set_Edges_jmp[f->repType])(f,n,edges,dir);
   }
 
-  void MF_Replace_Edge(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
-    (*MF_Replace_Edge_jmp[f->repType])(f,e,nnu,nuedges,nudirs);
+  void MF_Replace_Edges(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges) {
+    (*MF_Replace_Edges_jmp[f->repType])(f,nold,oldedges,nnu,nuedges);
   }
 
-  void MF_Replace_Edge_i(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
-    (*MF_Replace_Edge_i_jmp[f->repType])(f,i,nnu,nuedges,nudirs);
+  void MF_Replace_Edges_i(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) {
+    (*MF_Replace_Edges_i_jmp[f->repType])(f,nold,i,nnu,nuedges);
   }
 
   void MF_Set_Vertices(MFace_ptr f, int n, MVertex_ptr *verts) {
