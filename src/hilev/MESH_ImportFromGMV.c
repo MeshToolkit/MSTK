@@ -102,7 +102,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	return 0;
       }
       
-      xyzarr = (double (*)[3]) malloc(nnodes*sizeof(double [3]));
+      xyzarr = (double (*)[3]) MSTK_malloc(nnodes*sizeof(double [3]));
       
       for (j = 0; j < 3; j++) 
 	for (i = 0; i < nnodes; i++) {
@@ -121,7 +121,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	MV_Set_ID(mv,i+1);
       }
       
-      free(xyzarr);
+      MSTK_free(xyzarr);
 
       nodes_read = 1;
     }
@@ -308,9 +308,9 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	else if (strcmp(cell_str,"general") == 0) {
 
 	  if (!rfv_template) {
-	    rfv_template = (int **) malloc(MAXPF3*sizeof(int *));
+	    rfv_template = (int **) MSTK_malloc(MAXPF3*sizeof(int *));
 	    for (j = 0; j < MAXPF3; j++) 
-	      rfv_template[j] = (int *) malloc(MAXPV2*sizeof(int));
+	      rfv_template[j] = (int *) MSTK_malloc(MAXPV2*sizeof(int));
 	  }
 
 	  /* GENERAL POLYHEDRA */
@@ -386,7 +386,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 			"Must not mix vface2d cells with other cells",WARN);
 
 	  if (!vface2d_data)
-	    vface2d_data = (int **) malloc(ncells*sizeof(int));
+	    vface2d_data = (int **) MSTK_malloc(ncells*sizeof(int));
 	    
 	  status = fscanf(fp,"%d",&nfe);
 	  if (status == EOF) {
@@ -395,7 +395,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	    return 0;
 	  }
 	  
-	  vface2d_data[ic] = (int *) malloc((nfe+1)*sizeof(int));
+	  vface2d_data[ic] = (int *) MSTK_malloc((nfe+1)*sizeof(int));
 	  vface2d_data[ic][0] = nfe;
 
 	  for (j = 0; j < nfe; j++) {
@@ -420,7 +420,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 			"Must not mix vface3d cells with other cells",WARN);
 
 	  if (!vface3d_data)
-	    vface3d_data = (int **) malloc(ncells*sizeof(int *));
+	    vface3d_data = (int **) MSTK_malloc(ncells*sizeof(int *));
 	  
 	  status = fscanf(fp,"%d",&nrf);
 	  if (status == EOF) {
@@ -429,7 +429,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	    return 0;
 	  }
 
-	  vface3d_data[ic] = (int *) malloc((nrf+1)*sizeof(int));
+	  vface3d_data[ic] = (int *) MSTK_malloc((nrf+1)*sizeof(int));
 	  vface3d_data[ic][0] = nrf;
 
 	  for (j = 0; j < nrf; j++) {
@@ -456,8 +456,8 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 
       if (rfv_template) {
 	for (i = 0; i < MAXPF3; i++)
-	  free(rfv_template[i]);
-	free(rfv_template);
+	  MSTK_free(rfv_template[i]);
+	MSTK_free(rfv_template);
       }
 
       /* END READING CELLS (EXCEPT VFACES FOR VFACE2D and VFACE3D) */
@@ -479,12 +479,12 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
       }
 
       if (vface2d) {
-	vedge = (MEdge_ptr *) malloc(num_faces*sizeof(MEdge_ptr));
-	vedir = (int *) malloc(num_faces*sizeof(int));
+	vedge = (MEdge_ptr *) MSTK_malloc(num_faces*sizeof(MEdge_ptr));
+	vedir = (int *) MSTK_malloc(num_faces*sizeof(int));
       }
       else {
-	vface = (MFace_ptr *) malloc(num_faces*sizeof(MFace_ptr));
-	vfdir = (int *) malloc(num_faces*sizeof(int));
+	vface = (MFace_ptr *) MSTK_malloc(num_faces*sizeof(MFace_ptr));
+	vfdir = (int *) MSTK_malloc(num_faces*sizeof(int));
       }
 
       for (j = 0; j < num_faces; j++) {
@@ -516,7 +516,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 
 	    /* Edge must have already been defined for adjacent face */
 
-	    vedge[i] = MVs_CommonEdge(vtx[0],vtx[1]);
+	    vedge[j] = MVs_CommonEdge(vtx[0],vtx[1]);
 
 	    if (!vedge[j]) {
 	      MSTK_Report("MESH_ImportFromGMV",
@@ -556,7 +556,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	    vfdir[j] = 0;
 	  }
 	  else {
-	    vface[i] = MF_New(mesh);
+	    vface[j] = MF_New(mesh);
 	    MF_Set_Vertices(vface[j],nvtx,vtx);
 
 	    vfdir[j] = 1;
@@ -580,10 +580,10 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	  mf = MF_New(mesh);
 	  MF_Set_Edges(mf,nfe,fedges,fedirs);
 
-	  free(vface2d_data[ic]);
+	  MSTK_free(vface2d_data[ic]);
 	}
 
-	free(vface2d_data);
+	MSTK_free(vface2d_data);
       }
       else if (vface3d) {
 	for (ic = 0; ic < ncells; ic++) {
@@ -598,10 +598,10 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	  mr = MR_New(mesh);
 	  MR_Set_Faces(mr,nrf,rfaces,rfdirs);
 
-	  free(vface3d_data[ic]);
+	  MSTK_free(vface3d_data[ic]);
 	}
 
-	free(vface3d_data);
+	MSTK_free(vface3d_data);
       }
     }
     else if (strcmp(temp_str,"faces") == 0) {
@@ -625,16 +625,16 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
       status = fscanf(fp,"%d %d",&num_faces,&ncells);
 
       if (ncells) {
-	vface3d_data = (int **) malloc(ncells*sizeof(int *));
+	vface3d_data = (int **) MSTK_malloc(ncells*sizeof(int *));
 	for (ic = 0; ic < ncells; ic++) {
-	  vface3d_data[ic] = (int *) malloc((MAXPF3+1)*sizeof(int));
+	  vface3d_data[ic] = (int *) MSTK_malloc((MAXPF3+1)*sizeof(int));
 	  vface3d_data[ic][0] = 0;
 	}
       }
       else
 	vface3d_data = NULL;
 
-      vface = (MFace_ptr *) malloc(num_faces*sizeof(MFace_ptr));
+      vface = (MFace_ptr *) MSTK_malloc(num_faces*sizeof(MFace_ptr));
 
       for (i = 0; i < num_faces; i++) {	
 	status = fscanf(fp,"%d",&nvtx);
@@ -697,11 +697,11 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	MR_Set_Faces(mr,nrf,rfaces,rfdirs);
       }
       
-      free(vface);
+      MSTK_free(vface);
       if (vface3d_data) {
 	for (ic = 0; ic < ncells; ic++) 
-	  free(vface3d_data[ic]);
-	free(vface3d_data);
+	  MSTK_free(vface3d_data[ic]);
+	MSTK_free(vface3d_data);
       }
 
     }
