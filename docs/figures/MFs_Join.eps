@@ -1,0 +1,610 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 9 520 411 753
+%%Title: MFs_Join
+%%CreationDate: Wed Sep 17 16:34:12 2003
+%%Creator: Tgif-4.1.42-QPL written by William Chia-Wei Cheng (bill.cheng@acm.org)
+%%ProducedBy: (unknown)
+%%Pages: 1
+%%DocumentFonts: (atend)
+%%EndComments
+%%BeginProlog
+
+/tgifdict 64 dict def
+tgifdict begin
+
+/tgifellipsedict 6 dict def
+tgifellipsedict /mtrx matrix put
+
+/TGEL % tgifellipse
+ { tgifellipsedict begin
+      /yrad exch def
+      /xrad exch def
+      /y exch def
+      /x exch def
+      /savematrix mtrx currentmatrix def
+      x y translate
+      xrad yrad scale
+      0 0 1 0 360 arc
+      savematrix setmatrix
+   end
+ } def
+
+/tgifxpmdict 4 dict def
+/tgifbwpicstr 1 string def
+/tgifcolorpicstr 3 string def
+
+/tgifsetpixels { tgifxpmdict begin /pixels exch def end } def
+
+/tgifsetpix { tgifxpmdict begin pixels 3 1 roll putinterval end } def
+
+/tgifcolorspot
+ { tgifxpmdict begin
+      /index exch def
+      pixels index 3 mul 3 getinterval aload pop
+      255 mul cvi tgifcolorpicstr 2 3 -1 roll put
+      255 mul cvi tgifcolorpicstr 1 3 -1 roll put
+      255 mul cvi tgifcolorpicstr 0 3 -1 roll put
+      tgifcolorpicstr
+   end
+ } def
+
+/tgifnewcolorspot
+ { tgifxpmdict begin
+      /index exch def
+      pixels index 3 mul 3 getinterval aload pop setrgbcolor
+   end
+ } def
+
+/tgifcolordict 4 dict def
+
+/colorimage where
+ { pop }
+ { /colorimage
+   { tgifcolordict begin
+        pop pop pop pop pop
+        /ih exch def
+        /iw exch def
+        /x 0 def
+        /y 0 def
+        1 1 ih
+         { pop 1 1 iw
+            { pop currentfile
+              tgifbwpicstr readhexstring pop 0 get tgifnewcolorspot
+              x y moveto 1 0 rlineto 0 1 rlineto -1 0 rlineto
+              closepath fill
+              /x x 1 add def
+            } for
+           /y y 1 add def
+           /x 0 def
+         } for
+     end
+   } def
+ } ifelse
+
+/tgiftranscolorspot
+ { tgifxpmdict begin
+      /index exch def
+      pixels index 3 mul 3 getinterval aload pop
+      dup 0 lt { pop pop pop false } { setrgbcolor true } ifelse
+   end
+ } def
+
+/tgiftranscolorimage
+ { tgifcolordict begin
+      pop pop pop pop pop
+      /ih exch def
+      /iw exch def
+      /x 0 def
+      /y 0 def
+      1 1 ih
+       { pop 1 1 iw
+          { pop currentfile
+            tgifbwpicstr readhexstring pop 0 get tgiftranscolorspot
+            { x y moveto 1 0 rlineto 0 1 rlineto -1 0 rlineto
+              closepath fill
+            }
+            if
+            /x x 1 add def
+          } for
+         /y y 1 add def
+         /x 0 def
+       } for
+   end
+ } def
+
+/TGMAX
+ { exch dup 3 1 roll exch dup 3 1 roll gt { pop } { exch pop } ifelse
+ } def
+/TGMIN
+ { exch dup 3 1 roll exch dup 3 1 roll lt { pop } { exch pop } ifelse
+ } def
+/TGSW { stringwidth pop } def
+
+/bd { bind def } bind def
+
+/GS { gsave } bd
+/GR { grestore } bd
+/NP { newpath } bd
+/CP { closepath } bd
+/CHP { charpath } bd
+/CT { curveto } bd
+/L { lineto } bd
+/RL { rlineto } bd
+/M { moveto } bd
+/RM { rmoveto } bd
+/S { stroke } bd
+/F { fill } bd
+/TR { translate } bd
+/RO { rotate } bd
+/SC { scale } bd
+/MU { mul } bd
+/DI { div } bd
+/DU { dup } bd
+/NE { neg } bd
+/AD { add } bd
+/SU { sub } bd
+/PO { pop } bd
+/EX { exch } bd
+/CO { concat } bd
+/CL { clip } bd
+/EC { eoclip } bd
+/EF { eofill } bd
+/IM { image } bd
+/IMM { imagemask } bd
+/ARY { array } bd
+/SG { setgray } bd
+/RG { setrgbcolor } bd
+/SD { setdash } bd
+/W { setlinewidth } bd
+/SM { setmiterlimit } bd
+/SLC { setlinecap } bd
+/SLJ { setlinejoin } bd
+/SH { show } bd
+/FF { findfont } bd
+/MS { makefont setfont } bd
+/AR { arcto 4 {pop} repeat } bd
+/CURP { currentpoint } bd
+/FLAT { flattenpath strokepath clip newpath } bd
+/TGSM { tgiforigctm setmatrix } def
+/TGRM { savematrix setmatrix } def
+
+end
+
+%%EndProlog
+%%Page: 1 1
+
+%%PageBoundingBox: 9 520 411 753
+tgifdict begin
+/tgifsavedpage save def
+
+1 SM
+1 W
+
+0 SG
+
+72 0 MU 72 11 MU TR
+72 128 DI 100.000 MU 100 DI DU NE SC
+
+GS
+
+/tgiforigctm matrix currentmatrix def
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   101 209 TR
+   [0.707 0.707 -0.707 0.707 54 -136] CO
+   101 NE 209 NE TR
+GS
+   NP
+      101 225 M
+      133 401 L
+      357 401 L
+      229 209 L
+      101 225 L
+   TGSM
+   1 W
+   S
+GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   229 209 TR
+   [0.707 0.707 -0.707 0.707 16 -45] CO
+   229 NE 209 NE TR
+GS
+   NP
+      229 209 M
+      485 305 L
+      357 401 L
+   TGSM
+   1 W
+   S
+GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   407 204 TR
+   [0.707 0.707 -0.707 0.707 54 -136] CO
+   407 NE 204 NE TR
+GS
+   NP
+      407 220 M
+      439 396 L
+      663 396 L
+      791 301 L
+      542 209 L
+      407 220 L
+   TGSM
+   1 W
+   S
+GR
+GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      165 448 M
+      GS
+            0 SG
+            /Courier FF [17 0 0 -17 0 0] MS
+            (\(a\)) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      504 449 M
+      GS
+            0 SG
+            /Courier FF [17 0 0 -17 0 0] MS
+            (\(b\)) SH
+      GR
+   GR
+
+% OVAL
+GS
+   402 214 TR
+   [0.707 0.707 -0.707 0.707 48 -142] CO
+   402 NE 214 NE TR
+0 SG
+NP 407 219 5 5 TGEL F
+GS
+   GS
+      NP 407 219 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   433 389 TR
+   [0.707 0.707 -0.707 0.707 -85 -172] CO
+   433 NE 389 NE TR
+0 SG
+NP 438 394 5 5 TGEL F
+GS
+   GS
+      NP 438 394 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   530 201 TR
+   [0.707 0.707 -0.707 0.707 20 -48] CO
+   530 NE 201 NE TR
+0 SG
+NP 535 206 5 5 TGEL F
+GS
+   GS
+      NP 535 206 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   659 391 TR
+   [0.707 0.707 -0.707 0.707 -152 -13] CO
+   659 NE 391 NE TR
+0 SG
+NP 664 396 5 5 TGEL F
+GS
+   GS
+      NP 664 396 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   783 295 TR
+   [0.707 0.707 -0.707 0.707 -121 103] CO
+   783 NE 295 NE TR
+0 SG
+NP 788 300 5 5 TGEL F
+GS
+   GS
+      NP 788 300 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% XPM
+GS
+   3 32 MU ARY tgifsetpixels
+     0 [ 0.600 0.600 0.600 ] tgifsetpix   3 [ 0.576 0.576 0.576 ] tgifsetpix
+     6 [ 0.522 0.522 0.522 ] tgifsetpix   9 [ 0.482 0.482 0.482 ] tgifsetpix
+    12 [ 0.451 0.451 0.451 ] tgifsetpix  15 [ 0.420 0.420 0.420 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.365 0.365 0.365 ] tgifsetpix
+    24 [ 0.996 0.996 0.996 ] tgifsetpix  27 [ 0.294 0.294 0.294 ] tgifsetpix
+    30 [ 0.263 0.263 0.263 ] tgifsetpix  33 [ 0.957 0.957 0.957 ] tgifsetpix
+    36 [ 0.231 0.231 0.231 ] tgifsetpix  39 [ 0.894 0.894 0.894 ] tgifsetpix
+    42 [ 0.863 0.863 0.863 ] tgifsetpix  45 [ 0.800 0.800 0.800 ] tgifsetpix
+    48 [ 0.075 0.075 0.075 ] tgifsetpix  51 [ 0.043 0.043 0.043 ] tgifsetpix
+    54 [ 0.737 0.737 0.737 ] tgifsetpix  57 [ 0.004 0.004 0.004 ] tgifsetpix
+    60 [ 0.675 0.675 0.675 ] tgifsetpix  63 [ 0.635 0.635 0.635 ] tgifsetpix
+    66 [ 0.549 0.549 0.549 ] tgifsetpix  69 [ 0.322 0.322 0.322 ] tgifsetpix
+    72 [ 0.922 0.922 0.922 ] tgifsetpix  75 [ 0.204 0.204 0.204 ] tgifsetpix
+    78 [ 0.173 0.173 0.173 ] tgifsetpix  81 [ 0.141 0.141 0.141 ] tgifsetpix
+    84 [ 0.835 0.835 0.835 ] tgifsetpix  87 [ 0.102 0.102 0.102 ] tgifsetpix
+    90 [ 0.765 0.765 0.765 ] tgifsetpix  93 [ 0.702 0.702 0.702 ] tgifsetpix
+   487 250 TR 1.000 1.000 SC 0 RO
+   50 22 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   080808080808080808080808080808080808080808080808080808080808080808080808
+   0808080808080808080808080808
+   08080808080d1e0f1c1c1e1e1e1e1e1c1c0b080808080808080808080808080808080808
+   0808080808080808080808080808
+   0808080808120719131d0607060609101300080b08080808080808080808080808080808
+   0808080808080808080808080808
+   08080808080b0803131608080808080f131f080808080808080808080808080808080808
+   0808080808080808080808080808
+   0808080808080819130f080b080b08081a0f080808080808080808080808080808080808
+   0808080808080808080808080808
+   0808080808080e13110b08080808080b0a18080808080808080808080808080808080808
+   0808080808080808080808080808
+   080808080b081f130a080b081500080e0708080808080808080808080808080808080808
+   0808080808080808080808080808
+   080808080808031301080b081714080b0b08080808080808080808080808080808080808
+   0808080808080808080808080808
+   0808080808080c13161e12041d0b08080808080808080808080808080808080808080808
+   0808080808080808080808080808
+   08080808080d11110505041309080b080808080808080808080808080808080808080808
+   0808080808080808080808080808
+   0808080808141309080b0803030808080808080808080808080808080808080808080808
+   0808080808080808080808080808
+   0808080b08041316080b080712080b0808080b080808080b080808080b08080808080808
+   0808080808080808080808080808
+   08080808080c131e0808081c0b0808080d1e08081c120b0808080808081c1f0d0808080f
+   0d0808080b08080d180808080808
+   08080b080d11100b080808080808080d0507060201160a0b0808080b04051f0512081602
+   1912081c1a0e081b090808080808
+   080808081f13170808080808080b08001415131f080d131e080808090a080804160d060b
+   13000801110b08040c0808080808
+   0808180b1713040b0d0808080808081f0b0a0908080f131c08081513151c16090b0f0e1f
+   131808090c08081202080b080808
+   080b07170c190a09070b0808080808080b11000808011d080808171100011f0b080b0817
+   0a080810030808151f0808080808
+   0808080b0808080808080808080808081e131c080819070b1e08190a080808080b080b10
+   01081c131e0808040e0808080808
+   08080808080808080808080808080b0803100b081c130e0000080519080b081202081811
+   1f0814130d081204080808080808
+   080808080808080808080808080808080c1708080e1b16040b080d19161f03020b080803
+   0c12040a07140518080808080808
+   080808080808080808080808080808080f180808080e1f0b0808080b1f1f1c0808080808
+   0f140d081e141808080808080808
+   080808080808080808080808080808080808080808080808080808080808080808080808
+   0808080808080808080808080808
+GR
+
+% OVAL
+GS
+   96 219 TR
+   [0.707 0.707 -0.707 0.707 48 -142] CO
+   96 NE 219 NE TR
+0 SG
+NP 101 224 5 5 TGEL F
+GS
+   GS
+      NP 101 224 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   127 394 TR
+   [0.707 0.707 -0.707 0.707 -85 -172] CO
+   127 NE 394 NE TR
+0 SG
+NP 132 399 5 5 TGEL F
+GS
+   GS
+      NP 132 399 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   224 206 TR
+   [0.707 0.707 -0.707 0.707 20 -48] CO
+   224 NE 206 NE TR
+0 SG
+NP 229 211 5 5 TGEL F
+GS
+   GS
+      NP 229 211 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   353 396 TR
+   [0.707 0.707 -0.707 0.707 -152 -13] CO
+   353 NE 396 NE TR
+0 SG
+NP 358 401 5 5 TGEL F
+GS
+   GS
+      NP 358 401 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% OVAL
+GS
+   477 300 TR
+   [0.707 0.707 -0.707 0.707 -121 103] CO
+   477 NE 300 NE TR
+0 SG
+NP 482 305 5 5 TGEL F
+GS
+   GS
+      NP 482 305 5 5 TGEL
+      TGSM
+      S
+   GR
+GR
+GR
+
+% XPM
+GS
+   3 31 MU ARY tgifsetpixels
+     0 [ 0.678 0.678 0.678 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.529 0.529 0.529 ] tgifsetpix   9 [ 0.482 0.482 0.482 ] tgifsetpix
+    12 [ 0.427 0.427 0.427 ] tgifsetpix  15 [ 0.365 0.365 0.365 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.957 0.957 0.957 ] tgifsetpix
+    24 [ 0.925 0.925 0.925 ] tgifsetpix  27 [ 0.886 0.886 0.886 ] tgifsetpix
+    30 [ 0.871 0.871 0.871 ] tgifsetpix  33 [ 0.824 0.824 0.824 ] tgifsetpix
+    36 [ 0.098 0.098 0.098 ] tgifsetpix  39 [ 0.769 0.769 0.769 ] tgifsetpix
+    42 [ 0.043 0.043 0.043 ] tgifsetpix  45 [ 0.706 0.706 0.706 ] tgifsetpix
+    48 [ 0.004 0.004 0.004 ] tgifsetpix  51 [ 0.643 0.643 0.643 ] tgifsetpix
+    54 [ 0.573 0.573 0.573 ] tgifsetpix  57 [ 0.549 0.549 0.549 ] tgifsetpix
+    60 [ 0.447 0.447 0.447 ] tgifsetpix  63 [ 0.392 0.392 0.392 ] tgifsetpix
+    66 [ 0.322 0.322 0.322 ] tgifsetpix  69 [ 0.298 0.298 0.298 ] tgifsetpix
+    72 [ 0.267 0.267 0.267 ] tgifsetpix  75 [ 0.227 0.227 0.227 ] tgifsetpix
+    78 [ 0.204 0.204 0.204 ] tgifsetpix  81 [ 0.173 0.173 0.173 ] tgifsetpix
+    84 [ 0.804 0.804 0.804 ] tgifsetpix  87 [ 0.071 0.071 0.071 ] tgifsetpix
+    90 [ 0.741 0.741 0.741 ] tgifsetpix 
+   133 199 TR 1.000 1.000 SC 0 RO
+   26 22 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606060606060606
+   060606060606090d1c0b1c0d0d0d0d0d0b0b0706060606060606
+   0606060606060f0519100c15050515160c100106060606060606
+   060606060606060603101306060606061c100006060606060606
+   06060606060606061a100d0606060706061b0d06060606060606
+   060606060606060a100e07060606060607180806060606060606
+   060606060606060010170607061112060a050606060606060606
+   0606060606060603101306060616000607070606060606060606
+   060606060606061910021e1e140c070606060606060606060606
+   0606060606060a0e0e0404041017060606060607010806060606
+   06060606060600101606060603030606060b13140e0a06060606
+   060606060606141013060706050f06060607081c0e0a06060606
+   06060606060619100d0606061c0706060606061c0e0a06060606
+   0606060606090e1d08060606060606060606061c0e0a06060606
+   06060606060f101606060606060606060606060b0e0a06060606
+   060606080716101406090606060606060606060b0e0a06060606
+   06060705171a1a1817050706060606060606061c0e0906060606
+   060606060606060606060606060606060606061c0e0a06060606
+   060606060606060606060606060606060606060b0e0a06060606
+   06060606060606060606060606060606060812150e14020a0606
+   0606060606060606060606060606060606061c0b0a1c1c070606
+   0606060606060606060606060606060606060606060606060606
+GR
+
+% XPM
+GS
+   3 30 MU ARY tgifsetpixels
+     0 [ 0.671 0.671 0.671 ] tgifsetpix   3 [ 0.600 0.600 0.600 ] tgifsetpix
+     6 [ 0.482 0.482 0.482 ] tgifsetpix   9 [ 0.451 0.451 0.451 ] tgifsetpix
+    12 [ 0.427 0.427 0.427 ] tgifsetpix  15 [ 0.365 0.365 0.365 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.263 0.263 0.263 ] tgifsetpix
+    24 [ 0.224 0.224 0.224 ] tgifsetpix  27 [ 0.918 0.918 0.918 ] tgifsetpix
+    30 [ 0.894 0.894 0.894 ] tgifsetpix  33 [ 0.137 0.137 0.137 ] tgifsetpix
+    36 [ 0.800 0.800 0.800 ] tgifsetpix  39 [ 0.098 0.098 0.098 ] tgifsetpix
+    42 [ 0.737 0.737 0.737 ] tgifsetpix  45 [ 0.706 0.706 0.706 ] tgifsetpix
+    48 [ 0.004 0.004 0.004 ] tgifsetpix  51 [ 0.643 0.643 0.643 ] tgifsetpix
+    54 [ 0.549 0.549 0.549 ] tgifsetpix  57 [ 0.518 0.518 0.518 ] tgifsetpix
+    60 [ 0.384 0.384 0.384 ] tgifsetpix  63 [ 0.322 0.322 0.322 ] tgifsetpix
+    66 [ 0.298 0.298 0.298 ] tgifsetpix  69 [ 0.961 0.961 0.961 ] tgifsetpix
+    72 [ 0.204 0.204 0.204 ] tgifsetpix  75 [ 0.867 0.867 0.867 ] tgifsetpix
+    78 [ 0.165 0.165 0.165 ] tgifsetpix  81 [ 0.835 0.835 0.835 ] tgifsetpix
+    84 [ 0.765 0.765 0.765 ] tgifsetpix  87 [ 0.047 0.047 0.047 ] tgifsetpix
+   248 304 TR 1.000 1.000 SC 0 RO
+   26 22 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606060606060606
+   0606060606060a0e0c1b1b1c1c1c1c1c1b1b1706060606060606
+   0606060606060f0508100d14050514151d100106060606060606
+   060606060606060602101206060606061b100f06060606060606
+   060606060606060618101c0606061706061a1c06060606060606
+   0606060606060619101d17060606060617070906060606060606
+   060606060606060f100706170611010619141706060606060606
+   0606060606060602101206060615000617170606060606060606
+   060606060606060810120e0e030d170606060606060606060606
+   0606060606060a1d1d0404041016060606061c12130006060606
+   0606060606060f1015060606020206060600130a09141a090606
+   060606060606031012061706050f0606170b0f06060a10040606
+   06060606060608100e0606061b170606171d050606060b080606
+   06060606060a1d1d1706060606060606060a1706060a10050606
+   06060606060f10150606060606060606060606060602101b0606
+   0606060917151003060a060606060606060606060e1d0e060606
+   060617051618180716051706060606060606060e1a1c06060606
+   0606060606060606060606060606060606061b160a0617000606
+   06060606060606060606060606060606060907111b1b01020606
+   060606060606060606060606060606060608101d101010000606
+   06060606060606060606060606060606061b0a0a0a0a0a170606
+   0606060606060606060606060606060606060606060606060606
+GR
+
+GR
+tgifsavedpage restore
+end
+showpage
+
+%%Trailer
+%MatchingCreationDate: Wed Sep 17 16:34:12 2003
+%%DocumentFonts: Courier
+%%EOF

@@ -1,0 +1,1857 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 18 440 361 781
+%%Title: reg_conventions
+%%CreationDate: Wed Sep 17 15:07:15 2003
+%%Creator: Tgif-4.1.42-QPL written by William Chia-Wei Cheng (bill.cheng@acm.org)
+%%ProducedBy: (unknown)
+%%Pages: 1
+%%DocumentFonts: (atend)
+%%EndComments
+%%BeginProlog
+
+/tgifdict 64 dict def
+tgifdict begin
+
+/tgifellipsedict 6 dict def
+tgifellipsedict /mtrx matrix put
+
+/TGEL % tgifellipse
+ { tgifellipsedict begin
+      /yrad exch def
+      /xrad exch def
+      /y exch def
+      /x exch def
+      /savematrix mtrx currentmatrix def
+      x y translate
+      xrad yrad scale
+      0 0 1 0 360 arc
+      savematrix setmatrix
+   end
+ } def
+
+/tgifxpmdict 4 dict def
+/tgifbwpicstr 1 string def
+/tgifcolorpicstr 3 string def
+
+/tgifsetpixels { tgifxpmdict begin /pixels exch def end } def
+
+/tgifsetpix { tgifxpmdict begin pixels 3 1 roll putinterval end } def
+
+/tgifcolorspot
+ { tgifxpmdict begin
+      /index exch def
+      pixels index 3 mul 3 getinterval aload pop
+      255 mul cvi tgifcolorpicstr 2 3 -1 roll put
+      255 mul cvi tgifcolorpicstr 1 3 -1 roll put
+      255 mul cvi tgifcolorpicstr 0 3 -1 roll put
+      tgifcolorpicstr
+   end
+ } def
+
+/tgifnewcolorspot
+ { tgifxpmdict begin
+      /index exch def
+      pixels index 3 mul 3 getinterval aload pop setrgbcolor
+   end
+ } def
+
+/tgifcolordict 4 dict def
+
+/colorimage where
+ { pop }
+ { /colorimage
+   { tgifcolordict begin
+        pop pop pop pop pop
+        /ih exch def
+        /iw exch def
+        /x 0 def
+        /y 0 def
+        1 1 ih
+         { pop 1 1 iw
+            { pop currentfile
+              tgifbwpicstr readhexstring pop 0 get tgifnewcolorspot
+              x y moveto 1 0 rlineto 0 1 rlineto -1 0 rlineto
+              closepath fill
+              /x x 1 add def
+            } for
+           /y y 1 add def
+           /x 0 def
+         } for
+     end
+   } def
+ } ifelse
+
+/tgiftranscolorspot
+ { tgifxpmdict begin
+      /index exch def
+      pixels index 3 mul 3 getinterval aload pop
+      dup 0 lt { pop pop pop false } { setrgbcolor true } ifelse
+   end
+ } def
+
+/tgiftranscolorimage
+ { tgifcolordict begin
+      pop pop pop pop pop
+      /ih exch def
+      /iw exch def
+      /x 0 def
+      /y 0 def
+      1 1 ih
+       { pop 1 1 iw
+          { pop currentfile
+            tgifbwpicstr readhexstring pop 0 get tgiftranscolorspot
+            { x y moveto 1 0 rlineto 0 1 rlineto -1 0 rlineto
+              closepath fill
+            }
+            if
+            /x x 1 add def
+          } for
+         /y y 1 add def
+         /x 0 def
+       } for
+   end
+ } def
+
+/TGMAX
+ { exch dup 3 1 roll exch dup 3 1 roll gt { pop } { exch pop } ifelse
+ } def
+/TGMIN
+ { exch dup 3 1 roll exch dup 3 1 roll lt { pop } { exch pop } ifelse
+ } def
+/TGSW { stringwidth pop } def
+
+/bd { bind def } bind def
+
+/GS { gsave } bd
+/GR { grestore } bd
+/NP { newpath } bd
+/CP { closepath } bd
+/CHP { charpath } bd
+/CT { curveto } bd
+/L { lineto } bd
+/RL { rlineto } bd
+/M { moveto } bd
+/RM { rmoveto } bd
+/S { stroke } bd
+/F { fill } bd
+/TR { translate } bd
+/RO { rotate } bd
+/SC { scale } bd
+/MU { mul } bd
+/DI { div } bd
+/DU { dup } bd
+/NE { neg } bd
+/AD { add } bd
+/SU { sub } bd
+/PO { pop } bd
+/EX { exch } bd
+/CO { concat } bd
+/CL { clip } bd
+/EC { eoclip } bd
+/EF { eofill } bd
+/IM { image } bd
+/IMM { imagemask } bd
+/ARY { array } bd
+/SG { setgray } bd
+/RG { setrgbcolor } bd
+/SD { setdash } bd
+/W { setlinewidth } bd
+/SM { setmiterlimit } bd
+/SLC { setlinecap } bd
+/SLJ { setlinejoin } bd
+/SH { show } bd
+/FF { findfont } bd
+/MS { makefont setfont } bd
+/AR { arcto 4 {pop} repeat } bd
+/CURP { currentpoint } bd
+/FLAT { flattenpath strokepath clip newpath } bd
+/TGSM { tgiforigctm setmatrix } def
+/TGRM { savematrix setmatrix } def
+
+end
+
+%%EndProlog
+%%Page: 1 1
+
+%%PageBoundingBox: 18 440 361 781
+tgifdict begin
+/tgifsavedpage save def
+
+1 SM
+1 W
+
+0 SG
+
+72 0 MU 72 11 MU TR
+72 128 DI 100.000 MU 100 DI DU NE SC
+
+GS
+
+/tgiforigctm matrix currentmatrix def
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      127 63 M
+      64 224 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      127 63 M
+      210 223 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      64 224 M
+      209 223 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      210 223 M
+      222 160 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      222 161 M
+      128 64 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   [2 2] 0 SD
+   NP
+      65 222 M
+      222 161 L
+   TGSM
+   1 W
+   S
+   [] 0 SD
+GR
+
+% XPM
+GS
+   3 26 MU ARY tgifsetpixels
+     0 [ 0.608 0.608 0.608 ] tgifsetpix   3 [ 0.522 0.522 0.522 ] tgifsetpix
+     6 [ 0.388 0.388 0.388 ] tgifsetpix   9 [ 0.318 0.318 0.318 ] tgifsetpix
+    12 [ 0.996 0.996 0.996 ] tgifsetpix  15 [ 0.294 0.294 0.294 ] tgifsetpix
+    18 [ 0.949 0.949 0.949 ] tgifsetpix  21 [ 0.933 0.933 0.933 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.808 0.808 0.808 ] tgifsetpix  33 [ 0.737 0.737 0.737 ] tgifsetpix
+    36 [ 0.706 0.706 0.706 ] tgifsetpix  39 [ 0.004 0.004 0.004 ] tgifsetpix
+    42 [ 0.667 0.667 0.667 ] tgifsetpix  45 [ 0.643 0.643 0.643 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.549 0.549 0.549 ] tgifsetpix
+    54 [ 0.494 0.494 0.494 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.196 0.196 0.196 ] tgifsetpix
+    66 [ 0.835 0.835 0.835 ] tgifsetpix  69 [ 0.102 0.102 0.102 ] tgifsetpix
+    72 [ 0.773 0.773 0.773 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+   210 227 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0404040404040404040404040404040404040404
+   0404091302010704040902021604040404040404
+   040404180d0c0404040602180404040404040404
+   0404040417100404040018040404040404040404
+   04040404150204040c0104040404040404040404
+   0404040402080407140704060a120b0404040404
+   0404040400190411180404160f15110404040404
+   040404041819010f040404040403110404040404
+   0404040406190504040404060405110404040404
+   0404040404140a04040404040405110404040404
+   0404040404040404040404040405110404040404
+   0404040404040404040404071008050e04040404
+   0404040404040404040404040a09161604040404
+   0404040404040404040404040404040404040404
+GR
+
+% XPM
+GS
+   3 27 MU ARY tgifsetpixels
+     0 [ 0.639 0.639 0.639 ] tgifsetpix   3 [ 0.616 0.616 0.616 ] tgifsetpix
+     6 [ 0.592 0.592 0.592 ] tgifsetpix   9 [ 0.482 0.482 0.482 ] tgifsetpix
+    12 [ 0.467 0.467 0.467 ] tgifsetpix  15 [ 0.388 0.388 0.388 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.294 0.294 0.294 ] tgifsetpix
+    24 [ 0.271 0.271 0.271 ] tgifsetpix  27 [ 0.949 0.949 0.949 ] tgifsetpix
+    30 [ 0.216 0.216 0.216 ] tgifsetpix  33 [ 0.886 0.886 0.886 ] tgifsetpix
+    36 [ 0.004 0.004 0.004 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.541 0.541 0.541 ] tgifsetpix  45 [ 0.518 0.518 0.518 ] tgifsetpix
+    48 [ 0.424 0.424 0.424 ] tgifsetpix  51 [ 0.353 0.353 0.353 ] tgifsetpix
+    54 [ 0.929 0.929 0.929 ] tgifsetpix  57 [ 0.859 0.859 0.859 ] tgifsetpix
+    60 [ 0.835 0.835 0.835 ] tgifsetpix  63 [ 0.804 0.804 0.804 ] tgifsetpix
+    66 [ 0.102 0.102 0.102 ] tgifsetpix  69 [ 0.773 0.773 0.773 ] tgifsetpix
+    72 [ 0.749 0.749 0.749 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+    78 [ 0.702 0.702 0.702 ] tgifsetpix 
+   57 231 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606
+   06061304050f1206061305051406060606060606
+   060606170c1a0606060905170606060606060606
+   0606060616020606060117060606060606060606
+   060606060a1106061a0f06060606060606060606
+   06060606050a0612101206060104041306060606
+   060606060219060e170606000506170706060606
+   0606060617190f00060906070d0606071a060606
+   06060606091907060606060a1a06060801060606
+   06060606061015060606060a0d06060801060606
+   0606060606060606060606050206060814060606
+   060606060606060606060614110d030f06060606
+   0606060606060606060606060b0d180606060606
+   0606060606060606060606060606060606060606
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.514 0.514 0.514 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.996 0.996 0.996 ] tgifsetpix   9 [ 0.294 0.294 0.294 ] tgifsetpix
+    12 [ 0.271 0.271 0.271 ] tgifsetpix  15 [ 0.957 0.957 0.957 ] tgifsetpix
+    18 [ 0.925 0.925 0.925 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.886 0.886 0.886 ] tgifsetpix  27 [ 0.090 0.090 0.090 ] tgifsetpix
+    30 [ 0.012 0.012 0.012 ] tgifsetpix  33 [ 0.675 0.675 0.675 ] tgifsetpix
+    36 [ 0.643 0.643 0.643 ] tgifsetpix  39 [ 0.604 0.604 0.604 ] tgifsetpix
+    42 [ 0.588 0.588 0.588 ] tgifsetpix  45 [ 0.541 0.541 0.541 ] tgifsetpix
+    48 [ 0.478 0.478 0.478 ] tgifsetpix  51 [ 0.455 0.455 0.455 ] tgifsetpix
+    54 [ 0.424 0.424 0.424 ] tgifsetpix  57 [ 0.227 0.227 0.227 ] tgifsetpix
+    60 [ 0.173 0.173 0.173 ] tgifsetpix  63 [ 0.859 0.859 0.859 ] tgifsetpix
+    66 [ 0.149 0.149 0.149 ] tgifsetpix  69 [ 0.835 0.835 0.835 ] tgifsetpix
+    72 [ 0.796 0.796 0.796 ] tgifsetpix  75 [ 0.773 0.773 0.773 ] tgifsetpix
+    78 [ 0.039 0.039 0.039 ] tgifsetpix  81 [ 0.702 0.702 0.702 ] tgifsetpix
+   224 159 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0202020202020202020202020202020202020202
+   0202151101000602021501011702020202020202
+   020202190a1b0202020501190202020202020202
+   02020202090e0202020d19020202020202020202
+   02020202070102021b0002020202020202020202
+   0202020201140206120602060e00011902020202
+   020202020d1a020f1902020403020b0915020202
+   02020202191a0f0c02020212000202140c020202
+   02020202060903020202020202020c1305020202
+   020202020212180202020202021b110602020202
+   0202020202020202020202020d0f021b1b020202
+   0202020202020202020502100a07160917020202
+   0202020202020202020202081515150802020202
+   0202020202020202020202020202020202020202
+GR
+
+% XPM
+GS
+   3 29 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.545 0.545 0.545 ] tgifsetpix   9 [ 0.522 0.522 0.522 ] tgifsetpix
+    12 [ 0.490 0.490 0.490 ] tgifsetpix  15 [ 0.451 0.451 0.451 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.996 0.996 0.996 ] tgifsetpix
+    24 [ 0.286 0.286 0.286 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.839 0.839 0.839 ] tgifsetpix  33 [ 0.769 0.769 0.769 ] tgifsetpix
+    36 [ 0.737 0.737 0.737 ] tgifsetpix  39 [ 0.706 0.706 0.706 ] tgifsetpix
+    42 [ 0.004 0.004 0.004 ] tgifsetpix  45 [ 0.675 0.675 0.675 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.424 0.424 0.424 ] tgifsetpix
+    54 [ 0.329 0.329 0.329 ] tgifsetpix  57 [ 0.267 0.267 0.267 ] tgifsetpix
+    60 [ 0.953 0.953 0.953 ] tgifsetpix  63 [ 0.235 0.235 0.235 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.906 0.906 0.906 ] tgifsetpix
+    72 [ 0.173 0.173 0.173 ] tgifsetpix  75 [ 0.804 0.804 0.804 ] tgifsetpix
+    78 [ 0.102 0.102 0.102 ] tgifsetpix  81 [ 0.071 0.071 0.071 ] tgifsetpix
+    84 [ 0.039 0.039 0.039 ] tgifsetpix 
+   123 44 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0707070707070707070707070707070707070707
+   0707090512031607070906110a07070707070707
+   0707070b0e0d07070714120b0707070707070707
+   070707071a10070707010b070707070707070707
+   07070707151207070d0307070707070707070707
+   0707070711180716051607140103110c07070707
+   07070707011c07020c07071118070b1a17070707
+   070707070b1c03000707070c0007021507070707
+   07070707141b0807070707070904180c07070707
+   07070707071119070707071716070a180a070707
+   0707070707070707070707131207141c0f070707
+   070707070707070707070703120b111207070707
+   070707070707070707070707170f0c0707070707
+   0707070707070707070707070707070707070707
+GR
+
+% OVAL
+0 SG
+NP 66 222 5 4 TGEL F
+GS
+   GS
+      NP 66 222 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 209 222 5 4 TGEL F
+GS
+   GS
+      NP 209 222 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 220 161 5 4 TGEL F
+GS
+   GS
+      NP 220 161 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 128 64 5 4 TGEL F
+GS
+   GS
+      NP 128 64 5 4 TGEL
+      S
+   GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      462 54 M
+      399 215 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      462 54 M
+      545 214 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      399 215 M
+      544 214 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      545 214 M
+      557 151 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      557 152 M
+      463 55 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   [2 2] 0 SD
+   NP
+      412 149 M
+      557 152 L
+   TGSM
+   1 W
+   S
+   [] 0 SD
+GR
+
+% XPM
+GS
+   3 27 MU ARY tgifsetpixels
+     0 [ 0.639 0.639 0.639 ] tgifsetpix   3 [ 0.616 0.616 0.616 ] tgifsetpix
+     6 [ 0.592 0.592 0.592 ] tgifsetpix   9 [ 0.482 0.482 0.482 ] tgifsetpix
+    12 [ 0.467 0.467 0.467 ] tgifsetpix  15 [ 0.388 0.388 0.388 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.294 0.294 0.294 ] tgifsetpix
+    24 [ 0.271 0.271 0.271 ] tgifsetpix  27 [ 0.949 0.949 0.949 ] tgifsetpix
+    30 [ 0.216 0.216 0.216 ] tgifsetpix  33 [ 0.886 0.886 0.886 ] tgifsetpix
+    36 [ 0.004 0.004 0.004 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.541 0.541 0.541 ] tgifsetpix  45 [ 0.518 0.518 0.518 ] tgifsetpix
+    48 [ 0.424 0.424 0.424 ] tgifsetpix  51 [ 0.353 0.353 0.353 ] tgifsetpix
+    54 [ 0.929 0.929 0.929 ] tgifsetpix  57 [ 0.859 0.859 0.859 ] tgifsetpix
+    60 [ 0.835 0.835 0.835 ] tgifsetpix  63 [ 0.804 0.804 0.804 ] tgifsetpix
+    66 [ 0.102 0.102 0.102 ] tgifsetpix  69 [ 0.773 0.773 0.773 ] tgifsetpix
+    72 [ 0.749 0.749 0.749 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+    78 [ 0.702 0.702 0.702 ] tgifsetpix 
+   392 222 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606
+   06061304050f1206061305051406060606060606
+   060606170c1a0606060905170606060606060606
+   0606060616020606060117060606060606060606
+   060606060a1106061a0f06060606060606060606
+   06060606050a0612101206060104041306060606
+   060606060219060e170606000506170706060606
+   0606060617190f00060906070d0606071a060606
+   06060606091907060606060a1a06060801060606
+   06060606061015060606060a0d06060801060606
+   0606060606060606060606050206060814060606
+   060606060606060606060614110d030f06060606
+   0606060606060606060606060b0d180606060606
+   0606060606060606060606060606060606060606
+GR
+
+% OVAL
+0 SG
+NP 401 213 5 4 TGEL F
+GS
+   GS
+      NP 401 213 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 544 213 5 4 TGEL F
+GS
+   GS
+      NP 544 213 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 555 152 5 4 TGEL F
+GS
+   GS
+      NP 555 152 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 463 55 5 4 TGEL F
+GS
+   GS
+      NP 463 55 5 4 TGEL
+      S
+   GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      399 214 M
+      411 151 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      411 151 M
+      463 55 L
+   TGSM
+   1 W
+   S
+GR
+
+% OVAL
+0 SG
+NP 411 149 5 4 TGEL F
+GS
+   GS
+      NP 411 149 5 4 TGEL
+      S
+   GR
+GR
+
+% XPM
+GS
+   3 26 MU ARY tgifsetpixels
+     0 [ 0.608 0.608 0.608 ] tgifsetpix   3 [ 0.522 0.522 0.522 ] tgifsetpix
+     6 [ 0.388 0.388 0.388 ] tgifsetpix   9 [ 0.318 0.318 0.318 ] tgifsetpix
+    12 [ 0.996 0.996 0.996 ] tgifsetpix  15 [ 0.294 0.294 0.294 ] tgifsetpix
+    18 [ 0.949 0.949 0.949 ] tgifsetpix  21 [ 0.933 0.933 0.933 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.808 0.808 0.808 ] tgifsetpix  33 [ 0.737 0.737 0.737 ] tgifsetpix
+    36 [ 0.706 0.706 0.706 ] tgifsetpix  39 [ 0.004 0.004 0.004 ] tgifsetpix
+    42 [ 0.667 0.667 0.667 ] tgifsetpix  45 [ 0.643 0.643 0.643 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.549 0.549 0.549 ] tgifsetpix
+    54 [ 0.494 0.494 0.494 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.196 0.196 0.196 ] tgifsetpix
+    66 [ 0.835 0.835 0.835 ] tgifsetpix  69 [ 0.102 0.102 0.102 ] tgifsetpix
+    72 [ 0.773 0.773 0.773 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+   535 220 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0404040404040404040404040404040404040404
+   0404091302010704040902021604040404040404
+   040404180d0c0404040602180404040404040404
+   0404040417100404040018040404040404040404
+   04040404150204040c0104040404040404040404
+   0404040402080407140704060a120b0404040404
+   0404040400190411180404160f15110404040404
+   040404041819010f040404040403110404040404
+   0404040406190504040404060405110404040404
+   0404040404140a04040404040405110404040404
+   0404040404040404040404040405110404040404
+   0404040404040404040404071008050e04040404
+   0404040404040404040404040a09161604040404
+   0404040404040404040404040404040404040404
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.514 0.514 0.514 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.996 0.996 0.996 ] tgifsetpix   9 [ 0.294 0.294 0.294 ] tgifsetpix
+    12 [ 0.271 0.271 0.271 ] tgifsetpix  15 [ 0.957 0.957 0.957 ] tgifsetpix
+    18 [ 0.925 0.925 0.925 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.886 0.886 0.886 ] tgifsetpix  27 [ 0.090 0.090 0.090 ] tgifsetpix
+    30 [ 0.012 0.012 0.012 ] tgifsetpix  33 [ 0.675 0.675 0.675 ] tgifsetpix
+    36 [ 0.643 0.643 0.643 ] tgifsetpix  39 [ 0.604 0.604 0.604 ] tgifsetpix
+    42 [ 0.588 0.588 0.588 ] tgifsetpix  45 [ 0.541 0.541 0.541 ] tgifsetpix
+    48 [ 0.478 0.478 0.478 ] tgifsetpix  51 [ 0.455 0.455 0.455 ] tgifsetpix
+    54 [ 0.424 0.424 0.424 ] tgifsetpix  57 [ 0.227 0.227 0.227 ] tgifsetpix
+    60 [ 0.173 0.173 0.173 ] tgifsetpix  63 [ 0.859 0.859 0.859 ] tgifsetpix
+    66 [ 0.149 0.149 0.149 ] tgifsetpix  69 [ 0.835 0.835 0.835 ] tgifsetpix
+    72 [ 0.796 0.796 0.796 ] tgifsetpix  75 [ 0.773 0.773 0.773 ] tgifsetpix
+    78 [ 0.039 0.039 0.039 ] tgifsetpix  81 [ 0.702 0.702 0.702 ] tgifsetpix
+   562 151 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0202020202020202020202020202020202020202
+   0202151101000602021501011702020202020202
+   020202190a1b0202020501190202020202020202
+   02020202090e0202020d19020202020202020202
+   02020202070102021b0002020202020202020202
+   0202020201140206120602060e00011902020202
+   020202020d1a020f1902020403020b0915020202
+   02020202191a0f0c02020212000202140c020202
+   02020202060903020202020202020c1305020202
+   020202020212180202020202021b110602020202
+   0202020202020202020202020d0f021b1b020202
+   0202020202020202020502100a07160917020202
+   0202020202020202020202081515150802020202
+   0202020202020202020202020202020202020202
+GR
+
+% XPM
+GS
+   3 29 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.545 0.545 0.545 ] tgifsetpix   9 [ 0.522 0.522 0.522 ] tgifsetpix
+    12 [ 0.490 0.490 0.490 ] tgifsetpix  15 [ 0.451 0.451 0.451 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.996 0.996 0.996 ] tgifsetpix
+    24 [ 0.286 0.286 0.286 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.839 0.839 0.839 ] tgifsetpix  33 [ 0.769 0.769 0.769 ] tgifsetpix
+    36 [ 0.737 0.737 0.737 ] tgifsetpix  39 [ 0.706 0.706 0.706 ] tgifsetpix
+    42 [ 0.004 0.004 0.004 ] tgifsetpix  45 [ 0.675 0.675 0.675 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.424 0.424 0.424 ] tgifsetpix
+    54 [ 0.329 0.329 0.329 ] tgifsetpix  57 [ 0.267 0.267 0.267 ] tgifsetpix
+    60 [ 0.953 0.953 0.953 ] tgifsetpix  63 [ 0.235 0.235 0.235 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.906 0.906 0.906 ] tgifsetpix
+    72 [ 0.173 0.173 0.173 ] tgifsetpix  75 [ 0.804 0.804 0.804 ] tgifsetpix
+    78 [ 0.102 0.102 0.102 ] tgifsetpix  81 [ 0.071 0.071 0.071 ] tgifsetpix
+    84 [ 0.039 0.039 0.039 ] tgifsetpix 
+   386 146 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0707070707070707070707070707070707070707
+   0707090512031607070906110a07070707070707
+   0707070b0e0d07070714120b0707070707070707
+   070707071a10070707010b070707070707070707
+   07070707151207070d0307070707070707070707
+   0707070711180716051607140103110c07070707
+   07070707011c07020c07071118070b1a17070707
+   070707070b1c03000707070c0007021507070707
+   07070707141b0807070707070904180c07070707
+   07070707071119070707071716070a180a070707
+   0707070707070707070707131207141c0f070707
+   070707070707070707070703120b111207070707
+   070707070707070707070707170f0c0707070707
+   0707070707070707070707070707070707070707
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.576 0.576 0.576 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.357 0.357 0.357 ] tgifsetpix   9 [ 0.996 0.996 0.996 ] tgifsetpix
+    12 [ 0.286 0.286 0.286 ] tgifsetpix  15 [ 0.271 0.271 0.271 ] tgifsetpix
+    18 [ 0.957 0.957 0.957 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.800 0.800 0.800 ] tgifsetpix
+    30 [ 0.043 0.043 0.043 ] tgifsetpix  33 [ 0.004 0.004 0.004 ] tgifsetpix
+    36 [ 0.698 0.698 0.698 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.651 0.651 0.651 ] tgifsetpix  45 [ 0.612 0.612 0.612 ] tgifsetpix
+    48 [ 0.541 0.541 0.541 ] tgifsetpix  51 [ 0.518 0.518 0.518 ] tgifsetpix
+    54 [ 0.486 0.486 0.486 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.329 0.329 0.329 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.859 0.859 0.859 ] tgifsetpix
+    72 [ 0.827 0.827 0.827 ] tgifsetpix  75 [ 0.102 0.102 0.102 ] tgifsetpix
+    78 [ 0.773 0.773 0.773 ] tgifsetpix  81 [ 0.749 0.749 0.749 ] tgifsetpix
+   464 38 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0303030303030303030303030303030303030303
+   0303171301111603031701011803030303030303
+   0303031a0b0c03030306011a0303030303030303
+   0303030319000303030f1a030303030303030303
+   03030303070103030c1103060303030303030303
+   0303030301080316131603030303131b03030303
+   030303030f0a03101b030303030d0a0e03030303
+   030303031a0a110e030303030e10020f03030303
+   03030303060a04030303031a1003150f03030303
+   030303030314090303030307100d070218030303
+   0303030303030303030306181a17051203030303
+   030303030303030303030303030c071509030303
+   0303030303030303030303030318171817030303
+   0303030303030303030303030303030303030303
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.514 0.514 0.514 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.996 0.996 0.996 ] tgifsetpix   9 [ 0.294 0.294 0.294 ] tgifsetpix
+    12 [ 0.271 0.271 0.271 ] tgifsetpix  15 [ 0.957 0.957 0.957 ] tgifsetpix
+    18 [ 0.925 0.925 0.925 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.886 0.886 0.886 ] tgifsetpix  27 [ 0.090 0.090 0.090 ] tgifsetpix
+    30 [ 0.012 0.012 0.012 ] tgifsetpix  33 [ 0.675 0.675 0.675 ] tgifsetpix
+    36 [ 0.643 0.643 0.643 ] tgifsetpix  39 [ 0.604 0.604 0.604 ] tgifsetpix
+    42 [ 0.588 0.588 0.588 ] tgifsetpix  45 [ 0.541 0.541 0.541 ] tgifsetpix
+    48 [ 0.478 0.478 0.478 ] tgifsetpix  51 [ 0.455 0.455 0.455 ] tgifsetpix
+    54 [ 0.424 0.424 0.424 ] tgifsetpix  57 [ 0.227 0.227 0.227 ] tgifsetpix
+    60 [ 0.173 0.173 0.173 ] tgifsetpix  63 [ 0.859 0.859 0.859 ] tgifsetpix
+    66 [ 0.149 0.149 0.149 ] tgifsetpix  69 [ 0.835 0.835 0.835 ] tgifsetpix
+    72 [ 0.796 0.796 0.796 ] tgifsetpix  75 [ 0.773 0.773 0.773 ] tgifsetpix
+    78 [ 0.039 0.039 0.039 ] tgifsetpix  81 [ 0.702 0.702 0.702 ] tgifsetpix
+   575 482 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0202020202020202020202020202020202020202
+   0202151101000602021501011702020202020202
+   020202190a1b0202020501190202020202020202
+   02020202090e0202020d19020202020202020202
+   02020202070102021b0002020202020202020202
+   0202020201140206120602060e00011902020202
+   020202020d1a020f1902020403020b0915020202
+   02020202191a0f0c02020212000202140c020202
+   02020202060903020202020202020c1305020202
+   020202020212180202020202021b110602020202
+   0202020202020202020202020d0f021b1b020202
+   0202020202020202020502100a07160917020202
+   0202020202020202020202081515150802020202
+   0202020202020202020202020202020202020202
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.576 0.576 0.576 ] tgifsetpix   9 [ 0.545 0.545 0.545 ] tgifsetpix
+    12 [ 0.522 0.522 0.522 ] tgifsetpix  15 [ 0.459 0.459 0.459 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.357 0.357 0.357 ] tgifsetpix
+    24 [ 0.341 0.341 0.341 ] tgifsetpix  27 [ 0.996 0.996 0.996 ] tgifsetpix
+    30 [ 0.286 0.286 0.286 ] tgifsetpix  33 [ 0.184 0.184 0.184 ] tgifsetpix
+    36 [ 0.855 0.855 0.855 ] tgifsetpix  39 [ 0.824 0.824 0.824 ] tgifsetpix
+    42 [ 0.792 0.792 0.792 ] tgifsetpix  45 [ 0.075 0.075 0.075 ] tgifsetpix
+    48 [ 0.769 0.769 0.769 ] tgifsetpix  51 [ 0.737 0.737 0.737 ] tgifsetpix
+    54 [ 0.004 0.004 0.004 ] tgifsetpix  57 [ 0.675 0.675 0.675 ] tgifsetpix
+    60 [ 0.486 0.486 0.486 ] tgifsetpix  63 [ 0.424 0.424 0.424 ] tgifsetpix
+    66 [ 0.953 0.953 0.953 ] tgifsetpix  69 [ 0.227 0.227 0.227 ] tgifsetpix
+    72 [ 0.922 0.922 0.922 ] tgifsetpix  75 [ 0.102 0.102 0.102 ] tgifsetpix
+    78 [ 0.039 0.039 0.039 ] tgifsetpix  81 [ 0.710 0.710 0.710 ] tgifsetpix
+   222 341 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0909090909090909090909090909090909090909
+   09090c0506041809090c06060d09090909090909
+   0909090e121b0909091606100909090909090909
+   0909090919020909090110091609090909090909
+   09090909170709091b0409090909090909090909
+   09090909060b0918151809180715060309090909
+   09090909011a16031109090c0a14030c09090909
+   090909090e1a03000909090d020d0e0909090909
+   09090909161a0a090909090c0810140709090909
+   0909090909050e090909090c0d09160f1b090909
+   0909090909090909090909170209180f1b090909
+   0909090909090909090909030510070509090909
+   0909090909090909090909090e130e0909090909
+   0909090909090909090909090909090909090909
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.576 0.576 0.576 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.357 0.357 0.357 ] tgifsetpix   9 [ 0.996 0.996 0.996 ] tgifsetpix
+    12 [ 0.286 0.286 0.286 ] tgifsetpix  15 [ 0.271 0.271 0.271 ] tgifsetpix
+    18 [ 0.957 0.957 0.957 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.800 0.800 0.800 ] tgifsetpix
+    30 [ 0.043 0.043 0.043 ] tgifsetpix  33 [ 0.004 0.004 0.004 ] tgifsetpix
+    36 [ 0.698 0.698 0.698 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.651 0.651 0.651 ] tgifsetpix  45 [ 0.612 0.612 0.612 ] tgifsetpix
+    48 [ 0.541 0.541 0.541 ] tgifsetpix  51 [ 0.518 0.518 0.518 ] tgifsetpix
+    54 [ 0.486 0.486 0.486 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.329 0.329 0.329 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.859 0.859 0.859 ] tgifsetpix
+    72 [ 0.827 0.827 0.827 ] tgifsetpix  75 [ 0.102 0.102 0.102 ] tgifsetpix
+    78 [ 0.773 0.773 0.773 ] tgifsetpix  81 [ 0.749 0.749 0.749 ] tgifsetpix
+   183 403 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0303030303030303030303030303030303030303
+   0303171301111603031701011803030303030303
+   0303031a0b0c03030306011a0303030303030303
+   0303030319000303030f1a030303030303030303
+   03030303070103030c1103060303030303030303
+   0303030301080316131603030303131b03030303
+   030303030f0a03101b030303030d0a0e03030303
+   030303031a0a110e030303030e10020f03030303
+   03030303060a04030303031a1003150f03030303
+   030303030314090303030307100d070218030303
+   0303030303030303030306181a17051203030303
+   030303030303030303030303030c071509030303
+   0303030303030303030303030318171817030303
+   0303030303030303030303030303030303030303
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      59 423 M
+      59 558 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      205 422 M
+      205 557 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      59 558 M
+      204 557 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      205 557 M
+      217 494 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      217 495 M
+      217 360 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   [2 2] 0 SD
+   NP
+      60 556 M
+      217 495 L
+   TGSM
+   1 W
+   S
+   [] 0 SD
+GR
+
+% XPM
+GS
+   3 26 MU ARY tgifsetpixels
+     0 [ 0.608 0.608 0.608 ] tgifsetpix   3 [ 0.522 0.522 0.522 ] tgifsetpix
+     6 [ 0.388 0.388 0.388 ] tgifsetpix   9 [ 0.318 0.318 0.318 ] tgifsetpix
+    12 [ 0.996 0.996 0.996 ] tgifsetpix  15 [ 0.294 0.294 0.294 ] tgifsetpix
+    18 [ 0.949 0.949 0.949 ] tgifsetpix  21 [ 0.933 0.933 0.933 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.808 0.808 0.808 ] tgifsetpix  33 [ 0.737 0.737 0.737 ] tgifsetpix
+    36 [ 0.706 0.706 0.706 ] tgifsetpix  39 [ 0.004 0.004 0.004 ] tgifsetpix
+    42 [ 0.667 0.667 0.667 ] tgifsetpix  45 [ 0.643 0.643 0.643 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.549 0.549 0.549 ] tgifsetpix
+    54 [ 0.494 0.494 0.494 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.196 0.196 0.196 ] tgifsetpix
+    66 [ 0.835 0.835 0.835 ] tgifsetpix  69 [ 0.102 0.102 0.102 ] tgifsetpix
+    72 [ 0.773 0.773 0.773 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+   205 561 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0404040404040404040404040404040404040404
+   0404091302010704040902021604040404040404
+   040404180d0c0404040602180404040404040404
+   0404040417100404040018040404040404040404
+   04040404150204040c0104040404040404040404
+   0404040402080407140704060a120b0404040404
+   0404040400190411180404160f15110404040404
+   040404041819010f040404040403110404040404
+   0404040406190504040404060405110404040404
+   0404040404140a04040404040405110404040404
+   0404040404040404040404040405110404040404
+   0404040404040404040404071008050e04040404
+   0404040404040404040404040a09161604040404
+   0404040404040404040404040404040404040404
+GR
+
+% XPM
+GS
+   3 27 MU ARY tgifsetpixels
+     0 [ 0.639 0.639 0.639 ] tgifsetpix   3 [ 0.616 0.616 0.616 ] tgifsetpix
+     6 [ 0.592 0.592 0.592 ] tgifsetpix   9 [ 0.482 0.482 0.482 ] tgifsetpix
+    12 [ 0.467 0.467 0.467 ] tgifsetpix  15 [ 0.388 0.388 0.388 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.294 0.294 0.294 ] tgifsetpix
+    24 [ 0.271 0.271 0.271 ] tgifsetpix  27 [ 0.949 0.949 0.949 ] tgifsetpix
+    30 [ 0.216 0.216 0.216 ] tgifsetpix  33 [ 0.886 0.886 0.886 ] tgifsetpix
+    36 [ 0.004 0.004 0.004 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.541 0.541 0.541 ] tgifsetpix  45 [ 0.518 0.518 0.518 ] tgifsetpix
+    48 [ 0.424 0.424 0.424 ] tgifsetpix  51 [ 0.353 0.353 0.353 ] tgifsetpix
+    54 [ 0.929 0.929 0.929 ] tgifsetpix  57 [ 0.859 0.859 0.859 ] tgifsetpix
+    60 [ 0.835 0.835 0.835 ] tgifsetpix  63 [ 0.804 0.804 0.804 ] tgifsetpix
+    66 [ 0.102 0.102 0.102 ] tgifsetpix  69 [ 0.773 0.773 0.773 ] tgifsetpix
+    72 [ 0.749 0.749 0.749 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+    78 [ 0.702 0.702 0.702 ] tgifsetpix 
+   52 565 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606
+   06061304050f1206061305051406060606060606
+   060606170c1a0606060905170606060606060606
+   0606060616020606060117060606060606060606
+   060606060a1106061a0f06060606060606060606
+   06060606050a0612101206060104041306060606
+   060606060219060e170606000506170706060606
+   0606060617190f00060906070d0606071a060606
+   06060606091907060606060a1a06060801060606
+   06060606061015060606060a0d06060801060606
+   0606060606060606060606050206060814060606
+   060606060606060606060614110d030f06060606
+   0606060606060606060606060b0d180606060606
+   0606060606060606060606060606060606060606
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.514 0.514 0.514 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.996 0.996 0.996 ] tgifsetpix   9 [ 0.294 0.294 0.294 ] tgifsetpix
+    12 [ 0.271 0.271 0.271 ] tgifsetpix  15 [ 0.957 0.957 0.957 ] tgifsetpix
+    18 [ 0.925 0.925 0.925 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.886 0.886 0.886 ] tgifsetpix  27 [ 0.090 0.090 0.090 ] tgifsetpix
+    30 [ 0.012 0.012 0.012 ] tgifsetpix  33 [ 0.675 0.675 0.675 ] tgifsetpix
+    36 [ 0.643 0.643 0.643 ] tgifsetpix  39 [ 0.604 0.604 0.604 ] tgifsetpix
+    42 [ 0.588 0.588 0.588 ] tgifsetpix  45 [ 0.541 0.541 0.541 ] tgifsetpix
+    48 [ 0.478 0.478 0.478 ] tgifsetpix  51 [ 0.455 0.455 0.455 ] tgifsetpix
+    54 [ 0.424 0.424 0.424 ] tgifsetpix  57 [ 0.227 0.227 0.227 ] tgifsetpix
+    60 [ 0.173 0.173 0.173 ] tgifsetpix  63 [ 0.859 0.859 0.859 ] tgifsetpix
+    66 [ 0.149 0.149 0.149 ] tgifsetpix  69 [ 0.835 0.835 0.835 ] tgifsetpix
+    72 [ 0.796 0.796 0.796 ] tgifsetpix  75 [ 0.773 0.773 0.773 ] tgifsetpix
+    78 [ 0.039 0.039 0.039 ] tgifsetpix  81 [ 0.702 0.702 0.702 ] tgifsetpix
+   219 493 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0202020202020202020202020202020202020202
+   0202151101000602021501011702020202020202
+   020202190a1b0202020501190202020202020202
+   02020202090e0202020d19020202020202020202
+   02020202070102021b0002020202020202020202
+   0202020201140206120602060e00011902020202
+   020202020d1a020f1902020403020b0915020202
+   02020202191a0f0c02020212000202140c020202
+   02020202060903020202020202020c1305020202
+   020202020212180202020202021b110602020202
+   0202020202020202020202020d0f021b1b020202
+   0202020202020202020502100a07160917020202
+   0202020202020202020202081515150802020202
+   0202020202020202020202020202020202020202
+GR
+
+% XPM
+GS
+   3 29 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.545 0.545 0.545 ] tgifsetpix   9 [ 0.522 0.522 0.522 ] tgifsetpix
+    12 [ 0.490 0.490 0.490 ] tgifsetpix  15 [ 0.451 0.451 0.451 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.996 0.996 0.996 ] tgifsetpix
+    24 [ 0.286 0.286 0.286 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.839 0.839 0.839 ] tgifsetpix  33 [ 0.769 0.769 0.769 ] tgifsetpix
+    36 [ 0.737 0.737 0.737 ] tgifsetpix  39 [ 0.706 0.706 0.706 ] tgifsetpix
+    42 [ 0.004 0.004 0.004 ] tgifsetpix  45 [ 0.675 0.675 0.675 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.424 0.424 0.424 ] tgifsetpix
+    54 [ 0.329 0.329 0.329 ] tgifsetpix  57 [ 0.267 0.267 0.267 ] tgifsetpix
+    60 [ 0.953 0.953 0.953 ] tgifsetpix  63 [ 0.235 0.235 0.235 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.906 0.906 0.906 ] tgifsetpix
+    72 [ 0.173 0.173 0.173 ] tgifsetpix  75 [ 0.804 0.804 0.804 ] tgifsetpix
+    78 [ 0.102 0.102 0.102 ] tgifsetpix  81 [ 0.071 0.071 0.071 ] tgifsetpix
+    84 [ 0.039 0.039 0.039 ] tgifsetpix 
+   35 412 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0707070707070707070707070707070707070707
+   0707090512031607070906110a07070707070707
+   0707070b0e0d07070714120b0707070707070707
+   070707071a10070707010b070707070707070707
+   07070707151207070d0307070707070707070707
+   0707070711180716051607140103110c07070707
+   07070707011c07020c07071118070b1a17070707
+   070707070b1c03000707070c0007021507070707
+   07070707141b0807070707070904180c07070707
+   07070707071119070707071716070a180a070707
+   0707070707070707070707131207141c0f070707
+   070707070707070707070703120b111207070707
+   070707070707070707070707170f0c0707070707
+   0707070707070707070707070707070707070707
+GR
+
+% OVAL
+0 SG
+NP 61 556 5 4 TGEL F
+GS
+   GS
+      NP 61 556 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 204 556 5 4 TGEL F
+GS
+   GS
+      NP 204 556 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 215 495 5 4 TGEL F
+GS
+   GS
+      NP 215 495 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 204 420 5 4 TGEL F
+GS
+   GS
+      NP 204 420 5 4 TGEL
+      S
+   GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      59 423 M
+      204 422 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      205 422 M
+      217 359 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      59 422 M
+      216 361 L
+   TGSM
+   1 W
+   S
+GR
+
+% OVAL
+0 SG
+NP 61 421 5 4 TGEL F
+GS
+   GS
+      NP 61 421 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 217 360 5 4 TGEL F
+GS
+   GS
+      NP 217 360 5 4 TGEL
+      S
+   GR
+GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      131 274 M
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(a\)) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(a\)) SH
+      GR
+      0 20 RM
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Tetrahedron) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Tetrahedron) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      470 269 M
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(b\)) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(b\)) SH
+      GR
+      0 20 RM
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Pyramid) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Pyramid) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      136 598 M
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(c\)) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(c\)) SH
+      GR
+      0 20 RM
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Triangular Prism) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Triangular Prism) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      472 599 M
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(d\)) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (\(d\)) SH
+      GR
+      0 20 RM
+      GS
+        GS
+        0
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Hexahedron) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica-Bold FF [17 0 0 -17 0 0] MS
+            (Hexahedron) SH
+      GR
+   GR
+
+% XPM
+GS
+   3 27 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.498 0.498 0.498 ] tgifsetpix   9 [ 0.459 0.459 0.459 ] tgifsetpix
+    12 [ 0.427 0.427 0.427 ] tgifsetpix  15 [ 0.388 0.388 0.388 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.294 0.294 0.294 ] tgifsetpix
+    24 [ 0.949 0.949 0.949 ] tgifsetpix  27 [ 0.224 0.224 0.224 ] tgifsetpix
+    30 [ 0.184 0.184 0.184 ] tgifsetpix  33 [ 0.878 0.878 0.878 ] tgifsetpix
+    36 [ 0.863 0.863 0.863 ] tgifsetpix  39 [ 0.153 0.153 0.153 ] tgifsetpix
+    42 [ 0.769 0.769 0.769 ] tgifsetpix  45 [ 0.737 0.737 0.737 ] tgifsetpix
+    48 [ 0.004 0.004 0.004 ] tgifsetpix  51 [ 0.588 0.588 0.588 ] tgifsetpix
+    54 [ 0.541 0.541 0.541 ] tgifsetpix  57 [ 0.525 0.525 0.525 ] tgifsetpix
+    60 [ 0.353 0.353 0.353 ] tgifsetpix  63 [ 0.929 0.929 0.929 ] tgifsetpix
+    66 [ 0.827 0.827 0.827 ] tgifsetpix  69 [ 0.804 0.804 0.804 ] tgifsetpix
+    72 [ 0.102 0.102 0.102 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+    78 [ 0.702 0.702 0.702 ] tgifsetpix 
+   403 340 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606
+   06060c0305131506060c05051606060606060606
+   0606060e101a06060608050e0606060606060606
+   060606061811060606010e060608060606060606
+   06060606091406061a1306060606060606060606
+   06060606050a061505150617140404041a060606
+   06060606011908120e0606120703040d17060606
+   06060606171912000606061a15061a0e06060606
+   060606060819070606060606060f020606060606
+   06060606060417060606060606071a0606060606
+   0606060606060606060606061518170606060606
+   0606060606060606060606060b19160606060606
+   0606060606060606060606060617080606060606
+   0606060606060606060606060606060606060606
+GR
+
+% XPM
+GS
+   3 29 MU ARY tgifsetpixels
+     0 [ 0.678 0.678 0.678 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.522 0.522 0.522 ] tgifsetpix   9 [ 0.467 0.467 0.467 ] tgifsetpix
+    12 [ 0.420 0.420 0.420 ] tgifsetpix  15 [ 0.388 0.388 0.388 ] tgifsetpix
+    18 [ 0.349 0.349 0.349 ] tgifsetpix  21 [ 0.996 0.996 0.996 ] tgifsetpix
+    24 [ 0.286 0.286 0.286 ] tgifsetpix  27 [ 0.925 0.925 0.925 ] tgifsetpix
+    30 [ 0.208 0.208 0.208 ] tgifsetpix  33 [ 0.894 0.894 0.894 ] tgifsetpix
+    36 [ 0.184 0.184 0.184 ] tgifsetpix  39 [ 0.863 0.863 0.863 ] tgifsetpix
+    42 [ 0.145 0.145 0.145 ] tgifsetpix  45 [ 0.769 0.769 0.769 ] tgifsetpix
+    48 [ 0.004 0.004 0.004 ] tgifsetpix  51 [ 0.698 0.698 0.698 ] tgifsetpix
+    54 [ 0.643 0.643 0.643 ] tgifsetpix  57 [ 0.588 0.588 0.588 ] tgifsetpix
+    60 [ 0.549 0.549 0.549 ] tgifsetpix  63 [ 0.267 0.267 0.267 ] tgifsetpix
+    66 [ 0.953 0.953 0.953 ] tgifsetpix  69 [ 0.227 0.227 0.227 ] tgifsetpix
+    72 [ 0.835 0.835 0.835 ] tgifsetpix  75 [ 0.804 0.804 0.804 ] tgifsetpix
+    78 [ 0.102 0.102 0.102 ] tgifsetpix  81 [ 0.749 0.749 0.749 ] tgifsetpix
+    84 [ 0.039 0.039 0.039 ] tgifsetpix 
+   576 342 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0707070707070707070707070707070707070707
+   07070d0305020907070d05051807070707070707
+   0707070f101107070716050f0707070707070707
+   070707071a13070707010f070707070707070707
+   070707070a050707110207070707070707070707
+   07070707050c0709030907070d02031307070707
+   07070707011c07141b07070d050b0d0e0b070707
+   070707070f1c0212071607051319120b07070707
+   07070707161c0807070707170419120516070707
+   07070707070419070707070a1207071512070707
+   0707070707070707070707050107070811070707
+   0707070707070707070707180600141407070707
+   0707070707070707070707070b001b0707070707
+   0707070707070707070707070707070707070707
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.576 0.576 0.576 ] tgifsetpix   3 [ 0.388 0.388 0.388 ] tgifsetpix
+     6 [ 0.357 0.357 0.357 ] tgifsetpix   9 [ 0.996 0.996 0.996 ] tgifsetpix
+    12 [ 0.286 0.286 0.286 ] tgifsetpix  15 [ 0.271 0.271 0.271 ] tgifsetpix
+    18 [ 0.957 0.957 0.957 ] tgifsetpix  21 [ 0.200 0.200 0.200 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.800 0.800 0.800 ] tgifsetpix
+    30 [ 0.043 0.043 0.043 ] tgifsetpix  33 [ 0.004 0.004 0.004 ] tgifsetpix
+    36 [ 0.698 0.698 0.698 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.651 0.651 0.651 ] tgifsetpix  45 [ 0.612 0.612 0.612 ] tgifsetpix
+    48 [ 0.541 0.541 0.541 ] tgifsetpix  51 [ 0.518 0.518 0.518 ] tgifsetpix
+    54 [ 0.486 0.486 0.486 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.329 0.329 0.329 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.859 0.859 0.859 ] tgifsetpix
+    72 [ 0.827 0.827 0.827 ] tgifsetpix  75 [ 0.102 0.102 0.102 ] tgifsetpix
+    78 [ 0.773 0.773 0.773 ] tgifsetpix  81 [ 0.749 0.749 0.749 ] tgifsetpix
+   380 398 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0303030303030303030303030303030303030303
+   0303171301111603031701011803030303030303
+   0303031a0b0c03030306011a0303030303030303
+   0303030319000303030f1a030303030303030303
+   03030303070103030c1103060303030303030303
+   0303030301080316131603030303131b03030303
+   030303030f0a03101b030303030d0a0e03030303
+   030303031a0a110e030303030e10020f03030303
+   03030303060a04030303031a1003150f03030303
+   030303030314090303030307100d070218030303
+   0303030303030303030306181a17051203030303
+   030303030303030303030303030c071509030303
+   0303030303030303030303030318171817030303
+   0303030303030303030303030303030303030303
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      398 415 M
+      398 550 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      544 414 M
+      544 549 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      398 550 M
+      543 549 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      545 549 M
+      572 485 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      572 486 M
+      572 351 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   [2 2] 0 SD
+   NP
+      428 485 M
+      572 486 L
+   TGSM
+   1 W
+   S
+   [] 0 SD
+GR
+
+% XPM
+GS
+   3 26 MU ARY tgifsetpixels
+     0 [ 0.608 0.608 0.608 ] tgifsetpix   3 [ 0.522 0.522 0.522 ] tgifsetpix
+     6 [ 0.388 0.388 0.388 ] tgifsetpix   9 [ 0.318 0.318 0.318 ] tgifsetpix
+    12 [ 0.996 0.996 0.996 ] tgifsetpix  15 [ 0.294 0.294 0.294 ] tgifsetpix
+    18 [ 0.949 0.949 0.949 ] tgifsetpix  21 [ 0.933 0.933 0.933 ] tgifsetpix
+    24 [ 0.184 0.184 0.184 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.808 0.808 0.808 ] tgifsetpix  33 [ 0.737 0.737 0.737 ] tgifsetpix
+    36 [ 0.706 0.706 0.706 ] tgifsetpix  39 [ 0.004 0.004 0.004 ] tgifsetpix
+    42 [ 0.667 0.667 0.667 ] tgifsetpix  45 [ 0.643 0.643 0.643 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.549 0.549 0.549 ] tgifsetpix
+    54 [ 0.494 0.494 0.494 ] tgifsetpix  57 [ 0.463 0.463 0.463 ] tgifsetpix
+    60 [ 0.424 0.424 0.424 ] tgifsetpix  63 [ 0.196 0.196 0.196 ] tgifsetpix
+    66 [ 0.835 0.835 0.835 ] tgifsetpix  69 [ 0.102 0.102 0.102 ] tgifsetpix
+    72 [ 0.773 0.773 0.773 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+   543 552 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0404040404040404040404040404040404040404
+   0404091302010704040902021604040404040404
+   040404180d0c0404040602180404040404040404
+   0404040417100404040018040404040404040404
+   04040404150204040c0104040404040404040404
+   0404040402080407140704060a120b0404040404
+   0404040400190411180404160f15110404040404
+   040404041819010f040404040403110404040404
+   0404040406190504040404060405110404040404
+   0404040404140a04040404040405110404040404
+   0404040404040404040404040405110404040404
+   0404040404040404040404071008050e04040404
+   0404040404040404040404040a09161604040404
+   0404040404040404040404040404040404040404
+GR
+
+% XPM
+GS
+   3 27 MU ARY tgifsetpixels
+     0 [ 0.639 0.639 0.639 ] tgifsetpix   3 [ 0.616 0.616 0.616 ] tgifsetpix
+     6 [ 0.592 0.592 0.592 ] tgifsetpix   9 [ 0.482 0.482 0.482 ] tgifsetpix
+    12 [ 0.467 0.467 0.467 ] tgifsetpix  15 [ 0.388 0.388 0.388 ] tgifsetpix
+    18 [ 0.996 0.996 0.996 ] tgifsetpix  21 [ 0.294 0.294 0.294 ] tgifsetpix
+    24 [ 0.271 0.271 0.271 ] tgifsetpix  27 [ 0.949 0.949 0.949 ] tgifsetpix
+    30 [ 0.216 0.216 0.216 ] tgifsetpix  33 [ 0.886 0.886 0.886 ] tgifsetpix
+    36 [ 0.004 0.004 0.004 ] tgifsetpix  39 [ 0.682 0.682 0.682 ] tgifsetpix
+    42 [ 0.541 0.541 0.541 ] tgifsetpix  45 [ 0.518 0.518 0.518 ] tgifsetpix
+    48 [ 0.424 0.424 0.424 ] tgifsetpix  51 [ 0.353 0.353 0.353 ] tgifsetpix
+    54 [ 0.929 0.929 0.929 ] tgifsetpix  57 [ 0.859 0.859 0.859 ] tgifsetpix
+    60 [ 0.835 0.835 0.835 ] tgifsetpix  63 [ 0.804 0.804 0.804 ] tgifsetpix
+    66 [ 0.102 0.102 0.102 ] tgifsetpix  69 [ 0.773 0.773 0.773 ] tgifsetpix
+    72 [ 0.749 0.749 0.749 ] tgifsetpix  75 [ 0.039 0.039 0.039 ] tgifsetpix
+    78 [ 0.702 0.702 0.702 ] tgifsetpix 
+   395 554 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0606060606060606060606060606060606060606
+   06061304050f1206061305051406060606060606
+   060606170c1a0606060905170606060606060606
+   0606060616020606060117060606060606060606
+   060606060a1106061a0f06060606060606060606
+   06060606050a0612101206060104041306060606
+   060606060219060e170606000506170706060606
+   0606060617190f00060906070d0606071a060606
+   06060606091907060606060a1a06060801060606
+   06060606061015060606060a0d06060801060606
+   0606060606060606060606050206060814060606
+   060606060606060606060614110d030f06060606
+   0606060606060606060606060b0d180606060606
+   0606060606060606060606060606060606060606
+GR
+
+% XPM
+GS
+   3 29 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.545 0.545 0.545 ] tgifsetpix   9 [ 0.522 0.522 0.522 ] tgifsetpix
+    12 [ 0.490 0.490 0.490 ] tgifsetpix  15 [ 0.451 0.451 0.451 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.996 0.996 0.996 ] tgifsetpix
+    24 [ 0.286 0.286 0.286 ] tgifsetpix  27 [ 0.863 0.863 0.863 ] tgifsetpix
+    30 [ 0.839 0.839 0.839 ] tgifsetpix  33 [ 0.769 0.769 0.769 ] tgifsetpix
+    36 [ 0.737 0.737 0.737 ] tgifsetpix  39 [ 0.706 0.706 0.706 ] tgifsetpix
+    42 [ 0.004 0.004 0.004 ] tgifsetpix  45 [ 0.675 0.675 0.675 ] tgifsetpix
+    48 [ 0.588 0.588 0.588 ] tgifsetpix  51 [ 0.424 0.424 0.424 ] tgifsetpix
+    54 [ 0.329 0.329 0.329 ] tgifsetpix  57 [ 0.267 0.267 0.267 ] tgifsetpix
+    60 [ 0.953 0.953 0.953 ] tgifsetpix  63 [ 0.235 0.235 0.235 ] tgifsetpix
+    66 [ 0.929 0.929 0.929 ] tgifsetpix  69 [ 0.906 0.906 0.906 ] tgifsetpix
+    72 [ 0.173 0.173 0.173 ] tgifsetpix  75 [ 0.804 0.804 0.804 ] tgifsetpix
+    78 [ 0.102 0.102 0.102 ] tgifsetpix  81 [ 0.071 0.071 0.071 ] tgifsetpix
+    84 [ 0.039 0.039 0.039 ] tgifsetpix 
+   428 470 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0707070707070707070707070707070707070707
+   0707090512031607070906110a07070707070707
+   0707070b0e0d07070714120b0707070707070707
+   070707071a10070707010b070707070707070707
+   07070707151207070d0307070707070707070707
+   0707070711180716051607140103110c07070707
+   07070707011c07020c07071118070b1a17070707
+   070707070b1c03000707070c0007021507070707
+   07070707141b0807070707070904180c07070707
+   07070707071119070707071716070a180a070707
+   0707070707070707070707131207141c0f070707
+   070707070707070707070703120b111207070707
+   070707070707070707070707170f0c0707070707
+   0707070707070707070707070707070707070707
+GR
+
+% OVAL
+0 SG
+NP 399 548 5 4 TGEL F
+GS
+   GS
+      NP 399 548 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 544 547 5 4 TGEL F
+GS
+   GS
+      NP 544 547 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 570 486 5 4 TGEL F
+GS
+   GS
+      NP 570 486 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 542 413 5 4 TGEL F
+GS
+   GS
+      NP 542 413 5 4 TGEL
+      S
+   GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      398 415 M
+      543 414 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      545 413 M
+      572 350 L
+   TGSM
+   1 W
+   S
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      427 352 M
+      571 352 L
+   TGSM
+   1 W
+   S
+GR
+
+% OVAL
+0 SG
+NP 397 415 5 4 TGEL F
+GS
+   GS
+      NP 397 415 5 4 TGEL
+      S
+   GR
+GR
+
+% OVAL
+0 SG
+NP 572 351 5 4 TGEL F
+GS
+   GS
+      NP 572 351 5 4 TGEL
+      S
+   GR
+GR
+
+% XPM
+GS
+   3 28 MU ARY tgifsetpixels
+     0 [ 0.647 0.647 0.647 ] tgifsetpix   3 [ 0.608 0.608 0.608 ] tgifsetpix
+     6 [ 0.576 0.576 0.576 ] tgifsetpix   9 [ 0.545 0.545 0.545 ] tgifsetpix
+    12 [ 0.522 0.522 0.522 ] tgifsetpix  15 [ 0.459 0.459 0.459 ] tgifsetpix
+    18 [ 0.388 0.388 0.388 ] tgifsetpix  21 [ 0.357 0.357 0.357 ] tgifsetpix
+    24 [ 0.341 0.341 0.341 ] tgifsetpix  27 [ 0.996 0.996 0.996 ] tgifsetpix
+    30 [ 0.286 0.286 0.286 ] tgifsetpix  33 [ 0.184 0.184 0.184 ] tgifsetpix
+    36 [ 0.855 0.855 0.855 ] tgifsetpix  39 [ 0.824 0.824 0.824 ] tgifsetpix
+    42 [ 0.792 0.792 0.792 ] tgifsetpix  45 [ 0.075 0.075 0.075 ] tgifsetpix
+    48 [ 0.769 0.769 0.769 ] tgifsetpix  51 [ 0.737 0.737 0.737 ] tgifsetpix
+    54 [ 0.004 0.004 0.004 ] tgifsetpix  57 [ 0.675 0.675 0.675 ] tgifsetpix
+    60 [ 0.486 0.486 0.486 ] tgifsetpix  63 [ 0.424 0.424 0.424 ] tgifsetpix
+    66 [ 0.953 0.953 0.953 ] tgifsetpix  69 [ 0.227 0.227 0.227 ] tgifsetpix
+    72 [ 0.922 0.922 0.922 ] tgifsetpix  75 [ 0.102 0.102 0.102 ] tgifsetpix
+    78 [ 0.039 0.039 0.039 ] tgifsetpix  81 [ 0.710 0.710 0.710 ] tgifsetpix
+   547 410 TR 1.000 1.000 SC 0 RO
+   20 14 8
+   [1 0 0 1 0 0]
+   {currentfile
+    tgifbwpicstr readhexstring pop 0 get tgifcolorspot}
+   false 3 colorimage
+   0909090909090909090909090909090909090909
+   09090c0506041809090c06060d09090909090909
+   0909090e121b0909091606100909090909090909
+   0909090919020909090110091609090909090909
+   09090909170709091b0409090909090909090909
+   09090909060b0918151809180715060309090909
+   09090909011a16031109090c0a14030c09090909
+   090909090e1a03000909090d020d0e0909090909
+   09090909161a0a090909090c0810140709090909
+   0909090909050e090909090c0d09160f1b090909
+   0909090909090909090909170209180f1b090909
+   0909090909090909090909030510070509090909
+   0909090909090909090909090e130e0909090909
+   0909090909090909090909090909090909090909
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   [2 2] 0 SD
+   NP
+      399 549 M
+      427 483 L
+   TGSM
+   1 W
+   S
+   [] 0 SD
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   [2 2] 0 SD
+   NP
+      427 484 M
+      427 349 L
+   TGSM
+   1 W
+   S
+   [] 0 SD
+GR
+
+% OVAL
+0 SG
+NP 427 484 5 4 TGEL F
+GS
+   GS
+      NP 427 484 5 4 TGEL
+      S
+   GR
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      398 416 M
+      427 348 L
+   TGSM
+   1 W
+   S
+GR
+
+% OVAL
+0 SG
+NP 427 349 5 4 TGEL F
+GS
+   GS
+      NP 427 349 5 4 TGEL
+      S
+   GR
+GR
+
+GR
+tgifsavedpage restore
+end
+showpage
+
+%%Trailer
+%MatchingCreationDate: Wed Sep 17 15:07:15 2003
+%%DocumentFonts: Helvetica-Bold
+%%EOF
