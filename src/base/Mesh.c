@@ -14,8 +14,8 @@
 extern "C" {
 #endif
 
-  int MESH_rtype[MSTK_MAXREP] = {F1, F2, F3, F4, F5, F6, R1, R2, R3, R4};
-  char MESH_rtype_str[10][3] = {"F1\0","F2\0","F3\0","F4\0","F5\0","F6\0","R1\0","R2\0","R3\0","R4\0"};
+  RepType MESH_rtype[5] = {F1, F4, R1, R2, R4};
+  char MESH_rtype_str[5][3] = {"F1\0","F4\0","R1\0","R2\0","R4\0"};
 
 Mesh_ptr MESH_New(RepType type) {
   Mesh_ptr newmesh;
@@ -46,7 +46,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   if (mesh->mregion) {
     nr = mesh->nr;
     i = 0;
-    while (mr = List_Next_Entry(mesh->mregion,&i)) {
+    while ((mr = List_Next_Entry(mesh->mregion,&i))) {
       MR_Delete(mr);
     }
     List_Delete(mesh->mregion);
@@ -54,7 +54,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   if (mesh->mface) {
     nf = mesh->nf;
     i = 0;
-    while (mf = List_Next_Entry(mesh->mface,&i)) {
+    while ((mf = List_Next_Entry(mesh->mface,&i))) {
       MF_Delete(mf);
     }
     List_Delete(mesh->mface);
@@ -62,7 +62,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   if (mesh->medge) {
     ne = mesh->ne;
     i = 0;
-    while (me = List_Next_Entry(mesh->medge,&i)) {
+    while ((me = List_Next_Entry(mesh->medge,&i))) {
       ME_Delete(me);
     }
     List_Delete(mesh->medge);
@@ -70,7 +70,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   if (mesh->mvertex) {
     nv = mesh->nv;
     i = 0;
-    while (mv = List_Next_Entry(mesh->mvertex,&i)) {
+    while ((mv = List_Next_Entry(mesh->mvertex,&i))) {
       MV_Delete(mv);
     }
     List_Delete(mesh->mvertex);
@@ -210,8 +210,7 @@ void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
   if (mesh->reptype == R1 || mesh->reptype == R2)
     return;
 
-  if ((mesh->reptype == R3 || mesh->reptype == R4) &&
-      (MF_Region(f,0) || MF_Region(f,1))) {
+  if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
 #ifdef DEBUG
     MSTK_Report("MESH_Add_Face","Can add disconnected faces only",ERROR);
 #endif
@@ -421,7 +420,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     NE = mesh->ne;
     mesh->medge = List_New(NE);
 
-    if (mesh->reptype >= F1 || mesh->reptype <= F6) {
+    if (mesh->reptype >= F1 || mesh->reptype <= F4) {
       for (i = 0; i < NE; i++) {
 	fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
 	ev1 = List_Entry(mesh->mvertex,vid1-1);
@@ -448,7 +447,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
   }
   else {
-    if (mesh->reptype >= F1 || mesh->reptype <= F6) {
+    if (mesh->reptype >= F1 || mesh->reptype <= F4) {
       MSTK_Report("MESH_InitFromFile","Expected edge information",ERROR);
       return 0;
     }
@@ -510,7 +509,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
     }
     else if (strncasecmp(fltype_str,"edge",4) == 0) {
-      if (mesh->reptype >= F1 && mesh->reptype <= F6) { 
+      if (mesh->reptype >= F1 && mesh->reptype <= F4) { 
 
 	fedges = NULL;	fedirs = NULL;
 	for (i = 0; i < NF; i++) {
@@ -561,8 +560,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
   }
   else {
-    if (mesh->reptype >= F1 || mesh->reptype <= F6) {
-      MSTK_Report("MESH_InitFromFile","Expected face information",FATAL);
+    if (mesh->reptype >= F1 || mesh->reptype <= F4) {
+      MSTK_Report("MESH_InitFromFile","Expected face information",ERROR);
       fclose(fp);
       return 0;
     }
@@ -800,7 +799,7 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 
 
 
-  if (mesh->reptype <= F6 && mesh->ne) {
+  if (mesh->reptype <= F4 && mesh->ne) {
     fprintf(fp,"edges\n");
 
     for (i = 0; i < mesh->ne; i++) {
@@ -821,8 +820,8 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 
 
 
-  if (((mesh->reptype <= F6) || (mesh->reptype >= R3)) && mesh->nf) {
-    if (mesh->reptype <= F6) {
+  if (((mesh->reptype <= F4) || (mesh->reptype >= R2)) && mesh->nf) {
+    if (mesh->reptype <= F4) {
       fprintf(fp,"faces edge\n");
 
       for (i = 0; i < mesh->nf; i++) {
@@ -876,7 +875,7 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 
 
   if (mesh->nr) {
-    if (mesh->reptype <= F6 || mesh->reptype >= R3) {
+    if (mesh->reptype <= F4 || mesh->reptype >= R2) {
       fprintf(fp,"regions face\n");
 
       for (i = 0; i < mesh->nr; i++) {
