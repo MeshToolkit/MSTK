@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ "$1" == "" ]; then
+ARCHOS=i686_linux
+echo "Setting up directories for i686 Linux system"
+echo "If you want to compile for a different system, type"
+echo "   setup archos"
+echo "where archos is the architecture of the system"
+echo "e.g. setup sunos5 or setup hp_ux10"
+else
+ARCHOS=$1
+fi
+
+mkdir -p obj/$ARCHOS-d
+mkdir -p obj/$ARCHOS
+mkdir -p lib/$ARCHOS
+
