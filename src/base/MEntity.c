@@ -13,14 +13,14 @@
 extern "C" {
 #endif
 
-  int MEnt_Dim(MEntity_ptr ent) {
+  MType MEnt_Dim(MEntity_ptr ent) {
     if (ent->dim < 0)
       return MDELETED;
     else
       return ent->dim;
   }
 
-  int MEnt_OrigDim(MEntity_ptr ent) {
+  MType MEnt_OrigDim(MEntity_ptr ent) {
     if (ent->dim < 0)
       return -(ent->dim/10)-1;
     else {
@@ -34,7 +34,7 @@ extern "C" {
   }
 
   void MEnt_Delete(MEntity_ptr ent, int keep) {
-    int dim;
+    MType dim;
 
     dim = MEnt_Dim(ent);
     if (dim < 0)
@@ -52,6 +52,8 @@ extern "C" {
       break;
     case MREGION:
       MR_Delete(ent,keep);
+      break;
+    default:
       break;
     }
   }
@@ -102,9 +104,17 @@ extern "C" {
   /* Set value of attribute */
   void MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, double lval, void *pval) {
     int idx, found;
+    MType entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
-    
+
+    entdim = MAttrib_Get_EntDim(attrib);
+    if (entdim != MEnt_Dim(ent) && entdim != MALLTYPE) {
+      MSTK_Report("MEnt_Set_AttVal",
+		  "Attribute not suitable for this entity type",ERROR);
+      return;
+    }
+
     if (!ent->AttInsList)
       ent->AttInsList = List_New(3);
       
@@ -128,9 +138,16 @@ extern "C" {
   /* Clear value of attribute */
   void MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
     int i, idx, found;
+    MType entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
     
+    entdim = MAttrib_Get_EntDim(attrib);
+    if (entdim != MEnt_Dim(ent) && entdim != MALLTYPE) {
+      MSTK_Report("MEnt_Rem_AttVal",
+		  "Attribute not suitable for this entity type",ERROR);
+      return;
+    }
     if (!ent->AttInsList)
       return;
     
@@ -156,6 +173,7 @@ extern "C" {
   /* Query the value of the attribute */
   int MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, double *lval, void **pval) {
     int idx, found;
+    MType entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
     
@@ -163,6 +181,13 @@ extern "C" {
     if (lval) *lval = 0;
     if (pval) *pval = NULL;
     
+    entdim = MAttrib_Get_EntDim(attrib);
+    if (entdim != MEnt_Dim(ent) && entdim != MALLTYPE) {
+      MSTK_Report("MEnt_Get_AttVal",
+		  "Attribute not suitable for this entity type",ERROR);
+      return 0;
+    }
+
     if (!ent->AttInsList)
       return 0;
       
