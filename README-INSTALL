@@ -1,0 +1,60 @@
+
+I am enclosing gzipped, tarred files containing MSTK and MSTKutil sources 
+version N.n. To use these, do the following
+
+1. Unpack the sources by issuing the commands
+     tar xvzf mstkutil.tar.gz   - creates directory mstkutil/N.n
+
+2. cd to mstkutil/N.n
+
+3. Type ./setup which will setup subdirs for compilation on i686 machines
+running linux. For a different architecture, type ./setup archos, where
+archos is the architecture and OS code for the system, e.g., ibm_aix9,
+hp_ux10 etc.
+
+4. Edit the Makefile to reflect the architecture and os specified to
+setup. Edit the compiler and compiler flags. Also edit the TOPDIR to
+reflect where the mstk and mstkutil directories are located. 
+
+5. Type 'make' to make the debug version ./lib/$ARCHOS/libmstkutil-d.a 
+and type 'make opt' to make the optimized version 
+./lib/$ARCHOS/libmstkutil.a
+
+6. Edit the 'install' file and modify the INSTALL_TOPDIR variable to
+   be where you want the header files and include files to be
+   installed. It could be $HOME or /usr/local. The script will install
+   the header files in $INSTALL_TOPDIR/include/mstkutil-N.n. If you
+   answer 'y' to the question "Do you to make the installed version
+   the default?", it will make a symbolic link to it called $INSTALL_TOPDIR/include/mstkutil
+
+7. Repeat step 1 to 6 with starting with unzipping and untarring mstk.tar.gz
+
+8. Include "MSTK.h" in any code that uses MSTK
+
+9. Include "-lmstk -lmstkutil" on the link line.
+
+
+I have tested MSTK only on a Linux system with the gcc compiler. I do not 
+see why it should not work on other systems with a ANSI compliant 
+compiler. If it doesn't, please let me know. On other machines tar may
+not support the -z option. In this case, gunzip the file first and
+then issue a 'tar xvf file.tar' command.
+
+Feel free to contact me if you need any assistance. Also, see the MSTK
+website http://math.lanl.gov/~rao/Meshing-Projects/MSTK/
+
+Regards
+Rao
+
+
+-- 
+--------------------------------------------------------------------
+Rao V Garimella  			Tel: (505) 665-2928
+T-7, MS B284 	 	   '\   '\ 	FAX: (505) 665-5757
+Los Alamos National Lab	     ( )-( )   	Email: rao@lanl.gov
+Los Alamos, NM 87545	                http://math.lanl.gov/~rao		
+--------------------------------------------------------------------
+
+	
+
+
