@@ -61,6 +61,20 @@ extern "C" {
     (*MV_Restore_jmp[v->repType])(v);
   }
 
+  void MV_Destroy_For_MESH_Delete(MVertex_ptr v) {
+    int idx;
+    MAttIns_ptr attins;
+
+    if (v->AttInsList) {
+      idx = 0;
+      while ((attins = List_Next_Entry(v->AttInsList,&idx)))
+	MAttIns_Delete(attins);
+      List_Delete(v->AttInsList);
+    }
+
+    (*MV_Destroy_For_MESH_Delete_jmp[v->repType])(v);
+  }
+
   void MV_Set_RepType(MVertex_ptr v, RepType rtype) {
     v->repType = rtype;
     (*MV_Set_RepType_jmp[rtype])(v);
