@@ -8,7 +8,7 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   MEdge_ptr *fe1, *fe2, *fe3;
   MFace_ptr  nuface;
   Mesh_ptr   mesh;
-  List_ptr   fedges;
+  Set_ptr   fedges;
 
   mesh = MF_Mesh(f1);
   gid = MF_GEntID(f1);
@@ -35,21 +35,21 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
 
   fedges = MF_Edges(f1,1,0);
   for (i = 0, k1 = -1; i < nfe1; i++) {
-    fe1[i] = List_Entry(fedges,i);
+    fe1[i] = Set_Entry(fedges,i);
     fedir1[i] = MF_EdgeDir_i(f1,i);
     if (fe1[i] == e)
       k1 = i;
   }
-  List_Delete(fedges);
+  Set_Delete(fedges);
 
   fedges = MF_Edges(f2,1,0);
   for (i = 0, k2 = -1; i < nfe2; i++) {
-    fe2[i] = List_Entry(fedges,i);
+    fe2[i] = Set_Entry(fedges,i);
     fedir2[i] = MF_EdgeDir_i(f2,i);
     if (fe2[i] == e)
       k2 = i;
   }
-  List_Delete(fedges);
+  Set_Delete(fedges);
 
   if (k1 == -1 || k2 == -1) {
     MSTK_Report("MFs_Join","Cannot find edge in face",ERROR);
