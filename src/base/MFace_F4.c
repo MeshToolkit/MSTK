@@ -51,12 +51,12 @@ extern "C" {
     MF_Set_Edges_FN(f,n,e,dir);
   }
 
-  void MF_Replace_Edge_F4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
-    MF_Replace_Edge_FN(f,e,nnu,nuedges,nudirs);
+  void MF_Replace_Edges_F4(MFace_ptr f, int nold, MEdge_ptr *oldedges,  int nnu, MEdge_ptr *nuedges) {
+    MF_Replace_Edges_FN(f,nold,oldedges,nnu,nuedges);
   }
 
-  void MF_Replace_Edge_i_F4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
-    MF_Replace_Edge_i_FN(f,i,nnu,nuedges,nudirs);
+  void MF_Replace_Edges_i_F4(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) {
+    MF_Replace_Edges_i_FN(f,nold,i,nnu,nuedges);
   }
 
   void MF_Set_Vertices_F4(MFace_ptr f, int n, MVertex_ptr *v) {
