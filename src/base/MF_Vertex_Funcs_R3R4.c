@@ -15,10 +15,10 @@ extern "C" {
 
     downadj = f->downadj;
     downadj->nv =n;
-    downadj->fvertices = List_New(n);
+    downadj->fvertices = Set_New(n);
 
     for (i = 0; i < n; i++)
-      List_Add(downadj->fvertices,v[i]);
+      Set_Add(downadj->fvertices,v[i]);
   }
 
   void MF_Replace_Vertex_i_R3R4(MFace_ptr f, int i, MVertex_ptr v) {
@@ -28,7 +28,7 @@ extern "C" {
     if (downadj->nv == 0)
       MSTK_Report("MF_Replace_Vertex_R3R4","No initial set of vertices for face",ERROR);
 
-    List_Replacei(downadj->fvertices,i,v);
+    Set_Replacei(downadj->fvertices,i,v);
   }
 
   void MF_Replace_Vertex_R3R4(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
@@ -38,7 +38,7 @@ extern "C" {
     if (downadj->nv == 0)
       MSTK_Report("MF_Replace_Vertex_R3R4","No initial set of vertices for face",ERROR);
 
-    List_Replace(downadj->fvertices,v,nuv);
+    Set_Replace(downadj->fvertices,v,nuv);
   }
 
   int MF_Num_Vertices_R3R4(MFace_ptr f) {
@@ -47,16 +47,55 @@ extern "C" {
     return downadj->nv;
   }
 
-  List_ptr MF_Vertices_R3R4(MFace_ptr f, int dir) {
+  Set_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v0) {
     MFace_DownAdj_R3R4 *downadj;
+    Set_ptr fverts;
+    int i, k, nv, fnd;
+
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
-    return List_Copy(downadj->fvertices);
+    nv = downadj->nv;
+
+    if (!v0) {
+      if (dir) 
+	fverts = Set_Copy(downadj->fvertices);
+      else {
+	fverts = Set_New(nv);
+
+	for (i = 0; i < nv; i++)
+	  Set_Add(fverts,Set_Entry(downadj->fvertices,i));
+      }
+    }
+    else {
+      fverts = Set_New(nv);
+
+      for (i = 0; i < nv; i++) {
+	if (Set_Entry(downadj->fvertices,i) == v0) {
+	  fnd = 1;
+	  k = i;
+	  break;
+	}
+      }
+
+      if (!fnd) {
+	MSTK_Report("MF_Num_Vertices_R3R4","Cannot find starting vertex",ERROR);
+	return 0;
+      }
+
+      for (i = 0; i < nv; i++) {
+	if (dir)
+	  Set_Add(fverts,Set_Entry(downadj->fvertices,(k+i)%nv));
+	else
+	  Set_Add(fverts,Set_Entry(downadj->fvertices,(k+nv-i)%nv));
+      }
+    }
+
+    return fverts;      
   }
 	
   int MF_UsesVertex_R3R4(MFace_ptr f, MVertex_ptr v) {
     MFace_DownAdj_R3R4 *downadj;
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
-    return List_Contains(downadj->fvertices,v);
+    return Set_Contains(downadj->fvertices,v);
   }
 
 #ifdef __cplusplus

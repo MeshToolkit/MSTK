@@ -17,24 +17,24 @@ extern "C" {
     MRegion_DownAdj_FN *downadj;
     MFace_ptr f;
     MEdge_ptr e;
-    List_ptr fedges;
+    Set_ptr fedges;
     int i, j, nf, ne;
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
 
-    nf = List_Num_Entries(downadj->rfaces);
+    nf = Set_Num_Entries(downadj->rfaces);
     for (i = 0; i < nf; i++) {
-      f = List_Entry(downadj->rfaces,i);
+      f = Set_Entry(downadj->rfaces,i);
       
       fedges = MF_Edges(f,1,0);
-      ne = List_Num_Entries(fedges);
+      ne = Set_Num_Entries(fedges);
       for (j = 0; j < ne; j++) {
-	e = List_Entry(fedges,j);
+	e = Set_Entry(fedges,j);
 	ME_Rem_Region(e,r);
       }
-      List_Delete(fedges);
+      Set_Delete(fedges);
     }
-    List_Delete(downadj->rfaces);
+    Set_Delete(downadj->rfaces);
     MSTK_free(downadj);
 
     MSTK_free(r);
@@ -44,25 +44,25 @@ extern "C" {
     int i, j, ne;
     MRegion_DownAdj_FN *downadj;
     MEdge_ptr e;
-    List_ptr fedges;
+    Set_ptr fedges;
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
     downadj->nf = nf;
     downadj->fdirs = 0;
-    downadj->rfaces = List_New(nf);
+    downadj->rfaces = Set_New(nf);
 
     for (i = 0; i < nf; i++) {
       downadj->fdirs = downadj->fdirs | (dirs[i] << i);
-      List_Add(downadj->rfaces,rfaces[i]);
+      Set_Add(downadj->rfaces,rfaces[i]);
       
       fedges = MF_Edges(rfaces[i],1,0);
-      ne = List_Num_Entries(fedges);
+      ne = Set_Num_Entries(fedges);
       for (j = 0; j < ne; j++) {
-	e = List_Entry(fedges,j);
+	e = Set_Entry(fedges,j);
 	ME_Add_Region(e,r);
 	ME_Rem_Face(e,rfaces[i]);
       }
-      List_Delete(fedges);
+      Set_Delete(fedges);
     }
   }
 
@@ -80,19 +80,19 @@ extern "C" {
   }
   */
 
-  List_ptr MR_Vertices_F4(MRegion_ptr r) {
+  Set_ptr MR_Vertices_F4(MRegion_ptr r) {
     return MR_Vertices_FNR3R4(r);
   }
 
-  List_ptr MR_Edges_F4(MRegion_ptr r) {
+  Set_ptr MR_Edges_F4(MRegion_ptr r) {
     return MR_Edges_FNR3R4(r);
   }
 
-  List_ptr MR_Faces_F4(MRegion_ptr r) {
+  Set_ptr MR_Faces_F4(MRegion_ptr r) {
     return MR_Faces_FNR3R4(r);
   }
 
-  List_ptr MR_AdjRegions_F4(MRegion_ptr r) {
+  Set_ptr MR_AdjRegions_F4(MRegion_ptr r) {
     return MR_AdjRegions_FNR3R4(r);
   }
 

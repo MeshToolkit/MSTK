@@ -130,11 +130,11 @@ extern "C" {
     return (*MF_Num_Edges_jmp[f->repType])(f);
   }
 
-  List_ptr MF_Vertices(MFace_ptr f, int dir) {
-    return (*MF_Vertices_jmp[f->repType])(f,dir);
+  Set_ptr MF_Vertices(MFace_ptr f, int dir, MVertex_ptr v) {
+    return (*MF_Vertices_jmp[f->repType])(f,dir, v);
   }
 
-  List_ptr MF_Edges(MFace_ptr f, int dir, MVertex_ptr v) {
+  Set_ptr MF_Edges(MFace_ptr f, int dir, MVertex_ptr v) {
     return (*MF_Edges_jmp[f->repType])(f,dir,v);
   }
 
@@ -150,11 +150,11 @@ extern "C" {
     return (*MF_EdgeDir_i_jmp[f->repType])(f,i);
   }
 
-  List_ptr MF_AdjFaces(MFace_ptr f) {
+  Set_ptr MF_AdjFaces(MFace_ptr f) {
     return (*MF_AdjFaces_jmp[f->repType])(f);
   }
 
-  List_ptr MF_Regions(MFace_ptr f) {
+  Set_ptr MF_Regions(MFace_ptr f) {
     return (*MF_Regions_jmp[f->repType])(f);
   }
 

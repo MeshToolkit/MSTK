@@ -14,14 +14,14 @@ extern "C" {
 
     upadj = e->upadj = (MEdge_UpAdj_F1 *) MSTK_malloc(sizeof(MEdge_UpAdj_F1));
     upadj->nf = 0;
-    upadj->efaces = List_New(10);
+    upadj->efaces = Set_New(10);
   }
 
   void ME_Delete_F1(MEdge_ptr e) {
     MEdge_UpAdj_F1 *upadj;
 
     upadj = (MEdge_UpAdj_F1 *) e->upadj;
-    List_Delete(upadj->efaces);
+    Set_Delete(upadj->efaces);
     MSTK_free(upadj);
 
     MV_Rem_Edge(e->vertex[0],e);
@@ -35,7 +35,7 @@ extern "C" {
   }
 
   int ME_Num_Regions_F1(MEdge_ptr e) {
-    List_ptr eregs;
+    Set_ptr eregs;
     int nr;
 
 #ifdef DEBUG
@@ -45,46 +45,46 @@ extern "C" {
 #endif
     
     eregs = ME_Regions_F1(e);
-    nr = eregs ? List_Num_Entries(eregs) : 0;
-    if (eregs) List_Delete(eregs);
+    nr = eregs ? Set_Num_Entries(eregs) : 0;
+    if (eregs) Set_Delete(eregs);
 
     return nr;
   }
 
-  List_ptr ME_Faces_F1(MEdge_ptr e) {
-    return List_Copy(((MEdge_UpAdj_F1 *)e->upadj)->efaces);
+  Set_ptr ME_Faces_F1(MEdge_ptr e) {
+    return Set_Copy(((MEdge_UpAdj_F1 *)e->upadj)->efaces);
   }
 
-  List_ptr ME_Regions_F1(MEdge_ptr e) {
+  Set_ptr ME_Regions_F1(MEdge_ptr e) {
     MEdge_UpAdj_F1 *upadj; 
     int i, j, nr, mkr;
-    List_ptr eregs;
+    Set_ptr eregs;
     MFace_ptr eface;
     MRegion_ptr freg;
  
     upadj = (MEdge_UpAdj_F1 *) e->upadj;
     nr = 0;
-    eregs = List_New(10);
+    eregs = Set_New(10);
     mkr = MSTK_GetMarker();
 
     for (i = 0; i < upadj->nf; i++) {
-      eface = List_Entry(upadj->efaces,i);
+      eface = Set_Entry(upadj->efaces,i);
       for (j = 0; j < 2; j++) {
 	freg = MF_Region(eface,j);
 	if (freg && !MEnt_IsMarked(freg,mkr)) {
 	  MEnt_Mark(freg,mkr);
-	  List_Add(eregs,freg);
+	  Set_Add(eregs,freg);
 	  nr++;
 	}
       }
     }
-    List_Unmark(eregs,mkr);
+    Set_Unmark(eregs,mkr);
     MSTK_FreeMarker(mkr);
     
     if (nr) 
       return eregs;
     else {
-      List_Delete(eregs);
+      Set_Delete(eregs);
       return 0;
     }
   }
@@ -96,8 +96,8 @@ extern "C" {
     upadj = (MEdge_UpAdj_F1 *) e->upadj;
 
     if (upadj->efaces == NULL)
-      upadj->efaces = List_New(10);
-    List_Add(upadj->efaces,f);
+      upadj->efaces = Set_New(10);
+    Set_Add(upadj->efaces,f);
     (upadj->nf)++;
   }
 
@@ -107,7 +107,7 @@ extern "C" {
 
     upadj = (MEdge_UpAdj_F1 *) e->upadj;
 
-    ok = List_Rem(upadj->efaces,f);
+    ok = Set_Rem(upadj->efaces,f);
     if (ok) (upadj->nf)--;
   }
 

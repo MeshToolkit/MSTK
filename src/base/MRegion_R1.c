@@ -22,7 +22,7 @@ extern "C" {
     MRegion_DownAdj_R1R2 *downadj;
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    List_Delete(downadj->rvertices);
+    Set_Delete(downadj->rvertices);
     MSTK_free(downadj);
   }
 
@@ -32,9 +32,9 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     downadj->nv = nv;
-    downadj->rvertices = List_New(nv);
+    downadj->rvertices = Set_New(nv);
     for (i = 0; i < nv; i++)
-      List_Add(downadj->rvertices,rvertices[i]);
+      Set_Add(downadj->rvertices,rvertices[i]);
   }
 
   void MR_Set_Faces_R1(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs) {
@@ -60,7 +60,7 @@ extern "C" {
   }
 
   int MR_Num_AdjRegions_R1(MRegion_ptr r) {
-    List_ptr adjr;
+    Set_ptr adjr;
     int nr;
 
 #ifdef DEBUG
@@ -71,31 +71,31 @@ extern "C" {
 
     adjr = MR_AdjRegions(r);
     if (adjr) {
-      nr = List_Num_Entries(adjr);
-      List_Delete(adjr);
+      nr = Set_Num_Entries(adjr);
+      Set_Delete(adjr);
       return nr;
     }
     else
       return 0;
   }
 
-  List_ptr MR_Vertices_R1(MRegion_ptr r) {
+  Set_ptr MR_Vertices_R1(MRegion_ptr r) {
     MRegion_DownAdj_R1R2 *downadj;
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    return List_Copy(downadj->rvertices);
+    return Set_Copy(downadj->rvertices);
   }
 
-  List_ptr MR_Edges_R1(MRegion_ptr r) {
+  Set_ptr MR_Edges_R1(MRegion_ptr r) {
     MSTK_Report("MR_Edges","Not yet implemented for this representation",WARN);
     return NULL;
   }
 
-  List_ptr MR_Faces_R1(MRegion_ptr r) {
+  Set_ptr MR_Faces_R1(MRegion_ptr r) {
     MSTK_Report("MR_Faces","Not yet implemented for this representation",WARN);
     return NULL;
   }
 
-  List_ptr MR_AdjRegions_R1(MRegion_ptr r) {
+  Set_ptr MR_AdjRegions_R1(MRegion_ptr r) {
     MSTK_Report("MR_Faces","Not yet implemented for this representation",WARN);
     return NULL;
   }
@@ -133,8 +133,8 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     for (i = 0; i < downadj->nv; i++)
-      if (v == (MVertex_ptr) List_Entry(downadj->rvertices,i)) {
-	List_Replacei(downadj->rvertices,i,nuv);
+      if (v == (MVertex_ptr) Set_Entry(downadj->rvertices,i)) {
+	Set_Replacei(downadj->rvertices,i,nuv);
 	return;
       }
   }
@@ -143,7 +143,7 @@ extern "C" {
     MRegion_DownAdj_R1R2 *downadj;
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    List_Replacei(downadj->rvertices,i,nuv);
+    Set_Replacei(downadj->rvertices,i,nuv);
   }
 
 

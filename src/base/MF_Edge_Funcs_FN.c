@@ -16,11 +16,11 @@ extern "C" {
 
     downadj->ne = n;
     downadj->edirs = 0;
-    downadj->fedges = List_New(n);
+    downadj->fedges = Set_New(n);
     
     for (i = 0; i < n; i++) {
       downadj->edirs = downadj->edirs | (dir[i] << i);
-      List_Add(downadj->fedges,e[i]);
+      Set_Add(downadj->fedges,e[i]);
       ME_Add_Face(e[i],f);
     }
   }
@@ -35,11 +35,11 @@ extern "C" {
       MSTK_Report("MF_Replace_Edge_i","No initial set of edges for face",
 		  ERROR);
 
-    olde = List_Entry(downadj->fedges,i);
+    olde = Set_Entry(downadj->fedges,i);
       
     downadj->edirs = (downadj->edirs & ~(1<<i)); /* set bit i to 0 */
     downadj->edirs = (downadj->edirs | (dir<<i)); /* set to dir */
-    List_Replacei(downadj->fedges,i,e);
+    Set_Replacei(downadj->fedges,i,e);
 
     ME_Rem_Face(olde,f);
     ME_Add_Face(e,f);
@@ -58,7 +58,7 @@ extern "C" {
 		  ERROR);
       
     for (i = 0; i < downadj->ne; i++)
-      if ((olde = List_Entry(downadj->fedges,i)) == e) {
+      if ((olde = Set_Entry(downadj->fedges,i)) == e) {
 	found = 1;
 	break;
       }
@@ -69,7 +69,7 @@ extern "C" {
 
     downadj->edirs = (downadj->edirs & ~(1<<i)); /* set bit i to 0 */
     downadj->edirs = (downadj->edirs | (dir<<i)); /* set to dir */
-    List_Replacei(downadj->fedges,i,e);
+    Set_Replacei(downadj->fedges,i,e);
 
     ME_Rem_Face(olde,f);
     ME_Add_Face(e,f);
@@ -79,9 +79,9 @@ extern "C" {
     return ((MFace_DownAdj_FN *) f->downadj)->ne;
   }	
 
-  List_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
+  Set_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
     int i, k, n, fnd, edir;
-    List_ptr fedges;
+    Set_ptr fedges;
     MEdge_ptr e;
     MFace_DownAdj_FN *downadj;
 
@@ -90,12 +90,12 @@ extern "C" {
 
     if (v0 == NULL) {
       if (dir)
-	return List_Copy(downadj->fedges);
+	return Set_Copy(downadj->fedges);
       else {
 	n = downadj->ne;
-	fedges = List_New(n);
+	fedges = Set_New(n);
 	for (i = n-1; i >= 0; i--)
-	  List_Add(fedges,List_Entry(downadj->fedges,i));
+	  Set_Add(fedges,Set_Entry(downadj->fedges,i));
 	return fedges;
       }
     }
@@ -103,7 +103,7 @@ extern "C" {
       n = downadj->ne;
       fnd = 0;
       for (i = 0; i < n; i++) {
-	e = List_Entry(downadj->fedges,i);
+	e = Set_Entry(downadj->fedges,i);
 	edir = ((downadj->edirs)>>i) & 1;
 	if (ME_Vertex(e,edir^dir) == v0) {
 	  fnd = 1;
@@ -115,11 +115,11 @@ extern "C" {
       if (!fnd)
 	MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",FATAL);
 	
-      fedges = List_New(n);
+      fedges = Set_New(n);
       for (i = 0; i < n; i++) {
-	e = dir ? List_Entry(downadj->fedges,(k+i)%n) :
-	  List_Entry(downadj->fedges,(k+n-i)%n);
-	List_Add(fedges,e);
+	e = dir ? Set_Entry(downadj->fedges,(k+i)%n) :
+	  Set_Entry(downadj->fedges,(k+n-i)%n);
+	Set_Add(fedges,e);
       }	
     }
 
@@ -134,7 +134,7 @@ extern "C" {
     
     n = downadj->ne;
     for (i = 0; i < n; i++) {
-      if (List_Entry(downadj->fedges,i) == e)
+      if (Set_Entry(downadj->fedges,i) == e)
 	return ((downadj->edirs)>>i) & 1;
     }
 
@@ -156,7 +156,7 @@ extern "C" {
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
-    return List_Contains(downadj->fedges,e);
+    return Set_Contains(downadj->fedges,e);
   }
 
 #ifdef __cplusplus

@@ -17,10 +17,10 @@ extern "C" {
 
     upadj = v->upadj = (MVertex_UpAdj_R3R4 *) MSTK_malloc(sizeof(MVertex_UpAdj_R3R4));
     upadj->nf = (unsigned int) 0;
-    upadj->vfaces = List_New(10);
+    upadj->vfaces = Set_New(10);
     sameadj = v->sameadj = (MVertex_SameAdj_R2R4 *) MSTK_malloc(sizeof(MVertex_SameAdj_R2R4));
     sameadj->nvadj = (unsigned char) 0;
-    sameadj->adjverts = List_New(10);
+    sameadj->adjverts = Set_New(10);
   }
 
   void MV_Delete_R4(MVertex_ptr v) {
@@ -28,11 +28,11 @@ extern "C" {
     MVertex_SameAdj_R2R4 *sameadj;
    
     upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
-    List_Delete(upadj->vfaces);
+    Set_Delete(upadj->vfaces);
     MSTK_free(upadj);
 
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    List_Delete(sameadj->adjverts);
+    Set_Delete(sameadj->adjverts);
     MSTK_free(sameadj);
   }
 
@@ -52,26 +52,26 @@ extern "C" {
     return MV_Num_Regions_R3R4(v);
   }
 
-  List_ptr MV_AdjVertices_R4(MVertex_ptr v) {
+  Set_ptr MV_AdjVertices_R4(MVertex_ptr v) {
     MVertex_SameAdj_R2R4 *sameadj;
 
     sameadj = (MVertex_SameAdj_R2R4 *)v->sameadj;
-    return List_Copy(sameadj->adjverts);
+    return Set_Copy(sameadj->adjverts);
   }
 
-  List_ptr MV_Edges_R4(MVertex_ptr v) {
+  Set_ptr MV_Edges_R4(MVertex_ptr v) {
     /* Have to create volatile edges */
     return MV_Edges_R2R4(v);
   }
 
-  List_ptr MV_Faces_R4(MVertex_ptr v) {
+  Set_ptr MV_Faces_R4(MVertex_ptr v) {
     MVertex_UpAdj_R3R4 *upadj;
     upadj = (MVertex_UpAdj_R3R4 *)v->upadj;
 
-    return List_Copy(upadj->vfaces);
+    return Set_Copy(upadj->vfaces);
   }
 
-  List_ptr MV_Regions_R4(MVertex_ptr v) {
+  Set_ptr MV_Regions_R4(MVertex_ptr v) {
     return MV_Regions_R3R4(v);
   }
 
@@ -79,7 +79,7 @@ extern "C" {
     MVertex_SameAdj_R2R4 *sameadj;
 
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    List_Add(sameadj->adjverts,adjv);
+    Set_Add(sameadj->adjverts,adjv);
     (sameadj->nvadj)++;
   }
 
@@ -87,7 +87,7 @@ extern "C" {
     MVertex_SameAdj_R2R4 *sameadj;
 
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    if (List_Rem(sameadj->adjverts,adjv))
+    if (Set_Rem(sameadj->adjverts,adjv))
       (sameadj->nvadj)--;
   }
 
@@ -107,7 +107,7 @@ extern "C" {
     MVertex_UpAdj_R3R4 *upadj;
 
     upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
-    List_Add(upadj->vfaces,mface);
+    Set_Add(upadj->vfaces,mface);
     (upadj->nf)++;
   }
 
@@ -116,7 +116,7 @@ extern "C" {
 
     upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
 
-    if (List_Rem(upadj->vfaces,mface))
+    if (Set_Rem(upadj->vfaces,mface))
       (upadj->nf)--;
   }
 

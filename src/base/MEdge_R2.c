@@ -25,11 +25,11 @@ extern "C" {
     return ME_Num_Regions_R1R2(e);
   }
 
-  List_ptr ME_Faces_R2(MEdge_ptr e) {
+  Set_ptr ME_Faces_R2(MEdge_ptr e) {
     return ME_Faces_R1R2(e);
   }
 
-  List_ptr ME_Regions_R2(MEdge_ptr e) {
+  Set_ptr ME_Regions_R2(MEdge_ptr e) {
     return ME_Regions_R1R2(e);
   }
 

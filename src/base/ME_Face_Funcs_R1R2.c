@@ -14,7 +14,7 @@ extern "C" {
     return 0;
   }
 
-  List_ptr ME_Faces_R1R2(MEdge_ptr e) {
+  Set_ptr ME_Faces_R1R2(MEdge_ptr e) {
     MSTK_Report("ME_Faces_R1R2","Not Implemented",ERROR);
     return 0;
   }

@@ -14,38 +14,38 @@ extern "C" {
     return 0;
   }
 
-  List_ptr ME_Regions_R3R4(MEdge_ptr e) {
+  Set_ptr ME_Regions_R3R4(MEdge_ptr e) {
     int i, k, mkr, ner, nef;
-    List_ptr eregions, efaces;
+    Set_ptr eregions, efaces;
     MFace_ptr eface;
     MRegion_ptr freg;
 
     ner = 0;
-    eregions = List_New(10);
+    eregions = Set_New(10);
     mkr = MSTK_GetMarker();
 
     efaces = ME_Faces(e);
-    nef = List_Num_Entries(efaces);
+    nef = Set_Num_Entries(efaces);
 
     for (i = 0; i < nef; i++) {
-      eface = List_Entry(efaces,i);
+      eface = Set_Entry(efaces,i);
       for (k = 0; k < 2; k++) {
 	freg = MF_Region(eface,k);
 	if (freg && !MEnt_IsMarked(freg,mkr)) {
 	  MEnt_Mark(freg,mkr);
-	  List_Add(eregions,freg);
+	  Set_Add(eregions,freg);
 	  ner++;
 	}
       }
     }
-    List_Delete(efaces);
-    List_Unmark(eregions,mkr);
+    Set_Delete(efaces);
+    Set_Unmark(eregions,mkr);
     MSTK_FreeMarker(mkr);
 
     if (ner)
       return eregions;
     else {
-      List_Delete(eregions);
+      Set_Delete(eregions);
       return 0;
     }    
   }

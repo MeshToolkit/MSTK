@@ -13,7 +13,7 @@ extern "C" {
     return 0;
   }
 
-  List_ptr MF_Vertices_R1R2(MFace_ptr f, int dir) {
+  Set_ptr MF_Vertices_R1R2(MFace_ptr f, int dir) {
     MSTK_Report("MF_Vertices_R1R2","Not implemented",ERROR);
     return 0;
   }

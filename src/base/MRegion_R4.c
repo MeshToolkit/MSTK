@@ -35,19 +35,19 @@ extern "C" {
   }
   */
 
-  List_ptr MR_Vertices_R4(MRegion_ptr r) {
+  Set_ptr MR_Vertices_R4(MRegion_ptr r) {
     return MR_Vertices_FNR3R4(r);
   }
 
-  List_ptr MR_Edges_R4(MRegion_ptr r) {
+  Set_ptr MR_Edges_R4(MRegion_ptr r) {
     return MR_Edges_FNR3R4(r);
   }
 
-  List_ptr MR_Faces_R4(MRegion_ptr r) {
+  Set_ptr MR_Faces_R4(MRegion_ptr r) {
     return MR_Faces_FNR3R4(r);
   }
 
-  List_ptr MR_AdjRegions_R4(MRegion_ptr r) {
+  Set_ptr MR_AdjRegions_R4(MRegion_ptr r) {
     return MR_AdjRegions_FNR3R4(r);
   }
 

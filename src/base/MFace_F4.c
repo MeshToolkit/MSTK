@@ -23,7 +23,7 @@ extern "C" {
     MFace_DownAdj_FN *downadj;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
-    List_Delete(downadj->fedges);
+    Set_Delete(downadj->fedges);
     MSTK_free(downadj);
   }
 
@@ -76,12 +76,12 @@ extern "C" {
     return 0;
   }
 
-  List_ptr MF_Vertices_F4(MFace_ptr f, int dir) {
-    return MF_Vertices_FN(f,dir);
+  Set_ptr MF_Vertices_F4(MFace_ptr f, int dir, MVertex_ptr v0) {
+    return MF_Vertices_FN(f,dir,v0);
   }
 	
 
-  List_ptr MF_Edges_F4(MFace_ptr f, int dir, MVertex_ptr v0) {
+  Set_ptr MF_Edges_F4(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Edges_FN(f,dir,v0);
   }
 
@@ -101,7 +101,7 @@ extern "C" {
     return MF_UsesVertex_FN(f,v);
   }
 
-  List_ptr MF_AdjFaces_F4(MFace_ptr f) {
+  Set_ptr MF_AdjFaces_F4(MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("MF_AdjFaces",
 		"Function call not suitable for this representation",WARN);
@@ -109,8 +109,8 @@ extern "C" {
     return NULL;
   }
   
-  List_ptr MF_Regions_F4(MFace_ptr f) {
-    List_ptr fregs, eregs;
+  Set_ptr MF_Regions_F4(MFace_ptr f) {
+    Set_ptr fregs, eregs;
     MRegion_ptr r;
     MEdge_ptr e;
     MFace_DownAdj_FN *downadj;
@@ -118,37 +118,37 @@ extern "C" {
     
     downadj = (MFace_DownAdj_FN *) f->downadj;
     
-    fregs = List_New(2);
-    e = List_Entry(downadj->fedges,0);
+    fregs = Set_New(2);
+    e = Set_Entry(downadj->fedges,0);
     
     eregs = ME_Regions(e);
     if (eregs) {
-      nr = List_Num_Entries(eregs);
+      nr = Set_Num_Entries(eregs);
       
       for (i = 0; i < nr; i++) {
-	r = List_Entry(eregs,i);
+	r = Set_Entry(eregs,i);
 	if (MR_UsesEntity(r,f,2)) {
-	  List_Add(fregs,r);
+	  Set_Add(fregs,r);
 	  k++;
 	}
 	if (k == 2)
 	  break;
       }
       
-      List_Delete(eregs);
+      Set_Delete(eregs);
     }
 			
     
     if (k) 
       return fregs;
     else {
-      List_Delete(fregs);
+      Set_Delete(fregs);
       return 0;
     }
   }
   
   MRegion_ptr MF_Region_F4(MFace_ptr f, int dir) {
-    List_ptr eregs;
+    Set_ptr eregs;
     MRegion_ptr r, r1;
     MEdge_ptr e;
     int nr, i, fdir;
@@ -159,22 +159,22 @@ extern "C" {
 #endif
     
     downadj = (MFace_DownAdj_FN *) f->downadj;
-    e = List_Entry(downadj->fedges,0);
+    e = Set_Entry(downadj->fedges,0);
     
     eregs = ME_Regions(e);
     if (eregs) {
-      nr = List_Num_Entries(eregs);
+      nr = Set_Num_Entries(eregs);
       
       r1 = 0;
       for (i = 0; i < nr; i++) {
-	r = List_Entry(eregs,i);
+	r = Set_Entry(eregs,i);
 	fdir = MR_FaceDir(r,f);
 	if (fdir == !dir) {
 	  r1 = r;
 	  break;
 	}
       }
-      List_Delete(eregs);
+      Set_Delete(eregs);
 	
       return r1;
     }

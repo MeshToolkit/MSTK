@@ -107,19 +107,19 @@ extern "C" {
     return (*MV_Num_Regions_jmp[v->repType])(v);
   }
 
-  List_ptr MV_AdjVertices(MVertex_ptr v) {
+  Set_ptr MV_AdjVertices(MVertex_ptr v) {
     return (*MV_AdjVertices_jmp[v->repType])(v);
   }
 
-  List_ptr MV_Edges(MVertex_ptr v) {
+  Set_ptr MV_Edges(MVertex_ptr v) {
     return (*MV_Edges_jmp[v->repType])(v);
   }
 
-  List_ptr MV_Faces(MVertex_ptr v) {
+  Set_ptr MV_Faces(MVertex_ptr v) {
     return (*MV_Faces_jmp[v->repType])(v);
   }
 
-  List_ptr MV_Regions(MVertex_ptr v) {
+  Set_ptr MV_Regions(MVertex_ptr v) {
     return (*MV_Regions_jmp[v->repType])(v);
   }
 

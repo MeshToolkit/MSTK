@@ -29,11 +29,11 @@ extern "C" {
     MRegion_SameAdj_R2 *sameadj;
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;    
-    List_Delete(downadj->rvertices);
+    Set_Delete(downadj->rvertices);
     MSTK_free(downadj);
 
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
-    List_Delete(sameadj->aregions);
+    Set_Delete(sameadj->aregions);
     MSTK_free(sameadj);
   }
 
@@ -43,9 +43,9 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     downadj->nv = nv;
-    downadj->rvertices = List_New(nv);
+    downadj->rvertices = Set_New(nv);
     for (i = 0; i < nv; i++)
-      List_Add(downadj->rvertices,rvertices[i]);
+      Set_Add(downadj->rvertices,rvertices[i]);
   }
 
   void MR_Add_AdjRegion_R2(MRegion_ptr r, int facenum, MRegion_ptr aregion) {
@@ -54,7 +54,7 @@ extern "C" {
     /* Is r->sameadj allocated ? */
     /* We should make use of the facenum info */
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
-    List_Add(sameadj->aregions,aregion);
+    Set_Add(sameadj->aregions,aregion);
     sameadj->nradj++;
   }
 
@@ -62,7 +62,7 @@ extern "C" {
     MRegion_SameAdj_R2 *sameadj;
 
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
-    if (List_Rem(sameadj->aregions,aregion))
+    if (Set_Rem(sameadj->aregions,aregion))
       sameadj->nradj--;
   }
 
@@ -92,28 +92,28 @@ extern "C" {
     return ((MRegion_SameAdj_R2 *) r->sameadj)->nradj;
   }
 
-  List_ptr MR_Vertices_R2(MRegion_ptr r) {
+  Set_ptr MR_Vertices_R2(MRegion_ptr r) {
     MRegion_DownAdj_R1R2 *downadj;
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    return List_Copy(downadj->rvertices);
+    return Set_Copy(downadj->rvertices);
   }
 
-  List_ptr MR_Edges_R2(MRegion_ptr r) {
+  Set_ptr MR_Edges_R2(MRegion_ptr r) {
     MSTK_Report("MR_Edges","Not yet implemented for this representation",WARN);
     return NULL;
   }
 
-  List_ptr MR_Faces_R2(MRegion_ptr r) {
+  Set_ptr MR_Faces_R2(MRegion_ptr r) {
     MSTK_Report("MR_Faces","Not yet implemented for this representation",WARN);
     return NULL;
   }
 
-  List_ptr MR_AdjRegions_R2(MRegion_ptr r) {
+  Set_ptr MR_AdjRegions_R2(MRegion_ptr r) {
     MRegion_SameAdj_R2 *sameadj;
 
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
-    return List_Copy(sameadj->aregions);
+    return Set_Copy(sameadj->aregions);
   }
 
   int MR_FaceDir_R2(MRegion_ptr r, MFace_ptr f) {
@@ -147,8 +147,8 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     for (i = 0; i < downadj->nv; i++)
-      if (v == (MVertex_ptr) List_Entry(downadj->rvertices,i)) {
-	List_Replacei(downadj->rvertices,i,nuv);
+      if (v == (MVertex_ptr) Set_Entry(downadj->rvertices,i)) {
+	Set_Replacei(downadj->rvertices,i,nuv);
 	return;
       }
   }
@@ -157,7 +157,7 @@ extern "C" {
     MRegion_DownAdj_R1R2 *downadj;
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    List_Replacei(downadj->rvertices,i,nuv);
+    Set_Replacei(downadj->rvertices,i,nuv);
   }
 
 #ifdef __cplusplus

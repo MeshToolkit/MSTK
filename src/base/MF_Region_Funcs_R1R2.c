@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-  List_ptr MF_Regions_R1R2(MFace_ptr f) {
+  Set_ptr MF_Regions_R1R2(MFace_ptr f) {
     MSTK_Report("MF_Regions_R1R2","Not implemented",ERROR);
     return 0;    
   }
