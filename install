@@ -37,11 +37,17 @@ fi
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
   cp $INCDIR/MSTK.h $INSTALLDIR/include/MSTK-$VER.h
+  cp $INCDIR/MSTK_defines.h $INSTALLDIR/include/MSTK_defines-$VER.h
+  cp $INCDIR/MSTK_types.h $INSTALLDIR/include/MSTK_types-$VER.h
   if [ -f $INSTALLDIR/include/MSTK.h ]
   then
     rm $INSTALLDIR/include/MSTK.h
+    rm $INSTALLDIR/include/MSTK_defines.h
+    rm $INSTALLDIR/include/MSTK_types.h
   fi
   ln -s $INSTALLDIR/include/MSTK-$VER.h $INSTALLDIR/include/MSTK.h
+  ln -s $INSTALLDIR/include/MSTK_defines-$VER.h $INSTALLDIR/include/MSTK_defines.h
+  ln -s $INSTALLDIR/include/MSTK_types-$VER.h $INSTALLDIR/include/MSTK_types.h
 fi
 
 ans=y
