@@ -12,17 +12,18 @@ extern "C" {
 
 
   List_ptr MV_Edges_R2R4(MVertex_ptr v) {
-    int i;
+    int i, nvadj;
     MVertex_ptr adjv;
     List_ptr vedges;
     MVertex_SameAdj_R2R4 *sameadj;
 
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+    nvadj = List_Num_Entries(sameadj->adjverts);
 
     /* Have to create volatile edges */
 
-    vedges = List_New(sameadj->nvadj);
-    for (i = 0; i < sameadj->nvadj; i++) {
+    vedges = List_New(nvadj);
+    for (i = 0; i < nvadj; i++) {
       /* create a volatile edge from v and the adjacent vertex */
       adjv = List_Entry(sameadj->adjverts,i);
     }
