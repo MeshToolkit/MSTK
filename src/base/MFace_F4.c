@@ -14,40 +14,25 @@ extern "C" {
     MFace_DownAdj_FN *downadj;
 
     downadj = f->downadj = (MFace_DownAdj_FN *) MSTK_malloc(sizeof(MFace_DownAdj_FN));
-    downadj->ne = 0;
     downadj->edirs = 0;
     downadj->fedges = NULL;
   }
 
   void MF_Delete_F4(MFace_ptr f, int keep) {
     MFace_DownAdj_FN *downadj;
-    int i, ne;
-    MEdge_ptr e;
 
-    if (keep) {
-      MSTK_KEEP_DELETED = 1;
-      f->dim = MDELFACE;
-    }
-    else {
-#ifdef DEBUG
-      f->dim = MDELFACE;
-#endif
-
+    if (!keep) {
       downadj = (MFace_DownAdj_FN *) f->downadj;
       if (downadj) {
 	if (downadj->fedges)
 	  List_Delete(downadj->fedges);
 	MSTK_free(downadj);
       }
-
-      MSTK_free(f);
     }
   }
 
   void MF_Restore_F4(MFace_ptr f) {
-    if (f->dim != MDELFACE)
-      return;
-    f->dim = MFACE;
+    MEnt_Set_Dim(f,MFACE);
   }
 
   void MF_Destroy_For_MESH_Delete_F4(MFace_ptr f) {
@@ -59,8 +44,10 @@ extern "C" {
 	List_Delete(downadj->fedges);
       MSTK_free(downadj);
     }
+  }
 
-    MSTK_free(f);
+  int MF_Set_GInfo_Auto_F4(MFace_ptr f) {
+    return MF_Set_GInfo_Auto_FN(f);
   }
 
   void MF_Set_Edges_F4(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
@@ -103,12 +90,18 @@ extern "C" {
 #endif
   }
 
+  int MFs_AreSame_F4(MFace_ptr f1, MFace_ptr f2) {
+    return (f1 == f2);
+  }
+
   int MF_Num_Vertices_F4(MFace_ptr f) {
-    return ((MFace_DownAdj_FN *)f->downadj)->ne;
+    List_ptr fedges = ((MFace_DownAdj_FN *)f->downadj)->fedges;
+    return List_Num_Entries(fedges);
   }
 
   int MF_Num_Edges_F4(MFace_ptr f) {
-    return ((MFace_DownAdj_FN *)f->downadj)->ne;
+    List_ptr fedges = ((MFace_DownAdj_FN *)f->downadj)->fedges;
+    return List_Num_Entries(fedges);
   }
 
   int MF_Num_AdjFaces_F4(MFace_ptr f) {
