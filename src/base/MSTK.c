@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MSTK_private.h"
+#include "MSTK_globals.h"
 #include "List.h"
 #include "MSTK_malloc.h"
 
@@ -9,21 +10,24 @@
 extern "C" {
 #endif
 
-  unsigned int MSTK_marker = 0;
-  int MSTK_MAXBITS = 8*sizeof(unsigned int);
-  int MSTK_lastbit = -1;
-  
-  int MSTK_KEEP_DELETED;
 
   void MSTK_Init() {
-    MSTK_KEEP_DELETED = 0;
-
     MV_Print(0,0);
     ME_Print(0,0);
     MF_Print(0,0);
     MR_Print(0,0);
+    {
+     int n = MSTK_rev_template[0][0][0];
+    }
   }
 
+
+  /* MARKERS */
+
+  unsigned int MSTK_marker = 0;
+  int MSTK_MAXBITS = 8*sizeof(unsigned int);
+  int MSTK_lastbit = -1;
+  
   int MSTK_GetMarker() {
     int i;
 
