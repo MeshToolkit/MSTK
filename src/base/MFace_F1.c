@@ -82,12 +82,12 @@ extern "C" {
     MF_Set_Edges_FN(f,n,e,dir);
   }
 
-  void MF_Replace_Edge_F1(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
-    MF_Replace_Edge_FN(f,e,nnu,nuedges,nudirs);
+  void MF_Replace_Edges_F1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges) {
+    MF_Replace_Edges_FN(f,nold,oldedges,nnu,nuedges);
   }
 
-  void MF_Replace_Edge_i_F1(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudir) {
-    MF_Replace_Edge_i_FN(f,i,nnu,nuedges,nudir);
+  void MF_Replace_Edges_i_F1(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) {
+    MF_Replace_Edges_i_FN(f,nold,i,nnu,nuedges);
   }
 
   void MF_Set_Vertices_F1(MFace_ptr f, int n, MVertex_ptr *v) {
@@ -129,14 +129,17 @@ extern "C" {
   }
 
   int MF_Num_AdjFaces_F1(MFace_ptr f) {
+    List_ptr adjfaces;
+    int nf=0;
 
 #ifdef DEBUG
-    MSTK_Report("MF_Num_AdjFaces",
-		"Function call unsuitable for this representation",
-		WARN);
+    MSTK_Report("MF_Num_AdjFaces","Inefficient call for this representation - Call MF_AdjFaces directly",WARN);
 #endif
-    
-    return 0;
+
+    adjfaces = MF_AdjFaces_F1(f);
+    nf = List_Num_Entries(adjfaces);
+    List_Delete(adjfaces);
+    return nf;
   }
 
   List_ptr MF_Vertices_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
@@ -165,11 +168,40 @@ extern "C" {
   }
 
   List_ptr MF_AdjFaces_F1(MFace_ptr f) {
-#ifdef DEBUG
-    MSTK_Report("MF_AdjFaces",
-		"Function call not suitable for this representation",WARN);
-#endif
-    return NULL;
+    List_ptr adjfaces, efaces;
+    MFace_DownAdj_FN *downadj;
+    MEdge_ptr e;
+    MFace_ptr ef;
+    int i, j, ne, nf;
+
+    downadj = (MFace_DownAdj_FN *) f->downadj;
+
+    ne = List_Num_Entries(downadj->fedges);
+    adjfaces = List_New(ne);
+
+    for (i = 0; i < ne; i++) {
+      e = List_Entry(downadj->fedges,i);
+
+      efaces = ME_Faces(e);
+      nf = List_Num_Entries(efaces);
+
+      if (nf > 2)
+	MSTK_Report("MF_AdjFaces_F1","Non-manifold or 3D mesh!!",ERROR);
+
+      for (j = 0; j < nf; j++) {
+	ef = List_Entry(efaces,j);
+	if (ef != f)
+	  List_Add(adjfaces,ef);
+      }
+      List_Delete(efaces);
+    }
+
+    if (List_Num_Entries(adjfaces))
+      return adjfaces;
+    else {
+      List_Delete(adjfaces);
+      return NULL;
+    }
   }
 
   List_ptr MF_Regions_F1(MFace_ptr f) {
