@@ -766,10 +766,13 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
     MV_Coords(mv,xyz);
 
     gdim = MV_GEntDim(mv);
-    gent = MV_GEntity(mv);
-    gid = gent ? -99 : 0;
+    /*
+      gent = MV_GEntity(mv);
+      gid = gent ? -99 : 0;
+    */
+    gid = MV_GEntID(mv);
 
-    fprintf(fp,"%30.16lf %30.16lf %30.16lf \t%d %d\n",xyz[0],xyz[1],xyz[2],gdim,gid);
+    fprintf(fp,"%24.16lf %24.16lf %24.16lf   %d %d\n",xyz[0],xyz[1],xyz[2],gdim,gid);
     
 #ifdef DEBUG
     if (gent)
@@ -811,8 +814,11 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
       mvid1 = MV_ID(mv1);
 
       gdim = ME_GEntDim(me);
-      gent = ME_GEntity(me);
-      gid = gent ? -99 : 0;
+      /*      
+	      gent = ME_GEntity(me);
+	      gid = gent ? -99 : 0;
+      */
+      gid = ME_GEntID(me);
 
       fprintf(fp,"%d %d \t%d %d\n",mvid0,mvid1,gdim,gid);
     }
@@ -840,8 +846,11 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	List_Delete(mfedges);
 
 	gdim = MF_GEntDim(mf);
-	gent = MF_GEntity(mf);
-	gid = gent ? -99 : 0;
+	/*
+	  gent = MF_GEntity(mf);
+	  gid = gent ? -99 : 0;
+	*/
+	gid = MF_GEntID(mf);
     
 	fprintf(fp,"\t%d %d\n",gdim,gid);
       }
@@ -864,8 +873,10 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	List_Delete(mfverts);
 
 	gdim = MF_GEntDim(mf);
-	gent = MF_GEntity(mf);
-	gid = gent ? -99 : 0;
+	/* gent = MF_GEntity(mf);
+	   gid = gent ? -99 : 0;
+	*/
+	gid = MF_GEntID(mf);
 	
 	fprintf(fp,"\t%d %d\n",gdim,gid);
       }
@@ -894,8 +905,10 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	List_Delete(mrfaces);
 	
 	gdim = MF_GEntDim(mr);
-	gent = MF_GEntity(mr);
-	gid = gent ? -99 : 0;
+	/*	gent = MR_GEntity(mr);
+		gid = gent ? -99 : 0;
+	*/
+	gid = MR_GEntID(mr);
 
 	fprintf(fp,"\t%d %d\n",gdim,gid);
       }
@@ -918,8 +931,10 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 	List_Delete(mrverts);
 	
 	gdim = MF_GEntDim(mr);
-	gent = MF_GEntity(mr);
-	gid = gent ? -99 : 0;
+	/* gent = MR_GEntity(mr);
+	   gid = gent ? -99 : 0;
+	*/
+	gid = MR_GEntID(mr);
 
 	fprintf(fp,"\t%d %d\n",gdim,gid);
       }
