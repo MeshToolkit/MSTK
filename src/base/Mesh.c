@@ -1215,7 +1215,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   return 1;
 }
 
-void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
+int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   FILE *fp;
   char mesg[80];
   int i, j;
@@ -1234,7 +1234,7 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   if (!(fp = fopen(filename,"w"))) {
     sprintf(mesg,"Cannot open file %-s for writing",filename);
     MSTK_Report("MESH_WriteToFile",mesg,ERROR);
-    return;
+    return 0;
   }
 
   fprintf(fp,"MSTK %-2.1lf\n",MSTK_VER);
@@ -1449,8 +1449,56 @@ void MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   }
 
   fclose(fp);
+
+  return 1;
 }
 
+
+  /* Enforce continuous numbering for mesh entities */
+
+void MESH_Renumber(Mesh_ptr mesh) {
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+  int idx, n;
+
+  idx = 0; n = 0;
+  while ((mv = MESH_Next_Vertex(mesh,&idx)))
+    MV_Set_ID(mv,++n);
+
+  idx = 0; n = 0;
+  while ((me = MESH_Next_Edge(mesh,&idx)))
+    ME_Set_ID(me,++n);
+
+  idx = 0; n = 0;
+  while ((mf = MESH_Next_Face(mesh,&idx)))
+    MF_Set_ID(mf,++n);
+
+  idx = 0; n = 0;
+  while ((mr = MESH_Next_Region(mesh,&idx)))
+    MR_Set_ID(mr,++n);
+
+  return;
+}
+
+  /*
+
+Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+  int idx, n;
+
+  newmesh = MESH_New(oldmesh->repType);
+
+  newmesh->nv = oldmesh->nv;
+
+  return;
+}
+
+  */
 
 
 #ifdef __cplusplus
