@@ -11,6 +11,7 @@
 #define MAXPV2 10
 #define MAXPV3 30
 
+#define NMAXATT 10
 
 
 
