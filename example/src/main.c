@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   MEdge_ptr e;
   MFace_ptr f;
   GEntity_ptr gent;
-  Set_ptr fedges;
+  List_ptr fedges;
 
   
   fprintf(stderr,"\n");
@@ -93,11 +93,11 @@ int main(int argc, char *argv[]) {
 
     /* Edges of face */
     fedges = MF_Edges(f,1,0);
-    ne = Set_Num_Entries(fedges);
+    ne = List_Num_Entries(fedges);
     fprintf(stderr,"Edges: %-d\n",ne);
     fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
     idx2 = 0; i = 0;
-    while (e = Set_Next_Entry(fedges,&idx2)) {
+    while (e = List_Next_Entry(fedges,&idx2)) {
       edir = MF_EdgeDir_i(f,i);
       if (edir) 
 	fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
       i++;
     }
     fprintf(stderr,"\n");
-    Set_Delete(fedges);
+    List_Delete(fedges);
   }
 
 

@@ -80,7 +80,7 @@ format will be described in the last section.
 \section{MSTK Data Types}
 
 \begin{description}
-\item[]\textbf{\textit{Set\_ptr}}: Handle to a Set object
+\item[]\textbf{\textit{List\_ptr}}: Handle to a List object
 
 \item[]\textbf{\textit{Mesh\_ptr}}: Handle to a Mesh object.
 
@@ -115,63 +115,63 @@ Can be RDELETED, RUNKNOWN, TET, PYRAMID, PRISM, HEX, POLYHED
 
 \newpage
 \section{MSTK Functional Interface}
-\subsection{Sets}
+\subsection{List}
 
-Sets of entities in MSTK are returned as sets of type
-\textit{Set\_ptr}. The following are the set operations available in
+Lists of entities in MSTK are returned as sets of type
+\textit{List\_ptr}. The following are the set operations available in
 MSTK:
 
 \begin{description}
-\item[]\textbf{\textit{Set\_ptr} Set\_New(\textit{int} inisize):} Create a
+\item[]\textbf{\textit{List\_ptr} List\_New(\textit{int} inisize):} Create a
 new set with an initial size, \textit{inisize}. If \textit{inisize} is
 0, the initial size is set to be 10.
 
-\item[]\textbf{\textit{void} Set\_Delete(\textit{Set\_ptr} l):} Delete a set.
+\item[]\textbf{\textit{void} List\_Delete(\textit{List\_ptr} l):} Delete a set.
 
-\item[]\textbf{\textit{Set\_ptr} Set\_Compress(\textit{Set\_ptr} l):} Compress
+\item[]\textbf{\textit{List\_ptr} List\_Compress(\textit{List\_ptr} l):} Compress
 a set.  Doing this while an algorithm is iterating through the set can
-currently cause problems!! Calling \textbf{Set\_Compress} could change the
+currently cause problems!! Calling \textbf{List\_Compress} could change the
 pointer for the set due to reallocation.
 
-\item[]\textbf{\textit{Set\_ptr} Set\_Copy(\textit{Set\_ptr} l):} Return a
+\item[]\textbf{\textit{List\_ptr} List\_Copy(\textit{List\_ptr} l):} Return a
 copy of a set.
 
-\item[]\textbf{\textit{Set\_ptr} Set\_Add(\textit{Set\_ptr} l, \textit{void
+\item[]\textbf{\textit{List\_ptr} List\_Add(\textit{List\_ptr} l, \textit{void
   *}entry):} Add an entry to the set. The entry is appended to the end
 of the set.
 
-\item[]\textbf{\textit{Set\_ptr} Set\_ChknAdd(\textit{Set\_ptr} l,
+\item[]\textbf{\textit{List\_ptr} List\_ChknAdd(\textit{List\_ptr} l,
 \textit{void *}entry):} Add an entry to a set only if it is not already
 in the set.
 
-\item[]\textbf{\textit{int} Set\_Rem(\textit{Set\_ptr} l, \textit{void
+\item[]\textbf{\textit{int} List\_Rem(\textit{List\_ptr} l, \textit{void
   *}entry):} Remove an entry from the set. Returns 1 if successful, 0
 otherwise.
 
-\item[]\textbf{\textit{int} Set\_Remi(\textit{Set\_ptr} l, \textit{int} i):}
+\item[]\textbf{\textit{int} List\_Remi(\textit{List\_ptr} l, \textit{int} i):}
 Remove the i'th valid entry in the set. Returns 1 if successful, 0
 otherwise.
 
-\item[]\textbf{\textit{int} Set\_Replace(\textit{Set\_ptr} l, \textit{void
+\item[]\textbf{\textit{int} List\_Replace(\textit{List\_ptr} l, \textit{void
   *}entry, \textit{void *}nuentry):} Replace 'entry' with 'nuentry' in
 set. Returns 1 if successful, 0 otherwise.
 
-\item[]\textbf{\textit{int} Set\_Replacei(\textit{Set\_ptr} l, \textit{int}
+\item[]\textbf{\textit{int} List\_Replacei(\textit{List\_ptr} l, \textit{int}
 i, void *nuentry):} Replace the i'th valid entry in the set with
 'nuentry'. Returns 1 if successful, 0 otherwise.
 
-\item[]\textbf{\textit{int} Set\_Contains(\textit{Set\_ptr} l, void *entry):}
+\item[]\textbf{\textit{int} List\_Contains(\textit{List\_ptr} l, void *entry):}
 Returns 1 if set contains the entry, 0 otherwise.
 
-\item[]\textbf{\textit{int} Set\_Locate(\textit{Set\_ptr} l, void *entry):}
+\item[]\textbf{\textit{int} List\_Locate(\textit{List\_ptr} l, void *entry):}
 Returns the positional index of the entry in the set. Returns -1 if
 the set does not contain the entry.
 
-\item[]\textbf{\textit{void *}Set\_Entry(\textit{Set\_ptr} l, \textit{int}
+\item[]\textbf{\textit{void *}List\_Entry(\textit{List\_ptr} l, \textit{int}
 i):} Return the i'th valid entry in the set.  Returns a NULL pointer if
 the i'th valid entry could not be found.
 
-\item[]\textbf{\textit{void *}Set\_Next\_Entry(\textit{Set\_ptr} l,
+\item[]\textbf{\textit{void *}List\_Next\_Entry(\textit{List\_ptr} l,
 \textit{int} *i):} Return the next valid entry in the set. This routine
 works like an iterator. To start iterating through the set, set the
 iteration index i=0 and call the routine to get the first entry in the
@@ -186,7 +186,7 @@ meaning be derived from from the iteration index by other applications
 since the internal implementation and interpretation of the index may
 change at any time.
 
-\item[]\textbf{\textit{int} Set\_Num\_Entries(\textit{Set\_ptr} l):} Return
+\item[]\textbf{\textit{int} List\_Num\_Entries(\textit{List\_ptr} l):} Return
 the number of entries in a set
 \end{description}
 
@@ -281,19 +281,19 @@ $<$ 0 or i $>$ number of mesh region.
 
 \item[]\textbf{\textit{MVertex\_ptr} MESH\_Next\_Vertex(\textit{Mesh\_ptr}
 mesh, \textit{int} *idx):} Returns the next vertex while iterating
-through the vertices of the mesh. See the routine \textbf{Set\_Next\_Entry}
+through the vertices of the mesh. See the routine \textbf{List\_Next\_Entry}
 above for an explanation of how the iteration works.
 
 \item[]\textbf{\textit{MEdge\_ptr} MESH\_Next\_Edge(\textit{Mesh\_ptr} mesh,
 \textit{int} *idx):} Returns the next edge while iterating through the
-edges of the mesh. See the routine Set\_Next\_Entry above for an
+edges of the mesh. See the routine List\_Next\_Entry above for an
 explanation of how the iteration works.  The routine always returns
 NULL for reduced representations.
 
 
 \item[]\textbf{\textit{MFace\_ptr} MESH\_Next\_Face(\textit{Mesh\_ptr} mesh,
 \textit{int} *idx):} Returns the next face while iterating through the
-faces of the mesh. See the routine \textbf{Set\_Next\_Entry} above for
+faces of the mesh. See the routine \textbf{List\_Next\_Entry} above for
 an explanation of how the iteration works.  Only faces explicitly
 represented in the mesh are returned for reduced representation (See
 explanation for \textbf{MESH\_Num\_Faces}).
@@ -424,17 +424,17 @@ Returns the number of faces connected to the vertex.
 \item[]\textbf{\textit{int} MV\_Num\_Regions(\textit{MVertex\_ptr} mvertex):}
 Returns the number of regions connected to the vertex
 
-\item[]\textbf{\textit{Set\_ptr} MV\_AdjVertices(\textit{MVertex\_ptr}
-mvertex):} Set of adjacent or edge connected neighboring vertices of vertex.
+\item[]\textbf{\textit{List\_ptr} MV\_AdjVertices(\textit{MVertex\_ptr}
+mvertex):} List of adjacent or edge connected neighboring vertices of vertex.
 
-\item[]\textbf{\textit{Set\_ptr} MV\_Edges(\textit{MVertex\_ptr} mvertex):}
-Set of edges connected to the vertex.
+\item[]\textbf{\textit{List\_ptr} MV\_Edges(\textit{MVertex\_ptr} mvertex):}
+List of edges connected to the vertex.
 
-\item[]\textbf{\textit{Set\_ptr} MV\_Faces(\textit{MVertex\_ptr} mvertex):}
-Set of faces connected to the vertex.
+\item[]\textbf{\textit{List\_ptr} MV\_Faces(\textit{MVertex\_ptr} mvertex):}
+List of faces connected to the vertex.
 
-\item[]\textbf{\textit{Set\_ptr} MV\_Regions(\textit{MVertex\_ptr} mvertex):}
-Set of regions connected to the vertex.
+\item[]\textbf{\textit{List\_ptr} MV\_Regions(\textit{MVertex\_ptr} mvertex):}
+List of regions connected to the vertex.
 \end{description}
 
 
@@ -515,10 +515,10 @@ vertex, the function returns 1; otherwise it returns 0. If any
 other type of entity is specified, the function returns 0.
 
 
-\item[]\textbf{\textit{Set\_ptr} ME\_Faces(\textit{MEdge\_ptr} medge):}
+\item[]\textbf{\textit{List\_ptr} ME\_Faces(\textit{MEdge\_ptr} medge):}
 Returns the set of faces using this edge.
 
-\item[]\textbf{\textit{Set\_ptr} ME\_Regions(\textit{MEdge\_ptr} medge):}
+\item[]\textbf{\textit{List\_ptr} ME\_Regions(\textit{MEdge\_ptr} medge):}
 Returns the set of regions using this edge.
 
 
@@ -628,7 +628,7 @@ only for reduced representations in MSTK.
   operator is relevant only in planar or surface meshes, i.e., for
   boundary faces not connected to any regions.
   
-\item[]\textbf{\textit{Set\_ptr} MF\_Vertices(\textit{MFace\_ptr}
+\item[]\textbf{\textit{List\_ptr} MF\_Vertices(\textit{MFace\_ptr}
     mface, \textit{int} dir, \textit{MVertex\_ptr} mvert):} Return the
   ordered set of the vertices of the face. The vertices are ordered in
   ccw direction while looking down the face 'normal', if 'dir' is 1
@@ -651,7 +651,7 @@ only for reduced representations in MSTK.
 \end{figure}
 
 
-\item[]\textbf{\textit{Set\_ptr} MF\_Edges(\textit{MFace\_ptr} mface,
+\item[]\textbf{\textit{List\_ptr} MF\_Edges(\textit{MFace\_ptr} mface,
     \textit{int} dir, \textit{MVertex\_ptr} mvert):} Return the
   ordered set of edges of the face. The edges are ordered in the ccw
   while looking down the face 'normal' if dir is 1 and in the cw if
@@ -666,8 +666,8 @@ only for reduced representations in MSTK.
   ${E_2,E_3,E_0,E_1}$ and in the opposite direction is
   ${E_1,E_0,E_3,E_2}$.
 
-\item[]\textbf{\textit{Set\_ptr} MF\_AdjFaces(\textit{MFace\_ptr} mface):}
-Set of adacent faces of a face. This operator is relevant only in
+\item[]\textbf{\textit{List\_ptr} MF\_AdjFaces(\textit{MFace\_ptr} mface):}
+List of adacent faces of a face. This operator is relevant only in
 planar or surface surface meshes, i.e., for boundary faces not
 connected to any regions.
 
@@ -689,7 +689,7 @@ dimensional entity can be a vertex or an edge. If the face uses the
 vertex or the edge, the function returns 1; otherwise it returns 0. If
 any other type of entity is specified, the function returns 0.
 
-\item[]\textbf{\textit{Set\_ptr} MF\_Regions(\textit{MFace\_ptr} mface):}
+\item[]\textbf{\textit{List\_ptr} MF\_Regions(\textit{MFace\_ptr} mface):}
 Return the set of regions connected to the face. If the face is not
 used by any regions, the function returns NULL to indicate that the
 set is empty. If not the set may contain one or two regions.
@@ -812,19 +812,19 @@ Returns the number of faces of a region.
 mregion):} Returns the number of adjacent regions of a region, i.e.,
 regions sharing a face with this region.
 
-\item[]\textbf{\textit{Set\_ptr} MR\_Vertices(\textit{MRegion\_ptr}
+\item[]\textbf{\textit{List\_ptr} MR\_Vertices(\textit{MRegion\_ptr}
 mregion):} Returns the set of vertices of a region. For standard
 elements the vertices are ordered as indicated in
 Appendix~\ref{app:reg_conventions}. For non-standard elements the set
 is unordered.
 
-\item[]\textbf{\textit{Set\_ptr} MR\_Edges(\textit{MRegion\_ptr} mregion):}
+\item[]\textbf{\textit{List\_ptr} MR\_Edges(\textit{MRegion\_ptr} mregion):}
 Return the \underline{unordered} set of edges of a region. 
 
-\item[]\textbf{\textit{Set\_ptr} MR\_Faces(\textit{MRegion\_ptr} mregion):}
+\item[]\textbf{\textit{List\_ptr} MR\_Faces(\textit{MRegion\_ptr} mregion):}
 Returns the set of faces of a region.
 
-\item[]\textbf{\textit{Set\_ptr} MR\_AdjRegions(\textit{MRegion\_ptr}
+\item[]\textbf{\textit{List\_ptr} MR\_AdjRegions(\textit{MRegion\_ptr}
 mregion):} Returns the set of adjacent regions of a region, i.e.,
 regions sharing a face with this region. The set is not ordered.
 
@@ -911,9 +911,9 @@ which may be used to tag entities.
 
 \item[]\textbf{\textit{void} MEnt\_Unmark(\textit{MEntity\_ptr} ent, \textit{int} mkr):} Unmark an entity with respect to the given marker 'mkr'
 
-\item[]\textbf{\textit{void} Set\_Mark(\textit{Set\_ptr} list, \textit{int} mkr):} Mark a set of entities with given marker.
+\item[]\textbf{\textit{void} List\_Mark(\textit{List\_ptr} list, \textit{int} mkr):} Mark a set of entities with given marker.
 
-\item[]\textbf{\textit{void} Set\_Unmark(\textit{Set\_ptr} list, \textit{int} mkr):}
+\item[]\textbf{\textit{void} List\_Unmark(\textit{List\_ptr} list, \textit{int} mkr):}
 Unmark a set of entities with respect to the given marker.
 
 \item[]\textbf{\textit{void} MSTK\_FreeMarker(\textit{int} mkr):} Release the
@@ -971,7 +971,7 @@ has 'n2' edges, then the new face has ('n1'+'n2'-2) edges.
   repeated successively, then the message is printed only the first
   time.
 
-\item[]\textbf{\textit{void} Set\_PrintID(\textit{Set\_ptr} l):} Debugging
+\item[]\textbf{\textit{void} List\_PrintID(\textit{List\_ptr} l):} Debugging
 utility to print the IDs of the entities in a set.
 
 \item[]\textbf{\textit{void} MV\_Print(\textit{MVertex\_ptr} v, int
