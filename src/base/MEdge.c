@@ -22,6 +22,7 @@ extern "C" {
     e->gdim = 4; /* Nonsensical value since we don't know what it is */
     e->gid = 0;
     e->gent = (GEntity_ptr) NULL;
+    e->AttInsList = NULL;
     e->upadj = (void *) NULL;
     e->vertex[0] = e->vertex[1] = (MVertex_ptr) NULL;
 
@@ -34,8 +35,21 @@ extern "C" {
   }
 
   void ME_Delete(MEdge_ptr e, int keep) {
+    int idx;
+    MAttIns_ptr attins;
+
     if (e->dim != MDELEDGE)
       MESH_Rem_Edge(e->mesh,e);
+
+    if (!keep) {
+      if (e->AttInsList) {
+	idx = 0;
+	while ((attins = List_Next_Entry(e->AttInsList,&idx)))
+	  MAttIns_Delete(attins);
+	List_Delete(e->AttInsList);
+      }
+    }
+
     (*ME_Delete_jmp[e->repType])(e,keep);
   }
 
@@ -69,6 +83,15 @@ extern "C" {
   void ME_Set_Vertex(MEdge_ptr e, int i, MVertex_ptr v) {
     e->vertex[i] = v;
     MV_Add_Edge(v,e);
+  }
+
+  void ME_Replace_Vertex(MEdge_ptr e, MVertex_ptr oldv, MVertex_ptr nuv) {
+    if (e->vertex[0] == oldv)
+      e->vertex[0] = nuv;
+    else if (e->vertex[1] == oldv)
+      e->vertex[1] = nuv;
+    else
+      MSTK_Report("ME_Replace_Vertex","Cannot find vertex in edge",ERROR);
   }
 
   Mesh_ptr ME_Mesh(MEdge_ptr e) {
