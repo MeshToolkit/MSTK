@@ -104,76 +104,86 @@ extern "C" {
   /* Set value of attribute */
   void MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, double lval, void *pval) {
     int idx, found;
-    MType entdim;
+    MType attentdim, entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
 
-    entdim = MAttrib_Get_EntDim(attrib);
-    if (entdim != MEnt_Dim(ent) && entdim != MALLTYPE) {
+    attentdim = MAttrib_Get_EntDim(attrib);
+    entdim = MEnt_Dim(ent);
+
+    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
+	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+
+      if (!ent->AttInsList)
+	ent->AttInsList = List_New(3);
+      
+      attinslist = ent->AttInsList;
+      idx = 0; found = 0;
+      while ((attins = List_Next_Entry(attinslist,&idx))) {
+	if (MAttIns_Attrib(attins) == attrib) {
+	  found = 1;
+	  break;
+	}
+      }
+      
+      if (!found) {
+	attins = MAttIns_New(attrib);
+	List_Add(attinslist,attins);
+      }
+      
+      MAttIns_Set_Value(attins, ival, lval, pval);
+    }
+    else
       MSTK_Report("MEnt_Set_AttVal",
 		  "Attribute not suitable for this entity type",ERROR);
-      return;
-    }
-
-    if (!ent->AttInsList)
-      ent->AttInsList = List_New(3);
-      
-    attinslist = ent->AttInsList;
-    idx = 0; found = 0;
-    while ((attins = List_Next_Entry(attinslist,&idx))) {
-      if (MAttIns_Attrib(attins) == attrib) {
-	found = 1;
-	break;
-      }
-    }
-
-    if (!found) {
-      attins = MAttIns_New(attrib);
-      List_Add(attinslist,attins);
-    }
- 
-    MAttIns_Set_Value(attins, ival, lval, pval);
   }
 
   /* Clear value of attribute */
   void MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
     int i, idx, found;
-    MType entdim;
+    MType attentdim, entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
     
-    entdim = MAttrib_Get_EntDim(attrib);
-    if (entdim != MEnt_Dim(ent) && entdim != MALLTYPE) {
+    attentdim = MAttrib_Get_EntDim(attrib);
+    entdim = MEnt_Dim(ent);
+
+    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
+	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+
+      if (!ent->AttInsList)
+	return;
+    
+      attinslist = ent->AttInsList;
+      idx = 0; i = 0; found = 0;
+      while ((attins = List_Next_Entry(attinslist,&idx))) {
+	if (MAttIns_Attrib(attins) == attrib) {
+	  found = 1;
+	  break;
+	}
+	else
+	  i++;
+      }
+      
+      if (!found)
+	return;
+      
+      List_Remi(attinslist,i);
+      MAttIns_Delete(attins);
+    }
+    else {
       MSTK_Report("MEnt_Rem_AttVal",
 		  "Attribute not suitable for this entity type",ERROR);
       return;
     }
-    if (!ent->AttInsList)
-      return;
-    
-    attinslist = ent->AttInsList;
-    idx = 0; i = 0; found = 0;
-    while ((attins = List_Next_Entry(attinslist,&idx))) {
-      if (MAttIns_Attrib(attins) == attrib) {
-	found = 1;
-	break;
-      }
-      else
-	i++;
-    }
-
-    if (!found)
-      return;
-
-    List_Remi(attinslist,i);
-    MAttIns_Delete(attins);
+ 
   }
 
 
   /* Query the value of the attribute */
   int MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, double *lval, void **pval) {
     int idx, found;
-    MType entdim;
+    MType attentdim, entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
     
@@ -181,31 +191,37 @@ extern "C" {
     if (lval) *lval = 0;
     if (pval) *pval = NULL;
     
-    entdim = MAttrib_Get_EntDim(attrib);
-    if (entdim != MEnt_Dim(ent) && entdim != MALLTYPE) {
+    attentdim = MAttrib_Get_EntDim(attrib);
+    entdim = MEnt_Dim(ent);
+
+    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
+	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+
+      if (!ent->AttInsList)
+	return 0;
+      
+      attinslist = ent->AttInsList;
+      idx = 0; found = 0;
+      while ((attins = List_Next_Entry(attinslist,&idx))) {
+	if (MAttIns_Attrib(attins) == attrib) {
+	  found = 1;
+	  break;
+	}
+      }
+      
+      if (!found)
+	return 0;
+      
+      MAttIns_Get_Value(attins, ival, lval, pval);
+
+      return 1;
+    }
+    else {
       MSTK_Report("MEnt_Get_AttVal",
 		  "Attribute not suitable for this entity type",ERROR);
       return 0;
     }
 
-    if (!ent->AttInsList)
-      return 0;
-      
-    attinslist = ent->AttInsList;
-    idx = 0; found = 0;
-    while ((attins = List_Next_Entry(attinslist,&idx))) {
-      if (MAttIns_Attrib(attins) == attrib) {
-	found = 1;
-	break;
-      }
-    }
-
-    if (!found)
-      return 0;
- 
-    MAttIns_Get_Value(attins, ival, lval, pval);
-
-    return 1;
   }
   
     
