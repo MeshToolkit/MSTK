@@ -13,15 +13,23 @@ ifeq ($(ARCHOS),i686_linux)
   LDFLAGS := -lm
 endif
 
+# STANDARD DIRECTORY
+
+TOPDIR = $(HOME)
+MSTKUTIL_VER = 1.3dev
+DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER)
+
+# DEVELOP DIRECTORY
+
 TOPDIR = $(HOME)/develop
-MSTK_UTIL := $(TOPDIR)/mstkutil/1.2
+MSTKUTIL_VER = 1.3dev
+DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
 LIBDIR = ./lib
-MSTK_UTIL_INC = -I$(MSTK_UTIL)/include
 
-INCDIR = -I./include $(MSTK_UTIL_INC) 
+INCDIR = -I./include $(DEPINCS) 
 
 dirs := src/base src/hilev src/misc
 temp := $(foreach dir,$(dirs),$(wildcard $(dir)/*.c))
