@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 
-  MAttrib_ptr MAttrib_New(Mesh_ptr mesh, char *att_name, MAttType att_type) {
+  MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, MAttType att_type, MType entdim) {
     MAttrib_ptr attrib;
     int i, natt;
 
@@ -36,6 +36,8 @@ extern "C" {
     }
 #endif
 
+    attrib->entdim = entdim; /* what type of entity can this be attached to? */
+    
     attrib->mesh = mesh;
     MESH_Add_Attrib(mesh,attrib);
 
@@ -49,6 +51,10 @@ extern "C" {
 
   MAttType MAttrib_Get_Type(MAttrib_ptr attrib) {
     return attrib->type;
+  }
+
+  MType MAttrib_Get_EntDim(MAttrib_ptr attrib) {
+    return attrib->entdim;
   }
 
   void MAttrib_Delete(MAttrib_ptr attrib) {
