@@ -190,17 +190,17 @@ extern "C" {
       }
 
       /* First collect the edges */
-      nre = MSTK_nre_template[regtype-1];
+      nre = MSTK_nre_template[regtype];
       for (i = 0; i < nre; i++) {
 
 	/* Check if edge exists */
 
-	ind = MSTK_rev_template[regtype-1][i][0];
+	ind = MSTK_rev_template[regtype][i][0];
 	everts[0] = mvertices[ind];
 	evgdim[0] = MV_GEntDim(everts[0]);
 	evgid[0]  = MV_GEntID(everts[0]);
 	
-	ind = MSTK_rev_template[regtype-1][i][1];
+	ind = MSTK_rev_template[regtype][i][1];
 	everts[1] = mvertices[ind];
 	evgdim[1] = MV_GEntDim(everts[1]);
 	evgid[1]  = MV_GEntID(everts[1]);
@@ -270,9 +270,9 @@ extern "C" {
 	fgdim = 4;
 	fgid = 0;
 
-	nfe = MSTK_rfe_template[regtype-1][i][0];
+	nfe = MSTK_rfe_template[regtype][i][0];
 	for (j = 0; j < nfe; j++) {
-	  ind = MSTK_rfe_template[regtype-1][i][j+1];
+	  ind = MSTK_rfe_template[regtype][i][j+1];
 	  sgn = (ind >= 0) ? 1 : 0;
 	  ind = abs(ind);
 	  fedges[j] = redges[ind];
@@ -288,7 +288,7 @@ extern "C" {
 
 	if (!rfaces[i]) {
 	  rfaces[i] = MF_New(mesh);
-	  rfdirs[i] = MSTK_rfdir_template[regtype-1][i];
+	  rfdirs[i] = MSTK_rfdir_template[regtype][i];
 
 	  MF_Set_Edges(rfaces[i], nfe, fedges, fedirs);
 
@@ -310,15 +310,15 @@ extern "C" {
 	else {
 	  fregs = MF_Regions(rfaces[i]);
 	  if (!fregs) {
-	    ind = MSTK_rfv_template[regtype-1][i][1];
+	    ind = MSTK_rfv_template[regtype][i][1];
 	    verts[0] = mvertices[ind];
-	    ind = MSTK_rfv_template[regtype-1][i][2];
+	    ind = MSTK_rfv_template[regtype][i][2];
 	    verts[1] = mvertices[ind];
 
 	    fverts = MF_Vertices(rfaces[i],1,verts[0]);
 	    rfdirs[i] = ((verts[1] == List_Entry(fverts,1)) ? 
-			 MSTK_rfdir_template[regtype-1][i] : 
-			 !MSTK_rfdir_template[regtype-1][i]);
+			 MSTK_rfdir_template[regtype][i] : 
+			 !MSTK_rfdir_template[regtype][i]);
 	    List_Delete(fverts);
 	  }
 	  else {
