@@ -59,6 +59,20 @@ extern "C" {
     (*ME_Restore_jmp[e->repType])(e);
   }
 
+  void ME_Destroy_For_MESH_Delete(MEdge_ptr e) {
+    int idx;
+    MAttIns_ptr attins;
+
+    if (e->AttInsList) {
+      idx = 0;
+      while ((attins = List_Next_Entry(e->AttInsList,&idx)))
+	MAttIns_Delete(attins);
+      List_Delete(e->AttInsList);
+    }
+
+    (*ME_Destroy_For_MESH_Delete_jmp[e->repType])(e);
+  }
+
   void ME_Set_RepType(MEdge_ptr e, RepType rtype) {
     e->repType = rtype;
     (*ME_Set_RepType_jmp[e->repType])(e);
