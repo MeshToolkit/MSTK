@@ -18,8 +18,8 @@ extern "C" {
     MV_Coords(e->vertex[1],xyz1);
 
     len2 = ((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0])+
-	    (xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0])+
-	    (xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]));
+	    (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1])+
+	    (xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2]));
     
     return len2;
   }
