@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MSTK_private.h"
-#include "List.h"
+#include "Set.h"
 #include "MSTK_malloc.h"
 
 #ifdef __cplusplus
@@ -15,6 +15,10 @@ extern "C" {
 
   void MSTK_Init() {
 
+    MV_Print(0,0);
+    ME_Print(0,0);
+    MF_Print(0,0);
+    MR_Print(0,0);
   }
 
   int MSTK_GetMarker() {
