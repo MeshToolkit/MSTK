@@ -28,6 +28,10 @@ extern "C" {
 #ifndef _H_GEntity_Private
   typedef void     *GEntity_ptr;
 #endif
+#ifndef _H_MAttrib_Private
+  typedef void     *MAttrib_ptr;
+  typedef void     *MAttIns_ptr;
+#endif
 
 typedef enum RepType {UNKNOWN_REP=-1, F1=0, F4, R1, R2, R4} RepType;
 
@@ -38,8 +42,7 @@ typedef enum MType {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3} MType;
 
 
 /* typedefs needed for attributes */
-typedef enum AttType {INT=0, VINT, VINT2, DOUBLE, VDOUBLE, VDOUBLE2, CHAR, VCHAR} AttType;
-typedef enum Rank {SCALAR=4001, VECTOR, TENSOR} Rank;
+typedef enum MAttType {INT=0, DOUBLE, POINTER} MAttType;
 
 
 #ifdef __cplusplus
