@@ -61,6 +61,20 @@ extern "C" {
     (*MF_Restore_jmp[f->repType])(f);
   }
 
+  void MF_Destroy_For_MESH_Delete(MFace_ptr f) {
+    int idx;
+    MAttIns_ptr attins;
+
+    if (f->AttInsList) {
+      idx = 0;
+      while ((attins = List_Next_Entry(f->AttInsList,&idx)))
+	MAttIns_Delete(attins);
+      List_Delete(f->AttInsList);
+    }
+
+    (*MF_Destroy_For_MESH_Delete_jmp[f->repType])(f);
+  }
+
   void MF_Set_RepType(MFace_ptr f, RepType rtype) {
     f->repType = rtype;
     (*MF_Set_RepType_jmp[f->repType])(f);
@@ -217,6 +231,76 @@ extern "C" {
 
   void MF_Dummy2b(MFace_ptr f, MRegion_ptr r, int side) {
     return;
+  }
+
+  MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts) {
+    MFace_ptr common_face = NULL, vface;
+    int i, j;
+    int nvf0, contains_all;
+    List_ptr vfaces0, fvtxlist;
+
+    vfaces0 = MV_Faces(fverts[0]);
+    if (!vfaces0)
+      return NULL;
+
+    nvf0 = List_Num_Entries(vfaces0);
+    
+    for (i = 0; i < nvf0; i++) {
+      vface = List_Entry(vfaces0,i);
+      fvtxlist = MF_Vertices(vface,1,0);
+
+      contains_all = 1;
+      for (j = 1; j < nv; j++) {
+	if (!List_Contains(fvtxlist,fverts[j])) {
+	  contains_all = 0;
+	  break;
+	}
+      }      
+      List_Delete(fvtxlist);
+
+      if (contains_all) {
+	common_face = vface;
+	break;
+      }
+    }
+    List_Delete(vfaces0);
+
+    return common_face;
+  }
+
+  MFace_ptr MEs_CommonFace(int ne, MEdge_ptr *fedges) {
+    MFace_ptr common_face = NULL, eface;
+    int i, j;
+    int nef0, contains_all;
+    List_ptr efaces0, fedglist;
+
+    efaces0 = ME_Faces(fedges[0]);
+    if (!efaces0)
+      return NULL;
+
+    nef0 = List_Num_Entries(efaces0);
+    
+    for (i = 0; i < nef0; i++) {
+      eface = List_Entry(efaces0,i);
+      fedglist = MF_Edges(eface,1,0);
+
+      contains_all = 1;
+      for (j = 1; j < ne; j++) {
+	if (!List_Contains(fedglist,fedges[j])) {
+	  contains_all = 0;
+	  break;
+	}
+      }      
+      List_Delete(fedglist);
+
+      if (contains_all) {
+	common_face = eface;
+	break;
+      }
+    }
+    List_Delete(efaces0);
+
+    return common_face;
   }
 
 #ifdef __cplusplus
