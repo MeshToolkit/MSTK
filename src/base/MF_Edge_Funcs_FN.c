@@ -25,9 +25,10 @@ extern "C" {
     }
   }
 
-  void MF_Replace_Edge_i_FN(MFace_ptr f, int i, MEdge_ptr e, int dir) {
+  void MF_Replace_Edge_i_FN(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) {
     MFace_DownAdj_FN *downadj;
     MEdge_ptr olde;
+    int j, k, dir;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
@@ -36,16 +37,50 @@ extern "C" {
 		  ERROR);
 
     olde = List_Entry(downadj->fedges,i);
-      
     downadj->edirs = (downadj->edirs & ~(1<<i)); /* set bit i to 0 */
-    downadj->edirs = (downadj->edirs | (dir<<i)); /* set to dir */
-    List_Replacei(downadj->fedges,i,e);
+
+    /* First one is easy - Just replace the old edge with the new one */
+    List_Replacei(downadj->fedges,i,nuedges[0]);
+    downadj->edirs = (downadj->edirs | (nudirs[0]<<i)); /* set to dir */
+
+    /* Insert the rest of the nuedges at the right place */
+    for (j = 1; j < nnu; j++)
+      List_Inserti(downadj->fedges,nuedges[j],i+j);
+
+    /* Move the direction bits after the i'th bit to the left by
+       (nnu-1) spaces and insert the direction bits for the rest of
+       the inserted edges */
+
+    for (k = downadj->ne-1; k > i; k--) {
+
+      /* set bit (k+nnu-1) to 0 */
+      downadj->edirs = downadj->edirs & ~(1<<(k+nnu-1));
+
+      /* get bit k */
+      dir = (downadj->edirs>>k) & 1;
+
+      /* move bit k to (k+nnu-1)'th position */
+      downadj->edirs = downadj->edirs | (dir<<(k+nnu-1));
+
+      /* set bit k to 0 */
+      downadj->edirs = downadj->edirs & ~(1<<k);
+    }
+
+    /* set bit j according to input */
+    for (j = 1; j < nnu; j++)
+      downadj->edirs = downadj->edirs | (nudirs[j]<<(i+j));
+
+    /* One edge replaced an existing edge, others were added */
+    downadj->ne += nnu-1; 
+
+    /* Update upward adjacencies */
 
     ME_Rem_Face(olde,f);
-    ME_Add_Face(e,f);
+    for (i = 0; i < nnu; i++)
+      ME_Add_Face(nuedges[i],f);
   }
 
-  void MF_Replace_Edge_FN(MFace_ptr f, MEdge_ptr e, MEdge_ptr nue, int dir) {
+  void MF_Replace_Edge_FN(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) {
     int i, found = 0;
     MFace_DownAdj_FN *downadj;
     MEdge_ptr olde;
@@ -67,12 +102,7 @@ extern "C" {
       return;
     }
 
-    downadj->edirs = (downadj->edirs & ~(1<<i)); /* set bit i to 0 */
-    downadj->edirs = (downadj->edirs | (dir<<i)); /* set to dir */
-    List_Replacei(downadj->fedges,i,e);
-
-    ME_Rem_Face(olde,f);
-    ME_Add_Face(e,f);
+    MF_Replace_Edge_i_FN(f, i, nnu, nuedges, nudirs);
   }
 
   int MF_Num_Edges_FN(MFace_ptr f) {
