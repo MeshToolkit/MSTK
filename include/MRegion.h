@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "MSTK_types.h"
-#include "List.h"
+#include "Set.h"
 
  extern int mrtype_nv[7], mrtype_ne[7], mrtype_nf[7];
 
@@ -83,10 +83,10 @@ extern "C" {
   int MR_Num_Edges(MRegion_ptr r);
   int MR_Num_Faces(MRegion_ptr r);
   int MR_Num_AdjRegions(MRegion_ptr r);
-  List_ptr MR_Vertices(MRegion_ptr r);
-  List_ptr MR_Edges(MRegion_ptr r);
-  List_ptr MR_Faces(MRegion_ptr r);
-  List_ptr MR_AdjRegions(MRegion_ptr r);
+  Set_ptr MR_Vertices(MRegion_ptr r);
+  Set_ptr MR_Edges(MRegion_ptr r);
+  Set_ptr MR_Faces(MRegion_ptr r);
+  Set_ptr MR_AdjRegions(MRegion_ptr r);
   int MR_FaceDir(MRegion_ptr r, MFace_ptr f);
   int MR_FaceDir_i(MRegion_ptr r, int i);
   int MR_UsesEntity(MRegion_ptr r, MEntity_ptr e, int type);

@@ -53,33 +53,33 @@ extern "C" {
    ME_Num_Regions_R1R2, ME_Num_Regions_R3R4};
 #endif
 
-  List_ptr ME_Faces_F1(MEdge_ptr e);
-  List_ptr ME_Faces_F4(MEdge_ptr e);
-  List_ptr ME_Faces_R1(MEdge_ptr e);
-  List_ptr ME_Faces_R2(MEdge_ptr e);
-  List_ptr ME_Faces_R4(MEdge_ptr e);
-  List_ptr ME_Faces_R1R2(MEdge_ptr e);
-  List_ptr ME_Faces_R3R4(MEdge_ptr e);
+  Set_ptr ME_Faces_F1(MEdge_ptr e);
+  Set_ptr ME_Faces_F4(MEdge_ptr e);
+  Set_ptr ME_Faces_R1(MEdge_ptr e);
+  Set_ptr ME_Faces_R2(MEdge_ptr e);
+  Set_ptr ME_Faces_R4(MEdge_ptr e);
+  Set_ptr ME_Faces_R1R2(MEdge_ptr e);
+  Set_ptr ME_Faces_R3R4(MEdge_ptr e);
 #ifdef DEBUG
-  static List_ptr (*ME_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) =
+  static Set_ptr (*ME_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Faces_F1, ME_Faces_F4, ME_Faces_R1R2, ME_Faces_R1R2, ME_Faces_R4};
 #else
-  static List_ptr (*ME_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) =
+  static Set_ptr (*ME_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Faces_F1, ME_Faces_F4, ME_Faces_R1R2, ME_Faces_R1R2, ME_Faces_R3R4};
 #endif
   
-  List_ptr ME_Regions_F1(MEdge_ptr e);
-  List_ptr ME_Regions_F4(MEdge_ptr e);
-  List_ptr ME_Regions_R1(MEdge_ptr e);
-  List_ptr ME_Regions_R2(MEdge_ptr e);
-  List_ptr ME_Regions_R4(MEdge_ptr e);
-  List_ptr ME_Regions_R1R2(MEdge_ptr e);
-  List_ptr ME_Regions_R3R4(MEdge_ptr e);
+  Set_ptr ME_Regions_F1(MEdge_ptr e);
+  Set_ptr ME_Regions_F4(MEdge_ptr e);
+  Set_ptr ME_Regions_R1(MEdge_ptr e);
+  Set_ptr ME_Regions_R2(MEdge_ptr e);
+  Set_ptr ME_Regions_R4(MEdge_ptr e);
+  Set_ptr ME_Regions_R1R2(MEdge_ptr e);
+  Set_ptr ME_Regions_R3R4(MEdge_ptr e);
 #ifdef DEBUG
-  static List_ptr (*ME_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
+  static Set_ptr (*ME_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Regions_F1, ME_Regions_F4, ME_Regions_R1, ME_Regions_R2, ME_Regions_R4};
 #else
-  static List_ptr (*ME_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
+  static Set_ptr (*ME_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Regions_F1, ME_Regions_F4, ME_Regions_R1R2, ME_Regions_R1R2, ME_Regions_R3R4};
 #endif
 

@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "MSTK_types.h"
-#include "List.h"
+#include "Set.h"
 
 #ifdef _H_MEntity_Private
   typedef struct MEntity {
@@ -35,8 +35,8 @@ extern "C" {
   void MEnt_Mark(MEntity_ptr ent, int mkr);
   int  MEnt_IsMarked(MEntity_ptr ent, int mkr);
   void MEnt_UnMark(MEntity_ptr ent, int mkr);
-  void List_Mark(List_ptr list, int mkr);
-  void List_Unmark(List_ptr list, int mkr);
+  void Set_Mark(Set_ptr list, int mkr);
+  void Set_Unmark(Set_ptr list, int mkr);
 
   
 #ifdef __cplusplus

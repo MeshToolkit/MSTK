@@ -8,7 +8,7 @@ extern "C" {
   /* #include "gmtk.h" */
 #include "MSTK_types.h"
 #include "MSTK_util.h"
-#include "List.h"
+#include "Set.h"
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 

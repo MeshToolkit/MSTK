@@ -2,7 +2,7 @@
 #define _H_Mesh
 
 #include "MSTK_types.h"
-#include "List.h"
+#include "Set.h"
 
 #ifdef _cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
   typedef struct Mesh {
     RepType reptype;
     int nv, ne, nf, nr;
-    List_ptr mvertex, medge, mface, mregion;
+    Set_ptr mvertex, medge, mface, mregion;
     GModel_ptr geom;
     int max_vid, max_eid, max_fid, max_rid;
   } Mesh, *Mesh_ptr;
