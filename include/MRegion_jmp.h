@@ -51,41 +51,41 @@ static void
 {MR_Set_Vertices_F1, MR_Set_Vertices_F4, MR_Set_Vertices_R1, 
  MR_Set_Vertices_R2, MR_Set_Vertices_R4};
 
-Set_ptr MR_Vertices_F1(MRegion_ptr r);
-Set_ptr MR_Vertices_F4(MRegion_ptr r);
-Set_ptr MR_Vertices_R1(MRegion_ptr r);
-Set_ptr MR_Vertices_R2(MRegion_ptr r);
-Set_ptr MR_Vertices_R4(MRegion_ptr r);
-Set_ptr MR_Vertices_FNR3R4(MRegion_ptr r);
-static Set_ptr (*MR_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_Vertices_F1(MRegion_ptr r);
+List_ptr MR_Vertices_F4(MRegion_ptr r);
+List_ptr MR_Vertices_R1(MRegion_ptr r);
+List_ptr MR_Vertices_R2(MRegion_ptr r);
+List_ptr MR_Vertices_R4(MRegion_ptr r);
+List_ptr MR_Vertices_FNR3R4(MRegion_ptr r);
+static List_ptr (*MR_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Vertices_F1, MR_Vertices_F4, MR_Vertices_R1, MR_Vertices_R2, 
 MR_Vertices_R4};
 
-Set_ptr MR_Edges_F1(MRegion_ptr r);
-Set_ptr MR_Edges_F4(MRegion_ptr r);
-Set_ptr MR_Edges_R1(MRegion_ptr r);
-Set_ptr MR_Edges_R2(MRegion_ptr r);
-Set_ptr MR_Edges_R4(MRegion_ptr r);
-Set_ptr MR_Edges_FNR3R4(MRegion_ptr r);
-static Set_ptr (*MR_Edges_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_Edges_F1(MRegion_ptr r);
+List_ptr MR_Edges_F4(MRegion_ptr r);
+List_ptr MR_Edges_R1(MRegion_ptr r);
+List_ptr MR_Edges_R2(MRegion_ptr r);
+List_ptr MR_Edges_R4(MRegion_ptr r);
+List_ptr MR_Edges_FNR3R4(MRegion_ptr r);
+static List_ptr (*MR_Edges_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Edges_F1, MR_Edges_F4, MR_Edges_R1, MR_Edges_R2, MR_Edges_R4};
 
-Set_ptr MR_Faces_F1(MRegion_ptr r);
-Set_ptr MR_Faces_F4(MRegion_ptr r);
-Set_ptr MR_Faces_R1(MRegion_ptr r);
-Set_ptr MR_Faces_R2(MRegion_ptr r);
-Set_ptr MR_Faces_R4(MRegion_ptr r);
-Set_ptr MR_Faces_FNR3R4(MRegion_ptr r);
-static Set_ptr (*MR_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_Faces_F1(MRegion_ptr r);
+List_ptr MR_Faces_F4(MRegion_ptr r);
+List_ptr MR_Faces_R1(MRegion_ptr r);
+List_ptr MR_Faces_R2(MRegion_ptr r);
+List_ptr MR_Faces_R4(MRegion_ptr r);
+List_ptr MR_Faces_FNR3R4(MRegion_ptr r);
+static List_ptr (*MR_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Faces_F1, MR_Faces_F4, MR_Faces_R1, MR_Faces_R2, MR_Faces_R4};
 
-Set_ptr MR_AdjRegions_F1(MRegion_ptr r);
-Set_ptr MR_AdjRegions_F4(MRegion_ptr r);
-Set_ptr MR_AdjRegions_R1(MRegion_ptr r);
-Set_ptr MR_AdjRegions_R2(MRegion_ptr r);
-Set_ptr MR_AdjRegions_R4(MRegion_ptr r);
-Set_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r);
-static Set_ptr (*MR_AdjRegions_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_AdjRegions_F1(MRegion_ptr r);
+List_ptr MR_AdjRegions_F4(MRegion_ptr r);
+List_ptr MR_AdjRegions_R1(MRegion_ptr r);
+List_ptr MR_AdjRegions_R2(MRegion_ptr r);
+List_ptr MR_AdjRegions_R4(MRegion_ptr r);
+List_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r);
+static List_ptr (*MR_AdjRegions_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_AdjRegions_F1, MR_AdjRegions_F4, MR_AdjRegions_R1, MR_AdjRegions_R2, 
  MR_AdjRegions_R4};
 
@@ -247,29 +247,29 @@ static void
 {MR_Set_Vertices_FNR3R4, MR_Set_Vertices_FNR3R4, MR_Set_Vertices_R1, 
  MR_Set_Vertices_R2, MR_Set_Vertices_FNR3R4};
 
-Set_ptr MR_Vertices_FNR3R4(MRegion_ptr r);
-Set_ptr MR_Vertices_R1(MRegion_ptr r);
-Set_ptr MR_Vertices_R2(MRegion_ptr r);
-static Set_ptr (*MR_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_Vertices_FNR3R4(MRegion_ptr r);
+List_ptr MR_Vertices_R1(MRegion_ptr r);
+List_ptr MR_Vertices_R2(MRegion_ptr r);
+static List_ptr (*MR_Vertices_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Vertices_FNR3R4, MR_Vertices_FNR3R4, MR_Vertices_R1, MR_Vertices_R2, 
  MR_Vertices_FNR3R4};
 
-Set_ptr MR_Edges_FNR3R4(MRegion_ptr r);
-Set_ptr MR_Edges_R1(MRegion_ptr r);
-Set_ptr MR_Edges_R2(MRegion_ptr r);
-static Set_ptr (*MR_Edges_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_Edges_FNR3R4(MRegion_ptr r);
+List_ptr MR_Edges_R1(MRegion_ptr r);
+List_ptr MR_Edges_R2(MRegion_ptr r);
+static List_ptr (*MR_Edges_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Edges_FNR3R4, MR_Edges_FNR3R4, MR_Edges_R1, MR_Edges_R2, MR_Edges_FNR3R4};
 
-Set_ptr MR_Faces_FNR3R4(MRegion_ptr r);
-Set_ptr MR_Faces_R1(MRegion_ptr r);
-Set_ptr MR_Faces_R2(MRegion_ptr r);
-static Set_ptr (*MR_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_Faces_FNR3R4(MRegion_ptr r);
+List_ptr MR_Faces_R1(MRegion_ptr r);
+List_ptr MR_Faces_R2(MRegion_ptr r);
+static List_ptr (*MR_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_Faces_FNR3R4, MR_Faces_FNR3R4, MR_Faces_R1, MR_Faces_R2, MR_Faces_FNR3R4};
 
-Set_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r);
-Set_ptr MR_AdjRegions_R1(MRegion_ptr r);
-Set_ptr MR_AdjRegions_R2(MRegion_ptr r);
-static Set_ptr (*MR_AdjRegions_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+List_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r);
+List_ptr MR_AdjRegions_R1(MRegion_ptr r);
+List_ptr MR_AdjRegions_R2(MRegion_ptr r);
+static List_ptr (*MR_AdjRegions_jmp[MSTK_MAXREP])(MRegion_ptr r) =
 {MR_AdjRegions_FNR3R4, MR_AdjRegions_FNR3R4, MR_AdjRegions_R1, 
  MR_AdjRegions_R2, MR_AdjRegions_FNR3R4};
 

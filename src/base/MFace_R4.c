@@ -29,7 +29,7 @@ extern "C" {
     MSTK_free(upadj);
 
     downadj = (MFace_DownAdj_R3R4 *) f->downadj;
-    Set_Delete(downadj->fvertices);
+    List_Delete(downadj->fvertices);
     MSTK_free(downadj);
   }
   
@@ -83,12 +83,12 @@ extern "C" {
     return MF_Num_Edges_R3R4(f);
   }
 
-  Set_ptr MF_Vertices_R4(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Vertices_R4(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Vertices_R3R4(f,dir,v0);
   }
 	
 
-  Set_ptr MF_Edges_R4(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Edges_R4(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Edges_R3R4(f,dir,v0); 
   }
 
@@ -108,7 +108,7 @@ extern "C" {
     return MF_UsesVertex_R3R4(f,v);
   }
 
-  Set_ptr MF_Regions_R4(MFace_ptr f) {
+  List_ptr MF_Regions_R4(MFace_ptr f) {
     return MF_Regions_R3R4(f);
   }
 
@@ -122,7 +122,7 @@ extern "C" {
     return 0;
   }
 
-  Set_ptr MF_AdjFaces_R4(MFace_ptr f) {
+  List_ptr MF_AdjFaces_R4(MFace_ptr f) {
     MSTK_Report("MF_AdjFaces_R1","Not yet implemented for this representation",WARN);
     return 0;
   }

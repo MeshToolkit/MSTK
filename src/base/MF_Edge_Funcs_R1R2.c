@@ -13,7 +13,7 @@ extern "C" {
     return 0;
   }
 
-  Set_ptr MF_Edges_R1R2(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Edges_R1R2(MFace_ptr f, int dir, MVertex_ptr v0) {
     MSTK_Report("MF_Edges_R1R2","Not implemented",ERROR);
     return 0;    
   }

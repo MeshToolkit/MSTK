@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "MSTK_types.h"
-#include "Set.h"
+#include "List.h"
 
 #ifdef _H_MFace_Private
   typedef struct MFace {
@@ -37,7 +37,7 @@ extern "C" {
 
   typedef struct MFace_SameAdj_R2R4 {
     unsigned char nadj;
-    Set_ptr adjfaces;
+    List_ptr adjfaces;
   } MFace_SameAdj_R2R4;
 
   /*----- Downward adjacency definitions --------*/
@@ -45,12 +45,12 @@ extern "C" {
   typedef struct MFace_DownAdj_FN {
     unsigned char ne;
     int edirs;
-    Set_ptr fedges;
+    List_ptr fedges;
   } MFace_DownAdj_FN;
 
   typedef struct MFace_DownAdj_R3R4 {
     unsigned char nv;
-    Set_ptr *fvertices;
+    List_ptr *fvertices;
   } MFace_DownAdj_R3R4;
   
 #else
@@ -83,13 +83,13 @@ extern "C" {
   int MF_Num_Vertices(MFace_ptr f);
   int MF_Num_Edges(MFace_ptr f);
   int MF_Num_AdjFaces(MFace_ptr f);
-  Set_ptr MF_Vertices(MFace_ptr f, int dir, MVertex_ptr v);
-  Set_ptr MF_Edges(MFace_ptr f, int dir, MVertex_ptr v);
-  Set_ptr MF_AdjFaces(MFace_ptr f);
+  List_ptr MF_Vertices(MFace_ptr f, int dir, MVertex_ptr v);
+  List_ptr MF_Edges(MFace_ptr f, int dir, MVertex_ptr v);
+  List_ptr MF_AdjFaces(MFace_ptr f);
   int MF_EdgeDir(MFace_ptr f, MEdge_ptr e);
   int MF_EdgeDir_i(MFace_ptr f, int i);
   int MF_UsesEntity(MFace_ptr f, MEntity_ptr e, int type);
-  Set_ptr MF_Regions(MFace_ptr f);
+  List_ptr MF_Regions(MFace_ptr f);
   MRegion_ptr MF_Region(MFace_ptr f, int side);
 
   /* Calling applications can only set the representation type for the

@@ -104,7 +104,7 @@ extern "C" {
       /* it could be a pyramid or a triangular prism */
       nt = 0;
       for (i = 0; i < downadj->nf; i++) {
-	face = Set_Entry(downadj->rfaces,i);
+	face = List_Entry(downadj->rfaces,i);
 	if (MF_Num_Edges(face) == 3)
 	  nt++;
       }
@@ -140,19 +140,19 @@ extern "C" {
   }
   */
 
-  Set_ptr MR_Vertices(MRegion_ptr r) {
+  List_ptr MR_Vertices(MRegion_ptr r) {
     return (*MR_Vertices_jmp[r->repType])(r);
   }
 
-  Set_ptr MR_Edges(MRegion_ptr r) {
+  List_ptr MR_Edges(MRegion_ptr r) {
     return (*MR_Edges_jmp[r->repType])(r);
   }
 
-  Set_ptr MR_Faces(MRegion_ptr r) {
+  List_ptr MR_Faces(MRegion_ptr r) {
     return (*MR_Faces_jmp[r->repType])(r);
   }
 
-  Set_ptr MR_AdjRegions(MRegion_ptr r) {
+  List_ptr MR_AdjRegions(MRegion_ptr r) {
     return (*MR_AdjRegions_jmp[r->repType])(r);
   }
 

@@ -101,27 +101,27 @@ static int (*MF_Num_Edges_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Num_Edges_F1, MF_Num_Edges_F4, MF_Num_Edges_R1, MF_Num_Edges_R2, 
  MF_Num_Edges_R4};
 
-Set_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_F1(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_F4(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R1(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R2(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R4(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
-static Set_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
+List_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_F1(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_F4(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R1(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R2(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R4(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
+static List_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
 {MF_Vertices_F1, MF_Vertices_F4, MF_Vertices_R1, MF_Vertices_R2, 
  MF_Vertices_R4};
 
-Set_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_F1(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_F4(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R1(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R2(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R4(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
-static Set_ptr (*MF_Edges_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
+List_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_F1(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_F4(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R1(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R2(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R4(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
+static List_ptr (*MF_Edges_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
 {MF_Edges_F1, MF_Edges_F4, MF_Edges_R1, MF_Edges_R2, MF_Edges_R4};
 
 int MF_EdgeDir_FN(MFace_ptr f, MEdge_ptr e);
@@ -171,15 +171,15 @@ static int (*MF_UsesVertex_jmp[MSTK_MAXREP])(MFace_ptr f, MVertex_ptr v) =
 {MF_UsesVertex_F1, MF_UsesVertex_F4, MF_UsesVertex_R1, MF_UsesVertex_R2, 
  MF_UsesVertex_R4};
 
-Set_ptr MF_Regions_F1F3(MFace_ptr f);
-Set_ptr MF_Regions_F1(MFace_ptr f);
-Set_ptr MF_Regions_F4(MFace_ptr f);
-Set_ptr MF_Regions_R1(MFace_ptr f);
-Set_ptr MF_Regions_R2(MFace_ptr f);
-Set_ptr MF_Regions_R4(MFace_ptr f);
-Set_ptr MF_Regions_R1R2(MFace_ptr f);
-Set_ptr MF_Regions_R3R4(MFace_ptr f);
-static Set_ptr (*MF_Regions_jmp[MSTK_MAXREP])(MFace_ptr f) =
+List_ptr MF_Regions_F1F3(MFace_ptr f);
+List_ptr MF_Regions_F1(MFace_ptr f);
+List_ptr MF_Regions_F4(MFace_ptr f);
+List_ptr MF_Regions_R1(MFace_ptr f);
+List_ptr MF_Regions_R2(MFace_ptr f);
+List_ptr MF_Regions_R4(MFace_ptr f);
+List_ptr MF_Regions_R1R2(MFace_ptr f);
+List_ptr MF_Regions_R3R4(MFace_ptr f);
+static List_ptr (*MF_Regions_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Regions_F1F3, MF_Regions_F4, MF_Regions_R1, MF_Regions_R2, MF_Regions_R4};
 
 MRegion_ptr MF_Region_F1F3(MFace_ptr f, int side);
@@ -268,17 +268,17 @@ static int (*MF_Num_Edges_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Num_Edges_F1, MF_Num_Edges_F4, MF_Num_Edges_R1R2, MF_Num_Edges_R1R2, 
  MF_Num_Edges_R3R4};
 
-Set_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
-static Set_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
+List_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Vertices_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
+static List_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
 {MF_Vertices_FN, MF_Vertices_FN, MF_Vertices_R1R2, MF_Vertices_R1R2, 
  MF_Vertices_R3R4};
 
-Set_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
-Set_ptr MF_Edges_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
-static Set_ptr (*MF_Edges_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
+List_ptr MF_Edges_FN(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R1R2(MFace_ptr f, int dir, MVertex_ptr v);
+List_ptr MF_Edges_R3R4(MFace_ptr f, int dir, MVertex_ptr v);
+static List_ptr (*MF_Edges_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
 {MF_Edges_FN, MF_Edges_FN, MF_Edges_R1R2, MF_Edges_R1R2, MF_Edges_R3R4};
 
 int MF_EdgeDir_FN(MFace_ptr f, MEdge_ptr e);
@@ -308,11 +308,11 @@ static int (*MF_UsesVertex_jmp[MSTK_MAXREP])(MFace_ptr f, MVertex_ptr v) =
 {MF_UsesVertex_FN, MF_UsesVertex_FN, MF_UsesVertex_R1R2, MF_UsesVertex_R1R2, 
  MF_UsesVertex_R3R4};
 
-Set_ptr MF_Regions_F1F3(MFace_ptr f);
-Set_ptr MF_Regions_F4(MFace_ptr f);
-Set_ptr MF_Regions_R1R2(MFace_ptr f);
-Set_ptr MF_Regions_R3R4(MFace_ptr f);
-static Set_ptr (*MF_Regions_jmp[MSTK_MAXREP])(MFace_ptr f) =
+List_ptr MF_Regions_F1F3(MFace_ptr f);
+List_ptr MF_Regions_F4(MFace_ptr f);
+List_ptr MF_Regions_R1R2(MFace_ptr f);
+List_ptr MF_Regions_R3R4(MFace_ptr f);
+static List_ptr (*MF_Regions_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Regions_F1F3, MF_Regions_F4, MF_Regions_R1R2, MF_Regions_R1R2, MF_Regions_R3R4};
 
 MRegion_ptr MF_Region_F1F3(MFace_ptr f, int side);
@@ -350,12 +350,12 @@ static int (*MF_Num_AdjFaces_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Num_AdjFaces_F1, MF_Num_AdjFaces_F4, MF_Num_AdjFaces_R1, 
  MF_Num_AdjFaces_R2, MF_Num_AdjFaces_R4};
 
-Set_ptr MF_AdjFaces_F1(MFace_ptr f);
-Set_ptr MF_AdjFaces_F4(MFace_ptr f);
-Set_ptr MF_AdjFaces_R1(MFace_ptr f);
-Set_ptr MF_AdjFaces_R2(MFace_ptr f);
-Set_ptr MF_AdjFaces_R4(MFace_ptr f);
-static Set_ptr (*MF_AdjFaces_jmp[MSTK_MAXREP])(MFace_ptr f) =
+List_ptr MF_AdjFaces_F1(MFace_ptr f);
+List_ptr MF_AdjFaces_F4(MFace_ptr f);
+List_ptr MF_AdjFaces_R1(MFace_ptr f);
+List_ptr MF_AdjFaces_R2(MFace_ptr f);
+List_ptr MF_AdjFaces_R4(MFace_ptr f);
+static List_ptr (*MF_AdjFaces_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_AdjFaces_F1, MF_AdjFaces_F4, MF_AdjFaces_R1, MF_AdjFaces_R2,
  MF_AdjFaces_R4};
 

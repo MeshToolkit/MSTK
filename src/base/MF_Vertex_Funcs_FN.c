@@ -10,30 +10,30 @@ extern "C" {
 #endif
 
 
-  Set_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Vertices_FN(MFace_ptr f, int dir, MVertex_ptr v0) {
     int i, k, ne, edir, fnd=0;
-    Set_ptr fverts;
+    List_ptr fverts;
     MEdge_ptr e;
     MVertex_ptr v;
     MFace_DownAdj_FN *downadj;
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
     ne = downadj->ne;
-    fverts = Set_New(ne);
+    fverts = List_New(ne);
 
     if (!v0) {
       for (i = 0; i < ne; i++) {
 	k = dir ? i : ne-1-i;
-	e = Set_Entry(downadj->fedges,k);
+	e = List_Entry(downadj->fedges,k);
 	edir = ((downadj->edirs)>>k) & 1;
 	v = ME_Vertex(e,edir^dir);
-	Set_Add(fverts,v);
+	List_Add(fverts,v);
       }
     }
     else {
       fnd = 0;
       for (i = 0; i < ne; i++) {
-        e = Set_Entry(downadj->fedges,i);
+        e = List_Entry(downadj->fedges,i);
         edir = ((downadj->edirs)>>i) & 1;
         if (ME_Vertex(e,edir^dir) == v0) {
           fnd = 1;
@@ -46,12 +46,12 @@ extern "C" {
         MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",FATAL);
 
       for (i = 0; i < ne; i++) {
-	e = dir ? Set_Entry(downadj->fedges,(k+i)%ne) :
-	  Set_Entry(downadj->fedges,(k+ne-i)%ne);
+	e = dir ? List_Entry(downadj->fedges,(k+i)%ne) :
+	  List_Entry(downadj->fedges,(k+ne-i)%ne);
 	edir = dir ? ((downadj->edirs)>>(k+i)%ne) & 1 :
 	  ((downadj->edirs)>>(k+ne-i)%ne) & 1;
 	v = ME_Vertex(e,edir^dir);
-	Set_Add(fverts,v);
+	List_Add(fverts,v);
       }
     }
 
@@ -68,7 +68,7 @@ extern "C" {
     downadj = (MFace_DownAdj_FN *) f->downadj;
     ne = downadj->ne;
     for (i = 0; i < ne-1; i++) {
-      e = Set_Entry(downadj->fedges,i);
+      e = List_Entry(downadj->fedges,i);
       if (ME_UsesEntity(e,v,0))
 	return 1;
     }

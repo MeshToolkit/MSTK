@@ -9,17 +9,17 @@ extern "C" {
 #endif
 
 
-  Set_ptr MF_Regions_R3R4(MFace_ptr f) {
-    Set_ptr fregs;
+  List_ptr MF_Regions_R3R4(MFace_ptr f) {
+    List_ptr fregs;
     MFace_UpAdj_R3R4 *upadj;
 
     upadj = (MFace_UpAdj_R3R4 *) f->upadj;
 
-    fregs = Set_New(2);
+    fregs = List_New(2);
     if (upadj->fregions[0])
-      Set_Add(fregs,upadj->fregions[0]);
+      List_Add(fregs,upadj->fregions[0]);
     if (upadj->fregions[1])
-      Set_Add(fregs,upadj->fregions[1]);
+      List_Add(fregs,upadj->fregions[1]);
 
     return fregs;
   }

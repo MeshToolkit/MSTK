@@ -35,12 +35,12 @@ extern "C" {
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
-    ne = Set_Num_Entries(downadj->fedges);
+    ne = List_Num_Entries(downadj->fedges);
     for (i = 0; i < ne; i++) {
-      e = Set_Entry(downadj->fedges,i);
+      e = List_Entry(downadj->fedges,i);
       ME_Rem_Face(e,f);
     }
-    Set_Delete(downadj->fedges);
+    List_Delete(downadj->fedges);
     MSTK_free(downadj);
 
     MSTK_free(f);
@@ -95,12 +95,12 @@ extern "C" {
     return 0;
   }
 
-  Set_ptr MF_Vertices_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Vertices_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Vertices_FN(f,dir,v0);
   }
 	
 
-  Set_ptr MF_Edges_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Edges_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Edges_FN(f,dir,v0);
   }
 
@@ -120,7 +120,7 @@ extern "C" {
     return MF_UsesVertex_FN(f,v);
   }
 
-  Set_ptr MF_AdjFaces_F1(MFace_ptr f) {
+  List_ptr MF_AdjFaces_F1(MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("MF_AdjFaces",
 		"Function call not suitable for this representation",WARN);
@@ -128,7 +128,7 @@ extern "C" {
     return NULL;
   }
 
-  Set_ptr MF_Regions_F1(MFace_ptr f) {
+  List_ptr MF_Regions_F1(MFace_ptr f) {
     return MF_Regions_F1F3(f);
   }
 

@@ -64,12 +64,12 @@ extern "C" {
     return MF_Num_Edges_R1R2(f);
   }
 
-  Set_ptr MF_Vertices_R2(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Vertices_R2(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Vertices_R1R2(f,dir,v0);
   }
 	
 
-  Set_ptr MF_Edges_R2(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Edges_R2(MFace_ptr f, int dir, MVertex_ptr v0) {
     return MF_Edges_R1R2(f,dir,v0); 
   }
 
@@ -89,7 +89,7 @@ extern "C" {
     return MF_UsesVertex_R1R2(f,v);
   }
 
-  Set_ptr MF_Regions_R2(MFace_ptr f) {
+  List_ptr MF_Regions_R2(MFace_ptr f) {
     return MF_Regions_R1R2(f);
   }
 
@@ -103,7 +103,7 @@ extern "C" {
     return 0;
   }
 
-  Set_ptr MF_AdjFaces_R2(MFace_ptr f) {
+  List_ptr MF_AdjFaces_R2(MFace_ptr f) {
     MSTK_Report("MF_AdjFaces_R2","Not yet implemented for this representation",WARN);
     return 0;
   }

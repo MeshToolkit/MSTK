@@ -9,16 +9,16 @@ extern "C" {
 void MR_Coords(MRegion_ptr r, int *n, double (*xyz)[3]) {
   int i;
   MVertex_ptr rv;
-  Set_ptr rverts;
+  List_ptr rverts;
 
   rverts = MR_Vertices(r);
-  *n = Set_Num_Entries(rverts);
+  *n = List_Num_Entries(rverts);
 
   for (i = 0; i < *n; i++) {
-    rv = Set_Entry(rverts,i);
+    rv = List_Entry(rverts,i);
     MV_Coords(rv,xyz[i]);
   }
-  Set_Delete(rverts);
+  List_Delete(rverts);
 }
 
 #ifdef __cplusplus

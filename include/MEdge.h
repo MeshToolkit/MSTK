@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "MSTK_types.h"
-#include "Set.h"
+#include "List.h"
 
 #ifdef _H_MEdge_Private
   typedef struct MEdge {
@@ -26,12 +26,12 @@ extern "C" {
 
   typedef struct MEdge_UpAdj_F1 {
     unsigned int nf;
-    Set_ptr efaces;
+    List_ptr efaces;
   } MEdge_UpAdj_F1;
 
   typedef struct MEdge_UpAdj_F4 {
     unsigned int nel;
-    Set_ptr elements;
+    List_ptr elements;
   } MEdge_UpAdj_F4;
 #else
   typedef void *MEdge_ptr;
@@ -54,8 +54,8 @@ extern "C" {
 
   int ME_Num_Faces(MEdge_ptr medge);
   int ME_Num_Regions(MEdge_ptr medge);
-  Set_ptr ME_Faces(MEdge_ptr medge);
-  Set_ptr ME_Regions(MEdge_ptr medge);
+  List_ptr ME_Faces(MEdge_ptr medge);
+  List_ptr ME_Regions(MEdge_ptr medge);
   int ME_UsesEntity(MEdge_ptr medge, MEntity_ptr mentity, int etype);
 
   /* Calling applications can only set the representation type for the

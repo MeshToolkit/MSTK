@@ -9,16 +9,16 @@ extern "C" {
 void MF_Coords(MFace_ptr f, int *n, double (*xyz)[3]) {
   int i;
   MVertex_ptr fv;
-  Set_ptr fverts;
+  List_ptr fverts;
 
   fverts = MF_Vertices(f,1,0);
-  *n = Set_Num_Entries(fverts);
+  *n = List_Num_Entries(fverts);
 
   for (i = 0; i < *n; i++) {
-    fv = Set_Entry(fverts,i);
+    fv = List_Entry(fverts,i);
     MV_Coords(fv,xyz[i]);
   }
-  Set_Delete(fverts);
+  List_Delete(fverts);
 }
 
 #ifdef __cplusplus

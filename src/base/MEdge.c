@@ -100,11 +100,11 @@ extern "C" {
     return (*ME_Num_Regions_jmp[e->repType])(e);
   }
 
-  Set_ptr ME_Faces(MEdge_ptr e) {
+  List_ptr ME_Faces(MEdge_ptr e) {
     return (*ME_Faces_jmp[e->repType])(e);
   }
 
-  Set_ptr ME_Regions(MEdge_ptr e) {
+  List_ptr ME_Regions(MEdge_ptr e) {
     return (*ME_Regions_jmp[e->repType])(e);
   }
 
@@ -148,7 +148,7 @@ extern "C" {
 
 
   MEdge_ptr MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2) {
-    Set_ptr vedges;
+    List_ptr vedges;
     MEdge_ptr edge=0;
     MVertex_ptr ev;
     int i, found, nve;
@@ -157,10 +157,10 @@ extern "C" {
     if (!vedges)
       return 0;
 
-    nve = Set_Num_Entries(vedges);
+    nve = List_Num_Entries(vedges);
 
     for (i = 0, found = 0; i < nve; i++) {
-      edge = Set_Entry(vedges,i);
+      edge = List_Entry(vedges,i);
       ev = ME_Vertex(edge,0);
       if (ev == v2) {
         found = 1;
@@ -174,7 +174,7 @@ extern "C" {
         }
       }
     }
-    Set_Delete(vedges);
+    List_Delete(vedges);
 
     return (found ? edge : 0);
   }

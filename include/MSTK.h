@@ -9,7 +9,7 @@ extern "C" {
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "MSTK_util.h"
-#include "Set.h"
+#include "List.h"
 #include "MSTK_malloc.h"
 
 
@@ -75,10 +75,10 @@ void        MSTK_Init(void);
   int MV_Num_Edges(MVertex_ptr mvertex);
   int MV_Num_Faces(MVertex_ptr mvertex);
   int MV_Num_Regions(MVertex_ptr mvertex);
-  Set_ptr MV_AdjVertices(MVertex_ptr mvertex);
-  Set_ptr MV_Edges(MVertex_ptr mvertex);
-  Set_ptr MV_Faces(MVertex_ptr mvertex);
-  Set_ptr MV_Regions(MVertex_ptr mvertex);
+  List_ptr MV_AdjVertices(MVertex_ptr mvertex);
+  List_ptr MV_Edges(MVertex_ptr mvertex);
+  List_ptr MV_Faces(MVertex_ptr mvertex);
+  List_ptr MV_Regions(MVertex_ptr mvertex);
 
 
 /********************************************************************/
@@ -106,8 +106,8 @@ void        MSTK_Init(void);
   MVertex_ptr ME_Vertex(MEdge_ptr medge, int i);
   MVertex_ptr ME_OppVertex(MEdge_ptr medge, MVertex_ptr ov);
   int ME_UsesEntity(MEdge_ptr medge, MEntity_ptr mentity, int etype);
-  Set_ptr ME_Faces(MEdge_ptr medge);
-  Set_ptr ME_Regions(MEdge_ptr medge);
+  List_ptr ME_Faces(MEdge_ptr medge);
+  List_ptr ME_Regions(MEdge_ptr medge);
 
 
   MEdge_ptr MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2);
@@ -145,13 +145,13 @@ void        MSTK_Init(void);
   int MF_Num_Vertices(MFace_ptr mface);
   int MF_Num_Edges(MFace_ptr mface);
   int MF_Num_AdjFaces(MFace_ptr mface);
-  Set_ptr MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr mvert);
-  Set_ptr MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
-  Set_ptr MF_AdjFaces(MFace_ptr mface);
+  List_ptr MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr mvert);
+  List_ptr MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
+  List_ptr MF_AdjFaces(MFace_ptr mface);
   int MF_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
   int MF_EdgeDir_i(MFace_ptr mface, int i);
   int MF_UsesEntity(MFace_ptr mface, MEntity_ptr mentity, int type);
-  Set_ptr MF_Regions(MFace_ptr mface);
+  List_ptr MF_Regions(MFace_ptr mface);
   MRegion_ptr MF_Region(MFace_ptr mface, int side);
 
 
@@ -193,10 +193,10 @@ void        MSTK_Init(void);
   int MR_Num_Edges(MRegion_ptr mregion);
   int MR_Num_Faces(MRegion_ptr mregion);
   int MR_Num_AdjRegions(MRegion_ptr mregion);
-  Set_ptr MR_Vertices(MRegion_ptr mregion);
-  Set_ptr MR_Edges(MRegion_ptr mregion);
-  Set_ptr MR_Faces(MRegion_ptr mregion);
-  Set_ptr MR_AdjRegions(MRegion_ptr mregion);
+  List_ptr MR_Vertices(MRegion_ptr mregion);
+  List_ptr MR_Edges(MRegion_ptr mregion);
+  List_ptr MR_Faces(MRegion_ptr mregion);
+  List_ptr MR_AdjRegions(MRegion_ptr mregion);
   int MR_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int MR_FaceDir_i(MRegion_ptr mregion, int i);
   int MR_UsesEntity(MRegion_ptr mregion, MEntity_ptr ment, int type);
@@ -229,8 +229,8 @@ void        MSTK_Init(void);
   void MEnt_Mark(MEntity_ptr ent, int mkr);
   int MEnt_IsMarked(MEntity_ptr ent, int mkr);
   void MEnt_Unmark(MEntity_ptr ent, int mkr);
-  void Set_Mark(Set_ptr list, int mkr);
-  void Set_Unmark(Set_ptr list, int mkr);
+  void List_Mark(List_ptr list, int mkr);
+  void List_Unmark(List_ptr list, int mkr);
 
 
 /*************************************************************************/
@@ -270,7 +270,7 @@ int ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
 void        MSTK_Report(char *module, char *message, ErrType severity);
 
 #ifdef DEBUG
-  void        Set_PrintID(Set_ptr l);
+  void        List_PrintID(List_ptr l);
 #endif
 
 

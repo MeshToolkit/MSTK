@@ -14,7 +14,7 @@ extern "C" {
     return 0;
   }
 
-  Set_ptr ME_Regions_R1R2(MEdge_ptr e) {
+  List_ptr ME_Regions_R1R2(MEdge_ptr e) {
     MSTK_Report("ME_Regions_R1R2","Not implemented",ERROR);
     return 0;
   }

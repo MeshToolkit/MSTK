@@ -15,10 +15,10 @@ extern "C" {
 
     upadj = v->upadj = (MVertex_UpAdj_R1R2 *) MSTK_malloc(sizeof(MVertex_UpAdj_R1R2));
     upadj->nel = (unsigned int) 0;
-    upadj->velements = Set_New(10);
+    upadj->velements = List_New(10);
     sameadj = v->sameadj = (MVertex_SameAdj_R2R4 *) MSTK_malloc(sizeof(MVertex_SameAdj_R2R4));
     sameadj->nvadj = (unsigned char) 0;
-    sameadj->adjverts = Set_New(10);
+    sameadj->adjverts = List_New(10);
   }
 
   void MV_Delete_R2(MVertex_ptr v) {
@@ -26,11 +26,11 @@ extern "C" {
     MVertex_SameAdj_R2R4 *sameadj;
 
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    Set_Delete(upadj->velements);
+    List_Delete(upadj->velements);
     MSTK_free(upadj);
 
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    Set_Delete(sameadj->adjverts);
+    List_Delete(sameadj->adjverts);
     MSTK_free(sameadj);
   }
     
@@ -45,7 +45,7 @@ extern "C" {
 
   int MV_Num_Faces_R2(MVertex_ptr v) {
     int nf;
-    Set_ptr vfaces;
+    List_ptr vfaces;
 
 #ifdef DEBUG
     MSTK_Report("MV_Num_Faces",
@@ -58,8 +58,8 @@ extern "C" {
        retrieved fairly efficiently */
 
     vfaces = MV_Faces_R1(v);
-    nf = Set_Num_Entries(vfaces);
-    Set_Delete(vfaces);
+    nf = List_Num_Entries(vfaces);
+    List_Delete(vfaces);
     return nf;
   }
   
@@ -70,49 +70,49 @@ extern "C" {
 
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
     for (i = 0; i < upadj->nel; i++) {
-      ent = (MEntity_ptr) Set_Entry(upadj->velements,i);
+      ent = (MEntity_ptr) List_Entry(upadj->velements,i);
       if (MEnt_Dim(ent) == 3)
 	nr++;
     }
     return nr;
   }
 
-  Set_ptr MV_AdjVertices_R2(MVertex_ptr v) {
+  List_ptr MV_AdjVertices_R2(MVertex_ptr v) {
     MVertex_SameAdj_R2R4 *sameadj;
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    return Set_Copy(sameadj->adjverts);
+    return List_Copy(sameadj->adjverts);
   }
 
-  Set_ptr MV_Edges_R2(MVertex_ptr v) {
+  List_ptr MV_Edges_R2(MVertex_ptr v) {
     MSTK_Report("MV_Edges_R1",
 		"Not yet implemented for this representation",MESG);
     return 0;
   }
 
-  Set_ptr MV_Faces_R2(MVertex_ptr v) {
+  List_ptr MV_Faces_R2(MVertex_ptr v) {
     MSTK_Report("MV_Faces_R1",
 		"Not yet implemented for this representation",MESG);
     return 0;
   }
 
-  Set_ptr MV_Regions_R2(MVertex_ptr v) {
+  List_ptr MV_Regions_R2(MVertex_ptr v) {
     MVertex_UpAdj_R1R2 *upadj;
     int i, nr = 0;
     MEntity_ptr ent;
-    Set_ptr vregions;
+    List_ptr vregions;
 
-    vregions = Set_New(10);
+    vregions = List_New(10);
 
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
     for (i = 0; i < upadj->nel; i++) {
-      ent = (MEntity_ptr) Set_Entry(upadj->velements,i);
+      ent = (MEntity_ptr) List_Entry(upadj->velements,i);
       if (MEnt_Dim(ent) == MREGION) 
-	Set_Add(vregions,ent);
+	List_Add(vregions,ent);
     }
     if (nr)
       return vregions;
     else {
-      Set_Delete(vregions);
+      List_Delete(vregions);
       return 0;
     }      
   }
@@ -121,7 +121,7 @@ extern "C" {
     MVertex_SameAdj_R2R4 *sameadj;
     
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    Set_Add(sameadj->adjverts,adjv);
+    List_Add(sameadj->adjverts,adjv);
     sameadj->nvadj++;
   }
 
@@ -129,7 +129,7 @@ extern "C" {
     MVertex_SameAdj_R2R4 *sameadj;
     
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    if (Set_Rem(sameadj->adjverts,adjv))
+    if (List_Rem(sameadj->adjverts,adjv))
       sameadj->nvadj--;
   }
 
@@ -157,7 +157,7 @@ extern "C" {
     }
 
     upadj = (MVertex_UpAdj_R1R2 *)v->upadj;
-    Set_Add(upadj->velements,mface);
+    List_Add(upadj->velements,mface);
     upadj->nel++;
   }
 
@@ -172,7 +172,7 @@ extern "C" {
     }
 
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    if (Set_Rem(upadj->velements,mface))
+    if (List_Rem(upadj->velements,mface))
       upadj->nel--;
   }
 
@@ -180,7 +180,7 @@ extern "C" {
     MVertex_UpAdj_R1R2 *upadj;
 
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    Set_Add(upadj->velements,mregion);
+    List_Add(upadj->velements,mregion);
     upadj->nel++;
   }
 
@@ -188,7 +188,7 @@ extern "C" {
     MVertex_UpAdj_R1R2 *upadj;
 
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    if (Set_Rem(upadj->velements,mregion))
+    if (List_Rem(upadj->velements,mregion))
       upadj->nel--;
   }
 

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MSTK_private.h"
-#include "Set.h"
+#include "List.h"
 #include "MSTK_malloc.h"
 
 #ifdef __cplusplus

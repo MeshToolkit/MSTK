@@ -77,59 +77,59 @@ extern "C" {
    MV_Num_Regions_R2, MV_Num_Regions_R3R4};
 #endif
 
-  Set_ptr MV_AdjVertices_F1(MVertex_ptr v);
-  Set_ptr MV_AdjVertices_F4(MVertex_ptr v);
-  Set_ptr MV_AdjVertices_R1(MVertex_ptr v);
-  Set_ptr MV_AdjVertices_R2(MVertex_ptr v);
-  Set_ptr MV_AdjVertices_R4(MVertex_ptr v);
-  static Set_ptr (*MV_AdjVertices_jmp[MSTK_MAXREP])(MVertex_ptr v) =
+  List_ptr MV_AdjVertices_F1(MVertex_ptr v);
+  List_ptr MV_AdjVertices_F4(MVertex_ptr v);
+  List_ptr MV_AdjVertices_R1(MVertex_ptr v);
+  List_ptr MV_AdjVertices_R2(MVertex_ptr v);
+  List_ptr MV_AdjVertices_R4(MVertex_ptr v);
+  static List_ptr (*MV_AdjVertices_jmp[MSTK_MAXREP])(MVertex_ptr v) =
   {MV_AdjVertices_F1, MV_AdjVertices_F4, MV_AdjVertices_R1,
    MV_AdjVertices_R2, MV_AdjVertices_R4};
 
-  Set_ptr MV_Edges_F1(MVertex_ptr v);
-  Set_ptr MV_Edges_F4(MVertex_ptr v);
-  Set_ptr MV_Edges_R1(MVertex_ptr v);
-  Set_ptr MV_Edges_R2(MVertex_ptr v);
-  Set_ptr MV_Edges_R4(MVertex_ptr v);
-  Set_ptr MV_Edges_R2R4(MVertex_ptr v);
+  List_ptr MV_Edges_F1(MVertex_ptr v);
+  List_ptr MV_Edges_F4(MVertex_ptr v);
+  List_ptr MV_Edges_R1(MVertex_ptr v);
+  List_ptr MV_Edges_R2(MVertex_ptr v);
+  List_ptr MV_Edges_R4(MVertex_ptr v);
+  List_ptr MV_Edges_R2R4(MVertex_ptr v);
 #ifdef DEBUG
-  static Set_ptr (*MV_Edges_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  static List_ptr (*MV_Edges_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
   {MV_Edges_F1, MV_Edges_F4, MV_Edges_R1, MV_Edges_R2, 
    MV_Edges_R4};
 #else
-  static Set_ptr (*MV_Edges_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  static List_ptr (*MV_Edges_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
   {MV_Edges_F1, MV_Edges_F4, MV_Edges_R1, MV_Edges_R2R4, 
    MV_Edges_R2R4};
 #endif
 			
-  Set_ptr MV_Faces_F1(MVertex_ptr v);
-  Set_ptr MV_Faces_F4(MVertex_ptr v);
-  Set_ptr MV_Faces_R1(MVertex_ptr v);
-  Set_ptr MV_Faces_R2(MVertex_ptr v);
-  Set_ptr MV_Faces_R4(MVertex_ptr v);
-  Set_ptr MV_Faces_R1R2(MVertex_ptr v);
+  List_ptr MV_Faces_F1(MVertex_ptr v);
+  List_ptr MV_Faces_F4(MVertex_ptr v);
+  List_ptr MV_Faces_R1(MVertex_ptr v);
+  List_ptr MV_Faces_R2(MVertex_ptr v);
+  List_ptr MV_Faces_R4(MVertex_ptr v);
+  List_ptr MV_Faces_R1R2(MVertex_ptr v);
 #ifdef DEBUG
-  static Set_ptr (*MV_Faces_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  static List_ptr (*MV_Faces_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
   {MV_Faces_F1, MV_Faces_F4, MV_Faces_R1, MV_Faces_R2, 
    MV_Faces_R4};
 #else
-  static Set_ptr (*MV_Faces_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
+  static List_ptr (*MV_Faces_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
   {MV_Faces_F1, MV_Faces_F4, MV_Faces_R1R2, MV_Faces_R1R2, 
    MV_Faces_R4};
 #endif
 			
-  Set_ptr MV_Regions_F1(MVertex_ptr v);
-  Set_ptr MV_Regions_F4(MVertex_ptr v);
-  Set_ptr MV_Regions_R1(MVertex_ptr v);
-  Set_ptr MV_Regions_R2(MVertex_ptr v);
-  Set_ptr MV_Regions_R4(MVertex_ptr v);
-  Set_ptr MV_Regions_R3R4(MVertex_ptr v);
+  List_ptr MV_Regions_F1(MVertex_ptr v);
+  List_ptr MV_Regions_F4(MVertex_ptr v);
+  List_ptr MV_Regions_R1(MVertex_ptr v);
+  List_ptr MV_Regions_R2(MVertex_ptr v);
+  List_ptr MV_Regions_R4(MVertex_ptr v);
+  List_ptr MV_Regions_R3R4(MVertex_ptr v);
 #ifdef DEBUG
-  static Set_ptr (*MV_Regions_jmp[MSTK_MAXREP])(MVertex_ptr) = 
+  static List_ptr (*MV_Regions_jmp[MSTK_MAXREP])(MVertex_ptr) = 
   {MV_Regions_F1, MV_Regions_F4, MV_Regions_R1, MV_Regions_R2, 
    MV_Regions_R4};
 #else
-  static Set_ptr (*MV_Regions_jmp[MSTK_MAXREP])(MVertex_ptr) = 
+  static List_ptr (*MV_Regions_jmp[MSTK_MAXREP])(MVertex_ptr) = 
   {MV_Regions_F1, MV_Regions_F4, MV_Regions_R1, MV_Regions_R2, 
    MV_Regions_R3R4};
 #endif

@@ -13,7 +13,7 @@ extern "C" {
 
   int MV_Num_Faces_R1R2(MVertex_ptr v) {
     int i, nf;
-    Set_ptr vfaces;
+    List_ptr vfaces;
 
 #ifdef DEBUG
     MSTK_Report("MV_Num_Faces_R1R2",
@@ -21,17 +21,17 @@ extern "C" {
 		MESG);
 #endif
     vfaces = MV_Faces_R1R2(v);
-    nf = Set_Num_Entries(vfaces);
+    nf = List_Num_Entries(vfaces);
     for (i = 0; i < nf; i++) {
       /* Must destroy the temporary faces */
     }
-    Set_Delete(vfaces);
+    List_Delete(vfaces);
 
     return nf;
   }
 
 
-  Set_ptr MV_Faces_R1R2(MVertex_ptr v) {
+  List_ptr MV_Faces_R1R2(MVertex_ptr v) {
     MSTK_Report("MV_Faces","Not yet implemented for this representation",
 		MESG);
     return NULL;

@@ -13,7 +13,7 @@ extern "C" {
     return ((MFace_DownAdj_R3R4 *)f->downadj)->nv;
   }
 
-  Set_ptr MF_Edges_R3R4(MFace_ptr f, int dir, MVertex_ptr v0) {
+  List_ptr MF_Edges_R3R4(MFace_ptr f, int dir, MVertex_ptr v0) {
     /* Are we supposed to create edges and send them back ? */
     MSTK_Report("MF_Edges_R3R4","Not implemented",ERROR);
     return NULL;

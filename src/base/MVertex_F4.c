@@ -15,14 +15,14 @@ extern "C" {
 
     upadj = v->upadj = (MVertex_UpAdj_F1F4 *) MSTK_malloc(sizeof(MVertex_UpAdj_F1F4));
     upadj->ne = (unsigned int) 0;
-    upadj->vedges = Set_New(10);
+    upadj->vedges = List_New(10);
   }
 
   void MV_Delete_F4(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
 
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    Set_Delete(upadj->vedges);
+    List_Delete(upadj->vedges);
     MSTK_free(upadj);
   }
 
@@ -35,7 +35,7 @@ extern "C" {
   }
 
   int MV_Num_Faces_F4(MVertex_ptr v) {
-    Set_ptr vfaces;
+    List_ptr vfaces;
     int nf;
 
 #ifdef DEBUG
@@ -45,13 +45,13 @@ extern "C" {
 #endif
     
     vfaces = MV_Faces_F4(v);
-    nf = Set_Num_Entries(vfaces);
-    Set_Delete(vfaces);
+    nf = List_Num_Entries(vfaces);
+    List_Delete(vfaces);
     return nf;
   }
 
   int MV_Num_Regions_F4(MVertex_ptr v) {
-    Set_ptr vregions;
+    List_ptr vregions;
     int nr;
 
 #ifdef DEBUG
@@ -61,14 +61,14 @@ extern "C" {
 #endif
 	
     vregions = MV_Regions_F4(v);
-    nr = Set_Num_Entries(vregions);
-    Set_Delete(vregions);
+    nr = List_Num_Entries(vregions);
+    List_Delete(vregions);
     return nr;
   }
 
-  Set_ptr MV_AdjVertices_F4(MVertex_ptr v) {
+  List_ptr MV_AdjVertices_F4(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
-    Set_ptr vedges, adjv;
+    List_ptr vedges, adjv;
     int ne, i;
     MEdge_ptr vedge;
     MVertex_ptr ov;
@@ -79,30 +79,30 @@ extern "C" {
       return 0;
 
     ne = upadj->ne;
-    adjv = Set_New(ne);
+    adjv = List_New(ne);
     for (i = 0; i < ne; i++) {
-      vedge = Set_Entry(vedges,i);
+      vedge = List_Entry(vedges,i);
       ov = ME_OppVertex(vedge,v);
-      Set_Add(adjv,ov);
+      List_Add(adjv,ov);
     }
 
     return adjv;
   }
     
 
-  Set_ptr MV_Edges_F4(MVertex_ptr v) {
+  List_ptr MV_Edges_F4(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
-    Set_ptr vedges;
+    List_ptr vedges;
 
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    vedges = Set_Copy(upadj->vedges);
+    vedges = List_Copy(upadj->vedges);
     return vedges;
   }
 
-  Set_ptr MV_Faces_F4(MVertex_ptr v) {
+  List_ptr MV_Faces_F4(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
     int i, j, k, ne, nf, nr, n, mkr;
-    Set_ptr vedges, eregions, rfaces, efaces, vfaces;
+    List_ptr vedges, eregions, rfaces, efaces, vfaces;
     MEdge_ptr edge;
     MFace_ptr face;
     MRegion_ptr region;
@@ -112,70 +112,70 @@ extern "C" {
     vedges = upadj->vedges;
 
     n = 0;
-    vfaces = Set_New(10);
+    vfaces = List_New(10);
     mkr = MSTK_GetMarker();
 
     for (i = 0; i < ne; i++) {
-      edge = Set_Entry(vedges,i);
+      edge = List_Entry(vedges,i);
 
       eregions = ME_Regions(edge);
       if (eregions) {
-	nr = Set_Num_Entries(eregions);
+	nr = List_Num_Entries(eregions);
 	
 	for (j = 0; j < nr; j++) {
-	  region = Set_Entry(eregions,j);
+	  region = List_Entry(eregions,j);
 	  
 	  rfaces = MR_Faces(region);
-	  nf = Set_Num_Entries(rfaces);
+	  nf = List_Num_Entries(rfaces);
 	  
 	  for (k = 0; k < nf; k++) {
-	    face = Set_Entry(rfaces,k);
+	    face = List_Entry(rfaces,k);
 	    if (!MEnt_IsMarked(face,mkr)) {
 	      if (MF_UsesEntity(face,v,0)) {
 		MEnt_Mark(face,mkr);
-		Set_Add(vfaces,face);
+		List_Add(vfaces,face);
 		n++;
 	      }
 	    }
 	  }
-	  Set_Delete(rfaces);
+	  List_Delete(rfaces);
 	}
-	Set_Delete(eregions);
+	List_Delete(eregions);
       }
       else {
 	/* perhaps the edge has boundary faces (not connected to regions) */
 	efaces = ME_Faces(edge);
 	if (efaces) {
-	  nf = Set_Num_Entries(efaces);
+	  nf = List_Num_Entries(efaces);
 	  
 	  for (k = 0; k < nf; k++) {
-	    face = Set_Entry(efaces,k);
+	    face = List_Entry(efaces,k);
 	    if (!MEnt_IsMarked(face,mkr)) {
 	      if (MF_UsesEntity(face,v,0)) {
 		MEnt_Mark(face,mkr);
-		Set_Add(vfaces,face);
+		List_Add(vfaces,face);
 		n++;
 	      }
 	    }
 	  }
-	  Set_Delete(efaces);
+	  List_Delete(efaces);
 	}
       }
     }
-    Set_Unmark(vfaces,mkr);
+    List_Unmark(vfaces,mkr);
     MSTK_FreeMarker(mkr);
     if (n > 0)
       return vfaces;
     else {
-      Set_Delete(vfaces);
+      List_Delete(vfaces);
       return 0;
     }
   }
 
-  Set_ptr MV_Regions_F4(MVertex_ptr v) {
+  List_ptr MV_Regions_F4(MVertex_ptr v) {
     MVertex_UpAdj_F1F4 *upadj;
     int i, j, ne, nr, n, mkr;
-    Set_ptr vedges, eregions, vregions;
+    List_ptr vedges, eregions, vregions;
     MEdge_ptr edge;
     MRegion_ptr region;
 
@@ -184,35 +184,35 @@ extern "C" {
     vedges = upadj->vedges;
 
     n = 0;
-    vregions = Set_New(10);
+    vregions = List_New(10);
     mkr = MSTK_GetMarker();
 
     for (i = 0; i < ne; i++) {
-      edge = Set_Entry(vedges,i);
+      edge = List_Entry(vedges,i);
 
       eregions = ME_Regions(edge);
       if (eregions) {
-	nr = Set_Num_Entries(eregions);
+	nr = List_Num_Entries(eregions);
 	
 	for (j = 0; j < nr; j++) {
-	  region = Set_Entry(eregions,j);
+	  region = List_Entry(eregions,j);
 	  if (!MEnt_IsMarked(region,mkr)) {
 	    MEnt_Mark(region,mkr);
-	    Set_Add(vregions,region);
+	    List_Add(vregions,region);
 	    n++;
 	  }
 	}
 	
-	Set_Delete(eregions);
+	List_Delete(eregions);
       }
     }
-    Set_Unmark(vregions,mkr);
+    List_Unmark(vregions,mkr);
     MSTK_FreeMarker(mkr);
 
     if (n > 0)
       return vregions;
     else {
-      Set_Delete(vregions);
+      List_Delete(vregions);
       return 0;
     }
   }
@@ -235,8 +235,8 @@ extern "C" {
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
 
     if (upadj->vedges == NULL)
-      upadj->vedges = Set_New(10);
-    Set_Add(upadj->vedges,e);
+      upadj->vedges = List_New(10);
+    List_Add(upadj->vedges,e);
     (upadj->ne)++;
   }
 
@@ -247,7 +247,7 @@ extern "C" {
 
     if (upadj->vedges == NULL)
       return;
-    if (Set_Rem(upadj->vedges,e))
+    if (List_Rem(upadj->vedges,e))
       (upadj->ne)--;
   }
 

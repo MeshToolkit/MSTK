@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "MSTK_types.h"
-#include "Set.h"
+#include "List.h"
 
 #ifdef _H_MVertex_Private
   typedef struct MVertex {
@@ -27,50 +27,50 @@ extern "C" {
 
   typedef struct MVertex_UpAdj_F1F4 {
     unsigned int ne;
-    Set_ptr vedges;
+    List_ptr vedges;
   } MVertex_UpAdj_F1F4;
 
   typedef struct MVertex_UpAdj_F2 {
     unsigned int nr;
-    Set_ptr vregions;
+    List_ptr vregions;
   } MVertex_UpAdj_F2;
 
   typedef struct MVertex_UpAdj_F3 {
     unsigned int nf;
-    Set_ptr vfaces;
+    List_ptr vfaces;
   } MVertex_UpAdj_F3;
 
   typedef struct MVertex_UpAdj_F5 {
     unsigned int ne;
     unsigned int nf;
     unsigned int nr;
-    Set_ptr vedges;
-    Set_ptr vfaces;
-    Set_ptr vregions;
+    List_ptr vedges;
+    List_ptr vfaces;
+    List_ptr vregions;
   } MVertex_UpAdj_F5;
 
   typedef struct MVertex_UpAdj_F6 {
     unsigned int nf;
     unsigned int nr;
-    Set_ptr vfaces;
-    Set_ptr vregions;
+    List_ptr vfaces;
+    List_ptr vregions;
   } MVertex_UpAdj_F6;
 
   typedef struct MVertex_UpAdj_R1R2 {
     unsigned int nel;
-    Set_ptr velements;
+    List_ptr velements;
   } MVertex_UpAdj_R1R2;
 
   typedef struct MVertex_UpAdj_R3R4 {
     unsigned int nf;
-    Set_ptr vfaces;
+    List_ptr vfaces;
   } MVertex_UpAdj_R3R4;
 
   /*-------  Same Level adjacency definitions --------*/
 
   typedef struct MVertex_SameAdj_R2R4 {
     unsigned int nvadj;
-    Set_ptr adjverts;
+    List_ptr adjverts;
   } MVertex_SameAdj_R2R4;
 
   /*-------- Downward adjacency definitions ----------*/
@@ -102,10 +102,10 @@ extern "C" {
   int MV_Num_Edges(MVertex_ptr mvertex);
   int MV_Num_Faces(MVertex_ptr mvertex);
   int MV_Num_Regions(MVertex_ptr mvertex);
-  Set_ptr MV_AdjVertices(MVertex_ptr mvertex);
-  Set_ptr MV_Edges(MVertex_ptr mvertex);
-  Set_ptr MV_Faces(MVertex_ptr mvertex);
-  Set_ptr MV_Regions(MVertex_ptr mvertex);
+  List_ptr MV_AdjVertices(MVertex_ptr mvertex);
+  List_ptr MV_Edges(MVertex_ptr mvertex);
+  List_ptr MV_Faces(MVertex_ptr mvertex);
+  List_ptr MV_Regions(MVertex_ptr mvertex);
 
   void MV_Add_AdjVertex(MVertex_ptr mvertex, MVertex_ptr adjvertex);
   void MV_Rem_AdjVertex(MVertex_ptr mvertex, MVertex_ptr adjvertex);

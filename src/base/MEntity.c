@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MEntity.h"
-#include "Set.h"
+#include "List.h"
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 
@@ -32,22 +32,22 @@ extern "C" {
     ent->marker = ent->marker & ~(1<<(markerID-1));
   }
 
-  void Set_Mark(Set_ptr list, int markerID) {
+  void List_Mark(List_ptr list, int markerID) {
     MEntity_ptr ent;
-    int i, n = Set_Num_Entries(list);
+    int i, n = List_Num_Entries(list);
     
     for (i = 0; i < n; i++) {
-      ent = (MEntity_ptr) Set_Entry(list,i);
+      ent = (MEntity_ptr) List_Entry(list,i);
       MEnt_Mark(ent,markerID);
     }
   }
 
-  void Set_Unmark(Set_ptr list, int markerID) {
+  void List_Unmark(List_ptr list, int markerID) {
     MEntity_ptr ent;
-    int i, n = Set_Num_Entries(list);
+    int i, n = List_Num_Entries(list);
     
     for (i = 0; i < n; i++) {
-      ent = (MEntity_ptr) Set_Entry(list,i);
+      ent = (MEntity_ptr) List_Entry(list,i);
       MEnt_Unmark(ent,markerID);
     }
   }
