@@ -23,20 +23,62 @@ extern "C" {
     sameadj->adjverts = List_New(10);
   }
 
-  void MV_Delete_R4(MVertex_ptr v) {
+  void MV_Delete_R4(MVertex_ptr v, int keep) {
     MVertex_UpAdj_R3R4 *upadj;
     MVertex_SameAdj_R2R4 *sameadj;
-   
-    upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
-    List_Delete(upadj->vfaces);
-    MSTK_free(upadj);
+    int i, nvadj;
+    MVertex_ptr adjv;
+
+    if (v->dim != MDELVERTEX) { /* if vertex has not been temporarily deleted*/
+      sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+      nvadj = sameadj->nvadj;
+      for (i = 0; i < nvadj; i++) {
+	adjv = List_Entry(sameadj->adjverts,i);
+	MV_Rem_AdjVertex_R4(adjv,v);
+      }
+    }
+
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      v->dim = MDELVERTEX;
+    }
+    else {
+#ifdef DEBUG
+      v->dim = MDELVERTEX;
+#endif
+
+      upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
+      List_Delete(upadj->vfaces);
+      MSTK_free(upadj);
+      
+      sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+      List_Delete(sameadj->adjverts);
+      MSTK_free(sameadj);
+    }
+  }
+
+  void MV_Restore_R4(MVertex_ptr v) {
+    MVertex_SameAdj_R2R4 *sameadj;
+    int i, nvadj;
+    MVertex_ptr adjv;
+
+    if (v->dim != MDELVERTEX)
+      return;
+
+    v->dim = MVERTEX;
 
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    List_Delete(sameadj->adjverts);
-    MSTK_free(sameadj);
+    nvadj = sameadj->nvadj;
+    for (i = 0; i < nvadj; i++) {
+      adjv = List_Entry(sameadj->adjverts,i);
+      MV_Add_AdjVertex_R4(adjv,v);
+    }
   }
 
   int MV_Num_AdjVertices_R4(MVertex_ptr v) {
+    int nvadj1, nvadj, i;
+    MVertex_ptr av;
+    
     return ((MVertex_SameAdj_R2R4 *)v->sameadj)->nvadj;
   }
 

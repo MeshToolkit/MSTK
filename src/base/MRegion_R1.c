@@ -18,13 +18,54 @@ extern "C" {
     downadj->rvertices = NULL;
   }
 
-  void MR_Delete_R1(MRegion_ptr r) {
+  void MR_Delete_R1(MRegion_ptr r, int keep) {
     MRegion_DownAdj_R1R2 *downadj;
+    int i, nv;
+    MVertex_ptr v;
+
+    if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
+      downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
+      nv = downadj->nv;
+      for (i = 0; i < nv; i++) {
+	v = List_Entry(downadj->rvertices,i);
+	MV_Rem_Region(v,r);
+      }
+    }
+      
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      r->dim = MDELREGION;
+    }
+    else {
+#ifdef DEBUG
+	r->dim = MDELREGION;
+#endif
+
+      List_Delete(downadj->rvertices);
+      MSTK_free(downadj);
+
+      MSTK_free(r);
+    }
+  }
+
+  void MR_Restore_R1(MRegion_ptr r) {
+    MRegion_DownAdj_R1R2 *downadj;
+    int i, nv;
+    MVertex_ptr v;
+
+    if (r->dim != MDELREGION)
+      return;
+
+    r->dim = MREGION;
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
-    List_Delete(downadj->rvertices);
-    MSTK_free(downadj);
+    nv = downadj->nv;
+    for (i = 0; i < nv; i++) {
+      v = List_Entry(downadj->rvertices,i);
+      MV_Add_Region(v,r);
+    }
   }
+
 
   void MR_Set_Vertices_R1(MRegion_ptr r, int nv, MVertex_ptr *rvertices) {
     int i;
@@ -69,7 +110,7 @@ extern "C" {
 		WARN);
 #endif
 
-    adjr = MR_AdjRegions(r);
+    adjr = MR_AdjRegions_R1(r);
     if (adjr) {
       nr = List_Num_Entries(adjr);
       List_Delete(adjr);
@@ -96,7 +137,7 @@ extern "C" {
   }
 
   List_ptr MR_AdjRegions_R1(MRegion_ptr r) {
-    MSTK_Report("MR_Faces","Not yet implemented for this representation",WARN);
+    MSTK_Report("MR_AdjRegions","Not yet implemented for this representation",WARN);
     return NULL;
   }
 

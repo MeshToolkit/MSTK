@@ -18,12 +18,28 @@ extern "C" {
     upadj->vedges = List_New(10);
   }
 
-  void MV_Delete_F4(MVertex_ptr v) {
+  void MV_Delete_F4(MVertex_ptr v, int keep) {
     MVertex_UpAdj_F1F4 *upadj;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    List_Delete(upadj->vedges);
-    MSTK_free(upadj);
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      v->dim = MDELVERTEX;
+    }
+    else {
+#ifdef DEBUG
+      v->dim = MDELVERTEX;
+#endif
+
+      upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
+      List_Delete(upadj->vedges);
+      MSTK_free(upadj);
+    }
+  }
+
+  void MV_Restore_F4(MVertex_ptr v) {
+    if (v->dim != MDELVERTEX)
+      return;
+    v->dim = MVERTEX;
   }
 
   int MV_Num_AdjVertices_F4(MVertex_ptr v) {
@@ -117,7 +133,6 @@ extern "C" {
 
     for (i = 0; i < ne; i++) {
       edge = List_Entry(vedges,i);
-
       eregions = ME_Regions(edge);
       if (eregions) {
 	nr = List_Num_Entries(eregions);
@@ -130,8 +145,9 @@ extern "C" {
 	  
 	  for (k = 0; k < nf; k++) {
 	    face = List_Entry(rfaces,k);
+
 	    if (!MEnt_IsMarked(face,mkr)) {
-	      if (MF_UsesEntity(face,v,0)) {
+	      if (MF_UsesEntity(face,v,0)) {		
 		MEnt_Mark(face,mkr);
 		List_Add(vfaces,face);
 		n++;
@@ -196,6 +212,7 @@ extern "C" {
 	
 	for (j = 0; j < nr; j++) {
 	  region = List_Entry(eregions,j);
+
 	  if (!MEnt_IsMarked(region,mkr)) {
 	    MEnt_Mark(region,mkr);
 	    List_Add(vregions,region);

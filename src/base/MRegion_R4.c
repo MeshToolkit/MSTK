@@ -13,8 +13,12 @@ extern "C" {
     MR_Set_RepType_FNR3R4(r);
   }
 
-  void MR_Delete_R4(MRegion_ptr r) {
-    MR_Delete_F1F3R3R4(r);
+  void MR_Delete_R4(MRegion_ptr r, int keep) {
+    MR_Delete_F1F3R3R4(r,keep);
+  }
+
+  void MR_Restore_R4(MRegion_ptr r) {
+    MR_Restore_F1F3R3R4(r);
   }
 
   void MR_Set_Faces_R4(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {

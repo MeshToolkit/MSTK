@@ -17,12 +17,28 @@ extern "C" {
     upadj->velements = List_New(10);
   }
 
-  void MV_Delete_R1(MVertex_ptr v) {
+  void MV_Delete_R1(MVertex_ptr v, int keep) {
     MVertex_UpAdj_R1R2 *upadj;
 
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    List_Delete(upadj->velements);
-    MSTK_free(upadj);
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      v->dim = MDELVERTEX;
+    }
+    else {
+#ifdef DEBUG
+      v->dim = MDELVERTEX;
+#endif
+
+      upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
+      List_Delete(upadj->velements);
+      MSTK_free(upadj);
+    }
+  }
+
+  void MV_Restore_R1(MVertex_ptr v) {
+    if (v->dim != MDELVERTEX)
+      return;
+    v->dim = MVERTEX;
   }
 
   int MV_Num_AdjVertices_R1(MVertex_ptr v) {
@@ -53,7 +69,7 @@ extern "C" {
   int MV_Num_Faces_R1(MVertex_ptr v) {
     int nf;
     List_ptr vfaces;
-
+    
 #ifdef DEBUG
     MSTK_Report("MV_Num_Faces",
 		"Inefficient to call this routine with this representation",
@@ -78,7 +94,7 @@ extern "C" {
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
     for (i = 0; i < upadj->nel; i++) {
       ent = (MEntity_ptr) List_Entry(upadj->velements,i);
-      if (MEnt_Dim(ent) == 3)
+      if (MEnt_Dim(ent) == MREGION)
 	nr++;
     }
     return nr;
@@ -104,7 +120,7 @@ extern "C" {
 
   List_ptr MV_Regions_R1(MVertex_ptr v) {
     MVertex_UpAdj_R1R2 *upadj;
-    int i, nr = 0;
+    int i, nr = 0, dim;
     MEntity_ptr ent;
     List_ptr vregions;
 

@@ -21,19 +21,58 @@ extern "C" {
     sameadj->adjverts = List_New(10);
   }
 
-  void MV_Delete_R2(MVertex_ptr v) {
+  void MV_Delete_R2(MVertex_ptr v, int keep) {
     MVertex_UpAdj_R1R2 *upadj;
     MVertex_SameAdj_R2R4 *sameadj;
+    int i, nvadj;
+    MVertex_ptr adjv;
 
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    List_Delete(upadj->velements);
-    MSTK_free(upadj);
+    if (v->dim != MDELVERTEX) { /* if vertex has not been temporarily deleted*/
+      sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+      nvadj = sameadj->nvadj;
+      for (i = 0; i < nvadj; i++) {
+	adjv = List_Entry(sameadj->adjverts,i);
+	MV_Rem_AdjVertex_R2(adjv,v);
+      }
+    }
 
-    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    List_Delete(sameadj->adjverts);
-    MSTK_free(sameadj);
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      v->dim = MDELVERTEX;
+    }
+    else {
+#ifdef DEBUG
+      v->dim = MDELVERTEX;
+#endif
+
+      upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
+      List_Delete(upadj->velements);
+      MSTK_free(upadj);
+      
+      List_Delete(sameadj->adjverts);
+      MSTK_free(sameadj);
+
+      MSTK_free(v);
+    }
   }
     
+  void MV_Restore_R2(MVertex_ptr v) {
+    MVertex_SameAdj_R2R4 *sameadj;
+    int i, nvadj;
+    MVertex_ptr adjv;
+
+    if (v->dim != MDELVERTEX)
+      return;
+
+    v->dim = MVERTEX;
+
+    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+    nvadj = sameadj->nvadj;
+    for (i = 0; i < nvadj; i++) {
+      adjv = List_Entry(sameadj->adjverts,i);
+      MV_Add_AdjVertex_R2(adjv,v);
+    }
+  }    
 
   int MV_Num_AdjVertices_R2(MVertex_ptr v) {
     return ((MVertex_SameAdj_R2R4 *) v->sameadj)->nvadj;
@@ -71,7 +110,7 @@ extern "C" {
     upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
     for (i = 0; i < upadj->nel; i++) {
       ent = (MEntity_ptr) List_Entry(upadj->velements,i);
-      if (MEnt_Dim(ent) == 3)
+      if (MEnt_Dim(ent) == MREGION)
 	nr++;
     }
     return nr;
@@ -80,6 +119,7 @@ extern "C" {
   List_ptr MV_AdjVertices_R2(MVertex_ptr v) {
     MVertex_SameAdj_R2R4 *sameadj;
     sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+
     return List_Copy(sameadj->adjverts);
   }
 

@@ -13,7 +13,7 @@ extern "C" {
     MSTK_Report("ME_Set_RepType_R4","Not implemented",ERROR);
   }
 
-  void ME_Delete_R4(MEdge_ptr e) {
+  void ME_Delete_R4(MEdge_ptr e, int keep) {
     MSTK_Report("ME_Delete_R4","Not implemented",ERROR);
  }
 

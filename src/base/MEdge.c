@@ -33,9 +33,16 @@ extern "C" {
     return e;
   }
 
-  void ME_Delete(MEdge_ptr e) {
-    MESH_Rem_Edge(e->mesh,e);
-    (*ME_Delete_jmp[e->repType])(e);
+  void ME_Delete(MEdge_ptr e, int keep) {
+    if (e->dim != MDELEDGE)
+      MESH_Rem_Edge(e->mesh,e);
+    (*ME_Delete_jmp[e->repType])(e,keep);
+  }
+
+  void ME_Restore(MEdge_ptr e) {
+    if (e->dim == MDELEDGE)
+      MESH_Add_Edge(e->mesh,e);
+    (*ME_Restore_jmp[e->repType])(e);
   }
 
   void ME_Set_RepType(MEdge_ptr e, RepType rtype) {
@@ -142,9 +149,6 @@ extern "C" {
     (*ME_Rem_Region_jmp[e->repType])(e,r);
   }
 
-  void ME_Dummy1(MEdge_ptr e) {
-    return;
-  }
 
 
   MEdge_ptr MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2) {
@@ -177,6 +181,14 @@ extern "C" {
     List_Delete(vedges);
 
     return (found ? edge : 0);
+  }
+
+  void ME_Dummy1(MEdge_ptr e) {
+    return;
+  }
+
+  void ME_Dummy2(MEdge_ptr e, int i) {
+    return;
   }
 
 #ifdef __cplusplus

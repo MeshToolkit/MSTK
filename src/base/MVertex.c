@@ -35,9 +35,16 @@ extern "C" {
     return v;
   } 
 
-  void MV_Delete(MVertex_ptr v) {
-    MESH_Rem_Vertex(v->mesh,v);
-    (*MV_Delete_jmp[v->repType])(v);
+  void MV_Delete(MVertex_ptr v, int keep) {
+    if (v->dim != MDELVERTEX)
+      MESH_Rem_Vertex(v->mesh,v);
+    (*MV_Delete_jmp[v->repType])(v,keep);
+  }
+
+  void MV_Restore(MVertex_ptr v) {
+    if (v->dim == MDELVERTEX)
+      MESH_Add_Vertex(v->mesh,v);
+    (*MV_Restore_jmp[v->repType])(v);
   }
 
   void MV_Set_RepType(MVertex_ptr v, RepType rtype) {

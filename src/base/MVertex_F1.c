@@ -18,14 +18,30 @@ extern "C" {
     upadj->vedges = List_New(10);
   }
 
-  void MV_Delete_F1(MVertex_ptr v) {
+  void MV_Delete_F1(MVertex_ptr v, int keep) {
     MVertex_UpAdj_F1F4 *upadj;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    List_Delete(upadj->vedges);
-    MSTK_free(upadj);
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      v->dim = MDELVERTEX;
+    }
+    else {
+#ifdef DEBUG
+      v->dim = MDELVERTEX;
+#endif
 
-    MSTK_free(v);
+      upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
+      List_Delete(upadj->vedges);
+      MSTK_free(upadj);
+
+      MSTK_free(v);
+    }
+  }
+
+  void MV_Restore_F1(MVertex_ptr v) {
+    if (v->dim != MDELVERTEX)
+      return;
+    v->dim = MVERTEX;
   }
 
   int MV_Num_AdjVertices_F1(MVertex_ptr v) {
@@ -94,8 +110,8 @@ extern "C" {
     
 
   List_ptr MV_Edges_F1(MVertex_ptr v) {
-    List_ptr vedges;
     MVertex_UpAdj_F1F4 *upadj;
+    List_ptr vedges;
 
     upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
     vedges = List_Copy(upadj->vedges);

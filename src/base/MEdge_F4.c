@@ -17,12 +17,40 @@ extern "C" {
     upadj->elements = List_New(10);
   }
 
-  void ME_Delete_F4(MEdge_ptr e) {
+  void ME_Delete_F4(MEdge_ptr e, int keep) {
     MEdge_UpAdj_F4 *upadj;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
-    List_Delete(upadj->elements);
-    MSTK_free(upadj);
+    if (e->dim != MDELEDGE) { /* if edge has not been temporarily deleted */
+      MV_Rem_Edge(e->vertex[0],e);
+      MV_Rem_Edge(e->vertex[1],e);
+    }
+
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      e->dim = MDELEDGE;
+    }
+    else {
+#ifdef DEBUG
+      e->dim = MDELEDGE;
+#endif
+
+      upadj = (MEdge_UpAdj_F4 *) e->upadj;
+      List_Delete(upadj->elements);
+      MSTK_free(upadj);
+      
+      MSTK_free(e);
+    }
+  }
+
+  void ME_Restore_F4(MEdge_ptr e) {
+ 
+    if (e->dim != MDELEDGE)
+      return;
+
+    e->dim = MEDGE;
+
+    MV_Add_Edge(e->vertex[0],e);
+    MV_Add_Edge(e->vertex[1],e);
   }
 
   int ME_Num_Faces_F4(MEdge_ptr e) {
@@ -74,14 +102,14 @@ extern "C" {
     for (i = 0; i < nel; i++) {
       ent = (MEntity_ptr) List_Entry(upadj->elements,i);
       dim = MEnt_Dim(ent);
-      if (dim == 2) {
+      if (dim == MFACE) {
 	if (!MEnt_IsMarked(ent,j)) {
 	  MEnt_Mark(ent,mkr);
 	  List_Add(efaces,ent);
 	  nf++;
 	}
       }
-      else if (dim == 3) {
+      else if (dim == MREGION) {
 	rfaces = MR_Faces((MRegion_ptr)ent);
 	nrf = List_Num_Entries(rfaces);
 
@@ -128,7 +156,7 @@ extern "C" {
     nel = upadj->nel;
     for (i = 0; i < nel; i++) {
       ent = List_Entry(upadj->elements,i);
-      if (MEnt_Dim(ent) == 3) {
+      if (MEnt_Dim(ent) == MREGION) {
 	List_Add(eregs,ent);
 	nr++;
       }

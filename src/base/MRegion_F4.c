@@ -13,7 +13,7 @@ extern "C" {
     MR_Set_RepType_FNR3R4(r);
   }
 
-  void MR_Delete_F4(MRegion_ptr r) {
+  void MR_Delete_F4(MRegion_ptr r, int keep) {
     MRegion_DownAdj_FN *downadj;
     MFace_ptr f;
     MEdge_ptr e;
@@ -22,23 +22,65 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
 
+    if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
+      nf = List_Num_Entries(downadj->rfaces);
+      for (i = 0; i < nf; i++) {
+	f = List_Entry(downadj->rfaces,i);
+	
+	fedges = MF_Edges(f,1,0);
+	ne = List_Num_Entries(fedges);
+	for (j = 0; j < ne; j++) {
+	  e = List_Entry(fedges,j);
+	  ME_Rem_Region(e,r);
+	}
+	List_Delete(fedges);
+      }
+    }
+
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      r->dim = MDELREGION;
+    }
+    else {
+#ifdef DEBUG
+      r->dim = MDELREGION;
+#endif
+
+      List_Delete(downadj->rfaces);
+      MSTK_free(downadj);
+      
+      MSTK_free(r);
+    }
+  }
+
+  void MR_Restore_F4(MRegion_ptr r) {
+    MRegion_DownAdj_FN *downadj;
+    MFace_ptr f;
+    MEdge_ptr e;
+    List_ptr fedges;
+    int i, j, nf, ne;
+
+    if (r->dim != MDELREGION)
+      return;
+
+    r->dim = MREGION;
+
+    downadj = (MRegion_DownAdj_FN *) r->downadj;
+
     nf = List_Num_Entries(downadj->rfaces);
     for (i = 0; i < nf; i++) {
       f = List_Entry(downadj->rfaces,i);
-      
+
       fedges = MF_Edges(f,1,0);
       ne = List_Num_Entries(fedges);
       for (j = 0; j < ne; j++) {
-	e = List_Entry(fedges,j);
-	ME_Rem_Region(e,r);
+        e = List_Entry(fedges,j);
+        ME_Add_Region(e,r);
       }
       List_Delete(fedges);
     }
-    List_Delete(downadj->rfaces);
-    MSTK_free(downadj);
-
-    MSTK_free(r);
   }
+
 
   void MR_Set_Faces_F4(MRegion_ptr r, int nf, MFace_ptr *rfaces, int *dirs) {
     int i, j, ne;

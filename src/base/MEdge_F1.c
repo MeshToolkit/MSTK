@@ -17,17 +17,38 @@ extern "C" {
     upadj->efaces = List_New(10);
   }
 
-  void ME_Delete_F1(MEdge_ptr e) {
+  void ME_Delete_F1(MEdge_ptr e, int keep) {
     MEdge_UpAdj_F1 *upadj;
 
-    upadj = (MEdge_UpAdj_F1 *) e->upadj;
-    List_Delete(upadj->efaces);
-    MSTK_free(upadj);
+    if (e->dim != MDELEDGE) { /* if edge has not been temporarily deleted */
+      MV_Rem_Edge(e->vertex[0],e);
+      MV_Rem_Edge(e->vertex[1],e);
+    }
 
-    MV_Rem_Edge(e->vertex[0],e);
-    MV_Rem_Edge(e->vertex[1],e);
+    if (keep) {
+      MSTK_KEEP_DELETED = 1;
+      e->dim = MDELEDGE;
+    }
+    else {
+#ifdef DEBUG
+      e->dim = MDELEDGE;
+#endif
 
-    MSTK_free(e);
+      upadj = (MEdge_UpAdj_F1 *) e->upadj;
+      List_Delete(upadj->efaces);
+      MSTK_free(upadj);
+      
+      MSTK_free(e);
+    }
+  }
+
+  void ME_Restore_F1(MEdge_ptr e) {
+    if (e->dim != MDELEDGE)
+      return;
+
+    e->dim = MEDGE;
+    MV_Add_Edge(e->vertex[0],e);
+    MV_Add_Edge(e->vertex[1],e);
   }
 
   int ME_Num_Faces_F1(MEdge_ptr e) {
@@ -69,6 +90,7 @@ extern "C" {
 
     for (i = 0; i < upadj->nf; i++) {
       eface = List_Entry(upadj->efaces,i);
+
       for (j = 0; j < 2; j++) {
 	freg = MF_Region(eface,j);
 	if (freg && !MEnt_IsMarked(freg,mkr)) {

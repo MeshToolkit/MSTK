@@ -37,9 +37,16 @@ extern "C" {
     return r;
   }
 
-  void MR_Delete(MRegion_ptr r) {
-    MESH_Rem_Region(r->mesh,r);
-    (*MR_Delete_jmp[r->repType])(r);
+  void MR_Delete(MRegion_ptr r, int keep) {
+    if (r->dim != MDELREGION)
+      MESH_Rem_Region(r->mesh,r);
+    (*MR_Delete_jmp[r->repType])(r,keep);
+  }
+
+  void MR_Restore(MRegion_ptr r) {
+    if (r->dim == MDELREGION)
+      MESH_Add_Region(r->mesh,r);
+    (*MR_Restore_jmp[r->repType])(r);
   }
 
   void MR_Set_RepType(MRegion_ptr r, RepType rtype) {
