@@ -23,8 +23,9 @@ extern "C" {
     int i, nv;
     MVertex_ptr v;
 
+    downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
+
     if (r->dim != MDELREGION) { /* if region has not been temporarily deleted */
-      downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
       nv = downadj->nv;
       for (i = 0; i < nv; i++) {
 	v = List_Entry(downadj->rvertices,i);
