@@ -31,8 +31,11 @@ extern "C" {
 #endif
 
       upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-      List_Delete(upadj->vedges);
-      MSTK_free(upadj);
+      if (upadj) {
+	if (upadj->vedges)
+	  List_Delete(upadj->vedges);
+	MSTK_free(upadj);
+      }
 
       MSTK_free(v);
     }
@@ -42,6 +45,19 @@ extern "C" {
     if (v->dim != MDELVERTEX)
       return;
     v->dim = MVERTEX;
+  }
+
+  void MV_Destroy_For_MESH_Delete_F1(MVertex_ptr v) {
+    MVertex_UpAdj_F1F4 *upadj;
+
+    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
+    if (upadj) {
+      if (upadj->vedges)
+	List_Delete(upadj->vedges);
+      MSTK_free(upadj);
+    }
+    
+    MSTK_free(v);
   }
 
   int MV_Num_AdjVertices_F1(MVertex_ptr v) {
