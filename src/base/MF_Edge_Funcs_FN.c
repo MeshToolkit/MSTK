@@ -12,7 +12,12 @@ extern "C" {
     int i;
     MFace_DownAdj_FN *downadj;
 
-    downadj = (MFace_DownAdj_FN *) f->downadj;
+#ifdef DEBUG
+    if (n > 32)
+      MSTK_Report("MF_Set_Edges_FN","Currently, only 32 edges supported per face",ERROR);
+#endif
+
+    downadj = (MFace_DownAdj_FN *) f->downadj
 
     downadj->ne = n;
     downadj->edirs = 0;
@@ -405,6 +410,11 @@ extern "C" {
 
   int MF_EdgeDir_i_FN(MFace_ptr f, int i) {
     MFace_DownAdj_FN *downadj;
+
+#ifdef DEBUG
+    if (i > 31)
+      MSTK_Report("MF_Set_Edges_FN","Currently, only 32 edges supported per face",ERROR);
+#endif
 
     downadj = (MFace_DownAdj_FN *) f->downadj;
 
