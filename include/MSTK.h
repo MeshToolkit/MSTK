@@ -30,10 +30,12 @@ void        MSTK_Init();
   int        MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename);
   int        MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
 			       const char *format, const int natt, 
-			       const char **attnames);
+			       const char **attnames, int *opts);
   int        MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
-			      const int natt, const char **attnames);
-  void       MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
+			      const int natt, const char **attnames, 
+			      int *opts);
+  int        MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
+  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
   int        MESH_BuildClassfn(Mesh_ptr mesh);
   int        MESH_DelInterior(Mesh_ptr mesh);
 
@@ -68,6 +70,9 @@ void        MSTK_Init();
 
   void       MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom);
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
+
+  void       MESH_Renumber(Mesh_ptr mesh);
+
 
 /********************************************************************/
 /*        MESH VERTEX OPERATORS                                     */
@@ -193,7 +198,6 @@ void        MSTK_Init();
   void MF_Coords(MFace_ptr mface, int *n, double (*xyz)[3]);
 
 
-
 /********************************************************************/
 /*        MESH REGN OPERATORS                                       */
 /********************************************************************/
@@ -262,6 +266,10 @@ void        MSTK_Init();
   GEntity_ptr MEnt_GEntity(MEntity_ptr mentity);
   RepType     MEnt_RepType(MEntity_ptr mentity);
   
+  void  MEnt_Delete(MEntity_ptr mentity, int keep);
+
+  /* Attributes on entities */
+  
   void  MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
 			double lval, void *pval);
   void  MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
@@ -269,16 +277,17 @@ void        MSTK_Init();
 			double *lval, void **pval);  
   void  MEnt_Rem_AllAttVals(MEntity_ptr);
 
-  void MEnt_Delete(MEntity_ptr mentity, int keep);
+
+
 
   /************************************************************************/
   /* ENTITY MARKING                                                       */
   /************************************************************************/
 
-  int MSTK_GetMarker();
+  int  MSTK_GetMarker();
   void MSTK_FreeMarker(int mkr);
   void MEnt_Mark(MEntity_ptr ent, int mkr);
-  int MEnt_IsMarked(MEntity_ptr ent, int mkr);
+  int  MEnt_IsMarked(MEntity_ptr ent, int mkr);
   void MEnt_Unmark(MEntity_ptr ent, int mkr);
   void List_Mark(List_ptr list, int mkr);
   void List_Unmark(List_ptr list, int mkr);
@@ -300,10 +309,10 @@ void        MSTK_Init();
 /*  SOME GENERIC OPERATORS FOR MESH REGIONS BASED ON TYPE AND CONVENTION */
 /*************************************************************************/
 
-int         RType_NumVerts(MRType type);
-int         RType_NumFaces(MRType type);
-int         RType_NumFVerts(MRType type, int locfnum);
-int         RType_LocFVNums(MRType type, int locfnum, MVertex_ptr *lverts);
+  int         RType_NumVerts(MRType type);
+  int         RType_NumFaces(MRType type);
+  int         RType_NumFVerts(MRType type, int locfnum);
+  int         RType_LocFVNums(MRType type, int locfnum, MVertex_ptr *lverts);
 
 
 /***********************************************************************/
@@ -327,14 +336,23 @@ int         RType_LocFVNums(MRType type, int locfnum, MVertex_ptr *lverts);
 
   void MF_CondNums(MFace_ptr f, double *condnums);
 
+
+/**********************************************************************/
+/* MESH + GEOMETRY                                                    */
+/**********************************************************************/
+
+  double MFs_DihedralAngle(MFace_ptr face1, MFace_ptr face2, MEdge_ptr edge);
+  double MEs_Angle(MEdge_ptr e1, MEdge_ptr e2);
+
+
 /*******************************************/
 /* UTILITIES                               */
 /*******************************************/
 
-void        MSTK_Report(const char *module, const char *message, ErrType severity);
+  void MSTK_Report(const char *module, const char *message, ErrType severity);
 
 #ifdef DEBUG
-  void        List_PrintID(List_ptr l);
+  void List_PrintID(List_ptr l);
 #endif
 
 
