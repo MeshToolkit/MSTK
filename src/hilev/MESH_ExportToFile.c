@@ -7,10 +7,10 @@ extern "C" {
 #endif
 
 int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
-		      const int natt, const char **attnames) {
+		      const int natt, const char **attnames, int *opts) {
 
   if (strncmp(format,"gmv",3) == 0) {
-    return MESH_ExportToGMV(mesh,filename,natt,attnames);
+    return MESH_ExportToGMV(mesh,filename,natt,attnames,opts);
   }
   /*  else (strncmp(format,"avs",3) == 0) {
     return MESH_ImportFromUCD(mesh,filename,natt,attnames);
