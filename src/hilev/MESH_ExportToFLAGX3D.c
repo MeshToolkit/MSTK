@@ -36,7 +36,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MEdge_ptr             edge;
   MFace_ptr	        face;
   MRegion_ptr           region;
-  MAttrib_ptr           attrib, *nodatts, *cellatts, oppatt;
+  MAttrib_ptr           attrib, *nodatts=NULL, *cellatts=NULL, oppatt;
   MAttType              atttype;
   char                  attname[256], matname[256], date_str[256], tmpstr[256];
   int                   jv, je, jr, jf;
@@ -1018,7 +1018,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     fprintf(fp,"%s\n",tmpstr);
   }
 
-  MSTK_free(nodatts);
+  if (nodatts) MSTK_free(nodatts);
+  if (cellatts) MSTK_free(cellatts);
   
   fprintf(fp,"end_node_data\n");
 
