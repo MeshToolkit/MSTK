@@ -34,6 +34,9 @@ void        MSTK_Init();
   int        MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
 			      const int natt, const char **attnames, 
 			      int *opts);
+  int        MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
+			      const int natt, const char **attnames, 
+			      int *opts);
   int        MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
   int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
   int        MESH_BuildClassfn(Mesh_ptr mesh);
