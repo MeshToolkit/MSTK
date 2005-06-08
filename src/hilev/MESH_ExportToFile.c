@@ -12,6 +12,9 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
   if (strncmp(format,"gmv",3) == 0) {
     return MESH_ExportToGMV(mesh,filename,natt,attnames,opts);
   }
+  else if (strncmp(format,"flag",4) == 0) {
+    return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts);
+  }
   /*  else (strncmp(format,"avs",3) == 0) {
     return MESH_ImportFromUCD(mesh,filename,natt,attnames);
     } */
