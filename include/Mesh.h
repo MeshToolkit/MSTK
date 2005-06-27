@@ -26,7 +26,7 @@ extern "C" {
 
   Mesh_ptr   MESH_New(RepType type);
   int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
-  void       MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
+  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
   void       MESH_Delete(Mesh_ptr mesh);
   
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
