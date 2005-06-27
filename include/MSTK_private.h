@@ -136,6 +136,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int         MAttIns_Get_Value(MAttIns_ptr att, int *ival, double *rval, void **pval);
   void        MAttIns_Delete(MAttIns_ptr att);
 
+  /* Building mesh classification (only top level function in MSTK.h) */
+
+  int MESH_BuildFaceClassfn(Mesh_ptr mesh);
+  int MESH_BuildEdgeClassfn(Mesh_ptr mesh);
+  int MESH_BuildVertexClassfn(Mesh_ptr mesh);
 
 #ifdef __cplusplus
 	   }
