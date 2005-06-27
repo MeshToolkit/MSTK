@@ -53,7 +53,8 @@ fi
 if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
 then
   cp $LOCAL_INCDIR/MSTK.h $LOCAL_INCDIR/MSTK_defines.h \
-     $LOCAL_INCDIR/MSTK_types.h $INSTALL_INCDIR
+     $LOCAL_INCDIR/MSTK_types.h $LOCAL_INCDIR/MSTK_externs.h \
+     $INSTALL_INCDIR
 fi
 
 
