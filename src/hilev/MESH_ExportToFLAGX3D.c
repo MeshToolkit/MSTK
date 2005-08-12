@@ -435,7 +435,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     /* Solid mesh                                              */
     /***********************************************************/
 
-    idx = 0; k = 0;
+    idx = 0;
     while ((face = MESH_Next_Face(mesh,&idx))) {
 
       fregs = MF_Regions(face);
@@ -775,14 +775,16 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   fprintf(fp,"cells\n");
   if (nr) {
 
-    idx = 0;
+    idx = 0;    
     while ((region = MESH_Next_Region(mesh,&idx))) {
       fprintf(fp,"% 10d",MR_ID(region));
+      k = 1;
 
       rfaces = MR_Faces(region);
       nrf = List_Num_Entries(rfaces);
-
+      
       fprintf(fp,"% 10d",nrf);
+      k++;
 
       for (jf = 0; jf < nrf; jf++) {
 	face = List_Entry(rfaces,jf);
@@ -796,9 +798,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	  
 	  if (MR_FaceDir_i(region,jf))
 	    fprintf(fp,"% 10d",MF_ID(face));
-	  else {
+	  else
 	    fprintf(fp,"% 10d",oppfid);
-	  }
 	}
 	else {
 	  /* Boundary face */
@@ -808,6 +809,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
 	  fprintf(fp,"% 10d",MF_ID(face));
 	}
+
+	k++;
+	if (k%14 == 0 && jf != nrf-1)
+	  fprintf(fp,"\n");
 	  
       }
 
@@ -825,11 +830,13 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     idx = 0;
     while ((face = MESH_Next_Face(mesh,&idx))) {
       fprintf(fp,"% 10d",MF_ID(face));
+      k = 1;
 
       fedges = MF_Edges(face,1,0);
       nfe = List_Num_Entries(fedges);
 
       fprintf(fp,"% 10d",nfe);
+      k++;
 
       for (je = 0; je < nfe; je++) {
 	edge = List_Entry(fedges,je);
@@ -852,6 +859,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
 	  fprintf(fp,"% 10d",ME_ID(edge));
 	}
+
+	k++;
+	if (k%14 == 0 && je != nfe-1)
+	  fprintf(fp,"\n");
       }
 
       List_Delete(fedges);
