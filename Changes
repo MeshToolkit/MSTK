@@ -1,3 +1,47 @@
 Changes 
 
+* THE DOCUMENTATION HAS NOT YET BEEN UPDATED
+
 * Small improvements in memory footprint
+
+* MESH_BuildClassfn is a much more extensive routine that detects
+  domain or model features such as faces, edges and corners based on
+  topology and geometry. If you import a mesh and lose all
+  classification information, you should call this routine to build
+  this info.
+
+* MESH_ExportToFLAGX3D exports the mesh in the X3D format.
+
+* MESH_ExportToSTL exports the mesh in the STL format
+
+* Added opts arguments to MESH_ExportToFile and MESH_ExportToGMV so
+  specific options may be passed to the Export routines. In
+  particular, in MESH_ExportToGMV, if opts[0] = 0, nodes are written
+  out with the 'nodev' keyword and as triplets of (x,y,z); if it is 1,
+  they are written out with the 'nodes' keyword and all the x
+  coordinates are written out, followed by all the y and z coordinates
+  respectively. If opts[1] = 0, cells are written out with the 'cells'
+  keyword and cells are written out normally as tets, hexes, tris,
+  etc.; if opts[1] = 1, cells are written out as 'vface3d' or
+  'vface2d' elements (See documentation for GMV).
+
+* MESH_Renumber forces mesh entities to be numbered consecutively.
+
+* M*_Set_GInfo_Auto tries to derive a classification for a mesh entity
+  based on the classification of its bounding entities
+
+* MEnt_Set_GEntID/MEnt_GEntID - set/get model entity ID for generic
+  entity
+
+* MEnt_Rem_AllAttVals - Remove all attributes from an entity 
+
+* MFs_DihedralAngle - Dihedral angle between some planar approximation
+  of mesh faces
+
+* MEs_Angle - Angle between two edges
+
+* Other functions that are not ready for primetime yet or are in there
+  in preparation for future releases:
+  - MEs_AreSame, MFs_AreSame
+  - MEnt_IsVolatile 
+  
