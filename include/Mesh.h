@@ -66,7 +66,8 @@ extern "C" {
 
   void       MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom);
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
-
+  
+  void       MESH_Renumber(Mesh_ptr mesh);
 
 #ifdef _cplusplus
 }
