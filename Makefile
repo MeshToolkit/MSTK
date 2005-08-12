@@ -8,7 +8,7 @@ ifeq ($(ARCHOS),i686_linux)
   CC = gcc
   CFLAGS =  -Wall -Wno-unused-variable -ansi
   DEBUGFLAGS = -g -DDEBUG
-  OPTFLAGS = -O -pg
+  OPTFLAGS = -O                 # -pg for PROFILING
   DEFINES = -DLINUX 
   LDFLAGS := -lm
 endif
@@ -16,14 +16,14 @@ endif
 # STANDARD DIRECTORY
 
 TOPDIR = $(HOME)
-MSTKUTIL_VER = 1.3dev
-DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER)
+MSTKUTIL_VER = 1.4
+DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER) 
 
 # DEVELOP DIRECTORY
 
 TOPDIR = $(HOME)/develop
-MSTKUTIL_VER = 1.3dev
-DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include
+MSTKUTIL_VER = 1.4dev
+DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include 
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
