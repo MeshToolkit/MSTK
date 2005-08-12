@@ -11,22 +11,19 @@ DEFINES = -DDEBUG -DDEBUG2
 endif
 
 
-DEPS := mstk/1.1a \
-	mstkutil/1.1a \
-	mcgeom/1.0
+DEPS := mstk/1.4dev \
+	mstkutil/1.4dev
 
 INCDIR   := -I./include $(addsuffix /include,$(addprefix -I$(BASEDIR)/,$(DEPS)))
 LIBDIR := $(addsuffix /lib/$(ARCHOS),$(addprefix -L$(BASEDIR)/,$(DEPS)))
 
 LIBS := $(LIBDIR) \
 	-lmstk-d \
-	-lmstkutil-d \
-	-lmcgeom-d 
+	-lmstkutil-d
 
 OPTLIBS := $(LIBDIR) \
 	-lmstk \
 	-lmstkutil \
-	-lmcgeom 
 
 OTHERLIBS := -lm
 
