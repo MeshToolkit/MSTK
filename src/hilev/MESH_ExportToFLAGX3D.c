@@ -995,7 +995,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     fprintf(fp,"%s\n",tmpstr);
   }
 
-  MSTK_free(cellatts);
+  if (cellatts) MSTK_free(cellatts);
   
   fprintf(fp,"end_cell_data\n");
   
@@ -1007,7 +1007,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   fprintf(fp,"node_data\n");
 
   for (i = 0; i < ncellatt; i++) {
-    attrib = cellatts[i];
+    attrib = nodatts[i];
     atttype = MAttrib_Get_Type(attrib);
 
     MAttrib_Get_Name(attrib,attname);
@@ -1030,7 +1030,6 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   }
 
   if (nodatts) MSTK_free(nodatts);
-  if (cellatts) MSTK_free(cellatts);
   
   fprintf(fp,"end_node_data\n");
 
