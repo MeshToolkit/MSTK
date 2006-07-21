@@ -105,6 +105,13 @@ RepType MESH_RepType(Mesh_ptr mesh) {
   return mesh->reptype;
 }
 
+char *MESH_RepType_Str(Mesh_ptr mesh) {
+  char *rstr = (char *) MSTK_malloc(3*sizeof(char));
+
+  strcpy(rstr,MESH_rtype_str[mesh->reptype]);
+  return rstr;
+}
+
 
 int MESH_Num_Attribs(Mesh_ptr mesh) {
   if (mesh->AttribList)
@@ -1508,6 +1515,16 @@ Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
 
   */
 
+
+  int MESH_Init_ParAtts(Mesh_ptr mesh) {
+    
+    plnumatt = MAttrib_New(mesh,"paratts",POINTER,MALLTYPE);
+
+    if (plnumatt)
+      return 1;
+    else
+      return 0;
+  }
 
 #ifdef __cplusplus
 }
