@@ -38,27 +38,19 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MRegion_ptr           region;
   MAttrib_ptr           attrib, *nodatts=NULL, *cellatts=NULL, oppatt;
   MAttType              atttype;
-  char                  attname[256], matname[256], date_str[256], tmpstr[256];
+  char                  attname[256], matname[256], tmpstr[256];
   int                   jv, je, jr, jf;
-  int                   nv, ne, nf, nr, nrf, nrv, nfv, nef, nfe, nfr;
+  int                   nv, ne, nf, nr, nrf, nfv, nef, nfe, nfr;
   int			i, found, k, nmeshatt, ival;
   int                   nalloc, ngent;
-  int                   attentdim, j, ncells, idx;
+  int                   attentdim, j, idx;
   int                   ndup, max_nrf, max_nfe;
-  int                   oppfid, oppeid, nf2, ne2, dir;
+  int                   oppfid, oppeid, nf2, ne2;
   int                   nnodatt, ncellatt;
-  double		vxyz[3], rval, *xcoord, *ycoord, *zcoord;
+  double		vxyz[3], rval;
   void                 *pval;
   FILE		        *fp;
-  time_t                ctime;
 
-  int			ftmpl[2][4] =   {{0,1,2,-1},{0,1,2,3}};
-
-  int			rtmpl[5][8] =   {{0,2,1,3,-1,-1,-1,-1},
-					 {1,2,3,4,0,-1,-1,-1},
-					 {3,4,5,0,1,2,-1,-1},
-					 {-1,-1,-1,-1,-1,-1,-1,-1},
-					 {4,5,6,7,0,1,2,3}};
 
   if (!(fp = fopen(filename,"w"))) {
     fprintf(stderr,"MESH_ExportToFLAGX3D: Couldn't open output file %s\n",
@@ -1048,7 +1040,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   return 1;
 }
 
+
+
 #ifdef __cplusplus
   }
 #endif
+
 
