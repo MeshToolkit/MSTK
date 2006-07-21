@@ -17,7 +17,7 @@ extern "C" {
 
   double MFs_DihedralAngle(MFace_ptr face1, MFace_ptr face2, MEdge_ptr edge) {
     int i, fnd, nfe1, fedir, nfv1, nfv2;
-    double exyz[2][3], fxyz[MAXPV2][3], vec1[3], vec2[3];
+    double fxyz[MAXPV2][3], vec1[3], vec2[3];
     double normal1[3], normal2[3], dp, mid[3];
     MVertex_ptr fv, ev0, ev1;
     List_ptr fedges1, fedges2, fverts1, fverts2;

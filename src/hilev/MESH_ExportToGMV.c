@@ -52,8 +52,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   MAttrib_ptr           attrib, *outattribs, oppatt;
   MAttType              atttype;
   char                  attname[256], matname[256], date_str[256];
-  int                   jv, jr, jf, nf, nr, gmodel, nrf, nrv, nfv, dir;
-  int			i, found, k, len, suff, nmeshatt, noutatt, ival;
+  int                   jv, jf, gmodel, nrf, nrv, nfv, dir;
+  int			i, found, k, nmeshatt, noutatt, ival;
   int                   nalloc, ngent, fnum, fid, vid, nv, icr;
   int                   attentdim, j, ncells, polygons=0, cellmk, idx;
   int                   ncells1, ncells2, ndup, NFACES, rid0, rid1, rid;
@@ -62,8 +62,6 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   void                 *pval;
   FILE		        *fp;
   time_t                ctime;
-
-  int			ftmpl[2][4] =   {{0,1,2,-1},{0,1,2,3}};
 
   int			rtmpl[5][8] =   {{0,2,1,3,-1,-1,-1,-1},
 					 {1,2,3,4,0,-1,-1,-1},
