@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-void MF_CondNums(MFace_ptr f, double *conds) {
+void MF_CondNums(MFace_ptr f, int *n, double *conds) {
   double xyz[MAXPV2][3], L10_sqr, L20_sqr, L21_sqr, A;
   double xyz1[3][3], eps=1.0E-14;
   int i, k, nfv;
@@ -59,6 +59,8 @@ void MF_CondNums(MFace_ptr f, double *conds) {
     
     conds[i] = (L10_sqr+L20_sqr)/(2*A);
   }
+
+  *n = nfv;
 
   return;
 }
