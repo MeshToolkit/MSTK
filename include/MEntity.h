@@ -80,7 +80,13 @@ extern "C" {
   int   MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);
 
+  /* Adhoc routines for parallel output of MSTK files */
 
+  int MEnt_NumProcs(MEntity_ptr ent);
+  void MEnt_Set_ProcIDs(MEntity_ptr ent, int np, int *procids);
+  int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids);
+  void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
+  int MEnt_LocalID(MEntity_ptr ent, int procid);
   
 #ifdef __cplusplus
 }
