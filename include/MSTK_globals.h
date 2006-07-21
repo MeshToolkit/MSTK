@@ -63,6 +63,9 @@ const int MSTK_rev_template[5][12][2] =
    {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},
     {3,7}}};
 
+
+MAttrib_ptr plnumatt = NULL;
+
 #ifdef __cplusplus
 }
 #endif
