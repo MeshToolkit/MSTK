@@ -40,7 +40,7 @@ fi
 
 if [ "$default" == "y" ]
 then
-  ln -sf $INSTALL_INCDIR $INSTALL_INCDIR_DEFAULT 
+  ln -sfn $INSTALL_INCDIR $INSTALL_INCDIR_DEFAULT 
 fi
 
 ans=y
