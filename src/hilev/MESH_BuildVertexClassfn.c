@@ -16,13 +16,13 @@ extern "C" {
  */
 
 int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
-  int i, j, k, idx, idx2, fnd, fnd2, gvid, gvid2, gdim;
+  int i, j, k, idx, fnd, fnd2, gvid, gdim;
   int ngverts, ngvalloc, ngve, max_loc_geids, *loc_geids;
-  int max_gvert_id, processedmk, submk;
-  int nbe, nve, nsub, *gvids, **gvedgeids, gfid;
+  int max_gvert_id;
+  int nve, *gvids, **gvedgeids, gfid;
   MVertex_ptr vertex;
   MEdge_ptr vedge;
-  List_ptr vedges, vbedges;
+  List_ptr vedges;
 
 
   /* Verify that mesh edges on the boundary have classification
@@ -30,7 +30,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
 
   ngverts = 0; ngvalloc = 10;
   gvids = (int *) malloc(ngvalloc*sizeof(int)); /* model vertex ids */
-  /* Number of model faces connected to vertex followed by model face ids */
+  /* Number of model edges connected to vertex followed by model edge ids */
   gvedgeids = (int **) malloc(ngvalloc*sizeof(int *));
 
 
@@ -59,6 +59,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
       vedges = MV_Edges(vertex);
       nve = List_Num_Entries(vedges);
 
+      /* i is uninitialized here - FIX FIX FIX */
       gvedgeids[i] = (int *) malloc((1+nve)*sizeof(int));
       ngve = 0;
       for (i = 0; i < nve; i++) {

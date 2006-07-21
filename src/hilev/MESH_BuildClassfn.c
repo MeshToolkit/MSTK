@@ -17,16 +17,10 @@ extern "C" {
 
 
 int MESH_BuildClassfn(Mesh_ptr mesh) {
-  int i, k, ok, idx, gid, gdim;
-  int grid0, grid1, gfid0, gfid1, geid0, geid1;
-  int max_greg_id, max_gface_id, max_gedge_id, max_gvertex_id, zeroid;
-  int nfr, nef, nbf, nve, nbe, nbe2, gid2, gdim2, *gfids, (*gfregids)[2];
-  double PI=3.141592, ang, angr;
-  MVertex_ptr vertex;
-  MEdge_ptr edge;
-  MFace_ptr face;
-  MRegion_ptr region, freg0, freg1;
-  List_ptr vedges, efaces, GFfaces, GEedges, GFedges, fregs;
+  int ok, idx, gid;
+  int max_greg_id,  zeroid;
+  double PI=3.141592, ang;
+  MRegion_ptr region;
 
   ang = 5*PI/6.0;  /* 75 degrees */
 
