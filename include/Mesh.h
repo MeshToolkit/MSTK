@@ -31,6 +31,7 @@ extern "C" {
   
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);
+  char      *MESH_RepType_Str(Mesh_ptr mesh);
 
   int         MESH_Num_Attribs(Mesh_ptr mesh);
   MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i);
@@ -69,6 +70,9 @@ extern "C" {
   
   void       MESH_Renumber(Mesh_ptr mesh);
 
+  int        MESH_Init_ParAtts(Mesh_ptr mesh);
+  
+  
 #ifdef _cplusplus
 }
 #endif
