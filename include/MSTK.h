@@ -37,13 +37,19 @@ void        MSTK_Init();
   int        MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
 			      const int natt, const char **attnames, 
 			      int *opts);
+  int        MESH_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
+				      const int nparts, const int natt, 
+				      const char **attnames, int *opts,
+				      int *procids);
   int        MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
   int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
   int        MESH_BuildClassfn(Mesh_ptr mesh);
   int        MESH_DelInterior(Mesh_ptr mesh);
+  int        MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr hexmesh);
 
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);
+  char      *MESH_RepType_Str(Mesh_ptr mesh);
 
   int         MESH_Num_Attribs(Mesh_ptr mesh);
   MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i);
@@ -337,7 +343,8 @@ void        MSTK_Init();
 /* Element quality evaluation                                         */
 /**********************************************************************/
 
-  void MF_CondNums(MFace_ptr f, double *condnums);
+  void MF_CondNums(MFace_ptr f, int *nfv, double *condnums);
+  void MR_CondNums(MRegion_ptr r, int *nrv, double *condnums);
 
 
 /**********************************************************************/
@@ -366,11 +373,19 @@ void        MSTK_Init();
    printed for the entity to the extent available. If it is 2 or
    higher, then adjacency information is printed for the entity */
 
-void MV_Print(MVertex_ptr v, int level);
-void ME_Print(MEdge_ptr e, int level);
-void MF_Print(MFace_ptr f, int level);
-void MR_Print(MRegion_ptr, int level);
+  void MV_Print(MVertex_ptr v, int level);
+  void ME_Print(MEdge_ptr e, int level);
+  void MF_Print(MFace_ptr f, int level);
+  void MR_Print(MRegion_ptr, int level);
 
+  /* Mesh Statistics. If 'level' is 1, only entity counts are
+     printed. If 'level' is 2 or more, then element quality numbers
+     are also printed. If it is 3 or more, additional info about the
+     worst quality element is printed. The routine returns silently,
+     if 'level' is less than 1 */
+
+  void MESH_PrintStats(Mesh_ptr mesh, int level);
+  
 
 #ifdef __cplusplus
 	   }
