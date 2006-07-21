@@ -142,6 +142,19 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_BuildEdgeClassfn(Mesh_ptr mesh);
   int MESH_BuildVertexClassfn(Mesh_ptr mesh);
 
+
+  /* Adhoc routines for parallel output of MSTK files */
+
+  int MESH_Init_ParAtts(Mesh_ptr mesh);
+
+  int MEnt_NumProcs(MEntity_ptr ent);
+  void MEnt_Set_ProcIDs(MEntity_ptr ent, int np, int *procids);
+  int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids);
+  void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
+  int MEnt_LocalID(MEntity_ptr ent, int procid);
+  
+
+
 #ifdef __cplusplus
 	   }
 #endif
