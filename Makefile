@@ -1,4 +1,3 @@
-
 # For now we are just compiling on i686_linux
 #ARCHOS := $(shell ($(HOME)/bin/getarch))
 
@@ -6,64 +5,101 @@ ARCHOS = i686_linux
 
 ifeq ($(ARCHOS),i686_linux)
   CC = gcc
-  CFLAGS =  -Wall -Wno-unused-variable -ansi
+  CFLAGS =  -Wall -Wunused-variable -ansi
   DEBUGFLAGS = -g -DDEBUG
   OPTFLAGS = -O                 # -pg for PROFILING
   DEFINES = -DLINUX 
   LDFLAGS := -lm
 endif
 
+# METIS DIRECTORY
+
+METISDIR = $(HOME)/packages/metis-4.0
+METISINC = $(METISDIR)/Lib
+
+
 # STANDARD DIRECTORY
 
 TOPDIR = $(HOME)
 MSTKUTIL_VER = 1.4
-DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER) 
+DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER) -I$(METISINC)
 
 # DEVELOP DIRECTORY
 
 TOPDIR = $(HOME)/develop
-MSTKUTIL_VER = 1.4dev
-DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include 
+MSTKUTIL_VER = 1.5dev
+DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include -I$(METISINC)
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
+
+.PHONY: all
+all: debug opt
+
 
 LIBDIR = ./lib
 
 INCDIR = -I./include $(DEPINCS) 
 
-dirs := src/base src/hilev src/misc
-temp := $(foreach dir,$(dirs),$(wildcard $(dir)/*.c))
-hdrs := $(foreach dir,$(dirs),$(wildcard $(dir)/*.h))
-files := $(temp) $(foreach dir,$(dirs),$(wildcard $(dir)/*.h))
-srcs := $(notdir $(temp))
+ifeq ($(PAR),1)
+srcdirs := src/base src/hilev src/misc src/par
+else
+srcdirs := src/base src/hilev src/misc
+endif
+incdirs := include
+
+# Sources with path
+
+srcs1 := $(foreach dir,$(srcdirs),$(wildcard $(dir)/*.c))
+
+
+# Headers with path
+
+hdrs := $(foreach dir,$(incdirs),$(wildcard $(dir)/*.h))
+
+
+# Sources without path
+
+srcs := $(notdir $(srcs1))
+
+
+# Object files without path
+
 objs := $(srcs:.c=.o)
+
+
+# Debug object files with path
+
 obj2-d := $(addprefix obj/$(ARCHOS)-d/,$(objs))
+
+
+# Optimized object files with path
+
 obj2 := $(addprefix obj/$(ARCHOS)/,$(objs))
+
+
 VPATH = obj/$(ARCHOS)-d:obj/$(ARCHOS):$(dirs)
+
+
 
 
 # DEBUG VERSION OF THE LIBRARY
 
-mstk : $(obj2-d)
+debug: $(obj2-d)
 	 ar rcv $(LIBDIR)/$(ARCHOS)/libmstk-d.a $^
 
 obj/$(ARCHOS)-d/%.o: src/base/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
-%.o: %.cc
-	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c src/base/$< -o obj/$(ARCHOS)-d/$@
-
 obj/$(ARCHOS)-d/%.o: src/hilev/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
-
-%.o: %.cc
-	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c src/hilev/$< -o obj/$(ARCHOS)-d/$@
 
 obj/$(ARCHOS)-d/%.o: src/misc/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
-%.o: %.cc
-	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c src/misc/$< -o obj/$(ARCHOS)-d/$@
+obj/$(ARCHOS)-d/%.o: src/par/%.c
+	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
+
+
 
 # OPTIMIZED VERSION OF THE LIBRARY
 
@@ -73,31 +109,26 @@ opt : $(obj2)
 obj/$(ARCHOS)/%.o: src/base/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c src/base/$< -o obj/$(ARCHOS)/$@
-
 obj/$(ARCHOS)/%.o: src/hilev/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c src/hilev/$< -o obj/$(ARCHOS)/$@
 
 obj/$(ARCHOS)/%.o: src/misc/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c src/misc/$< -o obj/$(ARCHOS)/$@
+
+obj/$(ARCHOS)/%.o: src/par/%.c
+	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+
+
+# CLEAN
 
 clean :
-	rm $(obj2-d) $(obj2) $(LIBDIR)/$(ARCHOS)/*.a
+	rm -f $(obj2-d) $(obj2) $(LIBDIR)/$(ARCHOS)/*.a
 
-print: $(files)
-	ppc $?
-	touch print
 
-printh: $(hdrs)
-	ppc $?
-	touch  printh
+# DEPEND
 
 depend:
 	makedepend  $(INCDIR) $(temp)
