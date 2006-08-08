@@ -11,9 +11,9 @@ A.      --------- Make and install MSTK Utilities ----------------
 ------------------------------------------------------------------------
 
 1. Unpack the sources by issuing the commands
-     tar xvzf mstkutil.tar.gz   - creates directory mstkutil/N.n
+     tar xvzf MSTK-N.n.tar.gz   - creates directories mstkutil-N.n and mstk-N.n
 
-2. cd to mstkutil/N.n
+2. cd to mstkutil-N.n
 
 3. Type './setup' which will setup subdirs for compilation on i686
    machines running linux. For a different architecture, type ./setup
@@ -69,7 +69,7 @@ NOTE:NOTE:NOTE:
 B.      --------- Use MSTK for code development ----------------
 ------------------------------------------------------------------------
 
-1. Read the manual !!!!! It is in .../mstk/N.n/docs/
+1. Read the manual !!!!! It is in .../mstk-N.n/docs/
 
 2. Include "MSTK.h" in any code that uses MSTK
 
