@@ -1,47 +1,36 @@
 Changes 
 
-* THE DOCUMENTATION HAS NOT YET BEEN UPDATED
+* The make file arguments have changed in this version of MSTK. Now
+  just typing 'make' will make the debug and optimized versions - No
+  need to type 'make' and 'make opt' separately. 'make par' will
+  include the mesh partitioning routines and you must link with METIS
 
-* Small improvements in memory footprint
+* 'install' script forces new links to be made
 
-* MESH_BuildClassfn is a much more extensive routine that detects
-  domain or model features such as faces, edges and corners based on
-  topology and geometry. If you import a mesh and lose all
-  classification information, you should call this routine to build
-  this info.
+* Arguments of MF_CondNums changed to return number of nvertices at
+  which condition number is being returned. This avoids query the face
+  for the number of vertices
 
-* MESH_ExportToFLAGX3D exports the mesh in the X3D format.
+* MR_CondNums added. It is similar to MF_CondNums. The condition
+  number returned at an non-trivalent vertex may be quite arbitrary
+  since it will pick one triplet of edge vectors from the various
+  combinations possible
 
-* MESH_ExportToSTL exports the mesh in the STL format
+* MESH_PrintStats added. If 'lvl' = 1, it will print basic counts for
+  the different types of entities. If 'lvl' = 2, it will print
+  condition numbers for the various elements
 
-* Added opts arguments to MESH_ExportToFile and MESH_ExportToGMV so
-  specific options may be passed to the Export routines. In
-  particular, in MESH_ExportToGMV, if opts[0] = 0, nodes are written
-  out with the 'nodev' keyword and as triplets of (x,y,z); if it is 1,
-  they are written out with the 'nodes' keyword and all the x
-  coordinates are written out, followed by all the y and z coordinates
-  respectively. If opts[1] = 0, cells are written out with the 'cells'
-  keyword and cells are written out normally as tets, hexes, tris,
-  etc.; if opts[1] = 1, cells are written out as 'vface3d' or
-  'vface2d' elements (See documentation for GMV).
+* Added the function MESH_PartitionWithMETIS. To include this
+  functionality you must make using the command 'make par'
 
-* MESH_Renumber forces mesh entities to be numbered consecutively.
+* Added functions MESH_ExportToFLAGX3D_Par and associated functions
+  MESH_Surf_ExportToFLAGX3D_Par and MESH_Vol_ExportToFLAGX3D_Par
 
-* M*_Set_GInfo_Auto tries to derive a classification for a mesh entity
-  based on the classification of its bounding entities
+* Added some stopgap functions to emulate parallel functionality for now.
 
-* MEnt_Set_GEntID/MEnt_GEntID - set/get model entity ID for generic
-  entity
+* Bug fix in MESH_ExportToFLAGX3D
 
-* MEnt_Rem_AllAttVals - Remove all attributes from an entity 
+* Bug fix in MF_CondNums
 
-* MFs_DihedralAngle - Dihedral angle between some planar approximation
-  of mesh faces
-
-* MEs_Angle - Angle between two edges
-
-* Other functions that are not ready for primetime yet or are in there
-  in preparation for future releases:
-  - MEs_AreSame, MFs_AreSame
-  - MEnt_IsVolatile 
-  
+* Added MESH_Tet2Hex (Lipnikov) - creates a new hex mesh by splitting
+  faces and edges of a tet mesh
