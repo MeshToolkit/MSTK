@@ -64,8 +64,17 @@ extern "C" {
     downadj = (MFace_DownAdj_RN *) f->downadj;
     downadj->fvertices = List_New(n);
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++) {
+
+#ifdef DEBUG
+      if (f->mesh != MV_Mesh(v[i]))
+	MSTK_Report("MF_Set_Vertices_RN",
+		    "Face and Vertex are not from the same mesh",
+		    FATAL);
+#endif
+
       List_Add(downadj->fvertices,v[i]);
+    }
   }
 
   void MF_Replace_Vertex_i_RN(MFace_ptr f, int i, MVertex_ptr v) {
@@ -75,6 +84,13 @@ extern "C" {
     if (downadj->fvertices == NULL)
       MSTK_Report("MF_Replace_Vertex_RN",
 		  "No initial set of vertices for face",ERROR);
+
+#ifdef DEBUG
+    if (f->mesh != MV_Mesh(v))
+      MSTK_Report("MF_Set_Vertices_RN",
+		  "Face and Vertex are not from the same mesh",
+		  FATAL);
+#endif
 
     List_Replacei(downadj->fvertices,i,v);
   }
@@ -87,6 +103,13 @@ extern "C" {
       MSTK_Report("MF_Replace_Vertex_RN",
 		  "No initial set of vertices for face",ERROR);
 
+#ifdef DEBUG
+    if (f->mesh != MV_Mesh(v))
+      MSTK_Report("MF_Set_Vertices_RN",
+		  "Face and Vertex are not from the same mesh",
+		  FATAL);
+#endif
+
     List_Replace(downadj->fvertices,v,nuv);
   }
 
@@ -97,6 +120,13 @@ extern "C" {
     if (downadj->fvertices == NULL)
       downadj->fvertices = List_New(4);
 
+#ifdef DEBUG
+    if (f->mesh != MV_Mesh(v))
+      MSTK_Report("MF_Set_Vertices_RN",
+		  "Face and Vertex are not from the same mesh",
+		  FATAL);
+#endif
+
     List_Insert(downadj->fvertices,nuv,b4v);
   }
 
@@ -106,6 +136,13 @@ extern "C" {
     downadj = (MFace_DownAdj_RN *) f->downadj;
     if (downadj->fvertices == NULL)
       downadj->fvertices = List_New(4);
+
+#ifdef DEBUG
+    if (f->mesh != MV_Mesh(v))
+      MSTK_Report("MF_Set_Vertices_RN",
+		  "Face and Vertex are not from the same mesh",
+		  FATAL);
+#endif
 
     List_Inserti(downadj->fvertices,nuv,i);
   }

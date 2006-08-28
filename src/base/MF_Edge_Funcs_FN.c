@@ -70,6 +70,12 @@ extern "C" {
     downadj->fedges = List_New(n);
     
     for (i = 0; i < n; i++) {
+#ifdef DEBUG
+      if (f->mesh != ME_Mesh(e))
+	MSTK_Report("MF_Set_Edges_FN",
+		    "Face and edge belong to different meshes",FATAL);
+#endif
+
       downadj->edirs = downadj->edirs | (dir[i] << i);
       List_Add(downadj->fedges,e[i]);
       ME_Add_Face(e[i],f);
@@ -217,6 +223,12 @@ extern "C" {
       newedges[j] = nuedges[k];      
       newdirs[j] = (ME_Vertex(newedges[j],0) == lastv) ? 1 : 0;
       lastv = ME_Vertex(newedges[j],newdirs[j]);	
+
+#ifdef DEBUG
+      if (f->mesh != ME_Mesh(nuedges[k])
+	  MSTK_Report("MF_Replace_Edges_i_FN",
+		      "Face and edge belong to different meshes",FATAL);
+#endif
     }
 
     /* Number of common edges */

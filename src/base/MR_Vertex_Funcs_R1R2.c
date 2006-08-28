@@ -64,6 +64,13 @@ extern "C" {
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     downadj->rvertices = List_New(nv);
     for (i = 0; i < nv; i++)
+
+#ifdef DEBUG
+      if (r->mesh != MV_Mesh(rvertices[i]))
+	MSTK_Report("MR_Set_Vertices_R1R2",
+		    "Region and vertex belong to different meshes",FATAL);
+#endif
+
       List_Add(downadj->rvertices,rvertices[i]);
 
     /* If this is a non-standard element and the face vertex template
@@ -100,6 +107,13 @@ extern "C" {
     int i, nv;
     MRegion_DownAdj_R1R2 *downadj;
 
+#ifdef DEBUG
+    if (r->mesh != MV_Mesh(nuv))
+      MSTK_Report("MR_Replace_Vertex_R1R2",
+		  "Region and vertex belong to different meshes",
+		  FATAL);
+#endif
+
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     nv = List_Num_Entries(downadj->rvertices);
     for (i = 0; i < nv; i++)
@@ -111,6 +125,13 @@ extern "C" {
 
   void MR_Replace_Vertex_i_R1R2(MRegion_ptr r, int i, MVertex_ptr nuv) {
     MRegion_DownAdj_R1R2 *downadj;
+
+#ifdef DEBUG
+    if (r->mesh != MV_Mesh(nuv))
+      MSTK_Report("MR_Replace_Vertex_R1R2",
+		  "Region and vertex belong to different meshes",
+		  FATAL);
+#endif
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     List_Replacei(downadj->rvertices,i,nuv);

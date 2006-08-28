@@ -70,6 +70,13 @@ extern "C" {
     downadj->rfaces = List_New(nf);
 
     for (i = 0; i < nf; i++) {
+
+#ifdef DEBUG
+      if (r->mesh != MF_Mesh(rfaces[i]))
+	MSTK_Report("MR_Set_Faces_FNR3R4",
+		    "Region and face belong to different meshes",FATAL);
+#endif
+
       j = (int) i/(8*sizeof(unsigned int));
       k = i%(8*sizeof(unsigned int));
       downadj->fdirs[j] = downadj->fdirs[j] | (dirs[i] << k);
@@ -98,6 +105,12 @@ extern "C" {
     for (i = 0; i < nv; i++) {
       vgdim[i] = MV_GEntDim(mvertices[i]);
       vgid[i] = MV_GEntID(mvertices[i]);
+
+#ifdef DEBUG
+      if (r->mesh != MR_Mesh(r))
+	MSTK_Report("MR_Set_Vertices_FNR3R4",
+		    "Region and Vertex belong to different meshes",FATAL);
+#endif
     }
 
     if (rfvtemplate) {
@@ -422,6 +435,12 @@ extern "C" {
     int i, j, k, nf;
     MRegion_DownAdj_FN *downadj;
 
+#ifdef DEBUG
+    if (r->mesh != MF_Mesh(nuf))
+      MSTK_Report("MR_Replace_Face_FNR3R4",
+		  "Region and Face belong to different meshes",FATAL);
+#endif
+
     downadj = (MRegion_DownAdj_FN *) r->downadj;
     nf = List_Num_Entries(downadj->rfaces);
 
@@ -449,6 +468,12 @@ extern "C" {
 
     if (i >= MAXPF3)
       MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
+
+#ifdef DEBUG
+    if (r->mesh != MF_Mesh(nuf))
+      MSTK_Report("MR_Replace_Face_FNR3R4",
+		  "Region and Face belong to different meshes",FATAL);
+#endif
 
     downadj = (MRegion_DownAdj_FN *) r->downadj;
     f = List_Entry(downadj->rfaces,i);

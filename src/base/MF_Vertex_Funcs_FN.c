@@ -17,6 +17,13 @@ extern "C" {
     for (i = 0; i < n; i++) {
       vgdim[i] = MV_GEntDim(v[i]);
       vgid[i] = MV_GEntID(v[i]);
+
+#ifdef DEBUG
+      if (f->mesh != MV_Mesh(v[i]))
+	MSTK_Report("MF_Set_Vertices_FN",
+		    "Face and Vertex belong to different meshes",
+		    FATAL);
+#endif
     }
 
     for (i = 0; i < n; i++) {
