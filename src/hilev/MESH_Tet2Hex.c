@@ -21,14 +21,14 @@ extern "C" {
     int          i, j, k, n, nV, nR, idv, idf, ide, idr;
     double       xyz[3], xyz_lst[100][3];
     
-    MVertex_ptr  ptr_v, ptr_v_face[3], ptr_v_regn[15], ptr_v_tet[8];
+    MVertex_ptr  ptr_v, ptr_v_new, ptr_v_face[3], ptr_v_regn[15], ptr_v_tet[8];
     MEdge_ptr    ptr_e;
     MFace_ptr    ptr_f;
     MRegion_ptr  ptr_r, ptr_r_new;
     
     List_ptr     lst_v;
     
-    MAttrib_ptr  atr_e, atr_f, atr_r;
+    MAttrib_ptr  atr_v, atr_e, atr_f, atr_r;
     
     int          ival;
     double       dval;
@@ -46,12 +46,17 @@ extern "C" {
     
     
     /* copy vertices */
+
+    atr_v = MAttrib_New(tetmesh, "vertex", POINTER, MVERTEX);
+
     idv = 0;
     while( ptr_v = MESH_Next_Vertex(tetmesh, &idv) ) {
       MV_Coords(ptr_v, xyz);
       
-      ptr_v = MV_New(hexmesh);
-      MV_Set_Coords(ptr_v, xyz);
+      ptr_v_new = MV_New(hexmesh);
+      MV_Set_Coords(ptr_v_new, xyz);
+
+      MEnt_Set_Attval(ptr_v, atr_v, 0, 0, (void *)ptr_v_new);
     }
 
 
@@ -121,7 +126,10 @@ extern "C" {
       lst_v = MR_Vertices(ptr_r);
       n = List_Num_Entries(lst_v);
 
-      for( i=0; i<4; i++ ) ptr_v_regn[i] = List_Entry(lst_v, i);
+      for( i=0; i<4; i++ ) {
+	ptr_v = List_Entry(lst_v, i);
+	MEnt_Get_AttVal(ptr_v, atr_v, 0, 0, &(ptr_v_regn[i]));
+      }
 
       for( i=0;   i<4; i++ )
 	for( j=i+1; j<4; j++ ) {
@@ -160,6 +168,12 @@ extern "C" {
 
 
     /* remove attributes on edges of tet mesh */
+    idv = 0;
+    while( ptr_v = MESH_Next_Vertex(tetmesh, &idv) ) {
+      MEnt_Rem_AttVal(ptr_v, atr_v);
+    }
+    MAttrib_Delete(atr_v);
+
     ide = 0;
     while( ptr_e = MESH_Next_Edge(tetmesh, &ide) ) {
       MEnt_Rem_AttVal(ptr_e, atr_e);
