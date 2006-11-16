@@ -122,7 +122,7 @@ extern "C" {
 	for (j = 0; j < nfv; j++) {
 	  ind = rfvtemplate[i][j+1];
 	  verts[j] = mvertices[ind];
-	  if (vgdim[ind] > fgdim) {
+	  if (fgdim == 4 || vgdim[ind] > fgdim) {
 	    fgdim = vgdim[ind];
 	    fgid = vgid[ind];
 	  }
@@ -291,7 +291,7 @@ extern "C" {
 	  fedges[j] = redges[ind];
 	  fedirs[j] = !(redirs[ind]^sgn);
 
-	  if (egdim[ind] > fgdim) {
+	  if (fgdim == 4 || egdim[ind] > fgdim) {
 	    fgdim = egdim[ind];
 	    fgid = egid[ind];
 	  }
