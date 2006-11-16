@@ -10,18 +10,20 @@ extern "C" {
 #endif
 
   /* Create a new hexmesh from a tet mesh by splitting edges, faces
-     and regions 
+     and regions. This will allocate a new mesh pointer and assign it
+     to hexmesh
 
      Konstantin Lipnikov, lipnikov@lanl.gov
      10/14/2005     
 */
 
-  int MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr hexmesh) { 
+  int MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh) { 
 
     int          i, j, k, n, nV, nR, idv, idf, ide, idr;
     double       xyz[3], xyz_lst[100][3];
     
-    MVertex_ptr  ptr_v, ptr_v_new, ptr_v_face[3], ptr_v_regn[15], ptr_v_tet[8];
+    MVertex_ptr  ptr_v, ptr_v_new, ptr_v_face[3];
+    MVertex_ptr  old_ptr_v_regn[4], ptr_v_regn[15], ptr_v_tet[8];
     MEdge_ptr    ptr_e;
     MFace_ptr    ptr_f;
     MRegion_ptr  ptr_r, ptr_r_new;
@@ -42,7 +44,7 @@ extern "C" {
     nV = MESH_Num_Vertices(tetmesh);
     nR = MESH_Num_Regions(tetmesh);
     
-    hexmesh = MESH_New(F1);
+    *hexmesh = MESH_New(MESH_RepType(tetmesh));
     
     
     /* copy vertices */
@@ -53,10 +55,10 @@ extern "C" {
     while( ptr_v = MESH_Next_Vertex(tetmesh, &idv) ) {
       MV_Coords(ptr_v, xyz);
       
-      ptr_v_new = MV_New(hexmesh);
+      ptr_v_new = MV_New(*hexmesh);
       MV_Set_Coords(ptr_v_new, xyz);
 
-      MEnt_Set_Attval(ptr_v, atr_v, 0, 0, (void *)ptr_v_new);
+      MEnt_Set_AttVal(ptr_v, atr_v, 0, 0, (void *)ptr_v_new);
     }
 
 
@@ -72,7 +74,7 @@ extern "C" {
 
       for( i=0; i<3; i++ ) xyz[i] = (xyz_lst[0][i] + xyz_lst[1][i]) / 2;
 
-      ptr_v = MV_New(hexmesh);
+      ptr_v = MV_New(*hexmesh);
       MV_Set_Coords(ptr_v, xyz);
 
       MEnt_Set_AttVal(ptr_e, atr_e, 0, 0, (void*)ptr_v);
@@ -92,7 +94,7 @@ extern "C" {
 
       for( i=0; i<3; i++ ) xyz[i] = (xyz_lst[0][i] + xyz_lst[1][i] + xyz_lst[2][i]) / 3;
 
-      ptr_v = MV_New(hexmesh);
+      ptr_v = MV_New(*hexmesh);
       MV_Set_Coords(ptr_v, xyz);
 
       MEnt_Set_AttVal(ptr_f, atr_f, 0, 0, (void*)ptr_v);
@@ -113,7 +115,7 @@ extern "C" {
 
       for( i=0; i<3; i++ ) xyz[i] /= n;
 
-      ptr_v = MV_New(hexmesh);
+      ptr_v = MV_New(*hexmesh);
       MV_Set_Coords(ptr_v, xyz);
 
       MEnt_Set_AttVal(ptr_r, atr_r, 0, 0, (void*)ptr_v);
@@ -127,13 +129,13 @@ extern "C" {
       n = List_Num_Entries(lst_v);
 
       for( i=0; i<4; i++ ) {
-	ptr_v = List_Entry(lst_v, i);
-	MEnt_Get_AttVal(ptr_v, atr_v, 0, 0, &(ptr_v_regn[i]));
+	old_ptr_v_regn[i] = List_Entry(lst_v, i);
+	MEnt_Get_AttVal(old_ptr_v_regn[i], atr_v, 0, 0, &(ptr_v_regn[i]));
       }
 
       for( i=0;   i<4; i++ )
 	for( j=i+1; j<4; j++ ) {
-	  ptr_e = MVs_CommonEdge(ptr_v_regn[i], ptr_v_regn[j]);
+	  ptr_e = MVs_CommonEdge(old_ptr_v_regn[i], old_ptr_v_regn[j]);
 
 	  MEnt_Get_AttVal(ptr_e, atr_e, &ival, &dval, &vval);
 	  ptr_v_regn[n] = (MVertex_ptr)(vval);
@@ -142,7 +144,8 @@ extern "C" {
 	}
 
       for( i=0; i<4; i++ ) {
-        for( j=0; j<3; j++ ) ptr_v_face[j] = ptr_v_regn[(i + j + 1) % 4];
+        for( j=0; j<3; j++ ) 
+	  ptr_v_face[j] = old_ptr_v_regn[(i + j + 1) % 4];
         ptr_f = MVs_CommonFace(3, ptr_v_face);
 
         MEnt_Get_AttVal(ptr_f, atr_f, &ival, &dval, &vval);
@@ -157,7 +160,7 @@ extern "C" {
       for( k=0; k<4; k++ ) {
         for( i=0; i<8; i++ ) ptr_v_tet[i] = ptr_v_regn[tet_hex[k][i]];
 
-	ptr_r_new = MR_New(hexmesh);
+	ptr_r_new = MR_New(*hexmesh);
 
         MR_Set_Vertices(ptr_r_new, 8, ptr_v_tet, 0, NULL);
       }
