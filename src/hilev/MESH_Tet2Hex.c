@@ -57,6 +57,8 @@ extern "C" {
       
       ptr_v_new = MV_New(*hexmesh);
       MV_Set_Coords(ptr_v_new, xyz);
+      MV_Set_GEntDim(ptr_v_new,MV_GEntDim(ptr_v));
+      MV_Set_GEntID(ptr_v_new,MV_GEntID(ptr_v));
 
       MEnt_Set_AttVal(ptr_v, atr_v, 0, 0, (void *)ptr_v_new);
     }
@@ -74,10 +76,12 @@ extern "C" {
 
       for( i=0; i<3; i++ ) xyz[i] = (xyz_lst[0][i] + xyz_lst[1][i]) / 2;
 
-      ptr_v = MV_New(*hexmesh);
-      MV_Set_Coords(ptr_v, xyz);
+      ptr_v_new = MV_New(*hexmesh);
+      MV_Set_Coords(ptr_v_new, xyz);
+      MV_Set_GEntDim(ptr_v_new,ME_GEntDim(ptr_e));
+      MV_Set_GEntID(ptr_v_new,ME_GEntID(ptr_e));
 
-      MEnt_Set_AttVal(ptr_e, atr_e, 0, 0, (void*)ptr_v);
+      MEnt_Set_AttVal(ptr_e, atr_e, 0, 0, (void*)ptr_v_new);
     }
 
   
@@ -94,10 +98,13 @@ extern "C" {
 
       for( i=0; i<3; i++ ) xyz[i] = (xyz_lst[0][i] + xyz_lst[1][i] + xyz_lst[2][i]) / 3;
 
-      ptr_v = MV_New(*hexmesh);
-      MV_Set_Coords(ptr_v, xyz);
+      ptr_v_new = MV_New(*hexmesh);
+      MV_Set_Coords(ptr_v_new, xyz);
+      MV_Set_GEntDim(ptr_v_new,MF_GEntDim(ptr_f));
+      MV_Set_GEntID(ptr_v_new,MF_GEntID(ptr_f));
 
-      MEnt_Set_AttVal(ptr_f, atr_f, 0, 0, (void*)ptr_v);
+
+      MEnt_Set_AttVal(ptr_f, atr_f, 0, 0, (void*)ptr_v_new);
     }
 
 
@@ -115,10 +122,12 @@ extern "C" {
 
       for( i=0; i<3; i++ ) xyz[i] /= n;
 
-      ptr_v = MV_New(*hexmesh);
-      MV_Set_Coords(ptr_v, xyz);
+      ptr_v_new = MV_New(*hexmesh);
+      MV_Set_Coords(ptr_v_new, xyz);
+      MV_Set_GEntDim(ptr_v_new,MR_GEntDim(ptr_r));
+      MV_Set_GEntID(ptr_v_new,MR_GEntID(ptr_r));
 
-      MEnt_Set_AttVal(ptr_r, atr_r, 0, 0, (void*)ptr_v);
+      MEnt_Set_AttVal(ptr_r, atr_r, 0, 0, (void*)ptr_v_new);
     }
 
 
@@ -163,6 +172,9 @@ extern "C" {
 	ptr_r_new = MR_New(*hexmesh);
 
         MR_Set_Vertices(ptr_r_new, 8, ptr_v_tet, 0, NULL);
+
+	MR_Set_GEntDim(ptr_r_new,MR_GEntDim(ptr_r));
+	MR_Set_GEntID(ptr_r_new,MR_GEntID(ptr_r));
       }
 
       List_Delete(lst_v);
