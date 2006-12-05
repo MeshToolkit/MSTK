@@ -60,7 +60,7 @@ NOTE:NOTE:NOTE:
 *************************
 
 	To include the mesh partitioning code MESH_Partition with
-	METIS, you have to type 'make par'
+	METIS, you have to type 'make PAR=1'
 
 *************************
 
@@ -87,7 +87,7 @@ NOTES:
 
 The make file arguments have changed in this version of MSTK. Now just
 typing 'make' will make the debug and optimized versions - No need to
-type 'make' and 'make opt' separately. 'make par' will include the
+type 'make' and 'make opt' separately. 'make PAR=1' will include the
 mesh partitioning routines and you must link with METIS
 
 I have tested MSTK only on a Linux system with the gcc compiler. I do not 
