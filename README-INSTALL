@@ -6,6 +6,25 @@ the major and minor version numbers of MSTK that you downloaded (for
 example, 1.5).
 
 
+
+
+
+NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE
+*********************************************************************
+
+It is no longer necessary to type setup to create the various object
+file and library directories. The included make file will now detect
+the architecture and os of your machine and create the necessary
+directories
+
+*********************************************************************
+NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE
+
+
+
+
+
+
 ------------------------------------------------------------------------
 A.      --------- Make and install MSTK Utilities ----------------
 ------------------------------------------------------------------------
@@ -15,17 +34,11 @@ A.      --------- Make and install MSTK Utilities ----------------
 
 2. cd to mstkutil-N.n
 
-3. Type './setup' which will setup subdirs for compilation on i686
-   machines running linux. For a different architecture, type ./setup
-   archos, where archos is the architecture and OS code for the
-   system, e.g., ibm_aix9, hp_ux10 etc.
+3. Edit the Makefile to set the compiler and compiler flags (ONLY IF
+   NECESSARY). In general, on a Linux system you have to make little
+   or no change to the Makefile.
 
-4. Edit the Makefile to reflect the architecture and os specified to
-   setup. Edit the compiler and compiler flags (ONLY IF NECESSARY). In
-   general, on a Linux system you have to make little or no change to
-   the Makefile. 
-
-5. Also edit the TOPDIR variable in the Makefile to reflect where the
+4. Also edit the TOPDIR variable in the Makefile to reflect where the
    mstk and mstkutil directories are located. For example, if both
    mstkutil and mstk directories are in the directory $HOME/develop/,
    then set TOPDIR to $HOME/develop.
