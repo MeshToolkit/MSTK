@@ -1,7 +1,10 @@
-# For now we are just compiling on i686_linux
-#ARCHOS := $(shell ($(HOME)/bin/getarch))
 
-ARCHOS = i686_linux
+# Get the machine type and kernel name. Piping the output of uname
+# through (tr '[A-Z]' '[a-z]') converts the string to lower case
+
+ARCH := $(shell (uname -m | tr '[A-Z]' '[a-z]'))
+OS := $(shell (uname -s | tr '[A-Z]' '[a-z]'))
+ARCHOS := $(ARCH)_$(OS)
 
 ifeq ($(ARCHOS),i686_linux)
   CC = gcc
@@ -66,26 +69,38 @@ srcs := $(notdir $(srcs1))
 
 objs := $(srcs:.c=.o)
 
+# Object file directories (-d is for debug)
+
+objdir-d := obj/$(ARCHOS)-d
+objdir   := obj/$(ARCHOS)
 
 # Debug object files with path
 
-obj2-d := $(addprefix obj/$(ARCHOS)-d/,$(objs))
+obj2-d := $(addprefix $(objdir-d)/,$(objs))
 
 
 # Optimized object files with path
 
-obj2 := $(addprefix obj/$(ARCHOS)/,$(objs))
+obj2 := $(addprefix $(objdir)/,$(objs))
 
 
-VPATH = obj/$(ARCHOS)-d:obj/$(ARCHOS):$(dirs)
+# Directory for libraries
+
+libdir := lib/$(ARCHOS)
+
+
+VPATH = $(objdir-d):$(objdir):$(dirs)
 
 
 
 
 # DEBUG VERSION OF THE LIBRARY
 
-debug: $(obj2-d)
-	 ar rcv $(LIBDIR)/$(ARCHOS)/libmstk-d.a $^
+debug: $(objdir-d) $(libdir) $(obj2-d)
+	 ar rcv $(LIBDIR)/$(ARCHOS)/libmstk-d.a $(obj2-d)
+
+$(objdir-d):
+	mkdir -p $(objdir-d)
 
 obj/$(ARCHOS)-d/%.o: src/base/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
@@ -103,8 +118,11 @@ obj/$(ARCHOS)-d/%.o: src/par/%.c
 
 # OPTIMIZED VERSION OF THE LIBRARY
 
-opt : $(obj2)
-	ar rcv $(LIBDIR)/$(ARCHOS)/libmstk.a $^ 
+opt : $(objdir) $(libdir) $(obj2)
+	ar rcv $(LIBDIR)/$(ARCHOS)/libmstk.a $(obj2)
+
+$(objdir):
+	mkdir -p $(objdir)
 
 obj/$(ARCHOS)/%.o: src/base/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
@@ -120,6 +138,9 @@ obj/$(ARCHOS)/%.o: src/misc/%.c
 obj/$(ARCHOS)/%.o: src/par/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
+
+$(libdir):
+	mkdir -p $(libdir)
 
 
 # CLEAN
