@@ -72,7 +72,7 @@ extern "C" {
     for (i = 0; i < nf; i++) {
 
 #ifdef DEBUG
-      if (r->mesh != MF_Mesh(rfaces[i]))
+      if (MR_Mesh(r) != MF_Mesh(rfaces[i]))
 	MSTK_Report("MR_Set_Faces_FNR3R4",
 		    "Region and face belong to different meshes",FATAL);
 #endif
@@ -107,7 +107,7 @@ extern "C" {
       vgid[i] = MV_GEntID(mvertices[i]);
 
 #ifdef DEBUG
-      if (r->mesh != MR_Mesh(r))
+      if (MR_Mesh(r) != MR_Mesh(r))
 	MSTK_Report("MR_Set_Vertices_FNR3R4",
 		    "Region and Vertex belong to different meshes",FATAL);
 #endif
@@ -436,7 +436,7 @@ extern "C" {
     MRegion_DownAdj_FN *downadj;
 
 #ifdef DEBUG
-    if (r->mesh != MF_Mesh(nuf))
+    if (MR_Mesh(r) != MF_Mesh(nuf))
       MSTK_Report("MR_Replace_Face_FNR3R4",
 		  "Region and Face belong to different meshes",FATAL);
 #endif
@@ -470,7 +470,7 @@ extern "C" {
       MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
 
 #ifdef DEBUG
-    if (r->mesh != MF_Mesh(nuf))
+    if (MR_Mesh(r) != MF_Mesh(nuf))
       MSTK_Report("MR_Replace_Face_FNR3R4",
 		  "Region and Face belong to different meshes",FATAL);
 #endif

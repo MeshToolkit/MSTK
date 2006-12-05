@@ -19,7 +19,7 @@ extern "C" {
       vgid[i] = MV_GEntID(v[i]);
 
 #ifdef DEBUG
-      if (f->mesh != MV_Mesh(v[i]))
+      if (MF_Mesh(f) != MV_Mesh(v[i]))
 	MSTK_Report("MF_Set_Vertices_FN",
 		    "Face and Vertex belong to different meshes",
 		    FATAL);

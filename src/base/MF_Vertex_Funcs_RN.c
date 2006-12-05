@@ -67,7 +67,7 @@ extern "C" {
     for (i = 0; i < n; i++) {
 
 #ifdef DEBUG
-      if (f->mesh != MV_Mesh(v[i]))
+      if (MF_Mesh(f) != MV_Mesh(v[i]))
 	MSTK_Report("MF_Set_Vertices_RN",
 		    "Face and Vertex are not from the same mesh",
 		    FATAL);
@@ -86,7 +86,7 @@ extern "C" {
 		  "No initial set of vertices for face",ERROR);
 
 #ifdef DEBUG
-    if (f->mesh != MV_Mesh(v))
+    if (MF_Mesh(f) != MV_Mesh(v))
       MSTK_Report("MF_Set_Vertices_RN",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);
@@ -104,7 +104,7 @@ extern "C" {
 		  "No initial set of vertices for face",ERROR);
 
 #ifdef DEBUG
-    if (f->mesh != MV_Mesh(v))
+    if (MF_Mesh(f) != MV_Mesh(v))
       MSTK_Report("MF_Set_Vertices_RN",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);
@@ -121,7 +121,7 @@ extern "C" {
       downadj->fvertices = List_New(4);
 
 #ifdef DEBUG
-    if (f->mesh != MV_Mesh(v))
+    if (MF_Mesh(f) != MV_Mesh(nuv))
       MSTK_Report("MF_Set_Vertices_RN",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);
@@ -138,7 +138,7 @@ extern "C" {
       downadj->fvertices = List_New(4);
 
 #ifdef DEBUG
-    if (f->mesh != MV_Mesh(v))
+    if (MF_Mesh(f) != MV_Mesh(nuv))
       MSTK_Report("MF_Set_Vertices_RN",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);

@@ -71,7 +71,7 @@ extern "C" {
     
     for (i = 0; i < n; i++) {
 #ifdef DEBUG
-      if (f->mesh != ME_Mesh(e))
+      if (MF_Mesh(f) != ME_Mesh(e))
 	MSTK_Report("MF_Set_Edges_FN",
 		    "Face and edge belong to different meshes",FATAL);
 #endif
@@ -225,7 +225,7 @@ extern "C" {
       lastv = ME_Vertex(newedges[j],newdirs[j]);	
 
 #ifdef DEBUG
-      if (f->mesh != ME_Mesh(nuedges[k])
+      if (MF_Mesh(f) != ME_Mesh(nuedges[k]))
 	  MSTK_Report("MF_Replace_Edges_i_FN",
 		      "Face and edge belong to different meshes",FATAL);
 #endif

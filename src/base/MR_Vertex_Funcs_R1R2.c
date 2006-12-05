@@ -66,7 +66,7 @@ extern "C" {
     for (i = 0; i < nv; i++)
 
 #ifdef DEBUG
-      if (r->mesh != MV_Mesh(rvertices[i]))
+      if (MR_Mesh(r) != MV_Mesh(rvertices[i]))
 	MSTK_Report("MR_Set_Vertices_R1R2",
 		    "Region and vertex belong to different meshes",FATAL);
 #endif
@@ -108,7 +108,7 @@ extern "C" {
     MRegion_DownAdj_R1R2 *downadj;
 
 #ifdef DEBUG
-    if (r->mesh != MV_Mesh(nuv))
+    if (MR_Mesh(r) != MV_Mesh(nuv))
       MSTK_Report("MR_Replace_Vertex_R1R2",
 		  "Region and vertex belong to different meshes",
 		  FATAL);
@@ -127,7 +127,7 @@ extern "C" {
     MRegion_DownAdj_R1R2 *downadj;
 
 #ifdef DEBUG
-    if (r->mesh != MV_Mesh(nuv))
+    if (MR_Mesh(r) != MV_Mesh(nuv))
       MSTK_Report("MR_Replace_Vertex_R1R2",
 		  "Region and vertex belong to different meshes",
 		  FATAL);
