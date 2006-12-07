@@ -71,7 +71,7 @@ extern "C" {
     
     for (i = 0; i < n; i++) {
 #ifdef DEBUG
-      if (MF_Mesh(f) != ME_Mesh(e))
+      if (MF_Mesh(f) != ME_Mesh(e[i]))
 	MSTK_Report("MF_Set_Edges_FN",
 		    "Face and edge belong to different meshes",FATAL);
 #endif

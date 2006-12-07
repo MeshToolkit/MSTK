@@ -107,7 +107,7 @@ extern "C" {
       vgid[i] = MV_GEntID(mvertices[i]);
 
 #ifdef DEBUG
-      if (MR_Mesh(r) != MR_Mesh(r))
+      if (MR_Mesh(r) != MV_Mesh(mvertices[i]))
 	MSTK_Report("MR_Set_Vertices_FNR3R4",
 		    "Region and Vertex belong to different meshes",FATAL);
 #endif
