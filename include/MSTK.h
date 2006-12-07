@@ -87,7 +87,7 @@ void        MSTK_Init();
      number for each mesh face (surface meshes) or mesh region (volume
      meshes) */
   
-  int        MESH_PartitionWithMETIS(Mesh_ptr mesh, int nparts, int **part);
+  int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
 
 
 /********************************************************************/
