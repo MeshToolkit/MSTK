@@ -82,7 +82,7 @@ void        MSTK_Init();
 
   void       MESH_Renumber(Mesh_ptr mesh);
 
-  /* Use 'make par' to include this subroutine. You must link the
+  /* Use 'make PAR=1' to include this subroutine. You must link the
      METIS libraries. 'part' is an array that contains the partition
      number for each mesh face (surface meshes) or mesh region (volume
      meshes) */
