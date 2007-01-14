@@ -25,6 +25,10 @@ void        MSTK_Init();
   Mesh_ptr   MESH_New(RepType type);
   void       MESH_Delete(Mesh_ptr mesh);
   int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
+  int        MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3],
+				  int nf, int *nfv, int **fvids, int nr, 
+				  int *nrv, int **rvids, int *nrf, 
+				  int ***rfvtemplate);
   int        MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
 				 const char *format);
   int        MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename);
