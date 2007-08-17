@@ -68,6 +68,8 @@ int MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3], int nf,
     MF_Set_ID(mf,i+1);
   }
 
+  if (fverts) free(fverts);
+
 
   if (nr && rfvtemplate)
     MSTK_Report("MESH_InitFromGenDesc",
@@ -130,6 +132,9 @@ int MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3], int nf,
 	  
     }
   }
+
+
+  if (verts) free(verts);
 
   return 1;
 }
