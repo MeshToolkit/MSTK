@@ -347,10 +347,13 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 		return 0;
 	      }
 
-	      found = 0;
-	      for (k1= 0; k1 < nvtx && !found; k1++)
+	      found = 0; k1 = 0;
+	      while (!found && k1 < nvtx) {
 		if (MV_ID(vtx[k1]) == vid)
 		  found = 1;
+		else
+		  k1++;
+	      }
 
 	      if (found) {
 		rfv_template[j][k+1] = k1;
