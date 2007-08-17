@@ -66,8 +66,12 @@ extern "C" {
 #endif
     
     vfaces = MV_Faces_F1(v);
-    nf = List_Num_Entries(vfaces);
-    List_Delete(vfaces);
+    if (vfaces) {
+      nf = List_Num_Entries(vfaces);
+      List_Delete(vfaces);
+    }
+    else 
+      nf = 0;
     return nf;
   }
 
