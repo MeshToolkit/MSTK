@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/sh -x
 
-if [ "$1" == "" ]
+if [ "$1" = "" ]
 then
   echo "USAGE: install version_number"
   exit
@@ -25,7 +25,7 @@ INSTALL_INCDIR_DEFAULT=$INSTALL_TOPDIR/include/mstk
 default=n
 echo "Do you want to make the installed version the default?"
 read ans
-if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+if [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "Y" ] || [ "$ans" = "YES" ]
 then
   default=y
 fi
@@ -38,7 +38,7 @@ then
   mkdir -p $INSTALL_INCDIR
 fi
 
-if [ "$default" == "y" ]
+if [ "$default" = "y" ]
 then
   ln -sfn $INSTALL_INCDIR $INSTALL_INCDIR_DEFAULT 
 fi
@@ -50,7 +50,7 @@ then
   read ans
 fi
 
-if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+if [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "Y" ] || [ "$ans" = "YES" ]
 then
   cp $LOCAL_INCDIR/MSTK.h $LOCAL_INCDIR/MSTK_defines.h \
      $LOCAL_INCDIR/MSTK_types.h $LOCAL_INCDIR/MSTK_externs.h \
@@ -72,12 +72,12 @@ then
   read ans
 fi
 
-if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+if [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "Y" ] || [ "$ans" = "YES" ]
 then
   cp $LOCAL_LIBDIR/libmstk.a $INSTALL_LIBDIR/libmstk-$VER.a
 fi
 
-if [ "$default" == "y" ]
+if [ "$default" = "y" ]
 then
   ln -sf $INSTALL_LIBDIR/libmstk-$VER.a $INSTALL_LIBDIR/libmstk.a 
 fi
@@ -89,12 +89,12 @@ then
   read ans
 fi
 
-if [ "$ans" == "y" ] || [ "$ans" == "yes" ] || [ "$ans" == "Y" ] || [ "$ans" == "YES" ]
+if [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "Y" ] || [ "$ans" = "YES" ]
 then
   cp $LOCAL_LIBDIR/libmstk-d.a $INSTALL_LIBDIR/libmstk-d-$VER.a
 fi
 
-if [ "$default" == "y" ]
+if [ "$default" = "y" ]
 then
   ln -sf $INSTALL_LIBDIR/libmstk-d-$VER.a $INSTALL_LIBDIR/libmstk-d.a 
 fi
