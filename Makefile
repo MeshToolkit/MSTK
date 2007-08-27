@@ -30,7 +30,7 @@ DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER) -I$(METISINC)
 # DEVELOP DIRECTORY
 
 TOPDIR = $(HOME)/develop
-MSTKUTIL_VER = 1.5dev
+MSTKUTIL_VER = 1.6
 DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include -I$(METISINC)
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
