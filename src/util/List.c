@@ -730,6 +730,12 @@ extern "C" {
 
 #endif
 
+  /* Extra functionality for hash-tables */
+
+  void*   *List_Entries(List_ptr l) {
+    return l->entry;
+  }
+
   
 #ifdef __cplusplus
 }

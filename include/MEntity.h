@@ -87,6 +87,12 @@ extern "C" {
   int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids);
   void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
   int MEnt_LocalID(MEntity_ptr ent, int procid);
+
+  /* Extra functionality for hash-tables */
+  
+  MEntity_ptr MEnt_NextInHash(MEntity_ptr ent);
+  void MEnt_Set_NextInHash(MEntity_ptr ent, MEntity_ptr next);
+  void MEnt_HashKey(MEntity_ptr ent, unsigned int *pn, void* **pp);
   
 #ifdef __cplusplus
 }

@@ -14,10 +14,10 @@ extern "C" {
     MFace_UpAdj_R3R4 *upadj;
     MFace_DownAdj_RN *downadj;
 
-    upadj = f->upadj =(MFace_UpAdj_R3R4 *) MSTK_malloc(sizeof(MFace_UpAdj_R3R4));
+    upadj = f->upadj = (MFace_UpAdj_R3R4 *) MSTK_malloc(sizeof(MFace_UpAdj_R3R4));
     upadj->fregions[0] = (MRegion_ptr) NULL;
     upadj->fregions[1] = (MRegion_ptr) NULL;
-    downadj = (MFace_DownAdj_RN *) MSTK_malloc(sizeof(MFace_DownAdj_RN));
+    downadj = f->downadj = (MFace_DownAdj_RN *) MSTK_malloc(sizeof(MFace_DownAdj_RN));
     downadj->fvertices = NULL;
   }
 

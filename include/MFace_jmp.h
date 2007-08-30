@@ -409,9 +409,11 @@ void MF_Dummy2a(MFace_ptr f, int i);
 
 void MF_Set_RepType_F1(MFace_ptr f);
 void MF_Set_RepType_F4(MFace_ptr f);
+void MF_Set_RepType_R1(MFace_ptr f);
+void MF_Set_RepType_R2(MFace_ptr f);
 void MF_Set_RepType_R4(MFace_ptr f);
 static void (*MF_Set_RepType_jmp[MSTK_MAXREP])(MFace_ptr f) =
-{MF_Set_RepType_F1, MF_Set_RepType_F4, MF_Dummy1, MF_Dummy1,
+{MF_Set_RepType_F1, MF_Set_RepType_F4, MF_Set_RepType_R1, MF_Set_RepType_R2,
  MF_Set_RepType_R4};
 
 void MF_Delete_F1(MFace_ptr f, int keep);

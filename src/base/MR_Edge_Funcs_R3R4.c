@@ -14,7 +14,7 @@ extern "C" {
     int i, j, idx, n, fdir, fecheck, nf, nfv, found;
     MFace_ptr face;
     MEdge_ptr edge;
-    MVertex_ptr v0, v1, ev0, ev1;
+    MVertex_ptr v[2], ev0, ev1, vtmp;
     List_ptr redges, fverts;
     MRegion_DownAdj_FN *downadj;
     Mesh_ptr mesh = MEnt_Mesh(r);
@@ -34,25 +34,44 @@ extern "C" {
       fverts = MF_Vertices(face,1,0);
 
       for (i = 0; i < 3 && n < 5; i++) {
-	v0 = List_Entry(fverts,i);
-	v1 = List_Entry(fverts,(i+1)%3);
+	v[0] = List_Entry(fverts,i);
+	v[1] = List_Entry(fverts,(i+1)%3);
             
 	found = 0; idx = 0;
 	while ((edge = List_Next_Entry(redges,&idx))) {
 	  ev0 = ME_Vertex(edge,0);
 	  ev1 = ME_Vertex(edge,1);
-	  if ((v0 == ev0 && v1 == ev1) || (v0 == ev1 && v1 == ev0)) {
+	  if ((v[0] == ev0 && v[1] == ev1) || (v[0] == ev1 && v[1] == ev0)) {
 	    found = 1;
 	    break;
 	  }
 	}
 	
 	if (!found) {
+#ifdef HASHTABLE
+	  if (v[0]>v[1]) {
+	    vtmp = v[0];
+	    v[0] = v[1];
+	    v[1] = vtmp;
+	  }
+
+	  edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, v);
+	  if (edge == NULL) {
+	    edge = ME_New(mesh);
+	    MEnt_Set_Volatile(edge);
+	    ME_Set_Vertex(edge,0,v[0]);
+	    ME_Set_Vertex(edge,1,v[1]);
+	    ME_Set_GInfo_Auto(edge);
+
+	    Hash_Add(MESH_Hash_Edges(mesh), edge, 2, v);
+	  }
+#else
 	  edge = ME_New(mesh);
 	  MEnt_Set_Volatile(edge);
-	  ME_Set_Vertex(edge,0,v0);
-	  ME_Set_Vertex(edge,1,v1);
+	  ME_Set_Vertex(edge,0,v[0]);
+	  ME_Set_Vertex(edge,1,v[1]);
 	  ME_Set_GInfo_Auto(edge);
+#endif
 	  List_Add(redges,edge);
 	  n++;
 	}
@@ -63,25 +82,44 @@ extern "C" {
       fverts = MF_Vertices(face,1,0);
 
       for (i = 0; i < 3 && n < 6; i++) {
-	v0 = List_Entry(fverts,i);
-	v1 = List_Entry(fverts,(i+1)%3);
+	v[0] = List_Entry(fverts,i);
+	v[1] = List_Entry(fverts,(i+1)%3);
             
 	found = 0; idx = 0;
 	while ((edge = List_Next_Entry(redges,&idx))) {
 	  ev0 = ME_Vertex(edge,0);
 	  ev1 = ME_Vertex(edge,1);
-	  if ((v0 == ev0 && v1 == ev1) || (v0 == ev1 && v1 == ev0)) {
+	  if ((v[0] == ev0 && v[1] == ev1) || (v[0] == ev1 && v[1] == ev0)) {
 	    found = 1;
 	    break;
 	  }
 	}
 	
 	if (!found) {
+#ifdef HASHTABLE
+	  if (v[0]>v[1]) {
+	    vtmp = v[0];
+	    v[0] = v[1];
+	    v[1] = vtmp;
+	  }
+
+	  edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, v);
+	  if (edge == NULL) {
+	    edge = ME_New(mesh);
+	    MEnt_Set_Volatile(edge);
+	    ME_Set_Vertex(edge,0,v[0]);
+	    ME_Set_Vertex(edge,1,v[1]);
+	    ME_Set_GInfo_Auto(edge);
+
+	    Hash_Add(MESH_Hash_Edges(mesh), edge, 2, v);
+	  }
+#else
 	  edge = ME_New(mesh);
 	  MEnt_Set_Volatile(edge);
-	  ME_Set_Vertex(edge,0,v0);
-	  ME_Set_Vertex(edge,1,v1);
+	  ME_Set_Vertex(edge,0,v[0]);
+	  ME_Set_Vertex(edge,1,v[1]);
 	  ME_Set_GInfo_Auto(edge);
+#endif
 	  List_Add(redges,edge);
 	  n++;
 	}
@@ -118,25 +156,44 @@ extern "C" {
 	fverts = MF_Edges(face,1,0);
 
 	for (j = 0; j < 4 && n < 12; j++) {
-	  v0 = List_Entry(fverts,j);
-	  v1 = List_Entry(fverts,(j+1)%4);
+	  v[0] = List_Entry(fverts,j);
+	  v[1] = List_Entry(fverts,(j+1)%4);
 
 	  found = 0; idx = 0;
 	  while ((edge = List_Next_Entry(redges,&idx))) {
 	    ev0 = ME_Vertex(edge,0);
 	    ev1 = ME_Vertex(edge,1);
-	    if ((v0 == ev0 && v1 == ev1) || (v0 == ev1 && v1 == ev0)) {
+	    if ((v[0] == ev0 && v[1] == ev1) || (v[0] == ev1 && v[1] == ev0)) {
 	      found = 1;
 	      break;
 	    }
 	  }
 	  
 	  if (!found) {
+#ifdef HASHTABLE
+	    if (v[0]>v[1]) {
+	      vtmp = v[0];
+	      v[0] = v[1];
+	      v[1] = vtmp;
+	    }
+
+	    edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, v);
+	    if (edge == NULL) {
+	      edge = ME_New(mesh);
+	      MEnt_Set_Volatile(edge);
+	      ME_Set_Vertex(edge,0,v[0]);
+	      ME_Set_Vertex(edge,1,v[1]);
+	      ME_Set_GInfo_Auto(edge);
+
+	      Hash_Add(MESH_Hash_Edges(mesh), edge, 2, v);
+	    }
+#else
 	    edge = ME_New(mesh);
 	    MEnt_Set_Volatile(edge);
-	    ME_Set_Vertex(edge,0,v0);
-	    ME_Set_Vertex(edge,1,v1);
+	    ME_Set_Vertex(edge,0,v[0]);
+	    ME_Set_Vertex(edge,1,v[1]);
 	    ME_Set_GInfo_Auto(edge);
+#endif
 	    List_Add(redges,edge);
 	    n++;
 	  }
@@ -166,25 +223,44 @@ extern "C" {
       nfv = List_Num_Entries(fverts);
 
       for (j = 0; j < nfv; j++) {
-	v0 = List_Entry(fverts,j);
-	v1 = List_Entry(fverts,(j+1)%nfv);
+	v[0] = List_Entry(fverts,j);
+	v[1] = List_Entry(fverts,(j+1)%nfv);
 
 	found = 0; idx = 0;
 	while ((edge = List_Next_Entry(redges,&idx))) {
 	  ev0 = ME_Vertex(edge,0);
 	  ev1 = ME_Vertex(edge,1);
-	  if ((v0 == ev0 && v1 == ev1) || (v0 == ev1 && v1 == ev0)) {
+	  if ((v[0] == ev0 && v[1] == ev1) || (v[0] == ev1 && v[1] == ev0)) {
 	    found = 1;
 	    break;
 	  }
 	}
 	  
 	if (!found) {
+#ifdef HASHTABLE
+	  if (v[0]>v[1]) {
+	    vtmp = v[0];
+	    v[0] = v[1];
+	    v[1] = vtmp;
+	  }
+
+	  edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, v);
+	  if (edge == NULL) {
+	    edge = ME_New(mesh);
+	    MEnt_Set_Volatile(edge);
+	    ME_Set_Vertex(edge,0,v[0]);
+	    ME_Set_Vertex(edge,1,v[1]);
+	    ME_Set_GInfo_Auto(edge);
+
+      	    Hash_Add(MESH_Hash_Edges(mesh), edge, 2, v);
+	  }
+#else
 	  edge = ME_New(mesh);
 	  MEnt_Set_Volatile(edge);
-	  ME_Set_Vertex(edge,0,v0);
-	  ME_Set_Vertex(edge,1,v1);
+	  ME_Set_Vertex(edge,0,v[0]);
+	  ME_Set_Vertex(edge,1,v[1]);
 	  ME_Set_GInfo_Auto(edge);
+#endif
 	  List_Add(redges,edge);
 	  n++;
 	}

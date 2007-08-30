@@ -111,7 +111,7 @@ extern "C" {
 
   List_ptr MV_Edges_R2(MVertex_ptr v) {
     int idx, ne;
-    MVertex_ptr adjv;
+    MVertex_ptr adjv[2], vtmp;
     MEdge_ptr e;
     List_ptr vedges;
     MVertex_SameAdj_R2R4 *sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
@@ -123,12 +123,31 @@ extern "C" {
     ne = List_Num_Entries(sameadj->adjverts);
     vedges = List_New(ne);
     idx = 0;
-    while ((adjv = List_Next_Entry(sameadj->adjverts,&idx))) {
+    adjv[0] = v;
+    while ((adjv[1] = List_Next_Entry(sameadj->adjverts,&idx))) {
+#ifdef HASHTABLE
+      if (adjv[0]>adjv[1]) {
+	vtmp = adjv[0];
+	adjv[0] = adjv[1];
+	adjv[1] = vtmp;
+      }
+
+      e = Hash_Entry(MESH_Hash_Edges(mesh), 2, (void**)adjv);
+      if (e == NULL) {
+	e = ME_New(mesh);
+	MEnt_Set_Volatile(e);
+	ME_Set_Vertex(e,0,adjv[0]);
+	ME_Set_Vertex(e,1,adjv[1]);
+	ME_Set_GInfo_Auto(e);
+	Hash_Add(MESH_Hash_Edges(mesh), e, 2, (void**)adjv);
+      }
+#else
       e = ME_New(mesh);
       MEnt_Set_Volatile(e);
-      ME_Set_Vertex(e,0,v);
-      ME_Set_Vertex(e,1,adjv);
+      ME_Set_Vertex(e,0,adjv[0]);
+      ME_Set_Vertex(e,1,adjv[1]);
       ME_Set_GInfo_Auto(e);
+#endif
       List_Add(vedges,e);
     }
 

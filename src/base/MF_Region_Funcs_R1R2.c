@@ -20,7 +20,7 @@ extern "C" {
     if (!vregs)
       return NULL;
 
-      nfv = List_Num_Entries(downadj->fvertices);
+    nfv = List_Num_Entries(downadj->fvertices);
     nr = 0;
     fregs = List_New(2);
 
@@ -49,13 +49,19 @@ extern "C" {
 	nr++;
       }
     }
-    return 0;    
+    List_Delete(vregs);
+    if (nr)
+      return fregs;
+    else {
+      List_Delete(fregs);
+      return 0;
+    }      
   }
 
   MRegion_ptr MF_Region_R1R2(MFace_ptr f, int dir) {
     List_ptr fregs;
     int nr;
-    MRegion_ptr reg;
+    MRegion_ptr reg, ret = NULL;
 
 #ifdef DEBUG
     MSTK_Report("MF_Region_R1R2",
@@ -69,16 +75,19 @@ extern "C" {
     nr = List_Num_Entries(fregs);
 
     reg = List_Entry(fregs,0);
-    if (MR_FaceDir(reg,f) == !dir)
-      return reg;
-
-    if (nr == 2) {
+    if (MR_FaceDir(reg,f) == !dir) {
+      ret = reg;
+    }
+    else if (nr == 2) {
       reg = List_Entry(fregs,1);
-      if (MR_FaceDir(reg,f) == !dir)
-	return reg;
+      if (MR_FaceDir(reg,f) == !dir) {
+	ret = reg;
+      }
     }
 
-    return NULL;
+    List_Delete(fregs);
+
+    return ret;
   }
 
 

@@ -17,7 +17,7 @@ extern "C" {
     MFace_DownAdj_RN *downadj = (MFace_DownAdj_RN *) f->downadj;
     int i, j, k, ne, nv, vgdim0, vgdim1, egdim, vgid0, vgid1, egid;
     List_ptr fedges;
-    MVertex_ptr v, evtx0, evtx1;
+    MVertex_ptr v, evtx[2], vtmp;
     MEdge_ptr e;
 
     k = 0;
@@ -39,20 +39,38 @@ extern "C" {
     nv = ne = List_Num_Entries(downadj->fvertices);
     fedges = List_New(ne);
     for (i = 0; i < ne; i++) {
+      j = dir ? (k+i)%ne : (k-i+ne)%ne;
+      evtx[0] = List_Entry(downadj->fvertices,j);
+      j = dir ? (k+(i+1))%ne : (k-(i+1)+ne)%ne;
+      evtx[1] = List_Entry(downadj->fvertices,j);
+
+#ifdef HASHTABLE
+      if (evtx[0]>evtx[1]) {
+	vtmp = evtx[0];
+	evtx[0] = evtx[1];
+	evtx[1] = vtmp;
+      }
+
+      e = Hash_Entry(MESH_Hash_Edges(MEnt_Mesh(f)), 2, evtx);
+      if (e == NULL) {
+	e = ME_New(MEnt_Mesh(f));
+	MEnt_Set_Volatile(e);
+
+	ME_Set_Vertex(e,0,evtx[0]);
+	ME_Set_Vertex(e,1,evtx[1]);
+
+	ME_Set_GInfo_Auto(e);
+	Hash_Add(MESH_Hash_Edges(MEnt_Mesh(f)), e, 2, evtx);
+      }
+#else
       e = ME_New(MEnt_Mesh(f));
       MEnt_Set_Volatile(e);
-      
-      j = dir ? (k+i)%ne : (k-i+ne)%ne;
-      evtx0 = List_Entry(downadj->fvertices,j);
 
-      ME_Set_Vertex(e,0,evtx0);
-
-      j = dir ? (k+(i+1))%ne : (k-(i+1)+ne)%ne;
-      evtx1 = List_Entry(downadj->fvertices,j);
-
-      ME_Set_Vertex(e,1,evtx1);
+      ME_Set_Vertex(e,0,evtx[0]);
+      ME_Set_Vertex(e,1,evtx[1]);
 
       ME_Set_GInfo_Auto(e);
+#endif
 
       List_Add(fedges,e);
     }
@@ -86,7 +104,22 @@ extern "C" {
   }
 
   int MF_EdgeDir_i_RN(MFace_ptr f, int i) {
+#ifdef HASHTABLE
+    MFace_DownAdj_RN *downadj = (MFace_DownAdj_RN *) f->downadj;
+    int j, tdir, ne;
+    MVertex_ptr evtx[2];
+
+    ne = List_Num_Entries(downadj->fvertices);
+
+    j = i;
+    evtx[0] = List_Entry(downadj->fvertices,j);
+    j = (i+1)%ne;
+    evtx[1] = List_Entry(downadj->fvertices,j);
+
+    return (evtx[0]<evtx[1]) ? 1 : 0;
+#else
     return 1;
+#endif
   }
 
   int MF_UsesEdge_RN(MFace_ptr f, MEdge_ptr e) {

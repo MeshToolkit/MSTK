@@ -35,8 +35,10 @@ extern "C" {
 
     idx = 0;
     while ((ent = (MEntity_ptr) List_Next_Entry(upadj->velements,&idx))) {
-      if (MEnt_Dim(ent) == MREGION) 
+      if (MEnt_Dim(ent) == MREGION) {
 	List_Add(vregions,ent);
+	nr++;
+      }
     }
     if (nr)
       return vregions;

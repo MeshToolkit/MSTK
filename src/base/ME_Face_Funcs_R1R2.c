@@ -77,6 +77,7 @@ extern "C" {
 	
 	List_Delete(rfaces);
       }
+      List_Delete(cmnregs);
     }
     else { /* Must be only faces are connected to edge */
 

@@ -10,6 +10,7 @@ extern "C" {
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
 #include "List.h"
+#include "Hash.h"
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 
@@ -154,6 +155,19 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MEnt_LocalID(MEntity_ptr ent, int procid);
   
 
+  /* Extra functionality for hash-tables */
+
+  Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh);
+  Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh);
+  
+  MEdge_ptr ME_NextInHash(MEdge_ptr medge);
+  void ME_Set_NextInHash(MEdge_ptr medge, MEdge_ptr next);
+  void ME_HashKey(MEdge_ptr medge, unsigned int *pn, void* **pp);
+
+  MFace_ptr MF_NextInHash(MFace_ptr mface);
+  void MF_Set_NextInHash(MFace_ptr mface, MFace_ptr next);
+  void MF_HashKey(MFace_ptr medge, unsigned int *pn, void* **pp);
+  
 
 #ifdef __cplusplus
 	   }

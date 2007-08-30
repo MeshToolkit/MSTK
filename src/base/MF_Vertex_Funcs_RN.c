@@ -35,10 +35,7 @@ extern "C" {
 	continue; /* all vertices have same classification so far */
       else {
 	same = 0;
-	if (vgdim > fgdim) {
-	  fgdim = vgdim;
-	  fgid = vgid;
-	}
+	break;
       }
     }
     if (same) {
@@ -46,8 +43,50 @@ extern "C" {
       fgid = vgid;
     }
      
-    if (fgdim == -1)
-      fgdim = 4;
+    if (fgdim == -1 || fgdim < 2) {
+      List_ptr fregions;
+
+      /* We are unable to find proper classification info from the
+	 vertices. Lets look at the number of regions connected to the
+	 face and their classification */
+
+      fregions = MF_Regions(f);
+      
+      if (fregions == NULL || List_Num_Entries(fregions) == 1) {
+	
+	/* In a complete mesh, this face must be on a model face */
+
+	fgdim = 2;
+
+      }
+      else {
+	MRegion_ptr fregion0, fregion1;
+	int rgid0, rgid1;
+
+	/* Internal face. Check if it is a mesh region or on an
+	   interior interface */
+
+	fregion0 = List_Entry(fregions,0); rgid0 = MEnt_GEntID(fregion0);
+	fregion1 = List_Entry(fregions,1); rgid1 = MEnt_GEntID(fregion1);
+
+	if (rgid0 == -1 || rgid1 == -1) {
+	  
+	  /* One of the regions is not classified properly. Just
+	     assume this is an internal face */
+
+	  fgdim = 3;	  
+
+	}
+	else {
+
+	  fgdim = (rgid0 == rgid1) ? 3 : 2;
+
+	}
+      }
+
+      if (fregions) List_Delete(fregions);
+    }
+
     MEnt_Set_GEntDim(f,fgdim);
     MEnt_Set_GEntID(f,fgid);
 
@@ -167,7 +206,7 @@ extern "C" {
       else {
 	fverts = List_New(nv);
 
-	for (i = nv; i >= 0; i--)
+	for (i = nv-1; i >= 0; i--)
 	  List_Add(fverts,List_Entry(downadj->fvertices,i));
       }
     }

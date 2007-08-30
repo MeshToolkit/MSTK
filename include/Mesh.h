@@ -4,6 +4,7 @@
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
+#include "Hash.h"
 
 #ifdef _cplusplus
 extern "C" {
@@ -17,6 +18,7 @@ extern "C" {
     GModel_ptr geom;
     List_ptr AttribList;
     int max_vid, max_eid, max_fid, max_rid;
+    Hash_ptr hedge, hface;
   } Mesh, *Mesh_ptr;
 #else
   typedef void *Mesh;
@@ -26,7 +28,7 @@ extern "C" {
 
   Mesh_ptr   MESH_New(RepType type);
   int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
-  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
+  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
   void       MESH_Delete(Mesh_ptr mesh);
   
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
@@ -71,7 +73,6 @@ extern "C" {
   void       MESH_Renumber(Mesh_ptr mesh);
 
   int        MESH_Init_ParAtts(Mesh_ptr mesh);
-  
   
 #ifdef _cplusplus
 }

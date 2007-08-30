@@ -13,7 +13,7 @@ extern "C" {
     MRegion_DownAdj_R1R2 *downadj;
     int i, j, i2, j2, iv0, iv1, iv02, iv12, nv, ne, nf, nfv, found, nfv2;
     MRType regtype;
-    MVertex_ptr v0, v1;
+    MVertex_ptr v[2], vtmp;
     MEdge_ptr edge;
     List_ptr redges;
     Mesh_ptr mesh = MEnt_Mesh(r);
@@ -56,13 +56,32 @@ extern "C" {
 
 	  if (found) continue;
 
+	  v[0] = List_Entry(downadj->rvertices,iv0);
+	  v[1] = List_Entry(downadj->rvertices,iv1);	  
+#ifdef HASHTABLE
+	  if (v[0]>v[1]) {
+	    vtmp = v[0];
+	    v[0] = v[1];
+	    v[1] = vtmp;
+	  }
+
+	  edge = Hash_Entry(MESH_Hash_Edges(MEnt_Mesh(r)), 2, v);
+	  if (edge == NULL) {
+	    edge = ME_New(MEnt_Mesh(r));
+	    MEnt_Set_Volatile(edge);
+	    ME_Set_Vertex(edge,0,v[0]);
+	    ME_Set_Vertex(edge,1,v[1]);
+	    ME_Set_GInfo_Auto(edge);
+
+	    Hash_Add(MESH_Hash_Edges(MEnt_Mesh(r)), edge, 2, v);
+	  }
+#else
 	  edge = ME_New(MEnt_Mesh(r));
 	  MEnt_Set_Volatile(edge);
-	  v0 = List_Entry(downadj->rvertices,iv0);
-	  ME_Set_Vertex(edge,0,v0);
-	  v1 = List_Entry(downadj->rvertices,iv1);	  
-	  ME_Set_Vertex(edge,0,v1);
+	  ME_Set_Vertex(edge,0,v[0]);
+	  ME_Set_Vertex(edge,1,v[1]);
 	  ME_Set_GInfo_Auto(edge);
+#endif
 	  List_Add(redges,edge);
 	  ne++;
 	}
@@ -83,19 +102,38 @@ extern "C" {
 	iv0 = MSTK_rev_template[regtype][i][0];
 	iv1 = MSTK_rev_template[regtype][i][1];
 
+	v[0] = List_Entry(downadj->rvertices,iv0);
+	v[1] = List_Entry(downadj->rvertices,iv1);	  
+#ifdef HASHTABLE
+	  if (v[0]>v[1]) {
+	    vtmp = v[0];
+	    v[0] = v[1];
+	    v[1] = vtmp;
+	  }
+
+	edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, v);
+	if (edge == NULL) {
+	  /* construct the edge */
+	  edge = ME_New(mesh);
+	  MEnt_Set_Volatile(edge);
+	  ME_Set_Vertex(edge,0,v[0]);
+	  ME_Set_Vertex(edge,1,v[1]);
+	  ME_Set_GInfo_Auto(edge);
+	  Hash_Add(MESH_Hash_Edges(mesh), edge, 2, v);
+	}
+#else
 	/* construct the edge */
 	edge = ME_New(mesh);
 	MEnt_Set_Volatile(edge);
-	v0 = List_Entry(downadj->rvertices,iv0);
-	ME_Set_Vertex(edge,0,v0);
-	v1 = List_Entry(downadj->rvertices,iv1);	  
-	ME_Set_Vertex(edge,0,v1);
+	ME_Set_Vertex(edge,0,v[0]);
+	ME_Set_Vertex(edge,1,v[1]);
 	ME_Set_GInfo_Auto(edge);
+#endif
 	List_Add(redges,edge);
       }
     }
 
-    return NULL;
+    return redges;
   }
 
   int MR_UsesEdge_R1R2(MRegion_ptr r, MEdge_ptr e) {

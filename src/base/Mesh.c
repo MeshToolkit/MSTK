@@ -31,6 +31,12 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->geom = (GModel_ptr) NULL;
   newmesh->AttribList = (List_ptr) NULL;
 
+  if (type >= R1 && type <= R4) newmesh->hedge = Hash_New(0, 0);
+  else newmesh->hedge = (Hash_ptr) NULL;
+ 
+  if (type >= R1 && type <= R2) newmesh->hface = Hash_New(0, 1);
+  else newmesh->hface = (Hash_ptr) NULL;
+
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
 
   return newmesh;
@@ -44,6 +50,15 @@ void MESH_Delete(Mesh_ptr mesh) {
   MFace_ptr mf;
   MRegion_ptr mr;
   MAttrib_ptr attrib;
+
+#ifdef DEBUG
+  if (mesh->hedge) {
+    Hash_Print(mesh->hedge);
+  }
+  if (mesh->hface) {
+    Hash_Print(mesh->hface);
+  }
+#endif 
 
   if (mesh->mregion) {
     nr = mesh->nr;
@@ -83,6 +98,14 @@ void MESH_Delete(Mesh_ptr mesh) {
     while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
       MAttrib_Delete(attrib);
     List_Delete(mesh->AttribList);
+  }
+
+  if (mesh->hedge) {
+    Hash_Delete(mesh->hedge);
+  }
+
+  if (mesh->hface) {
+    Hash_Delete(mesh->hface);
   }
 
   MSTK_free(mesh);
@@ -162,16 +185,77 @@ void MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
     List_Rem(mesh->AttribList,attrib);
 }
 
+void MESH_FillHash_Edges(Mesh_ptr mesh) {
+  MRegion_ptr region;
+  MEdge_ptr edge;
+  List_ptr redges;
+  int i;
+
+#ifdef DEBUG
+  MSTK_Report("Mesh_FillHash_Edges","Filling edge hash table\n",WARN);
+#endif
+  i = 0;
+  while ((region = MESH_Next_Region(mesh, &i))) {
+    redges = MR_Edges(region);
+    List_Delete(redges);
+  }
+  if (mesh->medge) free(mesh->medge);
+  mesh->medge = Hash_Entries(mesh->hedge);
+  mesh->ne = List_Num_Entries(mesh->medge);
+  for (i = 0; i < mesh->ne; i++) {
+    edge = MESH_Edge(mesh,i);
+    ME_Set_ID(edge,i+1);
+  }
+}
+
+void MESH_FillHash_Faces(Mesh_ptr mesh) {
+  MRegion_ptr region;
+  MFace_ptr face;
+  List_ptr rfaces;
+  int i;
+
+#ifdef DEBUG
+  MSTK_Report("Mesh_FillHash_Faces","Filling face hash table\n",WARN);
+#endif
+  i = 0;
+  while ((region = MESH_Next_Region(mesh, &i))) {
+    rfaces = MR_Faces(region);
+    List_Delete(rfaces);
+  }
+  if (mesh->mface) free(mesh->mface);
+  mesh->mface = Hash_Entries(mesh->hface);
+  mesh->nf = List_Num_Entries(mesh->mface);
+  for (i = 0; i < mesh->nf; i++) {
+    face = MESH_Face(mesh,i);
+    ME_Set_ID(face,i+1);
+  }
+}
 
 int MESH_Num_Vertices(Mesh_ptr mesh) {
   return mesh->nv;
 }
 
 int MESH_Num_Edges(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    if ((mesh->ne == 0) || (mesh->ne != Hash_Num_Entries(mesh->hedge))) {
+      MESH_FillHash_Edges(mesh);
+    }
+  }
   return mesh->ne;
 }
 
 int MESH_Num_Faces(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
+      MESH_FillHash_Faces(mesh);
+    }
+  }
   return mesh->nf;
 }
 
@@ -197,6 +281,14 @@ MVertex_ptr MESH_Vertex(Mesh_ptr mesh, int i) {
 }
 
 MEdge_ptr MESH_Edge(Mesh_ptr mesh, int i) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    if ((mesh->ne == 0) || (mesh->ne != Hash_Num_Entries(mesh->hedge))) {
+      MESH_FillHash_Edges(mesh);
+    }
+  }
   if (i >= mesh->ne) {
 #ifdef DEBUG
     MSTK_Report("Mesh_Edge","Non-existent edge requested\n",ERROR);
@@ -208,6 +300,14 @@ MEdge_ptr MESH_Edge(Mesh_ptr mesh, int i) {
 }
 
 MFace_ptr MESH_Face(Mesh_ptr mesh, int i) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
+      MESH_FillHash_Faces(mesh);
+    }
+  }
   if (i >= mesh->nf) {
 #ifdef DEBUG
     MSTK_Report("Mesh_Face","Non-existent face requested\n",ERROR);
@@ -238,6 +338,14 @@ MVertex_ptr MESH_Next_Vertex(Mesh_ptr mesh, int *index) {
 }
 
 MEdge_ptr MESH_Next_Edge(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    if ((mesh->ne == 0) || (mesh->ne != Hash_Num_Entries(mesh->hedge))) {
+      MESH_FillHash_Edges(mesh);
+    }
+  }
   if (mesh->medge)
     return (MEdge_ptr) List_Next_Entry(mesh->medge, index);
   else
@@ -245,6 +353,14 @@ MEdge_ptr MESH_Next_Edge(Mesh_ptr mesh, int *index) {
 }
 
 MFace_ptr MESH_Next_Face(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
+      MESH_FillHash_Faces(mesh);
+    }
+  }
   if (mesh->mface)
     return (MFace_ptr) List_Next_Entry(mesh->mface, index);
   else
@@ -517,6 +633,16 @@ void MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom){
 }    
      
 void MESH_SetRepTypeIni(Mesh_ptr mesh, RepType reptype){
+  if (!(mesh->reptype >= R1 && mesh->reptype <= R4)) {
+    if (reptype >= R1 && reptype <= R4) {
+      mesh->hedge = Hash_New(0, 0);
+    }
+  }
+  if (!(mesh->reptype >= R1 && mesh->reptype <= R2)) {
+    if (reptype >= R1 && reptype <= R2) {
+      mesh->hface = Hash_New(0, 1);
+    }
+  }
   mesh->reptype = reptype;
 }    
      
@@ -571,7 +697,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   found = 0;
   for (i = 0; i < MSTK_MAXREP; i++) {
     if (strncmp(inp_rtype,MESH_rtype_str[i],2) == 0) {
-      mesh->reptype = MESH_rtype[i];
+      MESH_SetRepTypeIni(mesh, MESH_rtype[i]);
       found = 1;
       break;
     }
@@ -652,6 +778,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     adjv_flag = 1;
     if (mesh->reptype == R2 || mesh->reptype == R4) {
       for (i = 0; i < NV; i++) {
+	mv = List_Entry(mesh->mvertex, i);
 	status = fscanf(fp,"%d",&nav);
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
@@ -678,7 +805,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 			ERROR);
 #endif
 	  
-	  MV_Add_AdjVertex(mesh->mvertex,adjv);
+	  MV_Add_AdjVertex(mv,adjv);
 	}
       }
     }
@@ -731,7 +858,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     NE = mesh->ne;
     mesh->medge = List_New(NE);
 
-    if (mesh->reptype >= F1 || mesh->reptype <= F4) {
+    if (mesh->reptype >= F1 && mesh->reptype <= F4) {
       for (i = 0; i < NE; i++) {
 	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
 	if (status == EOF)
@@ -1230,13 +1357,14 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   return 1;
 }
 
-int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
+int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
   FILE *fp;
   char mesg[80];
   int i, j;
   int gdim, gid;
   int mvid, mvid0, mvid1, mvid2, mrid2, meid, mfid;
   int nav, nar, nfe, nfv, nrf, nrv, dir=0;
+  int nv, ne, nf, nr;
   double xyz[3];
   MVertex_ptr mv, mv0, mv1, mv2;
   MEdge_ptr me;
@@ -1244,6 +1372,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   MRegion_ptr mr, mr2;
   GEntity_ptr gent;
   List_ptr adjverts, mfedges, mfverts, mrfaces, mrverts, adjregs;
+  RepType reptype;
   
 
   if (!(fp = fopen(filename,"w"))) {
@@ -1252,33 +1381,45 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
     return 0;
   }
 
+  if (rtype != UNKNOWN_REP) {
+    reptype = rtype;
+  }
+  else {
+    reptype = MESH_RepType(mesh);
+  }
+
+  nv = MESH_Num_Vertices(mesh);
+  ne = MESH_Num_Edges(mesh);
+  nf = MESH_Num_Faces(mesh);
+  nr = MESH_Num_Regions(mesh);
+
   fprintf(fp,"MSTK %-2.1lf\n",MSTK_VER);
-  fprintf(fp,"%s %d %d %d %d\n",MESH_rtype_str[mesh->reptype],mesh->nv,mesh->ne,mesh->nf,mesh->nr);
+  fprintf(fp,"%s %d %d %d %d\n",MESH_rtype_str[reptype], nv, (reptype >= R1 && reptype <= R4)?0:ne, (reptype >= R1 && reptype <= R2)?0:nf, nr);
 
 
-  for (i = 0; i < mesh->nv; i++) {
+  for (i = 0; i < nv; i++) {
     mv = MESH_Vertex(mesh,i);
     MV_Set_ID(mv,i+1);
   }
 
-  for (i = 0; i < mesh->ne; i++) {
+  for (i = 0; i < ne; i++) {
     me = MESH_Edge(mesh,i);
     ME_Set_ID(me,i+1);
   }
 
-  for (i = 0; i < mesh->nf; i++) {
+  for (i = 0; i < nf; i++) {
     mf = MESH_Face(mesh,i);
     MF_Set_ID(mf,i+1);
   }
 
-  for (i = 0; i < mesh->nr; i++) {
+  for (i = 0; i < nr; i++) {
     mr = MESH_Region(mesh,i);
     MR_Set_ID(mr,i+1);
   }
   
   
   fprintf(fp,"vertices\n");
-  for (i = 0; i < mesh->nv; i++) {
+  for (i = 0; i < nv; i++) {
     mv = MESH_Vertex(mesh,i);
 
     MV_Coords(mv,xyz);
@@ -1290,10 +1431,10 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
     
   }
 
-  if (mesh->reptype == R2 || mesh->reptype == R4) {
+  if (reptype == R2 || reptype == R4) {
     fprintf(fp,"adjvertices\n");
 
-    for (i = 0; i < mesh->nv; i++) {
+    for (i = 0; i < nv; i++) {
       mv = MESH_Vertex(mesh,i);
 
       nav = MV_Num_AdjVertices(mv);
@@ -1312,10 +1453,10 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 
 
 
-  if (mesh->reptype <= F4 && mesh->ne) {
+  if (reptype <= F4 && ne) {
     fprintf(fp,"edges\n");
 
-    for (i = 0; i < mesh->ne; i++) {
+    for (i = 0; i < ne; i++) {
       me = MESH_Edge(mesh,i);
 
       mv0 = ME_Vertex(me,0);
@@ -1332,11 +1473,11 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 
 
 
-  if (((mesh->reptype <= F4) || (mesh->reptype >= R2)) && mesh->nf) {
-    if (mesh->reptype <= F4) {
+  if (((reptype <= F4) || (reptype >= R2)) && nf) {
+    if (reptype <= F4) {
       fprintf(fp,"faces edge\n");
 
-      for (i = 0; i < mesh->nf; i++) {
+      for (i = 0; i < nf; i++) {
 	mf = MESH_Face(mesh,i);
 	
 	nfe = MF_Num_Edges(mf);
@@ -1364,7 +1505,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
     else {
       fprintf(fp,"faces vertex\n");
 
-      for (i = 0; i < mesh->nf; i++) {
+      for (i = 0; i < nf; i++) {
 	mf = MESH_Face(mesh,i);
 	
 	nfv = MF_Num_Edges(mf);
@@ -1388,11 +1529,11 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
   }
 
 
-  if (mesh->nr) {
-    if (mesh->reptype <= F4 || mesh->reptype >= R2) {
+  if (nr) {
+    if (reptype <= F4 || reptype >= R2) {
       fprintf(fp,"regions face\n");
 
-      for (i = 0; i < mesh->nr; i++) {
+      for (i = 0; i < nr; i++) {
 	mr = MESH_Region(mesh,i);
 
 	nrf = MR_Num_Faces(mr);
@@ -1416,7 +1557,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
     else {
       fprintf(fp,"regions vertex\n");
 
-      for (i = 0; i < mesh->nr; i++) {
+      for (i = 0; i < nr; i++) {
 	mr = MESH_Region(mesh,i);
 
 	nrv = MR_Num_Vertices(mr);
@@ -1437,10 +1578,10 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
       }
     }
 
-    if (mesh->reptype == R2 || mesh->reptype == R4) {
+    if (reptype == R2 || reptype == R4) {
       fprintf(fp,"adjregions\n");
       
-      for (i = 0; i < mesh->nr; i++) {
+      for (i = 0; i < nr; i++) {
 	mr = MESH_Region(mesh,i);
 
 	nar = MR_Num_Faces(mr);
@@ -1450,7 +1591,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename) {
 
 	for (j = 0; j < nar; j++) {
 	  mr2 = List_Entry(adjregs,j);
-	  if ((int) mr2 == -1) 
+	  if ((long) mr2 == -1) 
 	    fprintf(fp,"%d ",0);
 	  else {
 	    mrid2 = MR_ID(mr2);
@@ -1526,6 +1667,16 @@ Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
       return 0;
   }
 
+  /* Extra functionality for hash-tables */
+
+  Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh) {
+    return mesh->hedge;
+  }
+  
+  Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh) {
+    return mesh->hface;
+  }
+  
 #ifdef __cplusplus
 }
 #endif

@@ -8,6 +8,7 @@ extern "C" {
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "List.h"
+#include "Hash.h"
 
 extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 

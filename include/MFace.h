@@ -7,6 +7,7 @@ extern "C" {
 
 #include "MSTK_types.h"
 #include "List.h"
+#include "Hash.h"
 
 #ifdef _H_MFace_Private
   typedef struct MFace {
@@ -47,7 +48,7 @@ extern "C" {
   } MFace_DownAdj_FN;
 
   typedef struct MFace_DownAdj_RN {
-    List_ptr *fvertices;
+    List_ptr fvertices;
   } MFace_DownAdj_RN;
   
 #else

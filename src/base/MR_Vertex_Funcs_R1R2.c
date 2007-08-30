@@ -63,7 +63,7 @@ extern "C" {
 
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     downadj->rvertices = List_New(nv);
-    for (i = 0; i < nv; i++)
+    for (i = 0; i < nv; i++) {
 
 #ifdef DEBUG
       if (MR_Mesh(r) != MV_Mesh(rvertices[i]))
@@ -72,6 +72,8 @@ extern "C" {
 #endif
 
       List_Add(downadj->rvertices,rvertices[i]);
+      MV_Add_Region(rvertices[i], r);
+    }
 
     /* If this is a non-standard element and the face vertex template
        has been specified store this information for later

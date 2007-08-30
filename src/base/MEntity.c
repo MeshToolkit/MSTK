@@ -8,6 +8,7 @@
 #include "MSTK_malloc.h"
 #include "MAttrib.h"
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 /* */
 
@@ -701,6 +702,67 @@ extern "C" {
 
 
 
+  /* Extra functionality for hash-tables */
+
+  MEntity_ptr MEnt_NextInHash(MEntity_ptr ent) {
+    switch ( MEnt_Dim(ent) ) {
+    case MVERTEX:
+      MSTK_Report("MEnt_NextInHash", "Entity is vertex", WARN);
+      break;
+    case MEDGE:
+      return ME_NextInHash(ent);
+      break;
+    case MFACE:
+      return MF_NextInHash(ent);
+      break;
+    case MREGION:
+      MSTK_Report("MEnt_NextInHash", "Entity is region", WARN);
+      break;
+    default:
+      MSTK_Report("MEnt_NextInHash", "Unknown entity type", WARN);
+      break;
+    }
+    return NULL;
+  }
+
+  void MEnt_Set_NextInHash(MEntity_ptr ent, MEntity_ptr next) {
+    switch ( MEnt_Dim(ent) ) {
+    case MVERTEX:
+      MSTK_Report("MEnt_Set_NextInHash", "Entity is vertex", WARN);
+      break;
+    case MEDGE:
+      ME_Set_NextInHash(ent, next);
+      break;
+    case MFACE:
+      MF_Set_NextInHash(ent, next);
+      break;
+    case MREGION:
+      MSTK_Report("MEnt_Set_NextInHash", "Entity is region", WARN);
+      break;
+    default:
+      MSTK_Report("MEnt_Set_NextInHash", "Unknown entity type", WARN);
+      break;
+    }
+  }
+  void MEnt_HashKey(MEntity_ptr ent, unsigned int *pn, void* **pp) {
+    switch ( MEnt_Dim(ent) ) {
+    case MVERTEX:
+      MSTK_Report("MEnt_HashKey", "Entity is vertex", WARN);
+      break;
+    case MEDGE:
+      ME_HashKey(ent, pn, pp);
+      break;
+    case MFACE:
+      MF_HashKey(ent, pn, pp);
+      break;
+    case MREGION:
+      MSTK_Report("MEnt_HashKey", "Entity is region", WARN);
+      break;
+    default:
+      MSTK_Report("MEnt_HashKey", "Unknown entity type", WARN);
+      break;
+    }
+  }
 
 
 #ifdef __cplusplus

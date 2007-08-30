@@ -46,7 +46,7 @@ void        MSTK_Init();
 				      const char **attnames, int *opts,
 				      int *procids);
   int        MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
-  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename);
+  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
   int        MESH_BuildClassfn(Mesh_ptr mesh);
   int        MESH_DelInterior(Mesh_ptr mesh);
   int        MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);

@@ -344,6 +344,37 @@ extern "C" {
     return common_face;
   }
 
+  /* Extra functionality for hash-tables */
+  
+  MFace_ptr MF_NextInHash(MFace_ptr f) {
+    switch ( MEnt_RepType(f) ) {
+    case R1:
+    case R2:
+      return f->upadj;
+    default:
+      MSTK_Report("MF_NextInHash", "Bad representation", WARN);
+      return NULL;
+    }
+  }
+  
+  void MF_Set_NextInHash(MFace_ptr f, MFace_ptr next) {
+    switch ( MEnt_RepType(f) ) {
+    case R1:
+    case R2:
+      f->upadj = next;
+      break;
+    default:
+      MSTK_Report("MF_Set_NextInHash", "Bad representation", WARN);
+    }
+  }
+
+  void MF_HashKey(MFace_ptr f, unsigned int *pn, void* **pp) {
+    MFace_DownAdj_RN *downadj;
+    downadj = (MFace_DownAdj_RN *) f->downadj;
+    *pn = List_Num_Entries(downadj->fvertices); 
+    *pp = List_Entries(downadj->fvertices);
+  }
+
 #ifdef __cplusplus
 }
 #endif

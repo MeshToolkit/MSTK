@@ -50,6 +50,11 @@ extern "C" {
   void     List_Print(List_ptr l);
 #endif
 
+  /* Extra functionality for hash-tables */
+
+  void*   *List_Entries(List_ptr l);
+
+
 #ifdef __cplusplus
 }
 #endif

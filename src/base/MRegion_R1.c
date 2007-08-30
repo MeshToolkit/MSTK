@@ -15,6 +15,7 @@ extern "C" {
     r->downadj = (MRegion_DownAdj_R1R2 *) MSTK_malloc(sizeof(MRegion_DownAdj_R1R2));
     downadj = r->downadj;
     downadj->rvertices = NULL;
+    downadj->fvtemplate = NULL;
   }
 
   void MR_Delete_R1(MRegion_ptr r, int keep) {
@@ -174,7 +175,7 @@ extern "C" {
   }
 
   int MR_FaceDir_i_R1(MRegion_ptr r, int i) {
-    return 1; /* Is this the right thing to do? Yes! */
+    return MR_FaceDir_i_R1R2(r,i);
   }
 
 

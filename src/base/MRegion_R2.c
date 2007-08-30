@@ -194,7 +194,7 @@ extern "C" {
   }
 
   int MR_FaceDir_i_R2(MRegion_ptr r, int i) {
-    return 1; /* Is this the right thing to do? */
+    return MR_FaceDir_i_R1R2(r,i);
   }
 
   int MR_UsesFace_R2(MRegion_ptr r, MFace_ptr f) {

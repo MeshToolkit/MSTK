@@ -101,7 +101,7 @@ extern "C" {
     MEntity_ptr ent;
     MFace_ptr lstface;
     MEdge_ptr edge, redge, lstedge;
-    MVertex_ptr ev[2];
+    MVertex_ptr ev[2], vtmp;
     List_ptr redges, vedges, fverts;
     Mesh_ptr mesh = MEnt_Mesh(v);
 
@@ -150,10 +150,27 @@ extern "C" {
 	}
 
 	if (!found) {
+#ifdef HASTABLE
+	  if (ev[0]>ev[1]) {
+	    vtmp = ev[0];
+	    ev[0] = ev[1];
+	    ev[1] = vtmp;
+	  }
+
+	  edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, (void**)ev);
+	  if (edge == NULL) {
+	    edge = ME_New(mesh);
+	    ME_Set_Vertex(edge,0,ev[0]);
+	    ME_Set_Vertex(edge,1,ev[1]);
+	    ME_Set_GInfo_Auto(edge);
+	    Hash_Add(MESH_Hash_Edges(mesh), edge, 2, (void**)ev);
+	  }
+#else
 	  edge = ME_New(mesh);
 	  ME_Set_Vertex(edge,0,ev[0]);
 	  ME_Set_Vertex(edge,1,ev[1]);
 	  ME_Set_GInfo_Auto(edge);
+#endif
 	  List_Add(vedges,edge);
 	}
 
@@ -170,10 +187,27 @@ extern "C" {
 	}
 
 	if (!found) {
+#ifdef HASHTABLE
+	  if (ev[0]>ev[1]) {
+	    vtmp = ev[0];
+	    ev[0] = ev[1];
+	    ev[1] = vtmp;
+	  }
+
+	  edge = Hash_Entry(MESH_Hash_Edges(mesh), 2, (void**)ev);
+	  if (edge == NULL) {
+	    edge = ME_New(mesh);
+	    ME_Set_Vertex(edge,0,ev[0]);
+	    ME_Set_Vertex(edge,1,ev[1]);
+	    ME_Set_GInfo_Auto(edge);
+	    Hash_Add(MESH_Hash_Edges(mesh), edge, 2, (void**)ev);
+	  }
+#else
 	  edge = ME_New(mesh);
 	  ME_Set_Vertex(edge,0,ev[0]);
 	  ME_Set_Vertex(edge,1,ev[1]);
 	  ME_Set_GInfo_Auto(edge);
+#endif
 	  List_Add(vedges,edge);
 	}
 

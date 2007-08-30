@@ -115,36 +115,119 @@ extern "C" {
 
   int ME_Set_GInfo_Auto(MEdge_ptr e) {
     MVertex_ptr v0, v1;
-    int gdim0, gdim1, gid0, gid1;
+    int gdim0, gdim1, gid0, gid1, egdim, egid;
 
     v0 = e->vertex[0];
     gdim0 = MV_GEntDim(v0); gid0 = MV_GEntID(v0);
     v1 = e->vertex[1];
     gdim1 = MV_GEntDim(v1); gid1 = MV_GEntID(v1);
 
+    egdim = 4;
+    egid = -1;
+
     if (gdim0 == gdim1) {
       if (gid0 == gid1) {
-	MEnt_Set_GEntDim(e,gdim0);
-	MEnt_Set_GEntID(e,gid0);
-	return 1;
+	egdim = gdim0;
+	egid = gid0;
       }
       else { /* Unknown classification */
-	MEnt_Set_GEntDim(e,4);
-	MEnt_Set_GEntID(e,-1);
-	return 0;
+	egdim = 4;
+	egid = -1;
       }
     }
     else {
       if (gdim0 > gdim1) {
-	MEnt_Set_GEntDim(e,gdim0);
-	MEnt_Set_GEntID(e,gid0);
+	egdim = gdim0;
+	egid = gid0;
       }
       else {
-	MEnt_Set_GEntDim(e,gdim1);
-	MEnt_Set_GEntID(e,gid1);
+	egdim = gdim1;
+	egid = gid1;
       }
-      return 1;
     }
+
+    /* if the classification could not be determined, look at
+       higher-dimensional entities connected to the edge to see if we
+       can at least find the dimension of the model entity on which it
+       is classified */
+
+    if (egdim == 4) {
+      List_ptr efaces;
+      MFace_ptr eface;
+
+      efaces = ME_Faces(e);
+      if (!efaces) {
+	egdim = 2;
+	egid = -1;
+      }
+      else {
+	int allinterior, allsame, idx, gfid0;
+
+	/* First check if all faces connected to edge are interior faces */
+
+	idx = 0;
+	allinterior = 1;
+	while ((eface = List_Next_Entry(efaces,&idx))) {
+	  if (MEnt_GEntDim(eface) != 3) {
+	    allinterior = 0;
+	    break;
+	  }
+	}
+
+	if (allinterior) {
+	  egdim = 3;
+	  egid = MEnt_GEntID(List_Entry(efaces,0));
+	}
+	else {
+
+	  /* edge has some boundary faces connected to it. If all the
+	     boundary faces are classified on the same model face,
+	     then the edge is on that model face. If boundary faces
+	     are on different model faces, the edge is on a model
+	     edge, although we don't know which one */
+
+	  gfid0 = -1;
+
+	  allsame = 1;
+	  idx = 0;
+	  while ((eface = List_Next_Entry(efaces,&idx))) {
+	    if (MEnt_GEntDim(eface) != 2) continue;
+
+	    if (gfid0 == -1) { /* first boundary face */
+	      gfid0 = MEnt_GEntID(eface);
+	    }
+	    else {
+	      if (MEnt_GEntID(eface) != gfid0) {
+		allsame = 0;
+		break;
+	      }
+	    }
+	  }
+
+	  if (allsame && gfid0 != -1) {
+	    egdim = 2;
+	    egid = gfid0;
+	  }
+	  else {
+	    egdim = 1;
+	    egid = -1;
+	  }
+
+	}
+
+	List_Delete(efaces);
+      }
+
+    }
+
+    MEnt_Set_GEntDim(e,egdim);
+    MEnt_Set_GEntID(e,egid);
+
+    if (egdim == 4)
+      return 0;
+    else
+      return 1;
+
   }
 
   Mesh_ptr ME_Mesh(MEdge_ptr e) {
@@ -287,6 +370,37 @@ extern "C" {
     return;
   }
 
+  /* Extra functionality for hash-tables */
+  
+  MEdge_ptr ME_NextInHash(MEdge_ptr e) {
+    switch ( MEnt_RepType(e) ) {
+    case R1:
+    case R2:
+    case R4:
+      return e->upadj;
+    default:
+      MSTK_Report("ME_NextInHash", "Bad representation", WARN);
+      return NULL;
+    }
+  }
+  
+  void ME_Set_NextInHash(MEdge_ptr e, MEdge_ptr next) {
+    switch ( MEnt_RepType(e) ) {
+    case R1:
+    case R2:
+    case R4:
+      e->upadj = next;
+      break;
+    default:
+      MSTK_Report("ME_Set_NextInHash", "Bad representation", WARN);
+    }
+  }
+
+  void ME_HashKey(MEdge_ptr e, unsigned int *pn, void* **pp) {
+    *pn = 2;
+    *pp = e->vertex;
+  }
+  
 #ifdef __cplusplus
 }
 #endif

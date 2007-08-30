@@ -150,6 +150,7 @@ int MR_FaceDir_i_R1(MRegion_ptr r, int i);
 int MR_FaceDir_i_R2(MRegion_ptr r, int i);
 int MR_FaceDir_i_R4(MRegion_ptr r, int i);
 int MR_FaceDir_i_FNR3R4(MRegion_ptr r, int i);
+int MR_FaceDir_i_R1R2(MRegion_ptr r, int i);
 static int (*MR_FaceDir_i_jmp[MSTK_MAXREP])(MRegion_ptr r, int i) =
 {MR_FaceDir_i_F1, MR_FaceDir_i_F4, MR_FaceDir_i_R1, MR_FaceDir_i_R2, 
  MR_FaceDir_i_R4};
