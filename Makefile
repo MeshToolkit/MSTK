@@ -24,14 +24,12 @@ METISINC = $(METISDIR)/Lib
 # STANDARD DIRECTORY
 
 TOPDIR = $(HOME)
-MSTKUTIL_VER = 1.6
-DEPINCS := -I$(TOPDIR)/include/mstkutil-$(MSTKUTIL_VER) -I$(METISINC)
+DEPINCS := -I$(METISINC)
 
 # DEVELOP DIRECTORY
 
 TOPDIR = $(HOME)/develop
-MSTKUTIL_VER = 1.6
-DEPINCS := -I$(TOPDIR)/mstkutil/$(MSTKUTIL_VER)/include -I$(METISINC)
+DEPINCS := -I$(METISINC)
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
@@ -44,9 +42,9 @@ LIBDIR = ./lib
 INCDIR = -I./include $(DEPINCS) 
 
 ifeq ($(PAR),1)
-srcdirs := src/base src/hilev src/misc src/par
+srcdirs := src/util src/base src/hilev src/misc src/par
 else
-srcdirs := src/base src/hilev src/misc
+srcdirs := src/util src/base src/hilev src/misc
 endif
 incdirs := include
 
@@ -102,6 +100,9 @@ debug: $(objdir-d) $(libdir) $(obj2-d)
 $(objdir-d):
 	mkdir -p $(objdir-d)
 
+obj/$(ARCHOS)-d/%.o: src/util/%.c
+	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
+
 obj/$(ARCHOS)-d/%.o: src/base/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
@@ -123,6 +124,9 @@ opt : $(objdir) $(libdir) $(obj2)
 
 $(objdir):
 	mkdir -p $(objdir)
+
+obj/$(ARCHOS)/%.o: src/util/%.c
+	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
 obj/$(ARCHOS)/%.o: src/base/%.c
 	$(CC) $(DEFINES) $(INCDIR) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
