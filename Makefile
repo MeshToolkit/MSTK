@@ -11,7 +11,7 @@ ifeq ($(ARCHOS),i686_linux)
   CFLAGS =  -Wall -Wunused-variable -ansi
   DEBUGFLAGS = -g -DDEBUG
   OPTFLAGS = -O                 # -pg for PROFILING
-  DEFINES = -DLINUX 
+  DEFINES = -DLINUX -DHASHTABLE 
   LDFLAGS := -lm
 endif
 
