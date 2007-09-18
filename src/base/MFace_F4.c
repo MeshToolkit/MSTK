@@ -11,22 +11,22 @@ extern "C" {
 
 
   void MF_Set_RepType_F4(MFace_ptr f) {
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
 
-    downadj = f->downadj = (MFace_DownAdj_FN *) MSTK_malloc(sizeof(MFace_DownAdj_FN));
-    downadj->edirs = 0;
-    downadj->fedges = NULL;
+    adj = f->adj = (MFace_Adj_F2F4 *) MSTK_malloc(sizeof(MFace_Adj_F2F4));
+    adj->edirs = 0;
+    adj->fedges = NULL;
   }
 
   void MF_Delete_F4(MFace_ptr f, int keep) {
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
 
     if (!keep) {
-      downadj = (MFace_DownAdj_FN *) f->downadj;
-      if (downadj) {
-	if (downadj->fedges)
-	  List_Delete(downadj->fedges);
-	MSTK_free(downadj);
+      adj = (MFace_Adj_F2F4 *) f->adj;
+      if (adj) {
+	if (adj->fedges)
+	  List_Delete(adj->fedges);
+	MSTK_free(adj);
       }
     }
   }
@@ -36,13 +36,13 @@ extern "C" {
   }
 
   void MF_Destroy_For_MESH_Delete_F4(MFace_ptr f) {
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
 
-    downadj = (MFace_DownAdj_FN *) f->downadj;
-    if (downadj) {
-      if (downadj->fedges) 
-	List_Delete(downadj->fedges);
-      MSTK_free(downadj);
+    adj = (MFace_Adj_F2F4 *) f->adj;
+    if (adj) {
+      if (adj->fedges) 
+	List_Delete(adj->fedges);
+      MSTK_free(adj);
     }
   }
 
@@ -95,12 +95,12 @@ extern "C" {
   }
 
   int MF_Num_Vertices_F4(MFace_ptr f) {
-    List_ptr fedges = ((MFace_DownAdj_FN *)f->downadj)->fedges;
+    List_ptr fedges = ((MFace_Adj_F2F4 *)f->adj)->fedges;
     return List_Num_Entries(fedges);
   }
 
   int MF_Num_Edges_F4(MFace_ptr f) {
-    List_ptr fedges = ((MFace_DownAdj_FN *)f->downadj)->fedges;
+    List_ptr fedges = ((MFace_Adj_F2F4 *)f->adj)->fedges;
     return List_Num_Entries(fedges);
   }
 
@@ -152,13 +152,13 @@ extern "C" {
     List_ptr fregs, eregs;
     MRegion_ptr r;
     MEdge_ptr e;
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
     int i, k=0, nr;
     
-    downadj = (MFace_DownAdj_FN *) f->downadj;
+    adj = (MFace_Adj_F2F4 *) f->adj;
     
     fregs = List_New(2);
-    e = List_Entry(downadj->fedges,0);
+    e = List_Entry(adj->fedges,0);
     
     eregs = ME_Regions(e);
     if (eregs) {
@@ -191,14 +191,14 @@ extern "C" {
     MRegion_ptr r, r1;
     MEdge_ptr e;
     int nr, i, fdir;
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
     
 #ifdef DEBUG
     MSTK_Report("MF_Region_F4","More efficient to use MF_Regions",MESG);
 #endif
     
-    downadj = (MFace_DownAdj_FN *) f->downadj;
-    e = List_Entry(downadj->fedges,0);
+    adj = (MFace_Adj_F2F4 *) f->adj;
+    e = List_Entry(adj->fedges,0);
     
     eregs = ME_Regions(e);
     if (eregs) {
@@ -251,6 +251,29 @@ extern "C" {
 		"Function call unsuitable for this representation",
 		WARN);
 #endif
+  }
+
+  MFace_ptr MF_NextInHash_F4(MFace_ptr f) {
+#ifdef DEBUG
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+    return NULL;
+  }
+
+  void MF_Set_NextInHash_F4(MFace_ptr f, MFace_ptr next) {
+#ifdef DEBUG
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+  }
+
+  void MF_HashKey_F4(MFace_ptr f, unsigned int *pn, void* **pp) {
+#ifdef DEBUG
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+  }
+
+  int MF_IsLocked_F4(MFace_ptr f) {
+    return 0;
   }
 
 #ifdef __cplusplus

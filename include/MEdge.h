@@ -14,24 +14,29 @@ extern "C" {
 
     /* Common data structure for all mesh entities */
 
-    MEntity_Data_ptr entdat;
+    MEntity_Data entdat;
 
     /* Specific to mesh edges */
 
-    void *upadj;
+    void *adj;
     MVertex_ptr vertex[2];
 
   } MEdge, *MEdge_ptr;
 
-  /*----- Upward adjacency definitions --------*/
+  /*----- Adjacency definitions --------*/
 
-  typedef struct MEdge_UpAdj_F1 {
+  typedef struct MEdge_Adj_F1 {
     List_ptr efaces;
-  } MEdge_UpAdj_F1;
+  } MEdge_Adj_F1;
 
-  typedef struct MEdge_UpAdj_F4 {
+  typedef struct MEdge_Adj_F4 {
     List_ptr elements;
-  } MEdge_UpAdj_F4;
+  } MEdge_Adj_F4;
+
+  typedef struct MEdge_Adj_RN {
+    MEdge_ptr hnext;
+    int lock;
+  } MEdge_Adj_RN;
 #else
   typedef void *MEdge_ptr;
 #endif
@@ -67,6 +72,10 @@ extern "C" {
   void ME_Add_Region(MEdge_ptr medge, MRegion_ptr mregion);
   void ME_Rem_Face(MEdge_ptr medge, MFace_ptr mface);
   void ME_Rem_Region(MEdge_ptr medge, MRegion_ptr mregion);
+
+  void ME_Lock(MEdge_ptr e);
+  void ME_UnLock(MEdge_ptr e);
+  int ME_IsLocked(MEdge_ptr e);
 
 #ifdef __cplusplus
 }

@@ -16,10 +16,11 @@ extern "C" {
     r->downadj = (MRegion_DownAdj_R1R2 *) MSTK_malloc(sizeof(MRegion_DownAdj_R1R2));
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     downadj->rvertices = NULL;
+    downadj->fvtemplate = NULL;
 
     r->sameadj = (MRegion_SameAdj_R2 *) MSTK_malloc(sizeof(MRegion_SameAdj_R2));
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
-    sameadj->aregions = NULL;
+    sameadj->aregions = List_New(0);
   }
 
   void MR_Delete_R2(MRegion_ptr r, int keep) {
@@ -29,7 +30,7 @@ extern "C" {
     MVertex_ptr v;
     MRegion_ptr r2;
 
-    downadj = (MRegion_DownAdj_R1R2 *) r->downadj;    
+    downadj = (MRegion_DownAdj_R1R2 *) r->downadj;
     sameadj = (MRegion_SameAdj_R2 *) r->sameadj;
 
     if (MEnt_Dim(r) != MDELETED) {
@@ -188,9 +189,7 @@ extern "C" {
   }
 
   int MR_FaceDir_R2(MRegion_ptr r, MFace_ptr f) {
-    /* Must check if vertices of face are in same order as dictated by
-       template */
-    return 1; 
+    return MR_FaceDir_R1R2(r,f);
   }
 
   int MR_FaceDir_i_R2(MRegion_ptr r, int i) {

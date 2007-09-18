@@ -10,23 +10,28 @@ extern "C" {
 #endif
 
   void MF_Set_RepType_R1(MFace_ptr f) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = f->downadj = (MFace_DownAdj_RN *) MSTK_malloc(sizeof(MFace_DownAdj_RN));
-    downadj->fvertices = NULL;
+    adj = f->adj = (MFace_Adj_R1 *) MSTK_malloc(sizeof(MFace_Adj_R1));
+    adj->fvertices = NULL;
+    adj->hnext = NULL;
+    adj->lock = 0;
   }
 
 
   void MF_Delete_R1(MFace_ptr f, int keep) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
+    adj = (MFace_Adj_R1 *) f->adj;
 
-    if (downadj) {
-      if (downadj->fvertices) List_Delete(downadj->fvertices);
-      MSTK_free(downadj);
+    if (adj) {
+      if (adj->fvertices) List_Delete(adj->fvertices);
+      MSTK_free(adj);
     }
 
+    if (!keep) {
+      MEnt_Set_DelFlag(f);
+    }
     if (keep) 
       MSTK_Report("MF_Delete_R1","Deletion of faces is permanent in this representation",ERROR);
   }
@@ -188,6 +193,37 @@ extern "C" {
     MSTK_Report("MF_Rem_AdjFace_R1",
 		"Function call not suitable for this representation",WARN);
 #endif
+  }
+
+  MFace_ptr MF_NextInHash_R1(MFace_ptr f) {
+    MFace_ptr hnext = ((MFace_Adj_R1 *)f->adj)->hnext; 
+    return hnext;
+  }
+
+  void MF_Set_NextInHash_R1(MFace_ptr f, MFace_ptr next) {
+    MFace_Adj_R1 *adj = (MFace_Adj_R1 *)f->adj;
+    adj->hnext = next;
+  }
+
+  void MF_HashKey_R1(MFace_ptr f, unsigned int *pn, void* **pp) {
+    MFace_Adj_R1 *adj = (MFace_Adj_R1 *)f->adj;
+    *pn = List_Num_Entries(adj->fvertices);
+    *pp = List_Entries(adj->fvertices);
+  }
+
+  void MF_Lock_R1(MFace_ptr f) {
+    MFace_Adj_R1 *adj = (MFace_Adj_R1 *)f->adj;
+    Hash_Lock(&adj->lock);
+  }
+
+  void MF_UnLock_R1(MFace_ptr f) {
+    MFace_Adj_R1 *adj = (MFace_Adj_R1 *)f->adj;
+    Hash_UnLock(&adj->lock);
+  }
+
+  int MF_IsLocked_R1(MFace_ptr f) {
+    MFace_Adj_R1 *adj = (MFace_Adj_R1 *)f->adj;
+    return Hash_IsLocked(adj->lock);
   }
 
 #ifdef __cplusplus

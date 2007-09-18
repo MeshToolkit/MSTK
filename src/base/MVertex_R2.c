@@ -149,8 +149,15 @@ extern "C" {
       ME_Set_GInfo_Auto(e);
 #endif
       List_Add(vedges,e);
+      ME_Lock(e);
     }
 
+    if (!MESH_AutoLock(mesh)) {
+       idx = 0;
+       while ((e = List_Next_Entry(vedges, &idx))) {
+	 ME_UnLock(e);
+       }
+    }
     return vedges;
   }
 
@@ -179,8 +186,9 @@ extern "C" {
 
   void MV_Add_Edge_R2(MVertex_ptr v, MEdge_ptr e) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_Edge",
-		"Function call not suitable for this representation",WARN);
+    /* This function is explicitly called from ME_Set_Vertex */
+    /*MSTK_Report("MV_Add_Edge",
+		"Function call not suitable for this representation",WARN);*/
 #endif
   }
 

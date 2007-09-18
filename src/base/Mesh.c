@@ -30,8 +30,9 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->mregion = (List_ptr) NULL;
   newmesh->geom = (GModel_ptr) NULL;
   newmesh->AttribList = (List_ptr) NULL;
+  newmesh->autolock = 0;
 
-  if (type >= R1 && type <= R4) newmesh->hedge = Hash_New(0, 0);
+  if (type >= R1 && type <= R4) newmesh->hedge = Hash_New(0, 1);
   else newmesh->hedge = (Hash_ptr) NULL;
  
   if (type >= R1 && type <= R2) newmesh->hface = Hash_New(0, 1);
@@ -68,21 +69,37 @@ void MESH_Delete(Mesh_ptr mesh) {
     }
     List_Delete(mesh->mregion);
   }
-  if (mesh->mface) {
-    nf = mesh->nf;
-    i = 0;
-    while ((mf = List_Next_Entry(mesh->mface,&i))) {
-      MF_Destroy_For_MESH_Delete(mf);
+  if (mesh->hface) {
+    Hash_Delete(mesh->hface);
+    if (mesh->mface) {
+      /* Hash_Delete already cleaned all implicit face entities */
+      List_Delete(mesh->mface);
     }
-    List_Delete(mesh->mface);
+  } else {
+    if (mesh->mface) {
+      nf = mesh->nf;
+      i = 0;
+      while ((mf = List_Next_Entry(mesh->mface,&i))) {
+	MF_Destroy_For_MESH_Delete(mf);
+      }
+      List_Delete(mesh->mface);
+    }
   }
-  if (mesh->medge) {
-    ne = mesh->ne;
-    i = 0;
-    while ((me = List_Next_Entry(mesh->medge,&i))) {
-      ME_Destroy_For_MESH_Delete(me);
+  if (mesh->hedge) {
+    Hash_Delete(mesh->hedge);
+    if (mesh->medge) {
+      /* Hash_Delete already cleaned all implicit edge entities */
+      List_Delete(mesh->medge);
     }
-    List_Delete(mesh->medge);
+  } else {
+    if (mesh->medge) {
+      ne = mesh->ne;
+      i = 0;
+      while ((me = List_Next_Entry(mesh->medge,&i))) {
+	ME_Destroy_For_MESH_Delete(me);
+      }
+      List_Delete(mesh->medge);
+    }
   }
   if (mesh->mvertex) {
     nv = mesh->nv;
@@ -98,14 +115,6 @@ void MESH_Delete(Mesh_ptr mesh) {
     while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
       MAttrib_Delete(attrib);
     List_Delete(mesh->AttribList);
-  }
-
-  if (mesh->hedge) {
-    Hash_Delete(mesh->hedge);
-  }
-
-  if (mesh->hface) {
-    Hash_Delete(mesh->hface);
   }
 
   MSTK_free(mesh);
@@ -189,10 +198,13 @@ void MESH_FillHash_Edges(Mesh_ptr mesh) {
   MRegion_ptr region;
   MEdge_ptr edge;
   List_ptr redges;
-  int i;
+  int i, locks;
 
+  locks = MESH_AutoLock(mesh);
+  /* Force AutoLocking */
+  MESH_Set_AutoLock(mesh, 1);
 #ifdef DEBUG
-  MSTK_Report("Mesh_FillHash_Edges","Filling edge hash table\n",WARN);
+  MSTK_Report("Mesh_FillHash_Edges","Inefficient to call routines like MESH_Num_Edges, MESH_Edge, MESH_Next_Edge with this representation\n",WARN);
 #endif
   i = 0;
   while ((region = MESH_Next_Region(mesh, &i))) {
@@ -206,16 +218,20 @@ void MESH_FillHash_Edges(Mesh_ptr mesh) {
     edge = MESH_Edge(mesh,i);
     ME_Set_ID(edge,i+1);
   }
+  MESH_Set_AutoLock(mesh, locks);
 }
 
 void MESH_FillHash_Faces(Mesh_ptr mesh) {
   MRegion_ptr region;
   MFace_ptr face;
   List_ptr rfaces;
-  int i;
+  int i, locks;
 
+  locks = MESH_AutoLock(mesh);
+  /* Force AutoLocking */
+  MESH_Set_AutoLock(mesh, 1);
 #ifdef DEBUG
-  MSTK_Report("Mesh_FillHash_Faces","Filling face hash table\n",WARN);
+  MSTK_Report("Mesh_FillHash_Edges","Inefficient to call routines like MESH_Num_Faces, MESH_Face, MESH_Next_Face with this representation\n",WARN);
 #endif
   i = 0;
   while ((region = MESH_Next_Region(mesh, &i))) {
@@ -229,6 +245,7 @@ void MESH_FillHash_Faces(Mesh_ptr mesh) {
     face = MESH_Face(mesh,i);
     ME_Set_ID(face,i+1);
   }
+  MESH_Set_AutoLock(mesh, locks);
 }
 
 int MESH_Num_Vertices(Mesh_ptr mesh) {
@@ -635,7 +652,7 @@ void MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom){
 void MESH_SetRepTypeIni(Mesh_ptr mesh, RepType reptype){
   if (!(mesh->reptype >= R1 && mesh->reptype <= R4)) {
     if (reptype >= R1 && reptype <= R4) {
-      mesh->hedge = Hash_New(0, 0);
+      mesh->hedge = Hash_New(0, 1);
     }
   }
   if (!(mesh->reptype >= R1 && mesh->reptype <= R2)) {
@@ -1318,7 +1335,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    continue;
 	  adjr = List_Entry(mesh->mregion,adjrid-1);
 #ifdef DEBUG
-	  if (MR_ID(adjr) != rid)
+	  if (MR_ID(adjr) != adjrid)
 	    MSTK_Report("MESH_InitFromFile",
 			"Adjacent region ID mismatch",ERROR);
 #endif
@@ -1473,7 +1490,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
 
 
 
-  if (((reptype <= F4) || (reptype >= R2)) && nf) {
+  if (((reptype <= F4) || (reptype > R2)) && nf) {
     if (reptype <= F4) {
       fprintf(fp,"faces edge\n");
 
@@ -1530,7 +1547,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
 
 
   if (nr) {
-    if (reptype <= F4 || reptype >= R2) {
+    if (reptype <= F4 || reptype > R2) {
       fprintf(fp,"regions face\n");
 
       for (i = 0; i < nr; i++) {
@@ -1584,10 +1601,12 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
       for (i = 0; i < nr; i++) {
 	mr = MESH_Region(mesh,i);
 
-	nar = MR_Num_Faces(mr);
+	adjregs = MR_AdjRegions(mr);
+	nar = List_Num_Entries(adjregs);
+	/*nar = MR_Num_Faces(mr);*/
 	fprintf(fp,"%d ",nar);
 
-	adjregs = MR_AdjRegions(mr);
+/*	adjregs = MR_AdjRegions(mr);*/
 
 	for (j = 0; j < nar; j++) {
 	  mr2 = List_Entry(adjregs,j);
@@ -1676,7 +1695,15 @@ Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
   Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh) {
     return mesh->hface;
   }
-  
+
+  int MESH_AutoLock(Mesh_ptr mesh) {
+     return mesh->autolock;
+  } 
+
+  void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock) {
+     mesh->autolock = autolock;
+  } 
+
 #ifdef __cplusplus
 }
 #endif

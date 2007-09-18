@@ -11,6 +11,7 @@ extern "C" {
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
 #include "List.h"
+#include "Hash.h"
 #include "MSTK_malloc.h"
 
 
@@ -93,6 +94,11 @@ void        MSTK_Init();
   
   int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
 
+  Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh);
+  Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh);
+  int MESH_AutoLock(Mesh_ptr mesh);
+  void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);
+  
 
 /********************************************************************/
 /*        MESH VERTEX OPERATORS                                     */
@@ -167,6 +173,9 @@ void        MSTK_Init();
 
   int MEs_AreSame(MEdge_ptr e1, MEdge_ptr e2);
 
+  void ME_Lock(MEdge_ptr e);
+  void ME_UnLock(MEdge_ptr e);
+
 /********************************************************************/
 /*        MESH FACE OPERATORS                                       */
 /********************************************************************/
@@ -217,6 +226,8 @@ void        MSTK_Init();
 
   void MF_Coords(MFace_ptr mface, int *n, double (*xyz)[3]);
 
+  void MF_Lock(MFace_ptr f);
+  void MF_UnLock(MFace_ptr f);
 
 /********************************************************************/
 /*        MESH REGN OPERATORS                                       */

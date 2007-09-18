@@ -144,7 +144,8 @@ extern "C" {
 
   void MV_Add_Edge_R4(MVertex_ptr v, MEdge_ptr medge) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_Edge","Function call not suitable for this representation",WARN);
+    /* This function is explicitly called from ME_Set_Vertex */
+    /*MSTK_Report("MV_Add_Edge","Function call not suitable for this representation",WARN);*/
 #endif
   }
 

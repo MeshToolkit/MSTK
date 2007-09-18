@@ -20,7 +20,7 @@ extern "C" {
   } MEntity_Data, *MEntity_Data_ptr;
 
   typedef struct MEntity {
-    MEntity_Data_ptr entdat;
+    MEntity_Data entdat;
   } MEntity, *MEntity_ptr;
 
 #else
@@ -88,12 +88,6 @@ extern "C" {
   void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
   int MEnt_LocalID(MEntity_ptr ent, int procid);
 
-  /* Extra functionality for hash-tables */
-  
-  MEntity_ptr MEnt_NextInHash(MEntity_ptr ent);
-  void MEnt_Set_NextInHash(MEntity_ptr ent, MEntity_ptr next);
-  void MEnt_HashKey(MEntity_ptr ent, unsigned int *pn, void* **pp);
-  
 #ifdef __cplusplus
 }
 #endif

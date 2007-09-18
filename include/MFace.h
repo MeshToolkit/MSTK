@@ -14,43 +14,58 @@ extern "C" {
 
     /* Common data structure for all mesh entities */
 
-    MEntity_Data_ptr entdat;
+    MEntity_Data entdat;
 
     /* Specific to mesh faces */
 
-    void *upadj;
-    void *sameadj;
-    void *downadj;
+    void *adj;
 
   } MFace, *MFace_ptr;
 
-  /*----- Upward adjacency definitions --------*/
+  /*----- Adjacency definitions --------*/
+  /* Put in first place common fields, like downward adjacencies */
+  /* The most individual fields should go to the end of structure */
+  /* If there are functions which work with several different
+   * representations, we must be sure, that used fields and their
+   * position is the same for this representations. */
+  /* Hash-related data is Ok to be in the end, since we use different
+   * functions for each R-representation */
 
-  typedef struct MFace_UpAdj_F1F3 {
-    MRegion_ptr fregions[2];
-  } MFace_UpAdj_F1F3;
-
-  typedef struct MFace_UpAdj_R3R4 {
-    MRegion_ptr fregions[2];
-  } MFace_UpAdj_R3R4;
-
-  /*----- Same Level adjacency definitions ------*/
-
-  typedef struct MFace_SameAdj_R2R4 {
-    List_ptr adjfaces;
-  } MFace_SameAdj_R2R4;
-
-  /*----- Downward adjacency definitions --------*/
-
-  typedef struct MFace_DownAdj_FN {
+  typedef struct MFace_Adj_F1F3 {
     int edirs;
     List_ptr fedges;
-  } MFace_DownAdj_FN;
+    MRegion_ptr fregions[2];
+  } MFace_Adj_F1F3;
 
-  typedef struct MFace_DownAdj_RN {
+  typedef struct MFace_Adj_F2F4 {
+    int edirs;
+    List_ptr fedges;
+  } MFace_Adj_F2F4;
+
+  typedef struct MFace_Adj_R1 {
     List_ptr fvertices;
-  } MFace_DownAdj_RN;
-  
+    MFace_ptr hnext;
+    int lock;
+  } MFace_Adj_R1;
+
+  typedef struct MFace_Adj_R2 {
+    List_ptr fvertices;
+    List_ptr adjfaces;
+    MFace_ptr hnext;
+    int lock;
+  } MFace_Adj_R2;
+
+  typedef struct MFace_Adj_R3 {
+    List_ptr fvertices;
+    MRegion_ptr fregions[2];
+  } MFace_Adj_R3;
+
+  typedef struct MFace_Adj_R4 {
+    List_ptr fvertices;
+    MRegion_ptr fregions[2];
+    List_ptr adjfaces;
+  } MFace_Adj_R4;
+
 #else
   typedef void *MFace_ptr;
 #endif  
@@ -108,6 +123,10 @@ extern "C" {
      being created from a list of faces */
   void MF_Add_Region(MFace_ptr f, MRegion_ptr r, int side);
   void MF_Rem_Region(MFace_ptr f, MRegion_ptr r);
+
+  void MF_Lock(MFace_ptr f);
+  void MF_UnLock(MFace_ptr f);
+  int MF_IsLocked(MFace_ptr f);
 
 #ifdef __cplusplus
 }

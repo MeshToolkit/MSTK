@@ -9,18 +9,18 @@ extern "C" {
 #endif
 
   List_ptr MF_Regions_R1R2(MFace_ptr f) {
-    MFace_DownAdj_RN *downadj = (MFace_DownAdj_RN *) f->downadj;
+    MFace_Adj_R1 *adj = (MFace_Adj_R1 *) f->adj;
     MVertex_ptr v, rv;
     MRegion_ptr r;
     List_ptr vregs, rverts, fregs;
     int nfv, nr, idx, i, fnd=0, idx1;
     
-    v = List_Entry(downadj->fvertices,0);
+    v = List_Entry(adj->fvertices,0);
     vregs = MV_Regions(v);
     if (!vregs)
       return NULL;
 
-    nfv = List_Num_Entries(downadj->fvertices);
+    nfv = List_Num_Entries(adj->fvertices);
     nr = 0;
     fregs = List_New(2);
 
@@ -29,7 +29,7 @@ extern "C" {
       rverts = MR_Vertices(r);
 
       for (i = 1; i < nfv; i++) {
-	v = List_Entry(downadj->fvertices,i);
+	v = List_Entry(adj->fvertices,i);
 	idx1 = 0;
 	fnd = 0;
 	while ((rv = List_Next_Entry(rverts,&idx1))) {

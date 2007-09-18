@@ -78,6 +78,7 @@ extern "C" {
 	MF_Set_GInfo_Auto(face);
 #endif
 	List_Add(rfaces,face);	
+	MF_Lock(face);
       }
     }
     else {
@@ -128,9 +129,16 @@ extern "C" {
 	MF_Set_GInfo_Auto(face);
 #endif
 	List_Add(rfaces,face);
+	MF_Lock(face);
       }
     }
 
+    if (!MESH_AutoLock(mesh)) {
+       i = 0;
+       while ((face = List_Next_Entry(rfaces, &i))) {
+	 MF_UnLock(face);
+       }
+    }
     return rfaces;
   }
 

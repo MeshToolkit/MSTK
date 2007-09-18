@@ -418,9 +418,11 @@ static void (*MF_Set_RepType_jmp[MSTK_MAXREP])(MFace_ptr f) =
 
 void MF_Delete_F1(MFace_ptr f, int keep);
 void MF_Delete_F4(MFace_ptr f, int keep);
+void MF_Delete_R1(MFace_ptr f, int keep);
+void MF_Delete_R2(MFace_ptr f, int keep);
 void MF_Delete_R4(MFace_ptr f, int keep);
 static void (*MF_Delete_jmp[MSTK_MAXREP])(MFace_ptr f, int keep) = 
-{MF_Delete_F1, MF_Delete_F4, MF_Dummy2a, MF_Dummy2a, MF_Delete_R4};
+{MF_Delete_F1, MF_Delete_F4, MF_Delete_R1, MF_Delete_R2, MF_Delete_R4};
 
 void MF_Restore_F1(MFace_ptr f);
 void MF_Restore_F4(MFace_ptr f);
@@ -492,7 +494,48 @@ static void (*MF_Rem_AdjFace_jmp[MSTK_MAXREP])(MFace_ptr f, int edgnum, MFace_pt
 {MF_Rem_AdjFace_F1, MF_Rem_AdjFace_F4, MF_Rem_AdjFace_R1, MF_Rem_AdjFace_R2, 
  MF_Rem_AdjFace_R4};
 
-  
+MFace_ptr MF_NextInHash_F1(MFace_ptr f);
+MFace_ptr MF_NextInHash_F4(MFace_ptr f);
+MFace_ptr MF_NextInHash_R1(MFace_ptr f);
+MFace_ptr MF_NextInHash_R2(MFace_ptr f);
+MFace_ptr MF_NextInHash_R4(MFace_ptr f);
+static MFace_ptr (*MF_NextInHash_jmp[MSTK_MAXREP])(MFace_ptr f) =
+{MF_NextInHash_F1, MF_NextInHash_F4, MF_NextInHash_R1, MF_NextInHash_R2, MF_NextInHash_R4};
+
+void MF_Set_NextInHash_F1(MFace_ptr f, MFace_ptr next);
+void MF_Set_NextInHash_F4(MFace_ptr f, MFace_ptr next);
+void MF_Set_NextInHash_R1(MFace_ptr f, MFace_ptr next);
+void MF_Set_NextInHash_R2(MFace_ptr f, MFace_ptr next);
+void MF_Set_NextInHash_R4(MFace_ptr f, MFace_ptr next);
+static void (*MF_Set_NextInHash_jmp[MSTK_MAXREP])(MFace_ptr f, MFace_ptr next) =
+{MF_Set_NextInHash_F1, MF_Set_NextInHash_F4, MF_Set_NextInHash_R1, MF_Set_NextInHash_R2, MF_Set_NextInHash_R4};
+
+void MF_HashKey_F1(MFace_ptr f, unsigned int *pn, void* **pp);
+void MF_HashKey_F4(MFace_ptr f, unsigned int *pn, void* **pp);
+void MF_HashKey_R1(MFace_ptr f, unsigned int *pn, void* **pp);
+void MF_HashKey_R2(MFace_ptr f, unsigned int *pn, void* **pp);
+void MF_HashKey_R4(MFace_ptr f, unsigned int *pn, void* **pp);
+static void (*MF_HashKey_jmp[MSTK_MAXREP])(MFace_ptr f, unsigned int *pn, void* **pp) =
+{MF_HashKey_F1, MF_HashKey_F4, MF_HashKey_R1, MF_HashKey_R2, MF_HashKey_R4};
+
+void MF_Lock_R1(MFace_ptr f);
+void MF_Lock_R2(MFace_ptr f);
+static void (*MF_Lock_jmp[MSTK_MAXREP])(MFace_ptr f) =
+{MF_Dummy1, MF_Dummy1, MF_Lock_R1, MF_Lock_R2, MF_Dummy1};
+
+void MF_UnLock_R1(MFace_ptr f);
+void MF_UnLock_R2(MFace_ptr f);
+static void (*MF_UnLock_jmp[MSTK_MAXREP])(MFace_ptr f) =
+{MF_Dummy1, MF_Dummy1, MF_UnLock_R1, MF_UnLock_R2, MF_Dummy1};
+
+int MF_IsLocked_F1(MFace_ptr f);
+int MF_IsLocked_F4(MFace_ptr f);
+int MF_IsLocked_R1(MFace_ptr f);
+int MF_IsLocked_R2(MFace_ptr f);
+int MF_IsLocked_R4(MFace_ptr f);
+static int (*MF_IsLocked_jmp[MSTK_MAXREP])(MFace_ptr f) =
+{MF_IsLocked_F1, MF_IsLocked_F4, MF_IsLocked_R1, MF_IsLocked_R2, MF_IsLocked_R4};
+
 #ifdef __cplusplus
 }
 #endif

@@ -22,9 +22,7 @@ extern "C" {
     MEnt_Set_GEntDim(f,4); /* nonsensical value as we don't know what it is */
     MEnt_Set_GEntID(f,0);
 
-    f->upadj = (void *) NULL;
-    f->sameadj = (void *) NULL;
-    f->downadj = (void *) NULL;
+    f->adj = (void *) NULL;
 
     RTYPE = mesh ? MESH_RepType(mesh) : F1;
     MF_Set_RepType(f,RTYPE);
@@ -347,34 +345,35 @@ extern "C" {
   /* Extra functionality for hash-tables */
   
   MFace_ptr MF_NextInHash(MFace_ptr f) {
-    switch ( MEnt_RepType(f) ) {
-    case R1:
-    case R2:
-      return f->upadj;
-    default:
-      MSTK_Report("MF_NextInHash", "Bad representation", WARN);
-      return NULL;
-    }
+    RepType RTYPE = MEnt_RepType(f);
+    return MF_NextInHash_jmp[RTYPE](f);
   }
   
   void MF_Set_NextInHash(MFace_ptr f, MFace_ptr next) {
-    switch ( MEnt_RepType(f) ) {
-    case R1:
-    case R2:
-      f->upadj = next;
-      break;
-    default:
-      MSTK_Report("MF_Set_NextInHash", "Bad representation", WARN);
-    }
+    RepType RTYPE = MEnt_RepType(f);
+    MF_Set_NextInHash_jmp[RTYPE](f, next);
   }
 
   void MF_HashKey(MFace_ptr f, unsigned int *pn, void* **pp) {
-    MFace_DownAdj_RN *downadj;
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    *pn = List_Num_Entries(downadj->fvertices); 
-    *pp = List_Entries(downadj->fvertices);
+    RepType RTYPE = MEnt_RepType(f);
+    MF_HashKey_jmp[RTYPE](f, pn, pp);
   }
 
+  void MF_Lock(MFace_ptr f) {
+    RepType RTYPE = MEnt_RepType(f);
+    MF_Lock_jmp[RTYPE](f);
+  }
+  
+  void MF_UnLock(MFace_ptr f) {
+    RepType RTYPE = MEnt_RepType(f);
+    MF_UnLock_jmp[RTYPE](f);
+  }
+  
+  int MF_IsLocked(MFace_ptr f) {
+    RepType RTYPE = MEnt_RepType(f);
+    return MF_IsLocked_jmp[RTYPE](f);
+  }
+  
 #ifdef __cplusplus
 }
 #endif

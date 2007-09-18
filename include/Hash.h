@@ -22,11 +22,11 @@ extern "C" {
   void pvtHash_Get_Pars(Hash_ptr h, unsigned int *nent, unsigned int *p, int *t);
   unsigned int  pvtHash_Get_Nent(Hash_ptr h);
   unsigned int  pvtHash_Get_Size(Hash_ptr h);
-  int  pvtHash_Get_Type(Hash_ptr h); /* 0 for edges, 1 for faces */
   void pvtHash_Set_Pars(Hash_ptr h, unsigned int nent, unsigned int p, int t);
   unsigned int pvtHash_Function(unsigned int np, void* *p);
   unsigned int pvtHash_Enlarge(Hash_ptr h);
   int pvtHash_CheckKeys(unsigned int np1, void* *p1, unsigned int np2, void* *p2);
+  void pvtHash_CheckSize(Hash_ptr h);
 #else
   typedef void *Hash_ptr;
 #endif
@@ -41,9 +41,15 @@ extern "C" {
   int      Hash_Num_Entries(Hash_ptr h);
   List_ptr Hash_Entries(Hash_ptr h);
 
-#ifdef DEBUG
   void     Hash_Print(Hash_ptr h);
-#endif
+
+  void Hash_Lock(int *plock);
+  void Hash_UnLock(int *plock);
+  int Hash_IsLocked(int lock);
+
+  int  Hash_AutoRemove(Hash_ptr h);
+  void Hash_Set_AutoRemove(Hash_ptr h, int t);
+  unsigned int Hash_Remove_Unused(Hash_ptr h);
 
 #ifdef __cplusplus
 }

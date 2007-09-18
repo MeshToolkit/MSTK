@@ -383,7 +383,9 @@ extern "C" {
       if (freg) {
 	if (freg == r) {
 	  freg = MF_Region(face,1);
-	  List_Add(adjr,freg);
+	  if (freg) {
+   	    List_Add(adjr,freg);
+  	  }
 	}
 	else 
 	  List_Add(adjr,freg);

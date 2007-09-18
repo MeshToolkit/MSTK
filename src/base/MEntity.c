@@ -18,26 +18,23 @@ extern "C" {
 
 
   void MEnt_Init_CmnData(MEntity_ptr ent) {
-    ent->entdat = (MEntity_Data *) MSTK_malloc(sizeof(MEntity_Data));
-
-    ent->entdat->mesh = NULL;
-    ent->entdat->dim_id = 0;
-    ent->entdat->rtype_gdim_gid = 0;
-    ent->entdat->marker = 0;
-    ent->entdat->AttInsList = 0;
+    ent->entdat.mesh = NULL;
+    ent->entdat.dim_id = 0;
+    ent->entdat.rtype_gdim_gid = 0;
+    ent->entdat.marker = 0;
+    ent->entdat.AttInsList = 0;
   }
 
   void MEnt_Free_CmnData(MEntity_ptr ent) {    
     MEnt_Rem_AllAttVals(ent);
-    MSTK_free(ent->entdat);
   }
 
   void MEnt_Set_Mesh(MEntity_ptr ent, Mesh_ptr mesh) {
-    ent->entdat->mesh = mesh;
+    ent->entdat.mesh = mesh;
   }
 
   Mesh_ptr MEnt_Mesh(MEntity_ptr ent) {
-    return ent->entdat->mesh;
+    return ent->entdat.mesh;
   }
 
 
@@ -55,7 +52,7 @@ extern "C" {
   /* MESH ENTITY ID */
 
   void MEnt_Set_Dim(MEntity_ptr ent, int dim) {
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
 
     if (dim == MDELETED)
       data = data | 1; /* Set the first bit to 1 */
@@ -65,12 +62,12 @@ extern "C" {
       data = (data | dim<<2); /* set bits 3,4,5 */
     }
 
-    ent->entdat->dim_id = data;
+    ent->entdat.dim_id = data;
   }
 
   MType MEnt_Dim(MEntity_ptr ent) {
     int del_flag=0, dim=0;
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
 
     del_flag = data & 1; /* check the first bit */
     if (del_flag)
@@ -84,20 +81,20 @@ extern "C" {
   }
 
   void MEnt_Set_Volatile(MEntity_ptr ent) {
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
 
     data = data | 2; /* 2 is 0000.....00010, i.e. second bit is 1 */
   }
 
   int MEnt_IsVolatile(MEntity_ptr ent) {
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
     
     return (data & 2);
   }
 
   MType MEnt_OrigDim(MEntity_ptr ent) {
     int del_flag=0, dim=0;
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
 
     del_flag = data & 1;
     dim = (data>>2) & 7;
@@ -116,7 +113,7 @@ extern "C" {
   /* MESH ENTITY ID */
 
   void MEnt_Set_ID(MEntity_ptr ent, int id) {
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
 
     if (id > 134217727 )
       MSTK_Report("MEnt_SetID","ID too large",WARN);
@@ -127,12 +124,12 @@ extern "C" {
     /* Set the ID */
     data = (data | (id<<5));
 
-    ent->entdat->dim_id = data;
+    ent->entdat.dim_id = data;
   }
 
 
   int MEnt_ID(MEntity_ptr ent) {
-    unsigned int data = ent->entdat->dim_id;
+    unsigned int data = ent->entdat.dim_id;
     return (data>>5);
   }
 
@@ -151,7 +148,7 @@ extern "C" {
   /* MESH ENTITY REPRESENTATION TYPE */
 
   void MEnt_Set_RepType_Data(MEntity_ptr ent, RepType rtype) {
-    unsigned int data = ent->entdat->rtype_gdim_gid;
+    unsigned int data = ent->entdat.rtype_gdim_gid;
 
     /* first zero out the first four bits */
     data = data & ~(15);
@@ -161,11 +158,11 @@ extern "C" {
     else
       data = data | rtype;
 
-    ent->entdat->rtype_gdim_gid = data;
+    ent->entdat.rtype_gdim_gid = data;
   }
 
   void MEnt_Set_RepType(MEntity_ptr ent, RepType rtype) {
-    unsigned int dim, data = ent->entdat->dim_id;
+    unsigned int dim, data = ent->entdat.dim_id;
 
     /* Get the dimension of the entity */
 
@@ -191,7 +188,7 @@ extern "C" {
 
   RepType MEnt_RepType(MEntity_ptr ent) {
     int rtype=0;
-    unsigned int data = ent->entdat->rtype_gdim_gid;
+    unsigned int data = ent->entdat.rtype_gdim_gid;
 
     rtype = data & 15;
     
@@ -206,7 +203,7 @@ extern "C" {
   /* MODEL ENTITY DIMENSION */
 
   void MEnt_Set_GEntDim(MEntity_ptr ent, int gdim) {
-    unsigned int data = ent->entdat->rtype_gdim_gid;
+    unsigned int data = ent->entdat.rtype_gdim_gid;
 
     /* zero out bits 5,6,7 by doing a bitwise AND with inverse of
        0...01110000 (7<<4) */
@@ -220,13 +217,13 @@ extern "C" {
     else
       data = data | (7<<4);  /* set all 3 bits to 1 */
 
-    ent->entdat->rtype_gdim_gid = data;
+    ent->entdat.rtype_gdim_gid = data;
   }
     
 
   int MEnt_GEntDim(MEntity_ptr ent) {
     int gdim=0;
-    unsigned int data = ent->entdat->rtype_gdim_gid;
+    unsigned int data = ent->entdat.rtype_gdim_gid;
 
     gdim = (data>>4) & 7;
 
@@ -240,7 +237,7 @@ extern "C" {
   /* MODEL ENTITY ID */
 
   void MEnt_Set_GEntID(MEntity_ptr ent, int gid) {
-    unsigned int data = ent->entdat->rtype_gdim_gid;
+    unsigned int data = ent->entdat.rtype_gdim_gid;
 
     /* first zero out all bits higher than the 7th bit by performing a
        bitwise AND with 127 (0...01111111) */
@@ -251,11 +248,11 @@ extern "C" {
     else
       data = data | (gid<<7);
     
-    ent->entdat->rtype_gdim_gid = data;
+    ent->entdat.rtype_gdim_gid = data;
   }
 
   int MEnt_GEntID(MEntity_ptr ent) {
-    unsigned int data = ent->entdat->rtype_gdim_gid;
+    unsigned int data = ent->entdat.rtype_gdim_gid;
     return (data>>7);
   }
 
@@ -283,7 +280,7 @@ extern "C" {
 
     /* Set first bit to 1 to indicate that this is a deleted entity */    
 
-    ent->entdat->dim_id = ent->entdat->dim_id | 1;
+    ent->entdat.dim_id = ent->entdat.dim_id | 1;
   }
     
   /* Mark an entity as undeleted or restored or alive */
@@ -292,21 +289,14 @@ extern "C" {
 
     /* Set first bit to 0 to indicate that this is a valid entity */    
 
-    ent->entdat->dim_id = ent->entdat->dim_id & 0;
+    ent->entdat.dim_id = ent->entdat.dim_id & 0;
   }
     
 
   /* Delete an entity */
 
   void MEnt_Delete(MEntity_ptr ent, int keep) {
-    MType dim;
-    unsigned int data = ent->entdat->dim_id;
-
-    /* Get the dimension of the entity */
-
-    dim = (data>>1) & 7;
-
-    switch (dim) {
+    switch ( MEnt_Dim(ent) ) {
     case MVERTEX:
       MV_Delete(ent,keep);
       break;
@@ -331,7 +321,7 @@ extern "C" {
 
 
   int MEnt_IsMarked(MEntity_ptr ent, int markerID) {
-    return (ent->entdat->marker & 1<<(markerID-1));
+    return (ent->entdat.marker & 1<<(markerID-1));
   }
 
   void MEnt_Mark(MEntity_ptr ent, int markerID) {
@@ -341,7 +331,7 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",ERROR);
 #endif
 
-    ent->entdat->marker = ent->entdat->marker | 1<<(markerID-1);
+    ent->entdat.marker = ent->entdat.marker | 1<<(markerID-1);
   }
 
   void MEnt_Unmark(MEntity_ptr ent, int markerID) {
@@ -351,7 +341,7 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",ERROR);
 #endif
 
-    ent->entdat->marker = ent->entdat->marker & ~(1<<(markerID-1));
+    ent->entdat.marker = ent->entdat.marker & ~(1<<(markerID-1));
   }
 
   void List_Mark(List_ptr list, int markerID) {
@@ -396,9 +386,9 @@ extern "C" {
     if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
 	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
 
-      attinslist = ent->entdat->AttInsList;
+      attinslist = ent->entdat.AttInsList;
       if (!attinslist)
-	ent->entdat->AttInsList = attinslist = List_New(3);
+	ent->entdat.AttInsList = attinslist = List_New(3);
       
       idx = 0; found = 0;
       while ((attins = List_Next_Entry(attinslist,&idx))) {
@@ -434,7 +424,7 @@ extern "C" {
     if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
 	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
 
-      attinslist = ent->entdat->AttInsList;
+      attinslist = ent->entdat.AttInsList;
       if (!attinslist)
 	return;
     
@@ -468,7 +458,7 @@ extern "C" {
     MAttIns_ptr attins;
     List_ptr attinslist;
     
-    attinslist = ent->entdat->AttInsList;
+    attinslist = ent->entdat.AttInsList;
     if (!attinslist)
       return;
     
@@ -477,7 +467,7 @@ extern "C" {
       MAttIns_Delete(attins);
     List_Delete(attinslist);
 
-    ent->entdat->AttInsList = NULL;
+    ent->entdat.AttInsList = NULL;
   }
 
 
@@ -500,7 +490,7 @@ extern "C" {
     if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
 	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
 
-      attinslist = ent->entdat->AttInsList;
+      attinslist = ent->entdat.AttInsList;
       if (!attinslist)
 	return 0;
       
@@ -764,7 +754,22 @@ extern "C" {
     }
   }
 
-
+  int MEnt_IsLocked(MEntity_ptr ent) {
+    switch ( MEnt_Dim(ent) ) {
+    case MEDGE:
+      return ME_IsLocked(ent);
+    case MFACE:
+      return MF_IsLocked(ent);
+    case MVERTEX:
+    case MREGION:
+      return 0;
+    default:
+#ifdef DEBUG
+      MSTK_Report("MEnt_HashKey", "Unknown entity type", WARN);
+#endif
+      return 0;
+    }
+  }
 #ifdef __cplusplus
 }
 #endif

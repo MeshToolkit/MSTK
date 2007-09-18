@@ -157,9 +157,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* Extra functionality for hash-tables */
 
-  Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh);
-  Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh);
-  
   MEdge_ptr ME_NextInHash(MEdge_ptr medge);
   void ME_Set_NextInHash(MEdge_ptr medge, MEdge_ptr next);
   void ME_HashKey(MEdge_ptr medge, unsigned int *pn, void* **pp);
@@ -168,6 +165,14 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void MF_Set_NextInHash(MFace_ptr mface, MFace_ptr next);
   void MF_HashKey(MFace_ptr medge, unsigned int *pn, void* **pp);
   
+  MEntity_ptr MEnt_NextInHash(MEntity_ptr ent);
+  void MEnt_Set_NextInHash(MEntity_ptr ent, MEntity_ptr next);
+  void MEnt_HashKey(MEntity_ptr ent, unsigned int *pn, void* **pp);
+  
+  int ME_IsLocked(MEdge_ptr e);
+  int MF_IsLocked(MFace_ptr f);
+  int MEnt_IsLocked(MEntity_ptr ent);
+
 
 #ifdef __cplusplus
 	   }

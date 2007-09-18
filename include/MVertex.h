@@ -16,7 +16,7 @@ extern "C" {
 
     /* Common data structure for all mesh entities */
 
-    MEntity_Data_ptr entdat;
+    MEntity_Data entdat;
 
     /* specific to mesh vertices */
 

@@ -10,14 +10,14 @@ extern "C" {
 #endif
 
   void ME_Set_RepType_F4(MEdge_ptr e) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
 
-    upadj = e->upadj = (MEdge_UpAdj_F4 *) MSTK_malloc(sizeof(MEdge_UpAdj_F4));
-    upadj->elements = List_New(5);
+    adj = e->adj = (MEdge_Adj_F4 *) MSTK_malloc(sizeof(MEdge_Adj_F4));
+    adj->elements = List_New(5);
   }
 
   void ME_Delete_F4(MEdge_ptr e, int keep) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
 
     if (MEnt_Dim(e) != MDELETED) { /* if edge hasnt been temporarily deleted */
       MV_Rem_Edge(e->vertex[0],e);
@@ -25,11 +25,11 @@ extern "C" {
     }
 
     if (!keep) {
-      upadj = (MEdge_UpAdj_F4 *) e->upadj;
-      if (upadj) {
-	if (upadj->elements)
-	  List_Delete(upadj->elements);
-	MSTK_free(upadj);
+      adj = (MEdge_Adj_F4 *) e->adj;
+      if (adj) {
+	if (adj->elements)
+	  List_Delete(adj->elements);
+	MSTK_free(adj);
       }
     }
   }
@@ -43,13 +43,13 @@ extern "C" {
   }
 
   void ME_Destroy_For_MESH_Delete_F4(MEdge_ptr e) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
-    if (upadj) {
-      if (upadj->elements)
-	List_Delete(upadj->elements);
-      MSTK_free(upadj);
+    adj = (MEdge_Adj_F4 *) e->adj;
+    if (adj) {
+      if (adj->elements)
+	List_Delete(adj->elements);
+      MSTK_free(adj);
     }
   }
 
@@ -72,7 +72,7 @@ extern "C" {
 
 
   /* Edge could be connected up to regions or isolated faces - so we
-     can't just return e->upadj->nel */
+     can't just return e->adj->nel */
   int ME_Num_Regions_F4(MEdge_ptr e) {
     int nr;
     List_ptr eregions;
@@ -86,22 +86,22 @@ extern "C" {
 
 
   List_ptr ME_Faces_F4(MEdge_ptr e) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
     List_ptr efaces, rfaces;
     int nf, nrf, nel, mkr, i, j, dim;
     MFace_ptr rface;
     MEntity_ptr ent;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
+    adj = (MEdge_Adj_F4 *) e->adj;
 
-    nel = List_Num_Entries(upadj->elements);
+    nel = List_Num_Entries(adj->elements);
 
     efaces = List_New(nel);
     nf = 0;
     mkr = MSTK_GetMarker();
 
     for (i = 0; i < nel; i++) {
-      ent = (MEntity_ptr) List_Entry(upadj->elements,i);
+      ent = (MEntity_ptr) List_Entry(adj->elements,i);
       dim = MEnt_Dim(ent);
       if (dim == MFACE) {
 	if (!MEnt_IsMarked(ent,mkr)) {
@@ -146,18 +146,18 @@ extern "C" {
   List_ptr ME_Regions_F4(MEdge_ptr e) {
     int nr, nel, i;
     MEntity_ptr ent;
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
     List_ptr eregs;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
+    adj = (MEdge_Adj_F4 *) e->adj;
     
-    nel = List_Num_Entries(upadj->elements);
+    nel = List_Num_Entries(adj->elements);
 
     nr = 0;
     eregs = List_New(nel);
 
     for (i = 0; i < nel; i++) {
-      ent = List_Entry(upadj->elements,i);
+      ent = List_Entry(adj->elements,i);
       if (MEnt_Dim(ent) == MREGION) {
 	List_Add(eregs,ent);
 	nr++;
@@ -173,40 +173,57 @@ extern "C" {
   }
 
   void ME_Add_Face_F4(MEdge_ptr e, MFace_ptr f) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
+    adj = (MEdge_Adj_F4 *) e->adj;
 
-    if (upadj->elements == NULL)
-      upadj->elements = List_New(10);
-    List_Add(upadj->elements,f);
+    if (adj->elements == NULL)
+      adj->elements = List_New(10);
+    List_Add(adj->elements,f);
   }
 
   void ME_Rem_Face_F4(MEdge_ptr e, MFace_ptr f) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
     List_ptr fregs;
     int ok;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
+    adj = (MEdge_Adj_F4 *) e->adj;
 
-    List_Rem(upadj->elements,f);
+    List_Rem(adj->elements,f);
   }
 
   void ME_Add_Region_F4(MEdge_ptr e, MRegion_ptr r) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
-    if (upadj->elements == NULL)
-      upadj->elements = List_New(10);
-    List_Add(upadj->elements,r);
+    adj = (MEdge_Adj_F4 *) e->adj;
+    if (adj->elements == NULL)
+      adj->elements = List_New(10);
+    List_Add(adj->elements,r);
   }
 
   void ME_Rem_Region_F4(MEdge_ptr e, MRegion_ptr r) {
-    MEdge_UpAdj_F4 *upadj;
+    MEdge_Adj_F4 *adj;
     int ok;
 
-    upadj = (MEdge_UpAdj_F4 *) e->upadj;
-    ok = List_Rem(upadj->elements,r);
+    adj = (MEdge_Adj_F4 *) e->adj;
+    ok = List_Rem(adj->elements,r);
+  }
+
+  MEdge_ptr ME_NextInHash_F4(MEdge_ptr e) {
+#ifdef DEBUG
+    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+    return NULL;
+  }
+
+  void ME_Set_NextInHash_F4(MEdge_ptr e, MEdge_ptr next) {
+#ifdef DEBUG
+    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+  }
+
+  int ME_IsLocked_F4(MEdge_ptr e) {
+    return 0;
   }
 
 #ifdef __cplusplus

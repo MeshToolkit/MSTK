@@ -21,7 +21,7 @@ extern "C" {
     MEnt_Set_GEntDim(e,4); /* Nonsensical value as we don't know what it is */
     MEnt_Set_GEntID(e,0);
 
-    e->upadj = (void *) NULL;
+    e->adj = (void *) NULL;
     e->vertex[0] = e->vertex[1] = (MVertex_ptr) NULL;
 
     RTYPE = mesh ? MESH_RepType(mesh) : F1;
@@ -373,32 +373,33 @@ extern "C" {
   /* Extra functionality for hash-tables */
   
   MEdge_ptr ME_NextInHash(MEdge_ptr e) {
-    switch ( MEnt_RepType(e) ) {
-    case R1:
-    case R2:
-    case R4:
-      return e->upadj;
-    default:
-      MSTK_Report("ME_NextInHash", "Bad representation", WARN);
-      return NULL;
-    }
+    RepType RTYPE = MEnt_RepType(e);
+    return ME_NextInHash_jmp[RTYPE](e);
   }
   
   void ME_Set_NextInHash(MEdge_ptr e, MEdge_ptr next) {
-    switch ( MEnt_RepType(e) ) {
-    case R1:
-    case R2:
-    case R4:
-      e->upadj = next;
-      break;
-    default:
-      MSTK_Report("ME_Set_NextInHash", "Bad representation", WARN);
-    }
+    RepType RTYPE = MEnt_RepType(e);
+    return ME_Set_NextInHash_jmp[RTYPE](e, next);
   }
 
   void ME_HashKey(MEdge_ptr e, unsigned int *pn, void* **pp) {
     *pn = 2;
     *pp = e->vertex;
+  }
+  
+  void ME_Lock(MEdge_ptr e) {
+    RepType RTYPE = MEnt_RepType(e);
+    ME_Lock_jmp[RTYPE](e);
+  }
+  
+  void ME_UnLock(MEdge_ptr e) {
+    RepType RTYPE = MEnt_RepType(e);
+    ME_UnLock_jmp[RTYPE](e);
+  }
+  
+  int ME_IsLocked(MEdge_ptr e) {
+    RepType RTYPE = MEnt_RepType(e);
+    return ME_IsLocked_jmp[RTYPE](e);
   }
   
 #ifdef __cplusplus

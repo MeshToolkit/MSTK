@@ -13,22 +13,22 @@ extern "C" {
   int MF_Set_GInfo_Auto_RN(MFace_ptr f) {
     int i, same, nv, fgdim, fgid, vgdim, vgid, vgdim0, vgid0;
     MVertex_ptr v;
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    nv = List_Num_Entries(downadj->fvertices);
+    adj = (MFace_Adj_R1 *) f->adj;
+    nv = List_Num_Entries(adj->fvertices);
 
     same = 1;
     fgdim = -1;
     fgid = -1;
     vgid = -1;
 
-    v = List_Entry(downadj->fvertices,0);    
+    v = List_Entry(adj->fvertices,0);    
     vgid0 = MV_GEntID(v);
     vgdim0 = MV_GEntDim(v);
 
     for (i = 1; i < nv; i++) {
-      v = List_Entry(downadj->fvertices,i);
+      v = List_Entry(adj->fvertices,i);
       vgid = MV_GEntID(v);
       vgdim = MV_GEntDim(v);
       if (vgdim == vgdim0 && vgid == vgid0)
@@ -97,11 +97,11 @@ extern "C" {
   }
 
   void MF_Set_Vertices_RN(MFace_ptr f, int n, MVertex_ptr *v) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
     int i;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    downadj->fvertices = List_New(n);
+    adj = (MFace_Adj_R1 *) f->adj;
+    adj->fvertices = List_New(n);
 
     for (i = 0; i < n; i++) {
 
@@ -112,15 +112,15 @@ extern "C" {
 		    FATAL);
 #endif
 
-      List_Add(downadj->fvertices,v[i]);
+      List_Add(adj->fvertices,v[i]);
     }
   }
 
   void MF_Replace_Vertex_i_RN(MFace_ptr f, int i, MVertex_ptr v) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    if (downadj->fvertices == NULL)
+    adj = (MFace_Adj_R1 *) f->adj;
+    if (adj->fvertices == NULL)
       MSTK_Report("MF_Replace_Vertex_RN",
 		  "No initial set of vertices for face",ERROR);
 
@@ -131,14 +131,14 @@ extern "C" {
 		  FATAL);
 #endif
 
-    List_Replacei(downadj->fvertices,i,v);
+    List_Replacei(adj->fvertices,i,v);
   }
 
   void MF_Replace_Vertex_RN(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    if (downadj->fvertices == NULL)
+    adj = (MFace_Adj_R1 *) f->adj;
+    if (adj->fvertices == NULL)
       MSTK_Report("MF_Replace_Vertex_RN",
 		  "No initial set of vertices for face",ERROR);
 
@@ -149,15 +149,15 @@ extern "C" {
 		  FATAL);
 #endif
 
-    List_Replace(downadj->fvertices,v,nuv);
+    List_Replace(adj->fvertices,v,nuv);
   }
 
   void MF_Insert_Vertex_RN(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    if (downadj->fvertices == NULL)
-      downadj->fvertices = List_New(4);
+    adj = (MFace_Adj_R1 *) f->adj;
+    if (adj->fvertices == NULL)
+      adj->fvertices = List_New(4);
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(nuv))
@@ -166,15 +166,15 @@ extern "C" {
 		  FATAL);
 #endif
 
-    List_Insert(downadj->fvertices,nuv,b4v);
+    List_Insert(adj->fvertices,nuv,b4v);
   }
 
   void MF_Insert_Vertex_i_RN(MFace_ptr f, MVertex_ptr nuv, int i) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    if (downadj->fvertices == NULL)
-      downadj->fvertices = List_New(4);
+    adj = (MFace_Adj_R1 *) f->adj;
+    if (adj->fvertices == NULL)
+      adj->fvertices = List_New(4);
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(nuv))
@@ -183,36 +183,36 @@ extern "C" {
 		  FATAL);
 #endif
 
-    List_Inserti(downadj->fvertices,nuv,i);
+    List_Inserti(adj->fvertices,nuv,i);
   }
 
   int MF_Num_Vertices_RN(MFace_ptr f) {
-    MFace_DownAdj_RN *downadj;
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    return List_Num_Entries(downadj->fvertices);
+    MFace_Adj_R1 *adj;
+    adj = (MFace_Adj_R1 *) f->adj;
+    return List_Num_Entries(adj->fvertices);
   }
 
   List_ptr MF_Vertices_RN(MFace_ptr f, int dir, MVertex_ptr v0) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R1 *adj;
     List_ptr fverts;
     int i, k=0, nv, fnd=0;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    nv = List_Num_Entries(downadj->fvertices);
+    adj = (MFace_Adj_R1 *) f->adj;
+    nv = List_Num_Entries(adj->fvertices);
 
     if (!v0) {
       if (dir) 
-	fverts = List_Copy(downadj->fvertices);
+	fverts = List_Copy(adj->fvertices);
       else {
 	fverts = List_New(nv);
 
 	for (i = nv-1; i >= 0; i--)
-	  List_Add(fverts,List_Entry(downadj->fvertices,i));
+	  List_Add(fverts,List_Entry(adj->fvertices,i));
       }
     }
     else {
       for (i = 0; i < nv; i++) {
-	if (List_Entry(downadj->fvertices,i) == v0) {
+	if (List_Entry(adj->fvertices,i) == v0) {
 	  fnd = 1;
 	  k = i;
 	  break;
@@ -228,9 +228,9 @@ extern "C" {
 
       for (i = 0; i < nv; i++) {
 	if (dir)
-	  List_Add(fverts,List_Entry(downadj->fvertices,(k+i)%nv));
+	  List_Add(fverts,List_Entry(adj->fvertices,(k+i)%nv));
 	else
-	  List_Add(fverts,List_Entry(downadj->fvertices,(k+nv-i)%nv));
+	  List_Add(fverts,List_Entry(adj->fvertices,(k+nv-i)%nv));
       }
     }
 
@@ -238,9 +238,9 @@ extern "C" {
   }
 	
   int MF_UsesVertex_RN(MFace_ptr f, MVertex_ptr v) {
-    MFace_DownAdj_RN *downadj;
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    return List_Contains(downadj->fvertices,v);
+    MFace_Adj_R1 *adj;
+    adj = (MFace_Adj_R1 *) f->adj;
+    return List_Contains(adj->fvertices,v);
   }
 
 #ifdef __cplusplus

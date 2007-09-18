@@ -20,6 +20,15 @@ extern "C" {
   typedef void     *MRegion_ptr;
 #endif
 #ifndef _H_MEntity_Private
+  typedef struct MEntity_Data {
+    void *mesh;
+    unsigned int dim_id;
+    unsigned int rtype_gdim_gid;
+    unsigned int marker;
+    void *AttInsList;
+  } MEntity_Data;
+
+
   typedef void     *MEntity_ptr;
   typedef void     *MEntity_Data_ptr;
 #endif

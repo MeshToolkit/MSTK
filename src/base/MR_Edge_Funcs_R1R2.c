@@ -83,6 +83,7 @@ extern "C" {
 	  ME_Set_GInfo_Auto(edge);
 #endif
 	  List_Add(redges,edge);
+	  ME_Lock(edge);
 	  ne++;
 	}
       }
@@ -130,7 +131,15 @@ extern "C" {
 	ME_Set_GInfo_Auto(edge);
 #endif
 	List_Add(redges,edge);
+	ME_Lock(edge);
       }
+    }
+
+    if (!MESH_AutoLock(mesh)) {
+       i = 0;
+       while ((edge = List_Next_Entry(redges, &i))) {
+	 ME_UnLock(edge);
+       }
     }
 
     return redges;

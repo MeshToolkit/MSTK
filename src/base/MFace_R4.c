@@ -11,71 +11,59 @@ extern "C" {
 
 
   void MF_Set_RepType_R4(MFace_ptr f) {
-    MFace_UpAdj_R3R4 *upadj;
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R4 *adj;
 
-    upadj = f->upadj = (MFace_UpAdj_R3R4 *) MSTK_malloc(sizeof(MFace_UpAdj_R3R4));
-    upadj->fregions[0] = (MRegion_ptr) NULL;
-    upadj->fregions[1] = (MRegion_ptr) NULL;
-    downadj = f->downadj = (MFace_DownAdj_RN *) MSTK_malloc(sizeof(MFace_DownAdj_RN));
-    downadj->fvertices = NULL;
+    adj = f->adj = (MFace_Adj_R4 *) MSTK_malloc(sizeof(MFace_Adj_R4));
+    adj->fregions[0] = (MRegion_ptr) NULL;
+    adj->fregions[1] = (MRegion_ptr) NULL;
+    adj->fvertices = NULL;
   }
 
   void MF_Delete_R4(MFace_ptr f, int keep) {
-    MFace_UpAdj_R3R4 *upadj;
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R4 *adj;
     int idx;
     MVertex_ptr v;
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
+    adj = (MFace_Adj_R4 *) f->adj;
 
     if (MEnt_Dim(f) != MDELETED) { /* if face hasnt been temporarily deleted */
-      if (downadj) {
+      if (adj) {
 	idx = 0;
-	while ((v = List_Next_Entry(downadj->fvertices,&idx))) 
+	while ((v = List_Next_Entry(adj->fvertices,&idx))) 
 	  MV_Rem_Face(v,f);
       }
     }
 
     if (!keep) {
-      upadj  = (MFace_UpAdj_R3R4 *) f->upadj;
-      if (upadj)
-	MSTK_free(upadj);
-
-      if (downadj) {
-	if (downadj->fvertices)
-	  List_Delete(downadj->fvertices);
-	MSTK_free(downadj);
+      if (adj) {
+	if (adj->fvertices)
+	  List_Delete(adj->fvertices);
+	MSTK_free(adj);
       }
     }
   }
 
   void MF_Restore_R4(MFace_ptr f) {
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R4 *adj;
     int idx;
     MVertex_ptr v;
 
     MEnt_Set_Dim(f,MFACE);
 
-    downadj = (MFace_DownAdj_RN *) f->downadj;
+    adj = (MFace_Adj_R4 *) f->adj;
     idx = 0;
-    while ((v = List_Next_Entry(downadj->fvertices,&idx))) 
+    while ((v = List_Next_Entry(adj->fvertices,&idx))) 
       MV_Add_Face(v,f);
   }
   
   void MF_Destroy_For_MESH_Delete_R4(MFace_ptr f) {
-    MFace_UpAdj_R3R4 *upadj;
-    MFace_DownAdj_RN *downadj;
+    MFace_Adj_R4 *adj;
 
-    upadj  = (MFace_UpAdj_R3R4 *) f->upadj;
-    if (upadj)
-      MSTK_free(upadj);
-
-    downadj = (MFace_DownAdj_RN *) f->downadj;
-    if (downadj) {
-      if (downadj->fvertices)
-	List_Delete(downadj->fvertices);
-      MSTK_free(downadj);
+    adj = (MFace_Adj_R4 *) f->adj;
+    if (adj) {
+      if (adj->fvertices)
+	List_Delete(adj->fvertices);
+      MSTK_free(adj);
     }
   }
 
@@ -125,12 +113,12 @@ extern "C" {
   }
 
   void MF_Add_Region_R4(MFace_ptr f, MRegion_ptr r, int side) {
-    MSTK_Report("MF_Add_Region_R2", 
+    MSTK_Report("MF_Add_Region_R4", 
 		"Not yet implemented for this representation",WARN);
   }
 
   void MF_Rem_Region_R4(MFace_ptr f, MRegion_ptr r) {
-    MSTK_Report("MF_Rem_Region_R2",
+    MSTK_Report("MF_Rem_Region_R4",
 		"Not yet implemented for this representation",WARN);
   }
 
@@ -181,29 +169,52 @@ extern "C" {
 
 
   int MF_Num_AdjFaces_R4(MFace_ptr f) {
-    MSTK_Report("MF_Num_AdjFaces_R1",
+    MSTK_Report("MF_Num_AdjFaces_R4",
 		"Not yet implemented for this representation",WARN);
     return 0;
   }
 
   List_ptr MF_AdjFaces_R4(MFace_ptr f) {
-    MSTK_Report("MF_AdjFaces_R1",
+    MSTK_Report("MF_AdjFaces_R4",
 		"Not yet implemented for this representation",WARN);
     return 0;
   }
 
   void MF_Add_AdjFace_R4(MFace_ptr f, int side, MFace_ptr af) {
 #ifdef DEBUG
-    MSTK_Report("MF_Add_AdjFace_R2",
+    MSTK_Report("MF_Add_AdjFace_R4",
 		"Not yet implemented for this representation",WARN);
 #endif
   }
 
   void MF_Rem_AdjFace_R4(MFace_ptr f, int side, MFace_ptr af) {
 #ifdef DEBUG
-    MSTK_Report("MF_Rem_AdjFace_R2",
+    MSTK_Report("MF_Rem_AdjFace_R4",
 		"Not yet implemented for this representation",WARN);
 #endif
+  }
+
+  MFace_ptr MF_NextInHash_R4(MFace_ptr f) {
+#ifdef DEBUG
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+    return NULL;
+  }
+
+  void MF_Set_NextInHash_R4(MFace_ptr f, MFace_ptr next) {
+#ifdef DEBUG
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+  }
+
+  void MF_HashKey_R4(MFace_ptr f, unsigned int *pn, void* **pp) {
+#ifdef DEBUG
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+#endif
+  }
+
+  int MF_IsLocked_R4(MFace_ptr f) {
+    return 0;
   }
 
 #ifdef __cplusplus

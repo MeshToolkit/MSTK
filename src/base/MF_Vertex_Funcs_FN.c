@@ -79,17 +79,17 @@ extern "C" {
     List_ptr fverts;
     MEdge_ptr e;
     MVertex_ptr v;
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
 
-    downadj = (MFace_DownAdj_FN *) f->downadj;
-    ne = List_Num_Entries(downadj->fedges);
+    adj = (MFace_Adj_F2F4 *) f->adj;
+    ne = List_Num_Entries(adj->fedges);
     fverts = List_New(ne);
 
     if (!v0) {
       for (i = 0; i < ne; i++) {
 	k = dir ? i : ne-1-i;
-	e = List_Entry(downadj->fedges,k);
-	edir = ((downadj->edirs)>>k) & 1;
+	e = List_Entry(adj->fedges,k);
+	edir = ((adj->edirs)>>k) & 1;
 	v = ME_Vertex(e,edir^dir);
 	List_Add(fverts,v);
       }
@@ -97,8 +97,8 @@ extern "C" {
     else {
       fnd = 0;
       for (i = 0; i < ne; i++) {
-        e = List_Entry(downadj->fedges,i);
-        edir = ((downadj->edirs)>>i) & 1;
+        e = List_Entry(adj->fedges,i);
+        edir = ((adj->edirs)>>i) & 1;
         if (ME_Vertex(e,edir^dir) == v0) {
           fnd = 1;
           k = i;
@@ -110,10 +110,10 @@ extern "C" {
         MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",FATAL);
 
       for (i = 0; i < ne; i++) {
-	e = dir ? List_Entry(downadj->fedges,(k+i)%ne) :
-	  List_Entry(downadj->fedges,(k+ne-i)%ne);
-	edir = dir ? ((downadj->edirs)>>(k+i)%ne) & 1 :
-	  ((downadj->edirs)>>(k+ne-i)%ne) & 1;
+	e = dir ? List_Entry(adj->fedges,(k+i)%ne) :
+	  List_Entry(adj->fedges,(k+ne-i)%ne);
+	edir = dir ? ((adj->edirs)>>(k+i)%ne) & 1 :
+	  ((adj->edirs)>>(k+ne-i)%ne) & 1;
 	v = ME_Vertex(e,edir^dir);
 	List_Add(fverts,v);
       }
@@ -126,13 +126,13 @@ extern "C" {
   int MF_UsesVertex_FN(MFace_ptr f, MVertex_ptr v) {
     int ne, i;
     MEdge_ptr e;
-    MFace_DownAdj_FN *downadj;
+    MFace_Adj_F2F4 *adj;
 
     /* We have to check only ne-1 edges since they form a loop */
-    downadj = (MFace_DownAdj_FN *) f->downadj;
-    ne = List_Num_Entries(downadj->fedges);
+    adj = (MFace_Adj_F2F4 *) f->adj;
+    ne = List_Num_Entries(adj->fedges);
     for (i = 0; i < ne-1; i++) {
-      e = List_Entry(downadj->fedges,i);
+      e = List_Entry(adj->fedges,i);
       if (ME_UsesEntity(e,v,0))
 	return 1;
     }

@@ -19,6 +19,7 @@ extern "C" {
     List_ptr AttribList;
     int max_vid, max_eid, max_fid, max_rid;
     Hash_ptr hedge, hface;
+    int autolock;
   } Mesh, *Mesh_ptr;
 #else
   typedef void *Mesh;
@@ -73,6 +74,9 @@ extern "C" {
   void       MESH_Renumber(Mesh_ptr mesh);
 
   int        MESH_Init_ParAtts(Mesh_ptr mesh);
+  
+  int MESH_AutoLock(Mesh_ptr mesh);
+  void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);
   
 #ifdef _cplusplus
 }

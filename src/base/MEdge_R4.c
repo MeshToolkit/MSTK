@@ -10,7 +10,10 @@ extern "C" {
 #endif
 
   void ME_Set_RepType_R4(MEdge_ptr e) {
-    return;
+    MEdge_Adj_RN *adj;
+
+    adj = e->adj = (MEdge_Adj_RN *) MSTK_malloc(sizeof(MEdge_Adj_RN));
+    adj->hnext = NULL;
   }
 
   void ME_Delete_R4(MEdge_ptr e, int keep) {
@@ -63,6 +66,31 @@ extern "C" {
     MSTK_Report("ME_Rem_Region",
 		"Function call not suitable for this representation",WARN);
 #endif
+  }
+
+  MEdge_ptr ME_NextInHash_R4(MEdge_ptr e) {
+    MEdge_ptr hnext = ((MEdge_Adj_RN *)e->adj)->hnext; 
+    return hnext;
+  }
+
+  void ME_Set_NextInHash_R4(MEdge_ptr e, MEdge_ptr next) {
+    MEdge_Adj_RN *adj = (MEdge_Adj_RN *)e->adj;
+    adj->hnext = next;
+  }
+
+  void ME_Lock_R4(MEdge_ptr e) {
+    MEdge_Adj_RN *adj = (MEdge_Adj_RN *)e->adj;
+    Hash_Lock(&adj->lock);
+  }
+
+  void ME_UnLock_R4(MEdge_ptr e) {
+    MEdge_Adj_RN *adj = (MEdge_Adj_RN *)e->adj;
+    Hash_UnLock(&adj->lock);
+  }
+
+  int ME_IsLocked_R4(MEdge_ptr e) {
+    MEdge_Adj_RN *adj = (MEdge_Adj_RN *)e->adj;
+    return Hash_IsLocked(adj->lock);
   }
 
 #ifdef __cplusplus

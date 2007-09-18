@@ -17,7 +17,7 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
     /* Common data structure for all mesh entities */
 
-    MEntity_Data_ptr entdat;
+    MEntity_Data entdat;
 
     /* Specific to mesh regions */
     void *sameadj;
