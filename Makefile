@@ -15,6 +15,15 @@ ifeq ($(ARCHOS),i686_linux)
   LDFLAGS := -lm
 endif
 
+ifeq ($(ARCHOS),x86_64_linux)
+  CC = gcc
+  CFLAGS = -W -Wall -Wno-unused -ansi
+  DEBUGFLAGS = -g -DDEBUG
+  OPTFLAGS = -O2 -march=k8              # -pg for PROFILING
+  DEFINES = -DLINUX -DHASHTABLE
+  LDFLAGS := -lm
+endif
+
 # METIS DIRECTORY
 
 METISDIR = $(HOME)/packages/metis-4.0
