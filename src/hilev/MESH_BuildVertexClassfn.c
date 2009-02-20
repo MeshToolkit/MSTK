@@ -40,8 +40,9 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
   idx = 0;
   while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
     gdim = MV_GEntDim(vertex);
-    if (gdim != 0)
-      continue;
+    /*    if (gdim != 0)
+	  continue; */   /* IF THE ORIGINAL MESH HAS WRONG CLASSIFICATION
+			    THEN UNCOMMENTING THIS WILL KEEP IT - BAD? GOOD? */
 
     gvid = MV_GEntID(vertex);
     if (gvid) {
@@ -54,22 +55,22 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
 	gvedgeids = (int **)realloc(gvedgeids,ngvalloc*sizeof(int *));
       }
 
-      gvids[ngverts++] = gvid;
+      gvids[ngverts] = gvid;
       
       vedges = MV_Edges(vertex);
       nve = List_Num_Entries(vedges);
 
-      /* i is uninitialized here - FIX FIX FIX */
-      gvedgeids[i] = (int *) malloc((1+nve)*sizeof(int));
+      gvedgeids[ngverts] = (int *) malloc((1+nve)*sizeof(int));
       ngve = 0;
       for (i = 0; i < nve; i++) {
 	vedge = List_Entry(vedges,i);
 	if (ME_GEntDim(vedge) == 1) {
-	  gvedgeids[i][1+ngve] = ME_GEntID(vedge);
+	  gvedgeids[ngverts][1+ngve] = ME_GEntID(vedge);
 	  ngve++;
 	}
       }
-      gvedgeids[i][0] = ngve;
+      gvedgeids[ngverts][0] = ngve;
+      ngverts++;
 
       List_Delete(vedges);
     }
