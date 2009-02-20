@@ -520,7 +520,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	}
 
 	if (vface2d) {
-	  if (opp_fid < fid) {
+	  if (opp_fid && opp_fid < fid) {
 
 	    /* Edge must have already been defined for adjacent face */
 
@@ -545,7 +545,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	  }
 	}
 	else {
-	  if (opp_fid < fid) {
+	  if (opp_fid && opp_fid < fid) {
 
 	    /* Face must have already been defined for adjacent region */
 
@@ -580,7 +580,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	  nfe = vface2d_data[ic][0];
 	  
 	  for (j = 0; j < nfe; j++) {
-	    k = vface2d_data[ic][j+1];
+	    k = vface2d_data[ic][j+1]-1;
 	    fedges[j] = vedge[k];
 	    fedirs[j] = vedir[k];
 	  }
@@ -598,7 +598,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	  nrf = vface3d_data[ic][0];
 
 	  for (j = 0; j < nrf; j++) {
-	    k = vface3d_data[ic][j+1];
+	    k = vface3d_data[ic][j+1]-1;
 	    rfaces[j] = vface[k];
 	    rfdirs[j] = vfdir[k];
 	  }
