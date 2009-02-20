@@ -43,8 +43,9 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
   idx = 0;
   while ((face = MESH_Next_Face(mesh,&idx))) {
     gdim = MF_GEntDim(face);
-    if (gdim != 2)
-      continue;
+    /* if (gdim != 2)
+       continue; */      /* UNCOMMENTING THIS WILL KEEP ORIGINAL CLASSIFICATION
+			    INFORMATION EVEN IF IT IS WRONG */
 
     gfid = MF_GEntID(face);
     if (gfid) {
