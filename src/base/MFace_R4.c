@@ -112,6 +112,14 @@ extern "C" {
     MF_Insert_Vertex_i_RN(f,nuv,i);
   }
 
+  int MF_Rev_EdgeDir_R4(MFace_ptr f, MEdge_ptr e) {
+    return MF_Rev_EdgeDir_RN(f,e);
+  }
+
+  int MF_Rev_EdgeDir_i_R4(MFace_ptr f, int i) {
+    return MF_Rev_EdgeDir_i_RN(f,i);
+  }
+
   void MF_Add_Region_R4(MFace_ptr f, MRegion_ptr r, int side) {
     MSTK_Report("MF_Add_Region_R4", 
 		"Not yet implemented for this representation",WARN);

@@ -147,6 +147,18 @@ extern "C" {
     (*MF_Insert_Vertex_i_jmp[RTYPE])(f,nuv,i);
   }
 
+
+  int MF_Rev_EdgeDir(MFace_ptr f, MEdge_ptr e) {
+    RepType RTYPE = MEnt_RepType(f);
+    return (*MF_Rev_EdgeDir_jmp[RTYPE])(f,e);
+  }
+
+  int MF_Rev_EdgeDir_i(MFace_ptr f, int i) {
+    RepType RTYPE = MEnt_RepType(f);
+    return (*MF_Rev_EdgeDir_i_jmp[RTYPE])(f,i);
+  }
+
+
   Mesh_ptr MF_Mesh(MFace_ptr f) {
     return MEnt_Mesh(f);
   }

@@ -44,10 +44,14 @@ extern "C" {
   }
 
   void MF_Destroy_For_MESH_Delete_R1(MFace_ptr f) {
-#ifdef DEBUG
-    MSTK_Report("MF_Destroy_For_MESH_Delete_R1",
-		"Function call not suitable for this representation",ERROR);
-#endif
+    MFace_DownAdj_RN *downadj;
+
+    downadj = (MFace_DownAdj_RN *) f->downadj;
+
+    if (downadj) {
+      if (downadj->fvertices) List_Delete(downadj->fvertices);
+      MSTK_free(downadj);
+    }
   }
 
   int MF_Set_GInfo_Auto_R1(MFace_ptr f) {
@@ -105,6 +109,14 @@ extern "C" {
     MSTK_Report("MF_Insert_Vertex_i_R1","Modifying a temporary entity",WARN);
 #endif
     MF_Insert_Vertex_i_RN(f,nuv,i);
+  }
+
+  int MF_Rev_EdgeDir_R1(MFace_ptr f, MEdge_ptr e) {
+    return MF_Rev_EdgeDir_RN(f,e);
+  }
+
+  int MF_Rev_EdgeDir_i_R1(MFace_ptr f, int i) {
+    return MF_Rev_EdgeDir_i_RN(f,i);
   }
 
   void MF_Add_Region_R1(MFace_ptr f, MRegion_ptr r, int side) {

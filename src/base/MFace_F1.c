@@ -120,6 +120,14 @@ extern "C" {
 #endif
   }
 
+  int MF_Rev_EdgeDir_F1(MFace_ptr f, MEdge_ptr e) {
+    return MF_Rev_EdgeDir_FN(f,e);
+  }
+
+  int MF_Rev_EdgeDir_i_F1(MFace_ptr f, int i) {
+    return MF_Rev_EdgeDir_i_FN(f,i);
+  }
+			
   int MFs_AreSame_F1(MFace_ptr f1, MFace_ptr f2) {
     return (f1 == f2);
   }
