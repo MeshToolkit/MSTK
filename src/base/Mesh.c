@@ -117,6 +117,17 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->AttribList);
   }
 
+<<<<<<< Mesh.c
+  /* Is something done to make sure the temporary edges and faces are
+     freed up ? */ 
+  if (mesh->hedge) {
+    Hash_Delete(mesh->hedge);
+  }
+
+  if (mesh->hface) {
+    Hash_Delete(mesh->hface);
+  }
+
   MSTK_free(mesh);
 }
 
@@ -269,7 +280,9 @@ int MESH_Num_Faces(Mesh_ptr mesh) {
 
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R2)) {
-    if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
+    if (mesh->nr == 0)   /* 2D mesh */
+      return mesh->nf;   
+    else if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
       MESH_FillHash_Faces(mesh);
     }
   }
@@ -321,8 +334,10 @@ MFace_ptr MESH_Face(Mesh_ptr mesh, int i) {
 
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R2)) {
-    if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
-      MESH_FillHash_Faces(mesh);
+    if (mesh->nr) {
+      if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
+	MESH_FillHash_Faces(mesh);
+      }
     }
   }
   if (i >= mesh->nf) {
@@ -374,8 +389,10 @@ MFace_ptr MESH_Next_Face(Mesh_ptr mesh, int *index) {
 
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R2)) {
-    if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
-      MESH_FillHash_Faces(mesh);
+    if (mesh->nr) {
+      if ((mesh->nf == 0) || (mesh->nf != Hash_Num_Entries(mesh->hface))) {
+	MESH_FillHash_Faces(mesh);
+      }
     }
   }
   if (mesh->mface)
@@ -564,7 +581,7 @@ void MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e){
      
 void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
   /* Have to check if faces exist in this type of representation */
-  if (mesh->reptype == R1 || mesh->reptype == R2)
+  if (mesh->nr && (mesh->reptype == R1 || mesh->reptype == R2))
     return;
 
   if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
@@ -600,6 +617,8 @@ void MESH_Add_Region(Mesh_ptr mesh, MRegion_ptr r){
 }    
      
 void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
+  int fnd=0;
+
   if (mesh->mvertex == (List_ptr) NULL) {
 #ifdef DEBUG
     MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", ERROR);
@@ -607,11 +626,19 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
     return;
   }
 
-  List_Rem(mesh->mvertex, (void *) v);
+  fnd = List_Rem(mesh->mvertex,v);
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_Vertex","Vertex not found in list",FATAL);
+
   mesh->nv = List_Num_Entries(mesh->mvertex);
+
+  return;
 }    
      
 void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
+  int fnd=0;
+
   if (mesh->medge == (List_ptr) NULL) {
 #ifdef DEBUG
     MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",ERROR);
@@ -619,11 +646,19 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
     return;
   }
 
-  List_Rem(mesh->medge, (void *) e);
+  fnd = List_Rem(mesh->medge,e);
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_Edge","Edge not found in list",FATAL);
+
   mesh->ne = List_Num_Entries(mesh->medge);
+
+  return;
 }    
      
 void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
+  int fnd=0;
+
   if (mesh->mface == (List_ptr) NULL) {
 #ifdef DEBUG
     MSTK_Report("Mesh_Rem_Face","No Faces in mesh to remove",ERROR);
@@ -631,20 +666,31 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
     return;
   }
 
-  List_Rem(mesh->mface, (void *) f);
+  fnd = List_Rem(mesh->mface,f);
+  if (!fnd)
+    MSTK_Report("MESH_Rem_Face","Face not found in list",FATAL);
+
   mesh->nf = List_Num_Entries(mesh->mface);
+
+  return;
 }    
      
 void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
+  int fnd=0;
+
   if (mesh->mregion == (List_ptr) NULL) {
     MSTK_Report("Mesh_Rem_Region","No regions in mesh to remove",ERROR);
     return;
   }
 
-  List_Rem(mesh->mregion, (void *) r);
+  fnd = List_Rem(mesh->mregion,r);
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_Region","Region not found in list",FATAL);
+
   mesh->nr = List_Num_Entries(mesh->mregion);
 }    
-     
+
 void MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom){
   mesh->geom = geom;
 }    
@@ -1411,7 +1457,12 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
   nr = MESH_Num_Regions(mesh);
 
   fprintf(fp,"MSTK %-2.1lf\n",MSTK_VER);
-  fprintf(fp,"%s %d %d %d %d\n",MESH_rtype_str[reptype], nv, (reptype >= R1 && reptype <= R4)?0:ne, (reptype >= R1 && reptype <= R2)?0:nf, nr);
+  fprintf(fp,"%s %d %d %d %d\n",
+	  MESH_rtype_str[reptype], 
+	  nv, 
+	  (reptype >= R1 && reptype <= R4)?0:ne, 
+	  (reptype >= R1 && reptype <= R2 && nr)?0:nf, 
+	  nr);
 
 
   for (i = 0; i < nv; i++) {
@@ -1490,36 +1541,46 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
 
 
 
-  if (((reptype <= F4) || (reptype > R2)) && nf) {
-    if (reptype <= F4) {
-      fprintf(fp,"faces edge\n");
+  if (reptype <= F4) {
 
-      for (i = 0; i < nf; i++) {
-	mf = MESH_Face(mesh,i);
-	
-	nfe = MF_Num_Edges(mf);
-	fprintf(fp,"%d ",nfe);
-	
-	mfedges = MF_Edges(mf,1,0);
-	for (j = 0; j < nfe; j++) {
-	  me = List_Entry(mfedges,j);
-	  dir = MF_EdgeDir_i(mf,j);
-	  meid = (dir == 1) ? ME_ID(me) : -ME_ID(me);
-	  fprintf(fp,"%d ",meid);
-	}
-	List_Delete(mfedges);
+    /* For full representations, always write out faces in terms of edges */
 
-	gdim = MF_GEntDim(mf);
-	/*
-	  gent = MF_GEntity(mf);
-	  gid = gent ? -99 : 0;
-	*/
-	gid = MF_GEntID(mf);
+    fprintf(fp,"faces edge\n");
     
-	fprintf(fp,"\t%d %d\n",gdim,gid);
+    for (i = 0; i < nf; i++) {
+      mf = MESH_Face(mesh,i);
+      
+      nfe = MF_Num_Edges(mf);
+      fprintf(fp,"%d ",nfe);
+      
+      mfedges = MF_Edges(mf,1,0);
+      for (j = 0; j < nfe; j++) {
+	me = List_Entry(mfedges,j);
+	dir = MF_EdgeDir_i(mf,j);
+	meid = (dir == 1) ? ME_ID(me) : -ME_ID(me);
+	fprintf(fp,"%d ",meid);
       }
+      List_Delete(mfedges);
+      
+      gdim = MF_GEntDim(mf);
+      /*
+	gent = MF_GEntity(mf);
+	gid = gent ? -99 : 0;
+      */
+      gid = MF_GEntID(mf);
+      
+      fprintf(fp,"\t%d %d\n",gdim,gid);
     }
-    else {
+  }
+  else {
+
+    /* For reduced representations, R3 and R4 always write out faces
+       in terms of vertices. For reduced representations, R1 and R2
+       write out faces in terms of vertices only when there are no
+       regions (i.e. faces are the highest level mesh entities) */
+
+    if ((reptype > R2) || (nr == 0)) {
+
       fprintf(fp,"faces vertex\n");
 
       for (i = 0; i < nf; i++) {
