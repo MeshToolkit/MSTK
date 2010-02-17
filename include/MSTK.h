@@ -200,6 +200,8 @@ void        MSTK_Init();
   void MF_Replace_Vertex_i(MFace_ptr mface, int i, MVertex_ptr nuvertex);
   void MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
   void MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
+  int MF_Rev_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
+  int MF_Rev_EdgeDir_i(MFace_ptr mface, int i);
 
   Mesh_ptr MF_Mesh(MFace_ptr mf);
   int MF_ID(MFace_ptr mface);
@@ -253,6 +255,8 @@ void        MSTK_Init();
   void MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
   void MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
+  int MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
+  int MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
 
 
   Mesh_ptr MR_Mesh(MRegion_ptr mregion);
