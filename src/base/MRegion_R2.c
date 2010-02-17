@@ -160,6 +160,15 @@ extern "C" {
 #endif
   }
 
+  int MR_Rev_FaceDir_R2(MRegion_ptr r, MFace_ptr f) {
+    return MR_Rev_FaceDir_R1R2(r,f);
+  }
+
+  int MR_Rev_FaceDir_i_R2(MRegion_ptr r, int i) {
+    return MR_Rev_FaceDir_i_R1R2(r,i);
+  }
+
+
   int MR_Num_Faces_R2(MRegion_ptr r) {
     return MR_Num_Faces_R1R2(r);
   }

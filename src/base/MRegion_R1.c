@@ -109,6 +109,15 @@ extern "C" {
 #endif
   }
 
+  int MR_Rev_FaceDir_R1(MRegion_ptr r, MFace_ptr f) {
+    return MR_Rev_FaceDir_R1R2(r,f);
+  }
+
+  int MR_Rev_FaceDir_i_R1(MRegion_ptr r, int i) {
+    return MR_Rev_FaceDir_i_R1R2(r,i);
+  }
+
+
   int MR_Num_Faces_R1(MRegion_ptr r) {
     MRegion_DownAdj_R1R2 *downadj;
     downadj = (MRegion_DownAdj_R1R2 *) r->downadj;

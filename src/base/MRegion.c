@@ -262,6 +262,16 @@ extern "C" {
     return (*MR_FaceDir_i_jmp[RTYPE])(r,i);
   }
 
+  int MR_Rev_FaceDir(MRegion_ptr r, MFace_ptr f) {
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Rev_FaceDir_jmp[RTYPE])(r,f);
+  }
+
+  int MR_Rev_FaceDir_i(MRegion_ptr r, int i) {
+    RepType RTYPE = MEnt_RepType(r);
+    return (*MR_Rev_FaceDir_i_jmp[RTYPE])(r,i);
+  }
+
   void MR_Replace_Face(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir) {
     RepType RTYPE = MEnt_RepType(r);
     (*MR_Replace_Face_jmp[RTYPE])(r,f,nuf,nudir);

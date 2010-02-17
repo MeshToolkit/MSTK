@@ -394,6 +394,44 @@ extern "C" {
     return adjr;
   }
 
+  int MR_Rev_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
+    int i,j,k, nf;
+    MRegion_DownAdj_FN *downadj;
+
+    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    nf = List_Num_Entries(downadj->rfaces);
+
+    for (i = 0; i < nf; i++) {
+
+      if (f == (MFace_ptr) List_Entry(downadj->rfaces,i)) {
+
+	j = (int) i/(8*sizeof(unsigned int));
+	k = i%(8*sizeof(unsigned int));
+
+	downadj->fdirs[j] ^= (1UL << k);
+	return 1;
+      }
+
+    }
+
+    return -1;
+  }
+
+  int MR_Rev_FaceDir_i_FNR3R4(MRegion_ptr r, int i) {
+    int j, k;
+    MRegion_DownAdj_FN *downadj;
+    downadj = (MRegion_DownAdj_FN *) r->downadj;
+
+    if (i >= MAXPF3)
+      MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
+    
+    j = (int) i/(8*sizeof(unsigned int));
+    k = i%(8*sizeof(unsigned int));
+
+    downadj->fdirs[j] ^= (1UL << k);
+    return 1;
+  }
+
   int MR_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
     int i,j,k, nf;
     MRegion_DownAdj_FN *downadj;

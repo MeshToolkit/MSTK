@@ -38,6 +38,14 @@ extern "C" {
     MR_Set_Vertices_FNR3R4(r,nv,mvertices,nf,template);
   }
 
+  int MR_Rev_FaceDir_R4(MRegion_ptr r, MFace_ptr f) {
+    return MR_Rev_FaceDir_FNR3R4(r,f);
+  }
+
+  int MR_Rev_FaceDir_i_R4(MRegion_ptr r, int i) {
+    return MR_Rev_FaceDir_i_FNR3R4(r,i);
+  }
+
   int MR_Num_Faces_R4(MRegion_ptr r) {
     return MR_Num_Faces_FNR3R4(r);
   }
