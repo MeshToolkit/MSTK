@@ -72,6 +72,8 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
   void MR_Replace_Vertex(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv);
   void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr f, int dir);
   void MR_Replace_Vertex_i(MRegion_ptr r, int i, MVertex_ptr v);
+  int MR_Rev_FaceDir(MRegion_ptr r, MFace_ptr f);
+  int MR_Rev_FaceDir_i(MRegion_ptr r, int i);
 
   int MR_ID(MRegion_ptr r);
   GEntity_ptr MR_GEntity(MRegion_ptr r);
