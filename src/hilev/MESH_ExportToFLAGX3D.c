@@ -246,7 +246,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
      place to do this in MSTK and therefore, this info cannot be
      written out */
   
-  fprintf(fp,"   %-22s %10d\n","slave_nodes",0);
+  fprintf(fp,"   %-22s %10d\n","slaved_nodes",0);
   fprintf(fp,"   %-22s %10d\n","nodes_per_slave",2);  /* required default */
   
   /* Nodes per "face", required for array dimensioning in FLAG. If
