@@ -617,6 +617,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
 
     if (ncells2) {
+      idx = 0;
       while ((face = MESH_Next_Face(mesh,&idx))) {
 	if (!MEnt_IsMarked(face,cellmk))
 	  continue;
@@ -635,6 +636,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
 
     if (ncells1) {
+      idx = 0;
       while ((edge = MESH_Next_Edge(mesh,&idx))) {
 	if (!MEnt_IsMarked(edge,cellmk))
 	  continue;
@@ -682,6 +684,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
 
     if (ncells1) {
+      idx = 0;
       while ((edge = MESH_Next_Edge(mesh,&idx))) {
 	if (!MEnt_IsMarked(edge,cellmk))
 	  continue;
@@ -720,7 +723,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     
     /* Collect the attributes */
 
-    outattribs = (MAttrib_ptr *) MSTK_malloc(nmeshatt*sizeof(int));
+    outattribs = (MAttrib_ptr *) MSTK_malloc(nmeshatt*sizeof(MAttrib_ptr));
     
     for (i = 0, noutatt = 0; i < nmeshatt; i++) {
       attrib = MESH_Attrib(mesh,i);
