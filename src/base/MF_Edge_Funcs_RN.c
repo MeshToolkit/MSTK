@@ -86,6 +86,16 @@ extern "C" {
     return fedges;
   }
 
+
+  int MF_Rev_EdgeDir_RN(MFace_ptr f, MEdge_ptr e) {
+    return -1;
+  }
+
+  int MF_Rev_EdgeDir_i_RN(MFace_ptr f, int i) {
+    return -1;
+  }
+
+
   int MF_EdgeDir_RN(MFace_ptr f, MEdge_ptr e) {
     MFace_Adj_R1 *adj = (MFace_Adj_R1 *) f->adj;
     int i, nv;
