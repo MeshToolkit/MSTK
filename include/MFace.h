@@ -89,6 +89,8 @@ extern "C" {
   void MF_Replace_Vertex_i(MFace_ptr f, int i, MVertex_ptr v);
   void MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
   void MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
+  int MF_Rev_EdgeDir(MFace_ptr f, MEdge_ptr e);
+  int MF_Rev_EdgeDir_i(MFace_ptr f, int i);
 
   int MF_ID(MFace_ptr f);
   int MF_GEntDim(MFace_ptr f);

@@ -122,6 +122,28 @@ static void
 {MF_Insert_Vertex_i_F1, MF_Insert_Vertex_i_F4, MF_Insert_Vertex_i_R1, 
  MF_Insert_Vertex_i_R2, MF_Insert_Vertex_i_R4};
 
+int MF_Rev_EdgeDir_FN(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_F1(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_F4(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_R1(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_R2(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_R4(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_RN(MFace_ptr f, MEdge_ptr e);
+static int (*MF_Rev_EdgeDir_jmp[MSTK_MAXREP])(MFace_ptr f, MEdge_ptr e) =
+{MF_Rev_EdgeDir_F1, MF_Rev_EdgeDir_F4, MF_Rev_EdgeDir_R1, MF_Rev_EdgeDir_R2, 
+ MF_Rev_EdgeDir_R4};
+
+int MF_Rev_EdgeDir_i_FN(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_F1(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_F4(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_R1(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_R2(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_R4(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_RN(MFace_ptr f, int i);
+static int (*MF_Rev_EdgeDir_i_jmp[MSTK_MAXREP])(MFace_ptr f, int i) =
+{MF_Rev_EdgeDir_i_F1, MF_Rev_EdgeDir_i_F4, MF_Rev_EdgeDir_i_R1, 
+ MF_Rev_EdgeDir_i_R2, MF_Rev_EdgeDir_i_R4};
+
 
 int MFs_AreSame_F1(MFace_ptr f1, MFace_ptr f2);
 int MFs_AreSame_F4(MFace_ptr f1, MFace_ptr f2);
@@ -326,6 +348,17 @@ static void
 {MF_Insert_Vertex_i_F1, MF_Insert_Vertex_i_F4, MF_Insert_Vertex_i_RN, 
  MF_Insert_Vertex_i_RN, MF_Insert_Vertex_i_RN};
 
+int MF_Rev_EdgeDir_FN(MFace_ptr f, MEdge_ptr e);
+int MF_Rev_EdgeDir_RN(MFace_ptr f, MEdge_ptr e);
+static int (*MF_Rev_EdgeDir_jmp[MSTK_MAXREP])(MFace_ptr f, MEdge_ptr e) =
+{MF_Rev_EdgeDir_FN, MF_Rev_EdgeDir_FN, MF_Rev_EdgeDir_RN, MF_Rev_EdgeDir_RN, MF_Rev_EdgeDir_RN};
+
+int MF_Rev_EdgeDir_i_FN(MFace_ptr f, int i);
+int MF_Rev_EdgeDir_i_RN(MFace_ptr f, int i);
+static int (*MF_Rev_EdgeDir_i_jmp[MSTK_MAXREP])(MFace_ptr f, int i) =
+{MF_Rev_EdgeDir_i_FN, MF_Rev_EdgeDir_i_FN, MF_Rev_EdgeDir_i_RN, MF_Rev_EdgeDir_i_RN,
+ MF_Rev_EdgeDir_i_RN};
+
 
 int MFs_AreSame_F1(MFace_ptr f1, MFace_ptr f2);
 int MFs_AreSame_F4(MFace_ptr f1, MFace_ptr f2);
@@ -432,10 +465,13 @@ static void (*MF_Restore_jmp[MSTK_MAXREP])(MFace_ptr f) =
 
 void MF_Destroy_For_MESH_Delete_F1(MFace_ptr f);
 void MF_Destroy_For_MESH_Delete_F4(MFace_ptr f);
+void MF_Destroy_For_MESH_Delete_R1(MFace_ptr f);
+void MF_Destroy_For_MESH_Delete_R2(MFace_ptr f);
 void MF_Destroy_For_MESH_Delete_R4(MFace_ptr f);
 static void (*MF_Destroy_For_MESH_Delete_jmp[MSTK_MAXREP])(MFace_ptr f) = 
-{MF_Destroy_For_MESH_Delete_F1, MF_Destroy_For_MESH_Delete_F4, MF_Dummy1, 
- MF_Dummy1, MF_Destroy_For_MESH_Delete_R4};
+{MF_Destroy_For_MESH_Delete_F1, MF_Destroy_For_MESH_Delete_F4, 
+ MF_Destroy_For_MESH_Delete_R1, MF_Destroy_For_MESH_Delete_R2, 
+ MF_Destroy_For_MESH_Delete_R4};
 
 
 int MF_Num_AdjFaces_F1(MFace_ptr f);
