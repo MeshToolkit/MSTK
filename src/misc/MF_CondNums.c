@@ -57,7 +57,9 @@ void MF_CondNums(MFace_ptr f, int *n, double *conds) {
     /* modified version of Herron's formula sqrt(s*(s-a)*(s-b)*(s-c)) */
     A = 0.25*sqrt(4*L10_sqr*L20_sqr - (L10_sqr+L20_sqr-L21_sqr)*(L10_sqr+L20_sqr-L21_sqr));
     
-    conds[i] = (L10_sqr+L20_sqr)/(2*A);
+    /* Need the extra 2 in the denominator if the cond num of the ideal
+       is to be 1 */
+    conds[i] = (L10_sqr+L20_sqr)/(2*2*A);
   }
 
   *n = nfv;
