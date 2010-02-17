@@ -26,7 +26,7 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
   MRegion_ptr freg0, freg1;
   List_ptr fregs, fedges, efaces, ebfaces, gffaces, subfaces;
 
-  COSSHARPANG = cos(7*PI/12);  /* 115 degrees */
+  COSSHARPANG = cos(9*PI/12);  /* 135 degrees */
 
 
   /* Verify that mesh faces on the boundary have classification
@@ -43,9 +43,8 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
   idx = 0;
   while ((face = MESH_Next_Face(mesh,&idx))) {
     gdim = MF_GEntDim(face);
-    /* if (gdim != 2)
-       continue; */      /* UNCOMMENTING THIS WILL KEEP ORIGINAL CLASSIFICATION
-			    INFORMATION EVEN IF IT IS WRONG */
+    if (gdim != 2)
+      continue;
 
     gfid = MF_GEntID(face);
     if (gfid) {
