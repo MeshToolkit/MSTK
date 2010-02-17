@@ -105,10 +105,16 @@ extern "C" {
   }
 
   void ME_Replace_Vertex(MEdge_ptr e, MVertex_ptr oldv, MVertex_ptr nuv) {
-    if (e->vertex[0] == oldv)
+    if (e->vertex[0] == oldv) {
       e->vertex[0] = nuv;
-    else if (e->vertex[1] == oldv)
+      MV_Add_Edge(nuv,e);
+      MV_Rem_Edge(oldv,e);
+    }
+    else if (e->vertex[1] == oldv) {
       e->vertex[1] = nuv;
+      MV_Add_Edge(nuv,e);
+      MV_Rem_Edge(oldv,e);
+    }
     else
       MSTK_Report("ME_Replace_Vertex","Cannot find vertex in edge",ERROR);
   }
