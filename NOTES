@@ -13,3 +13,5 @@ OR
 	repTYpe rtype;
 
 We are going to represent the nmber of upward adjacencies of an entity represented by 'unsigned char' I believe this should be 255 items. Will this be enough for Delaunay meshing?
+
+3. Try to keep buffers of lists and reuse them in MSTK
