@@ -8,7 +8,17 @@ fi
 
 VER=$1
 
-ARCHOS=i686_linux
+
+# Get the machine type and kernel name. Piping the output of uname
+# through (tr '[A-Z]' '[a-z]') converts the string to lower case
+
+ARCH=`uname -m | tr '[A-Z]' '[a-z]'`
+OS=`uname -s | tr '[A-Z]' '[a-z]'`
+echo $ARCH
+echo $OS
+ARCHOS="$ARCH"_"$OS"
+echo $ARCHOS
+
 
 INSTALL_TOPDIR=$HOME
 
@@ -54,6 +64,8 @@ if [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "Y" ] || [ "$ans" = "YES
 then
   cp $LOCAL_INCDIR/MSTK.h $LOCAL_INCDIR/MSTK_defines.h \
      $LOCAL_INCDIR/MSTK_types.h $LOCAL_INCDIR/MSTK_externs.h \
+     $LOCAL_INCDIR/MSTK_util.h $LOCAL_INCDIR/MSTK_malloc.h \
+     $LOCAL_INCDIR/List.h \
      $INSTALL_INCDIR
 fi
 
