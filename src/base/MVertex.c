@@ -16,15 +16,14 @@ extern "C" {
     
     v = (MVertex_ptr) MSTK_malloc(sizeof(MVertex));
 
-    MEnt_Init_CmnData(v);
-    MEnt_Set_Mesh(v,mesh);
-    MEnt_Set_Dim(v,0);
-    MEnt_Set_GEntDim(v,4);
-    MEnt_Set_GEntID(v,0);
+    MEnt_Init_CmnData((MEntity_ptr) v);
+    MEnt_Set_Mesh((MEntity_ptr) v,mesh);
+    MEnt_Set_Dim((MEntity_ptr) v,0);
+    MEnt_Set_GEntDim((MEntity_ptr) v,4);
+    MEnt_Set_GEntID((MEntity_ptr) v,0);
 
     v->xyz[0] = v->xyz[1] = v->xyz[2] = 0.0;
-    v->upadj = NULL;
-    v->sameadj = NULL;
+    v->adj = NULL;
 
     RTYPE = mesh ? MESH_RepType(mesh) : F1;
     MV_Set_RepType(v,RTYPE);
@@ -35,36 +34,36 @@ extern "C" {
   } 
 
   void MV_Delete(MVertex_ptr v, int keep) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     Mesh_ptr mesh;
 
     (*MV_Delete_jmp[RTYPE])(v,keep);
 
-    if (MEnt_Dim(v) != MDELETED) {
-      mesh = MEnt_Mesh(v);
+    if (MEnt_Dim((MEntity_ptr) v) != MDELETED) {
+      mesh = MEnt_Mesh((MEntity_ptr) v);
       MESH_Rem_Vertex(mesh,v);
-      MEnt_Set_DelFlag(v);
+      MEnt_Set_DelFlag((MEntity_ptr) v);
     }
 
     if (!keep) {
-      MEnt_Free_CmnData(v);
+      MEnt_Free_CmnData((MEntity_ptr) v);
       MSTK_free(v);
     }
   }
 
   void MV_Restore(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
-    Mesh_ptr mesh = MEnt_Mesh(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
+    Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) v);
     
 #ifdef DEBUG
-    if (MEnt_Dim(v) != MDELETED) {
+    if (MEnt_Dim((MEntity_ptr) v) != MDELETED) {
       MSTK_Report("MV_Restore",
 		  "Trying to restore vertex that is not deleted",WARN);
       return;
     }
 #endif
 
-    MEnt_Rem_DelFlag(v);
+    MEnt_Rem_DelFlag((MEntity_ptr) v);
 
     MESH_Add_Vertex(mesh,v);
 
@@ -72,17 +71,17 @@ extern "C" {
   }
 
   void MV_Destroy_For_MESH_Delete(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
 
     (*MV_Destroy_For_MESH_Delete_jmp[RTYPE])(v);
 
-    MEnt_Free_CmnData(v);
+    MEnt_Free_CmnData((MEntity_ptr) v);
 
     MSTK_free(v);
   }
 
   void MV_Set_RepType(MVertex_ptr v, RepType RTYPE) {
-    MEnt_Set_RepType_Data(v,RTYPE);
+    MEnt_Set_RepType_Data((MEntity_ptr) v,RTYPE);
     (*MV_Set_RepType_jmp[RTYPE])(v);
   }
 
@@ -96,35 +95,35 @@ extern "C" {
   }
 
   void MV_Set_GEntDim(MVertex_ptr v, int gdim) {
-    MEnt_Set_GEntDim(v,gdim);
+    MEnt_Set_GEntDim((MEntity_ptr) v,gdim);
   }
 
   void MV_Set_GEntID(MVertex_ptr v, int gid) {
-    MEnt_Set_GEntID(v,gid);
+    MEnt_Set_GEntID((MEntity_ptr) v,gid);
   }
 
   void MV_Set_ID(MVertex_ptr v, int id) {
-    MEnt_Set_ID(v,id);
+    MEnt_Set_ID((MEntity_ptr) v,id);
   }
 
   Mesh_ptr MV_Mesh(MVertex_ptr v) {
-    return MEnt_Mesh(v);
+    return MEnt_Mesh((MEntity_ptr) v);
   }
 
   int MV_ID(MVertex_ptr v) {
-    return MEnt_ID(v);
+    return MEnt_ID((MEntity_ptr) v);
   }
 
   int MV_GEntDim(MVertex_ptr v) {
-    return MEnt_GEntDim(v);
+    return MEnt_GEntDim((MEntity_ptr) v);
   }
 
   int MV_GEntID(MVertex_ptr v) {
-    return MEnt_GEntID(v);
+    return MEnt_GEntID((MEntity_ptr) v);
   }
 
   GEntity_ptr MV_GEntity(MVertex_ptr v) {
-    return MEnt_GEntity(v);
+    return MEnt_GEntity((MEntity_ptr) v);
   }
 
   void MV_Coords(MVertex_ptr v, double *xyz) {
@@ -132,82 +131,82 @@ extern "C" {
   }   
 
   int MV_Num_AdjVertices(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Num_Edges_jmp[RTYPE])(v);
   }
 
   int MV_Num_Edges(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Num_Edges_jmp[RTYPE])(v);
   }
 
   int MV_Num_Faces(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Num_Faces_jmp[RTYPE])(v);
   }
   
   int MV_Num_Regions(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Num_Regions_jmp[RTYPE])(v);
   }
 
   List_ptr MV_AdjVertices(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_AdjVertices_jmp[RTYPE])(v);
   }
 
   List_ptr MV_Edges(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Edges_jmp[RTYPE])(v);
   }
 
   List_ptr MV_Faces(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Faces_jmp[RTYPE])(v);
   }
 
   List_ptr MV_Regions(MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Regions_jmp[RTYPE])(v);
   }
 
   void MV_Add_AdjVertex(MVertex_ptr v, MVertex_ptr adjv) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Add_AdjVertex_jmp[RTYPE])(v,adjv);
   }
 
   void MV_Rem_AdjVertex(MVertex_ptr v, MVertex_ptr adjv) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Rem_AdjVertex_jmp[RTYPE])(v,adjv);
   }
 
   void MV_Add_Edge(MVertex_ptr v, MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Add_Edge_jmp[RTYPE])(v,e);
   }
 
   void MV_Add_Face(MVertex_ptr v, MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Add_Face_jmp[RTYPE])(v,f);
   }
 
   void MV_Add_Region(MVertex_ptr v, MRegion_ptr r) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Add_Region_jmp[RTYPE])(v,r);
   }
 
   void MV_Rem_Edge(MVertex_ptr v, MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Rem_Edge_jmp[RTYPE])(v,e);
   }
 
   void MV_Rem_Face(MVertex_ptr v, MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Rem_Face_jmp[RTYPE])(v,f);
   }
 
   void MV_Rem_Region(MVertex_ptr v, MRegion_ptr r) {
-    RepType RTYPE = MEnt_RepType(v);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     (*MV_Rem_Region_jmp[RTYPE])(v,r);
   }
 
