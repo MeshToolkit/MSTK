@@ -5,11 +5,15 @@
 extern "C" {
 #endif
 
+
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
-#include "List.h"
 
 #ifdef _H_MEdge_Private
+#define _H_MEntity_Private
+
+#include "MEntity.h"
+
   typedef struct MEdge {
 
     /* Common data structure for all mesh entities */
@@ -33,8 +37,8 @@ extern "C" {
     List_ptr elements;
   } MEdge_Adj_F4;
 
-  typedef struct MEdge_Adj_RN {
-    MEdge_ptr hnext;
+  typedef struct MEdge_Adj_RN {  /* POOR PLACE TO PUT HASH TABLE LINK */
+    MEdge_ptr hnext;             /* MUST CHANGE IT ?                  */
     int lock;
   } MEdge_Adj_RN;
 #else
