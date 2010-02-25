@@ -13,22 +13,22 @@ extern "C" {
   int MR_Set_GInfo_Auto_FNR3R4(MRegion_ptr r) {
     int i, nf, same, rgdim, rgid, fgdim, fgid, fgdim0, fgid0;
     MFace_ptr f;
-    MRegion_DownAdj_R3R4 *downadj;
+    MRegion_Adj_R3R4 *adj;
 
-    downadj = (MRegion_DownAdj_R3R4 *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_R3R4 *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     same = 1;
     rgdim = -1;
     rgid = -1;
     fgid = -1;
 
-    f = List_Entry(downadj->rfaces,0);    
+    f = List_Entry(adj->rfaces,0);    
     fgid0 = MF_GEntID(f);
     fgdim0 = MF_GEntDim(f);
 
     for (i = 1; i < nf; i++) {
-      f = List_Entry(downadj->rfaces,i);
+      f = List_Entry(adj->rfaces,i);
       fgid = MF_GEntID(f);
       fgdim = MF_GEntDim(f);
       if (fgdim == fgdim0 && fgid == fgid0)
@@ -48,8 +48,8 @@ extern "C" {
      
     if (rgdim == -1)
       rgdim = 4;
-    MEnt_Set_GEntDim(r,rgdim);
-    MEnt_Set_GEntID(r,rgid);
+    MEnt_Set_GEntDim((MEntity_ptr) r,rgdim);
+    MEnt_Set_GEntID((MEntity_ptr) r,rgid);
 
     if (rgdim == 4)
       return 0;
@@ -59,15 +59,15 @@ extern "C" {
 
   void MR_Set_Faces_FNR3R4(MRegion_ptr r, int nf, MFace_ptr *rfaces,int *dirs){
     int i, j, k;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
     if (nf > MAXPF3)
       MSTK_Report("MR_Set_Faces","Region has too many faces",ERROR);
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
     k = 1 + ((int) nf/(8*sizeof(unsigned int)));
-    downadj->fdirs = (unsigned int *) MSTK_calloc(k,sizeof(unsigned int));
-    downadj->rfaces = List_New(nf);
+    adj->fdirs = (unsigned int *) MSTK_calloc(k,sizeof(unsigned int));
+    adj->rfaces = List_New(nf);
 
     for (i = 0; i < nf; i++) {
 
@@ -79,11 +79,11 @@ extern "C" {
 
       j = (int) i/(8*sizeof(unsigned int));
       k = i%(8*sizeof(unsigned int));
-      downadj->fdirs[j] = downadj->fdirs[j] | (dirs[i] << k);
+      adj->fdirs[j] = adj->fdirs[j] | (dirs[i] << k);
 
-      List_Add(downadj->rfaces,rfaces[i]);
+      List_Add(adj->rfaces,rfaces[i]);
 
-      if (MEnt_RepType(r) != F4) 
+      if (MEnt_RepType((MEntity_ptr) r) != F4) 
 	MF_Add_Region(rfaces[i],r,!dirs[i]);
     }
   }
@@ -97,7 +97,7 @@ extern "C" {
     int vgdim[MAXPV3], vgid[MAXPV3], egdim[12], egid[12], sgn;
     int fedirs[4], redirs[12], evgdim[2], evgid[2], nfe;
     List_ptr fverts, fregs;
-    Mesh_ptr mesh = MEnt_Mesh(r);
+    Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) r);
     MRType regtype;
 
 
@@ -355,15 +355,15 @@ extern "C" {
   }
 
   int MR_Num_Faces_FNR3R4(MRegion_ptr r) {
-    List_ptr rfaces = ((MRegion_DownAdj_FN *)r->downadj)->rfaces;
+    List_ptr rfaces = ((MRegion_Adj_FN *)r->adj)->rfaces;
     return List_Num_Entries(rfaces);
   }
 
 
   List_ptr MR_Faces_FNR3R4(MRegion_ptr r) {
-    MRegion_DownAdj_FN *downadj;
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    return List_Copy(downadj->rfaces);
+    MRegion_Adj_FN *adj;
+    adj = (MRegion_Adj_FN *) r->adj;
+    return List_Copy(adj->rfaces);
   }
 
   List_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r) {
@@ -371,14 +371,14 @@ extern "C" {
     MRegion_ptr freg;
     MFace_ptr face;
     List_ptr adjr;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     adjr = List_New(4);
     for (i = 0; i < nf; i++) {
-      face = List_Entry(downadj->rfaces,i);
+      face = List_Entry(adj->rfaces,i);
       freg = MF_Region(face,0);
       if (freg) {
 	if (freg == r) {
@@ -396,19 +396,19 @@ extern "C" {
 
   int MR_Rev_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
     int i,j,k, nf;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     for (i = 0; i < nf; i++) {
 
-      if (f == (MFace_ptr) List_Entry(downadj->rfaces,i)) {
+      if (f == (MFace_ptr) List_Entry(adj->rfaces,i)) {
 
 	j = (int) i/(8*sizeof(unsigned int));
 	k = i%(8*sizeof(unsigned int));
 
-	downadj->fdirs[j] ^= (1UL << k);
+	adj->fdirs[j] ^= (1UL << k);
 	return 1;
       }
 
@@ -419,8 +419,8 @@ extern "C" {
 
   int MR_Rev_FaceDir_i_FNR3R4(MRegion_ptr r, int i) {
     int j, k;
-    MRegion_DownAdj_FN *downadj;
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    MRegion_Adj_FN *adj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
     if (i >= MAXPF3)
       MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
@@ -428,25 +428,25 @@ extern "C" {
     j = (int) i/(8*sizeof(unsigned int));
     k = i%(8*sizeof(unsigned int));
 
-    downadj->fdirs[j] ^= (1UL << k);
+    adj->fdirs[j] ^= (1UL << k);
     return 1;
   }
 
   int MR_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
     int i,j,k, nf;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     for (i = 0; i < nf; i++) {
 
-      if (f == (MFace_ptr) List_Entry(downadj->rfaces,i)) {
+      if (f == (MFace_ptr) List_Entry(adj->rfaces,i)) {
 
 	j = (int) i/(8*sizeof(unsigned int));
 	k = i%(8*sizeof(unsigned int));
 
-	return ((downadj->fdirs[j])>>k & 1);
+	return ((adj->fdirs[j])>>k & 1);
       }
 
     }
@@ -456,8 +456,8 @@ extern "C" {
 
   int MR_FaceDir_i_FNR3R4(MRegion_ptr r, int i) {
     int j, k;
-    MRegion_DownAdj_FN *downadj;
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    MRegion_Adj_FN *adj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
     if (i >= MAXPF3)
       MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
@@ -465,15 +465,15 @@ extern "C" {
     j = (int) i/(8*sizeof(unsigned int));
     k = i%(8*sizeof(unsigned int));
 
-    return ((downadj->fdirs[j])>>k & 1);
+    return ((adj->fdirs[j])>>k & 1);
   }
 
   /* If we allow replacing a face with multiple faces, we have to check if 
-     we need to expand downadj->fdirs */
+     we need to expand adj->fdirs */
 
   void MR_Replace_Face_FNR3R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir) {
     int i, j, k, nf;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
 #ifdef DEBUG
     if (MR_Mesh(r) != MF_Mesh(nuf))
@@ -481,19 +481,19 @@ extern "C" {
 		  "Region and Face belong to different meshes",FATAL);
 #endif
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     for (i = 0; i < nf; i++)
-      if (f == (MFace_ptr) List_Entry(downadj->rfaces,i)) {
+      if (f == (MFace_ptr) List_Entry(adj->rfaces,i)) {
 
 	j = (int) i/(8*sizeof(unsigned int));
 	k = i%(8*sizeof(unsigned int));
 
-	downadj->fdirs[j] = (downadj->fdirs[j] & ~(1<<k)); /* set bit i to 0 */
-	downadj->fdirs[j] = (downadj->fdirs[j] | (nudir<<k)); /* set to nudir*/
+	adj->fdirs[j] = (adj->fdirs[j] & ~(1<<k)); /* set bit i to 0 */
+	adj->fdirs[j] = (adj->fdirs[j] | (nudir<<k)); /* set to nudir*/
 
-	List_Replacei(downadj->rfaces,i,nuf);
+	List_Replacei(adj->rfaces,i,nuf);
 
 	MF_Rem_Region(f,r);
 	MF_Add_Region(nuf,r,!nudir);
@@ -503,7 +503,7 @@ extern "C" {
 
   void MR_Replace_Face_i_FNR3R4(MRegion_ptr r, int i, MFace_ptr nuf, int nudir) {
     int j, k;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
     MFace_ptr f;
 
     if (i >= MAXPF3)
@@ -515,25 +515,25 @@ extern "C" {
 		  "Region and Face belong to different meshes",FATAL);
 #endif
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    f = List_Entry(downadj->rfaces,i);
+    adj = (MRegion_Adj_FN *) r->adj;
+    f = List_Entry(adj->rfaces,i);
 
     j = (int) i/(8*sizeof(unsigned int));
     k = i%(8*sizeof(unsigned int));
-    downadj->fdirs[j] = (downadj->fdirs[j] & ~(1<<k)); /* set bit i to 0 */
-    downadj->fdirs[j] = (downadj->fdirs[j] | (nudir<<k)); /* set to nudir*/
+    adj->fdirs[j] = (adj->fdirs[j] & ~(1<<k)); /* set bit i to 0 */
+    adj->fdirs[j] = (adj->fdirs[j] | (nudir<<k)); /* set to nudir*/
 
-    List_Replacei(downadj->rfaces,i,nuf);
+    List_Replacei(adj->rfaces,i,nuf);
 
     MF_Rem_Region(f,r);
     MF_Add_Region(nuf,r,!nudir);
   }
 
   int MR_UsesFace_FNR3R4(MRegion_ptr r, MFace_ptr f) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    return List_Contains(downadj->rfaces,f);
+    adj = (MRegion_Adj_FN *) r->adj;
+    return List_Contains(adj->rfaces,f);
   }
 
 
