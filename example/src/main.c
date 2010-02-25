@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "MSTK.h"
 
 #include "test.h"
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]) {
 
     /* Basic info */
     fprintf(stderr,"\n");
-    fprintf(stderr,"Vertex: 0x%-x   ID: %-d   ",v,MV_ID(v));
+    fprintf(stderr,"Vertex: 0x%-x   ID: %-d   ",(unsigned int)v,MV_ID(v));
     
     
     /* Classification w.r.t. geometric model */
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MV_GEntID(v),
 	      MV_GEntDim(v));
       if ((gent = MV_GEntity(v)))
-	fprintf(stderr,"Model entity pointer: 0x%-x\n",gent);	
+	fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int) gent);
     }
 
 
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     /* Basic info */
     fprintf(stderr,"\n");
-    fprintf(stderr,"Face: 0x%-x   ID: %-d   ",f,MF_ID(f));
+    fprintf(stderr,"Face: 0x%-x   ID: %-d   ",(unsigned int) f,MF_ID(f));
     
     
     /* Classification w.r.t. geometric model */
@@ -85,7 +86,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MF_GEntID(f),
 	      MF_GEntDim(f));
       if ((gent = MF_GEntity(f)))
-	fprintf(stderr,"Model entity pointer: 0x%-x\n",gent);
+	fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int) gent);
     }
 
     fprintf(stderr,"\n");
@@ -101,11 +102,11 @@ int main(int argc, char *argv[]) {
       edir = MF_EdgeDir_i(f,i);
       if (edir) 
 	fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+		(unsigned int) e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
       else 
 	fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+		(unsigned int) e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
       i++;
     }
@@ -118,7 +119,7 @@ int main(int argc, char *argv[]) {
 
   strcpy(meshname,argv[1]);
   strcat(meshname,"-copy.mstk");
-  MESH_WriteToFile(mesh,meshname);
+  MESH_WriteToFile(mesh,meshname,F1);
 
   
   /* Deleting of mesh is not necessary if this the end of the program */
