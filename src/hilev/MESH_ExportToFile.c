@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <MSTK.h>
 
 #ifdef __cplusplus
@@ -15,14 +16,11 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
   else if (strncmp(format,"flag",4) == 0) {
     return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts);
   }
-  /*  else (strncmp(format,"avs",3) == 0) {
-    return MESH_ImportFromUCD(mesh,filename,natt,attnames);
-    } */
   /*  else (strncmp(format,"dx",2) == 0) {
     return MESH_ExportToDX(mesh,filename,natt,attnames);
     } */
   else {
-    MSTK_Report("MESH_ImportFromFile","Unsupported import format",ERROR);
+    MSTK_Report("MESH_ExportFromFile","Unsupported export format",ERROR);
     return 0;
   }
 
