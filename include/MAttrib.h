@@ -8,7 +8,6 @@ extern "C" {
 
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
-#include "List.h"
 
 
 #ifdef _H_MAttrib_Private
