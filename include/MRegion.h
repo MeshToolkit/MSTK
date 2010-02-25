@@ -7,12 +7,14 @@ extern "C" {
 
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
-#include "List.h"
-#include "Hash.h"
 
 extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
 #ifdef _H_MRegion_Private
+#define _H_MEntity_Private
+
+#include "MEntity.h"
+
   typedef struct MRegion {
 
     /* Common data structure for all mesh entities */
@@ -20,37 +22,32 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
     MEntity_Data entdat;
 
     /* Specific to mesh regions */
-    void *sameadj;
-    void *downadj;
+    void *adj;
 
   } MRegion, *MRegion_ptr;
 
-  /*----- Upward adjacency definitions --------*/
+  /*----- Adjacency definitions --------*/
 
-  /*      NONE        */
-
-  /*----- Same Level adjacency definitions ------*/
-
-  typedef struct MRegion_SameAdj_R2 {
-    MRegion_ptr *aregions;
-  } MRegion_SameAdj_R2;
-
-  /*----- Downward adjacency definitions --------*/
-
-  typedef struct MRegion_DownAdj_FN {
+  typedef struct MRegion_Adj_FN {
     unsigned int *fdirs;
     MFace_ptr *rfaces;
-  } MRegion_DownAdj_FN;
+  } MRegion_Adj_FN;
 
-  typedef struct MRegion_DownAdj_R1R2 {
+  typedef struct MRegion_Adj_R1 {
     MVertex_ptr *rvertices;
     int **fvtemplate;
-  } MRegion_DownAdj_R1R2;
+  } MRegion_Adj_R1;
 
-  typedef struct MRegion_DownAdj_R3R4 {
+  typedef struct MRegion_Adj_R2 {
+    MVertex_ptr *rvertices;
+    int **fvtemplate;
+    MRegion_ptr *aregions;
+  } MRegion_Adj_R2;
+
+  typedef struct MRegion_Adj_R3R4 {
     unsigned int *fdirs;
     MFace_ptr *rfaces;
-  } MRegion_DownAdj_R3R4;
+  } MRegion_Adj_R3R4;
 
 #else
   typedef void *MRegion_ptr;
