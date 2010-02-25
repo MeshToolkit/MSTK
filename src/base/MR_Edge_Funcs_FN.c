@@ -15,23 +15,23 @@ extern "C" {
     MFace_ptr face;
     MEdge_ptr edge;
     List_ptr redges, fedges;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     switch (nf) {
     case 4: /* Tet */
       mkr = MSTK_GetMarker();
 
-      face = List_Entry(downadj->rfaces,0); /* first face */
-      fdir = downadj->fdirs[0] & 1;    /* Sense in which face is used in region */
+      face = List_Entry(adj->rfaces,0); /* first face */
+      fdir = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
 
       redges = MF_Edges(face,!fdir,0);
       List_Mark(redges,mkr);
       n = 3;
 
-      face = List_Entry(downadj->rfaces,1);
+      face = List_Entry(adj->rfaces,1);
       fedges = MF_Edges(face,1,0);
       for (i = 0; i < 3 && n < 5; i++) { 
 	edge = List_Entry(fedges,i);
@@ -43,7 +43,7 @@ extern "C" {
       }
       List_Delete(fedges);
 
-      face = List_Entry(downadj->rfaces,2);
+      face = List_Entry(adj->rfaces,2);
       fedges = MF_Edges(face,1,0);
       for (i = 0; i < 3 && n < 6; i++) { 
 	edge = List_Entry(fedges,i);
@@ -65,7 +65,7 @@ extern "C" {
       /* All faces must have 4 edges each */
       fecheck = 1;
       for (i = 0; i < nf; i++) {
-	face = List_Entry(downadj->rfaces,i);
+	face = List_Entry(adj->rfaces,i);
 	if (MF_Num_Edges(face) != 4)
 	  fecheck = 0;
       }
@@ -77,15 +77,15 @@ extern "C" {
       mkr = MSTK_GetMarker();
 
       /* Add edges of first face */
-      face = List_Entry(downadj->rfaces,0); /* first face */
-      fdir = downadj->fdirs[0] & 1;    /* Sense in which face is used in region */
+      face = List_Entry(adj->rfaces,0); /* first face */
+      fdir = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
 
       redges = MF_Edges(face,!fdir,0);
       List_Mark(redges,mkr);
       n = 4;
 
       for (i = 1; i < nf-1 && n < 12; i++) {
-	face = List_Entry(downadj->rfaces,i);
+	face = List_Entry(adj->rfaces,i);
 	fedges = MF_Edges(face,1,0);
 	for (j = 0; j < 4 && n < 12; j++) {
 	  edge = List_Entry(fedges,j);
@@ -111,14 +111,14 @@ extern "C" {
     mkr = MSTK_GetMarker();
     
     /* Add edges of first face */
-    face = List_Entry(downadj->rfaces,0); /* first face */
-    fdir = downadj->fdirs[0] & 1;   /* Sense in which face is used in region */
+    face = List_Entry(adj->rfaces,0); /* first face */
+    fdir = adj->fdirs[0] & 1;   /* Sense in which face is used in region */
     
     redges = MF_Edges(face,!fdir,0);
     List_Mark(redges,mkr);
     
     for (i = 1; i < nf-1; i++) {
-      face = List_Entry(downadj->rfaces,i);
+      face = List_Entry(adj->rfaces,i);
       fedges = MF_Edges(face,1,0);
       n = List_Num_Entries(fedges);
       for (j = 0; j < n; j++) {
@@ -140,13 +140,13 @@ extern "C" {
   int MR_UsesEdge_FN(MRegion_ptr r, MEdge_ptr e) {
     int i, nf;
     MFace_ptr face;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     for (i = 0; i < nf; i++) {
-      face = List_Entry(downadj->rfaces,i);
+      face = List_Entry(adj->rfaces,i);
       if (MF_UsesEntity(face,e,1))
 	return 1;
     }
