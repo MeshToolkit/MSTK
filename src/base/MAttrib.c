@@ -1,7 +1,9 @@
 #define _H_MAttrib_Private
 
+#include <string.h>
 #include "MAttrib.h"
 #include "Mesh.h"
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
