@@ -9,8 +9,6 @@ extern "C" {
 #include "MSTK_types.h"
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
-#include "List.h"
-#include "Hash.h"
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 
@@ -143,6 +141,14 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_BuildEdgeClassfn(Mesh_ptr mesh);
   int MESH_BuildVertexClassfn(Mesh_ptr mesh);
 
+  int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
+				      const int nparts, const int natt, 
+				      const char **attnames, int *opts,
+				      int *procids);
+  int MESH_Vol_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
+				      const int nparts, const int natt, 
+				      const char **attnames, int *opts,
+				      int *procids);
 
   /* Adhoc routines for parallel output of MSTK files */
 
@@ -153,9 +159,37 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids);
   void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
   int MEnt_LocalID(MEntity_ptr ent, int procid);
-  
+
+
+  /* Extra functionality for List manipulation - risky for uninformed users */
+
+  int List_Size_Raw(List_ptr l);
+  void *List_Entry_Raw(List_ptr l, int i);
+  int List_Remi_Raw(List_ptr l, int i);
 
   /* Extra functionality for hash-tables */
+
+
+  
+  Hash_ptr Hash_New(unsigned int inisize, int type);
+  void Hash_Delete(Hash_ptr h);
+  
+  Hash_ptr Hash_Add(Hash_ptr h, void *entry, unsigned int np, void* *p);
+  Hash_ptr Hash_ChknAdd(Hash_ptr h, void *entry, unsigned int np, void* *p);
+  int      Hash_Rem(Hash_ptr h, void *entry, unsigned int np, void* *p);
+  void    *Hash_Entry(Hash_ptr h, unsigned int np, void* *p);
+  int      Hash_Num_Entries(Hash_ptr h);
+  List_ptr Hash_Entries(Hash_ptr h);
+
+  void     Hash_Print(Hash_ptr h);
+
+  void Hash_Lock(int *plock);
+  void Hash_UnLock(int *plock);
+  int Hash_IsLocked(int lock);
+
+  int  Hash_AutoRemove(Hash_ptr h);
+  void Hash_Set_AutoRemove(Hash_ptr h, int t);
+  unsigned int Hash_Remove_Unused(Hash_ptr h);
 
   MEdge_ptr ME_NextInHash(MEdge_ptr medge);
   void ME_Set_NextInHash(MEdge_ptr medge, MEdge_ptr next);
