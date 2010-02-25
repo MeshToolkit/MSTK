@@ -16,21 +16,21 @@ extern "C" {
     MEdge_ptr edge;
     MVertex_ptr v[2], ev0, ev1, vtmp;
     List_ptr redges, fverts;
-    MRegion_DownAdj_FN *downadj;
-    Mesh_ptr mesh = MEnt_Mesh(r);
+    MRegion_Adj_FN *adj;
+    Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) r);
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     switch (nf) {
     case 4: /* Tet */
-      face = List_Entry(downadj->rfaces,0); /* first face */
-      fdir = downadj->fdirs[0] & 1;    /* Sense in which face is used in region */
+      face = List_Entry(adj->rfaces,0); /* first face */
+      fdir = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
 
       redges = MF_Edges(face,!fdir,0);
       n = 3;
 
-      face = List_Entry(downadj->rfaces,1);
+      face = List_Entry(adj->rfaces,1);
       fverts = MF_Vertices(face,1,0);
 
       for (i = 0; i < 3 && n < 5; i++) {
@@ -79,7 +79,7 @@ extern "C" {
       }
       List_Delete(fverts);
 
-      face = List_Entry(downadj->rfaces,2);
+      face = List_Entry(adj->rfaces,2);
       fverts = MF_Vertices(face,1,0);
 
       for (i = 0; i < 3 && n < 6; i++) {
@@ -135,7 +135,7 @@ extern "C" {
       /* All faces must have 4 edges each */
       fecheck = 1;
       for (i = 0; i < nf; i++) {
-	face = List_Entry(downadj->rfaces,i);
+	face = List_Entry(adj->rfaces,i);
 	if (MF_Num_Edges(face) != 4)
 	  fecheck = 0;
       }
@@ -146,14 +146,14 @@ extern "C" {
       n = 0;
 
       /* Add edges of first face */
-      face = List_Entry(downadj->rfaces,0); /* first face */
-      fdir = downadj->fdirs[0] & 1;    /* Sense in which face is used in region */
+      face = List_Entry(adj->rfaces,0); /* first face */
+      fdir = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
 
       redges = MF_Edges(face,!fdir,0);
       n = 4;
 
       for (i = 1; i < nf-1 && n < 12; i++) {
-	face = List_Entry(downadj->rfaces,i);
+	face = List_Entry(adj->rfaces,i);
 
 	fverts = MF_Edges(face,1,0);
 
@@ -214,13 +214,13 @@ extern "C" {
     /* We should do separate procedures for pyramids and prisms */
     
     /* Add edges of first face */
-    face = List_Entry(downadj->rfaces,0); /* first face */
-    fdir = downadj->fdirs[0] & 1;   /* Sense in which face is used in region */
+    face = List_Entry(adj->rfaces,0); /* first face */
+    fdir = adj->fdirs[0] & 1;   /* Sense in which face is used in region */
     
     redges = MF_Edges(face,!fdir,0);
     
     for (i = 1; i < nf-1; i++) {
-      face = List_Entry(downadj->rfaces,i);
+      face = List_Entry(adj->rfaces,i);
 
       fverts = MF_Edges(face,1,0);
       nfv = List_Num_Entries(fverts);
@@ -285,12 +285,12 @@ extern "C" {
   int MR_UsesEdge_R3R4(MRegion_ptr r, MEdge_ptr e) {
     int i, idx;
     MFace_ptr face;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
     idx = 0;
-    while ((face = List_Next_Entry(downadj->rfaces,&idx))) {
+    while ((face = List_Next_Entry(adj->rfaces,&idx))) {
       if (MF_UsesEntity(face,e,1))
 	return 1;
     }
