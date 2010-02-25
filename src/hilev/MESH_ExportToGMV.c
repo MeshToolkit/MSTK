@@ -57,7 +57,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   int                   nalloc, ngent, fnum, fid, vid, nv, icr;
   int                   attentdim, j, ncells, polygons=0, cellmk, idx;
   int                   ncells1, ncells2, ndup, NFACES, rid0, rid1, rid;
-  int                   oppfid;
+  int                   oppfid, opprid;
   double		vxyz[3], rval, *xcoord, *ycoord, *zcoord;
   void                 *pval;
   FILE		        *fp;
@@ -68,6 +68,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 					 {3,4,5,0,1,2,-1,-1},
 					 {-1,-1,-1,-1,-1,-1,-1,-1},
 					 {4,5,6,7,0,1,2,3}};
+  MAttrib_ptr    vidatt=0,fidatt=0,ridatt=0;
+
+
+  vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
+  fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
+  ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
+
 
   gmodel = 1;
   
@@ -91,7 +98,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       vertex = MESH_Vertex(mesh,jv);
       MV_Coords(vertex,vxyz);
       fprintf(fp,"% 20.12f % 20.12lf % 20.12lf\n",vxyz[0],vxyz[1],vxyz[2]);
-      MV_Set_ID(vertex,(jv+1));
+      MEnt_Set_AttVal(vertex,vidatt,(jv+1),0.0,NULL);
     }
   }
   else {
@@ -105,7 +112,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       xcoord[jv] = vxyz[0];
       ycoord[jv] = vxyz[1];
       zcoord[jv] = vxyz[2];
-      MV_Set_ID(vertex,(jv+1));
+      MEnt_Set_AttVal(vertex,vidatt,(jv+1),0.0,NULL);
     }
 
     for (jv = 0; jv < nv; jv++) {
@@ -137,7 +144,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   /* May have problems if we want to write polygons as 'faces' */
   /* number of faces not connected to a region */
   ncells2 = 0;
-  idx = 0;
+  idx = 0; i = 0;
   while ((face = MESH_Next_Face(mesh,&idx))) {
     if ((fregs = MF_Regions(face)))
       List_Delete(fregs);
@@ -146,11 +153,12 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       ncells++;
       ncells2++;
     }
+    MEnt_Set_AttVal(face,fidatt,++i,0.0,NULL);
   }
   
   /* number of edges not connected to a face */
   ncells1 = 0;
-  idx = 0;
+  idx = 0; i = 0;
   while ((edge = MESH_Next_Edge(mesh,&idx))) {
     if ((efaces = ME_Faces(edge)))
       List_Delete(efaces);
@@ -160,6 +168,10 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       ncells1++;
     }
   }
+
+  idx = 0; i = 0;
+  while ((region = MESH_Next_Region(mesh,&idx)))
+    MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
   
 
   /* write region connectivity for entire mesh */
@@ -212,7 +224,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       if (rtype != POLYHED) {
 	for (jv = 0; jv < nrv; jv++) {
 	  vertex = List_Entry(rverts,rtmpl[nrv-4][jv]);
-	  fprintf(fp," % 8d",MV_ID(vertex));
+	  MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	  fprintf(fp," % 8d",vid);
 	}
 	fprintf(fp,"\n");
 	List_Delete(rverts);
@@ -235,7 +248,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  
 	  for (jv = 0; jv < nfv; jv++) {
 	    vertex = List_Entry(fverts,jv);
-	    fprintf(fp," %8d",MV_ID(vertex));
+	    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	    fprintf(fp," %8d",vid);
 	  }
 	  fprintf(fp,"\n");
 	  List_Delete(fverts);
@@ -276,7 +290,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     ndup = 0;
     idx = 0;
     while ((region = MESH_Next_Region(mesh,&idx))) {      
-      rid = MR_ID(region);
+      MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
 
       rfaces = MR_Faces(region);
       nrf = List_Num_Entries(rfaces);
@@ -301,16 +315,21 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  if (oppreg == region)
 	    oppreg = List_Entry(fregs,1);
 	  
-	  if (rid < MR_ID(oppreg))
-	    fprintf(fp," % d ",MF_ID(face));
+	  MEnt_Get_AttVal(oppreg,ridatt,&opprid,&rval,&pval);
+	  if (rid < opprid) {
+	    MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+	    fprintf(fp," % d ",fid);
+	  }
 	  else {
 	    ndup++;
 	    fprintf(fp," % d ",NFACES+ndup);
 	    MEnt_Set_AttVal(face,oppatt,NFACES+ndup,0,NULL);
 	  }
 	}
-	else
-	  fprintf(fp,"% d ",MF_ID(face));
+	else {
+	  MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+	  fprintf(fp,"% d ",fid);
+	}
       }
       fprintf(fp,"\n");
 
@@ -357,7 +376,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	   connected region with the lower ID will use this face such
 	   that its normal points out of the region */
 
-	rid0 = MR_ID(region0); rid1 = MR_ID(region1);
+	MEnt_Get_AttVal(region0,ridatt,&rid0,&rval,&pval);
+	MEnt_Get_AttVal(region1,ridatt,&rid1,&rval,&pval);
 	if (rid0 < rid1) {
 	  region = region0;
 	  rid = rid0;
@@ -372,30 +392,34 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
 	nfv = List_Num_Entries(fverts);
 	
-	fid = MF_ID(face);
+	MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
 	MEnt_Get_AttVal(face,oppatt,&oppfid,&rval,&pval);
 	
 	fprintf(fp,"% d  1  % d 1 % d ",nfv,oppfid,rid);
-	for (i = 0; i < nfv; i++)
-	  fprintf(fp," % d ",MV_ID(List_Entry(fverts,i)));
+	for (i = 0; i < nfv; i++) {
+	  MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
+	  fprintf(fp," % d ",vid);
+	}
 	fprintf(fp,"\n");
 	
 	List_Delete(fverts);
       }
       else {
 	region = List_Entry(fregs,0);
-	rid = MR_ID(region);
+	MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
 	dir = MR_FaceDir(region,face);	  
 	fverts = MF_Vertices(face,dir,0);
 
 	nfv = List_Num_Entries(fverts);
-	
-	fid = MF_ID(face);
+
+	MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
 	oppfid = 0;
 	
 	fprintf(fp,"% d  1  % d 1 % d ",nfv,oppfid,rid);
-	for (i = 0; i < nfv; i++)
-	  fprintf(fp," % d ",MV_ID(List_Entry(fverts,i)));
+	for (i = 0; i < nfv; i++) {
+	  MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
+	  fprintf(fp," % d ",vid);
+	}
 	fprintf(fp,"\n");
 	
 	List_Delete(fverts);
@@ -416,7 +440,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
     while ((region = MESH_Next_Region(mesh,&idx))) {      
 
-      rid = MR_ID(region);
+      MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
 
       rfaces = MR_Faces(region);
       nrf = List_Num_Entries(rfaces);
@@ -433,16 +457,18 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  if (oppreg == region){
 	    oppreg = List_Entry(fregs,1);
 	  }
-	  
-	  if ( rid > MR_ID(oppreg)) {
-	    fid = MF_ID(face);
+
+	  MEnt_Get_AttVal(oppreg,ridatt,&opprid,&rval,&pval);
+	  if ( rid > opprid) {
+	    MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
 	    dir = MR_FaceDir(region,face);	  
 	    fverts = MF_Vertices(face,dir,0);
 	    nfv = List_Num_Entries(fverts);
 	    fprintf(fp,"% d  1  % d 1 % d ",nfv,fid,rid);
 
 	    for (i = 0; i < nfv; i++) {
-	      fprintf(fp," % d ",MV_ID(List_Entry(fverts,i)));
+	      MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
+	      fprintf(fp," % d ",vid);
 	    }
 	    fprintf(fp,"\n");
 	    List_Delete(fverts);      
@@ -488,7 +514,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	continue;
       
       fnum++;
-      fid = MF_ID(face);
+      MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
       
       fverts = MF_Vertices(face,1,0);
       nfv = List_Num_Entries(fverts);
@@ -497,7 +523,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	
 	for (jv = 0; jv < nfv; jv++) {
 	  vertex = List_Entry(fverts,jv);
-	  vid = MV_ID(vertex);
+	  MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
 	  fprintf(fp," % 8d",vid);
 	}
 	
@@ -525,7 +551,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  
 	  for (jv = 0; jv < nfv; jv++) {
 	    vertex = List_Entry(fverts,jv);
-	    vid = MV_ID(vertex);
+	    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
 	    fprintf(fp," % 8d",vid);
 	  }
 	  
@@ -566,7 +592,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
       for (jv = 0; jv < 2; jv++) {
 	vertex = ME_Vertex(edge,jv);
-	vid = MV_ID(vertex);
+	MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
 	fprintf(fp," % 8d",vid);
       }
 	  
@@ -891,6 +917,22 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   MSTK_FreeMarker(cellmk);
 
+
+  idx = 0;
+  while ((vertex = MESH_Next_Vertex(mesh,&idx)))
+    MEnt_Rem_AttVal(vertex,vidatt);
+
+  idx = 0;
+  while ((face = MESH_Next_Face(mesh,&idx)))
+    MEnt_Rem_AttVal(face,fidatt);
+
+  idx = 0;
+  while ((region = MESH_Next_Region(mesh,&idx)))
+    MEnt_Rem_AttVal(region,ridatt);
+
+  MAttrib_Delete(vidatt);
+  MAttrib_Delete(fidatt);
+  MAttrib_Delete(ridatt);
 
   return 1;
 }
