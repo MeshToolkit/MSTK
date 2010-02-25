@@ -15,11 +15,12 @@ extern "C" {
 
     e = (MEdge_ptr) MSTK_malloc(sizeof(MEdge));
 
-    MEnt_Init_CmnData(e);
-    MEnt_Set_Mesh(e,mesh);
-    MEnt_Set_Dim(e,1);
-    MEnt_Set_GEntDim(e,4); /* Nonsensical value as we don't know what it is */
-    MEnt_Set_GEntID(e,0);
+    MEnt_Init_CmnData((MEntity_ptr) e);
+    MEnt_Set_Mesh((MEntity_ptr) e,mesh);
+    MEnt_Set_Dim((MEntity_ptr) e,1);
+    MEnt_Set_GEntDim((MEntity_ptr) e,4); /* Nonsensical value as we don't 
+                                            know what it is */
+    MEnt_Set_GEntID((MEntity_ptr) e,0);
 
     e->adj = (void *) NULL;
     e->vertex[0] = e->vertex[1] = (MVertex_ptr) NULL;
@@ -33,36 +34,36 @@ extern "C" {
   }
 
   void ME_Delete(MEdge_ptr e, int keep) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     Mesh_ptr mesh;
 
     (*ME_Delete_jmp[RTYPE])(e,keep);
 
-    if (MEnt_Dim(e) != MDELETED) {
-      mesh = MEnt_Mesh(e);
+    if (MEnt_Dim((MEntity_ptr) e) != MDELETED) {
+      mesh = MEnt_Mesh((MEntity_ptr) e);
       MESH_Rem_Edge(mesh,e);
-      MEnt_Set_DelFlag(e);
+      MEnt_Set_DelFlag((MEntity_ptr) e);
     }
 
     if (!keep) {
-      MEnt_Free_CmnData(e);
-      MSTK_free(e);
+      MEnt_Free_CmnData((MEntity_ptr) e);
+      MSTK_free((MEntity_ptr) e);
     }
   }
 
   void ME_Restore(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
-    Mesh_ptr mesh = MEnt_Mesh(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
+    Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) e);
 
 #ifdef DEBUG
-    if (MEnt_Dim(e) != MDELETED) {
+    if (MEnt_Dim((MEntity_ptr) e) != MDELETED) {
       MSTK_Report("ME_Restore",
 		  "Trying to restore edge that is not deleted",WARN);
       return;
     }
 #endif
 
-    MEnt_Rem_DelFlag(e);
+    MEnt_Rem_DelFlag((MEntity_ptr) e);
 
     MESH_Add_Edge(mesh,e);
 
@@ -70,17 +71,17 @@ extern "C" {
   }
 
   void ME_Destroy_For_MESH_Delete(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
 
     (*ME_Destroy_For_MESH_Delete_jmp[RTYPE])(e);
 
-    MEnt_Free_CmnData(e);
+    MEnt_Free_CmnData((MEntity_ptr) e);
 
     MSTK_free(e);
   }
 
   void ME_Set_RepType(MEdge_ptr e, RepType RTYPE) {
-    MEnt_Set_RepType_Data(e,RTYPE);
+    MEnt_Set_RepType_Data((MEntity_ptr) e,RTYPE);
     (*ME_Set_RepType_jmp[RTYPE])(e);
   }
 
@@ -88,15 +89,15 @@ extern "C" {
   }
 
   void ME_Set_GEntDim(MEdge_ptr e, int gdim) {
-    MEnt_Set_GEntDim(e,gdim);
+    MEnt_Set_GEntDim((MEntity_ptr) e,gdim);
   }
 
   void ME_Set_GEntID(MEdge_ptr e, int gid) {
-    MEnt_Set_GEntID(e,gid);
+    MEnt_Set_GEntID((MEntity_ptr) e,gid);
   }
 
   void ME_Set_ID(MEdge_ptr e, int id) {
-    MEnt_Set_ID(e,id);
+    MEnt_Set_ID((MEntity_ptr) e,id);
   }
 
   void ME_Set_Vertex(MEdge_ptr e, int i, MVertex_ptr v) {
@@ -174,7 +175,7 @@ extern "C" {
 	idx = 0;
 	allinterior = 1;
 	while ((eface = List_Next_Entry(efaces,&idx))) {
-	  if (MEnt_GEntDim(eface) != 3) {
+	  if (MEnt_GEntDim((MEntity_ptr) eface) != 3) {
 	    allinterior = 0;
 	    break;
 	  }
@@ -182,7 +183,7 @@ extern "C" {
 
 	if (allinterior) {
 	  egdim = 3;
-	  egid = MEnt_GEntID(List_Entry(efaces,0));
+	  egid = MEnt_GEntID((MEntity_ptr) List_Entry(efaces,0));
 	}
 	else {
 
@@ -197,13 +198,13 @@ extern "C" {
 	  allsame = 1;
 	  idx = 0;
 	  while ((eface = List_Next_Entry(efaces,&idx))) {
-	    if (MEnt_GEntDim(eface) != 2) continue;
+	    if (MEnt_GEntDim((MEntity_ptr) eface) != 2) continue;
 
 	    if (gfid0 == -1) { /* first boundary face */
-	      gfid0 = MEnt_GEntID(eface);
+	      gfid0 = MEnt_GEntID((MEntity_ptr) eface);
 	    }
 	    else {
-	      if (MEnt_GEntID(eface) != gfid0) {
+	      if (MEnt_GEntID((MEntity_ptr) eface) != gfid0) {
 		allsame = 0;
 		break;
 	      }
@@ -226,8 +227,8 @@ extern "C" {
 
     }
 
-    MEnt_Set_GEntDim(e,egdim);
-    MEnt_Set_GEntID(e,egid);
+    MEnt_Set_GEntDim((MEntity_ptr) e,egdim);
+    MEnt_Set_GEntID((MEntity_ptr) e,egid);
 
     if (egdim == 4)
       return 0;
@@ -237,23 +238,23 @@ extern "C" {
   }
 
   Mesh_ptr ME_Mesh(MEdge_ptr e) {
-    return MEnt_Mesh(e);
+    return MEnt_Mesh((MEntity_ptr) e);
   }
 
   int ME_ID(MEdge_ptr e) {
-    return MEnt_ID(e);
+    return MEnt_ID((MEntity_ptr) e);
   }
 
   int ME_GEntDim(MEdge_ptr e) {
-    return MEnt_GEntDim(e);
+    return MEnt_GEntDim((MEntity_ptr) e);
   }
 
   int ME_GEntID(MEdge_ptr e) {
-    return MEnt_GEntID(e);
+    return MEnt_GEntID((MEntity_ptr) e);
   }
 
   GEntity_ptr ME_GEntity(MEdge_ptr e) {
-    return MEnt_GEntity(e);
+    return MEnt_GEntity((MEntity_ptr) e);
   }
 
   int MEs_AreSame(MEdge_ptr e1, MEdge_ptr e2) {
@@ -277,22 +278,22 @@ extern "C" {
   }
 
   int ME_Num_Faces(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return (*ME_Num_Faces_jmp[RTYPE])(e);
   }
 
   int ME_Num_Regions(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return (*ME_Num_Regions_jmp[RTYPE])(e);
   }
 
   List_ptr ME_Faces(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return (*ME_Faces_jmp[RTYPE])(e);
   }
 
   List_ptr ME_Regions(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return (*ME_Regions_jmp[RTYPE])(e);
   }
 
@@ -315,22 +316,22 @@ extern "C" {
   }
 
   void ME_Add_Face(MEdge_ptr e, MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     (*ME_Add_Face_jmp[RTYPE])(e,f);
   }
 
   void ME_Rem_Face(MEdge_ptr e, MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     (*ME_Rem_Face_jmp[RTYPE])(e,f);
   }
 
   void ME_Add_Region(MEdge_ptr e, MRegion_ptr r) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     (*ME_Add_Region_jmp[RTYPE])(e,r);
   }
 
   void ME_Rem_Region(MEdge_ptr e, MRegion_ptr r) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     (*ME_Rem_Region_jmp[RTYPE])(e,r);
   }
 
@@ -379,12 +380,12 @@ extern "C" {
   /* Extra functionality for hash-tables */
   
   MEdge_ptr ME_NextInHash(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return ME_NextInHash_jmp[RTYPE](e);
   }
   
   void ME_Set_NextInHash(MEdge_ptr e, MEdge_ptr next) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return ME_Set_NextInHash_jmp[RTYPE](e, next);
   }
 
@@ -394,17 +395,17 @@ extern "C" {
   }
   
   void ME_Lock(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     ME_Lock_jmp[RTYPE](e);
   }
   
   void ME_UnLock(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     ME_UnLock_jmp[RTYPE](e);
   }
   
   int ME_IsLocked(MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(e);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return ME_IsLocked_jmp[RTYPE](e);
   }
   
