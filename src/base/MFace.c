@@ -16,11 +16,11 @@ extern "C" {
 
     f = (MFace_ptr) MSTK_malloc(sizeof(MFace));
 
-    MEnt_Init_CmnData(f);
-    MEnt_Set_Mesh(f,mesh);
-    MEnt_Set_Dim(f,2);
-    MEnt_Set_GEntDim(f,4); /* nonsensical value as we don't know what it is */
-    MEnt_Set_GEntID(f,0);
+    MEnt_Init_CmnData((MEntity_ptr) f);
+    MEnt_Set_Mesh((MEntity_ptr) f,mesh);
+    MEnt_Set_Dim((MEntity_ptr) f,2);
+    MEnt_Set_GEntDim((MEntity_ptr) f,4); /* nonsensical value as we don't know what it is */
+    MEnt_Set_GEntID((MEntity_ptr) f,0);
 
     f->adj = (void *) NULL;
 
@@ -33,36 +33,36 @@ extern "C" {
   }
 
   void MF_Delete(MFace_ptr f, int keep) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     Mesh_ptr mesh;
 
     (*MF_Delete_jmp[RTYPE])(f, keep);
 
-    if (MEnt_Dim(f) != MDELETED) {
-      mesh = MEnt_Mesh(f);
+    if (MEnt_Dim((MEntity_ptr) f) != MDELETED) {
+      mesh = MEnt_Mesh((MEntity_ptr) f);
       MESH_Rem_Face(mesh,f);
-      MEnt_Set_DelFlag(f);
+      MEnt_Set_DelFlag((MEntity_ptr) f);
     }
 
     if (!keep) {
-      MEnt_Free_CmnData(f);
+      MEnt_Free_CmnData((MEntity_ptr) f);
       MSTK_free(f);
     }
   }
 
   void MF_Restore(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
-    Mesh_ptr mesh = MEnt_Mesh(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
+    Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) f);
 
 #ifdef DEBUG
-    if (MEnt_Dim(f) != MDELETED) {
+    if (MEnt_Dim((MEntity_ptr) f) != MDELETED) {
       MSTK_Report("MF_Restore",
 		  "Trying to restore face that is not deleted",WARN);
       return;
     }
 #endif
 
-    MEnt_Rem_DelFlag(f);
+    MEnt_Rem_DelFlag((MEntity_ptr) f);
 
     MESH_Add_Face(mesh,f);
 
@@ -70,17 +70,17 @@ extern "C" {
   }
 
   void MF_Destroy_For_MESH_Delete(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
 
     (*MF_Destroy_For_MESH_Delete_jmp[RTYPE])(f);
 
-    MEnt_Free_CmnData(f);
+    MEnt_Free_CmnData((MEntity_ptr) f);
 
     MSTK_free(f);
   }
 
   void MF_Set_RepType(MFace_ptr f, RepType RTYPE) {
-    MEnt_Set_RepType_Data(f,RTYPE);
+    MEnt_Set_RepType_Data((MEntity_ptr) f,RTYPE);
     (*MF_Set_RepType_jmp[RTYPE])(f);
   }
 
@@ -88,104 +88,104 @@ extern "C" {
   }
 
   void MF_Set_GEntDim(MFace_ptr f, int gdim) {
-    MEnt_Set_GEntDim(f,gdim);
+    MEnt_Set_GEntDim((MEntity_ptr) f,gdim);
   }
 
   void MF_Set_GEntID(MFace_ptr f, int gid) {
-    MEnt_Set_GEntID(f,gid);
+    MEnt_Set_GEntID((MEntity_ptr) f,gid);
   }
 
   int MF_Set_GInfo_Auto(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Set_GInfo_Auto_jmp[RTYPE])(f);
   }
 
 
   void MF_Set_ID(MFace_ptr f, int id) {
-    MEnt_Set_ID(f,id);
+    MEnt_Set_ID((MEntity_ptr) f,id);
   }
 
   void MF_Set_Edges(MFace_ptr f, int n, MEdge_ptr *edges, int *dir) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Set_Edges_jmp[RTYPE])(f,n,edges,dir);
   }
 
   void MF_Replace_Edges(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, 
 			MEdge_ptr *nuedges) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Replace_Edges_jmp[RTYPE])(f,nold,oldedges,nnu,nuedges);
   }
 
   void MF_Replace_Edges_i(MFace_ptr f, int nold, int i, int nnu, 
 			  MEdge_ptr *nuedges) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Replace_Edges_i_jmp[RTYPE])(f,nold,i,nnu,nuedges);
   }
 
   void MF_Set_Vertices(MFace_ptr f, int n, MVertex_ptr *verts) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Set_Vertices_jmp[RTYPE])(f,n,verts);
   }
 
   void MF_Replace_Vertex(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Replace_Vertex_jmp[RTYPE])(f,v,nuv);
   }
 
   void MF_Replace_Vertex_i(MFace_ptr f, int i, MVertex_ptr nuv) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Replace_Vertex_i_jmp[RTYPE])(f,i,nuv);
   }
 
   void MF_Insert_Vertex(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Insert_Vertex_jmp[RTYPE])(f,nuv,b4v);
   }
 
   void MF_Insert_Vertex_i(MFace_ptr f, MVertex_ptr nuv, int i) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Insert_Vertex_i_jmp[RTYPE])(f,nuv,i);
   }
 
 
   int MF_Rev_EdgeDir(MFace_ptr f, MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Rev_EdgeDir_jmp[RTYPE])(f,e);
   }
 
   int MF_Rev_EdgeDir_i(MFace_ptr f, int i) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Rev_EdgeDir_i_jmp[RTYPE])(f,i);
   }
 
 
   Mesh_ptr MF_Mesh(MFace_ptr f) {
-    return MEnt_Mesh(f);
+    return MEnt_Mesh((MEntity_ptr) f);
   }
 
   int MF_ID(MFace_ptr f) {
-    return MEnt_ID(f);
+    return MEnt_ID((MEntity_ptr) f);
   }
 
   int MF_GEntDim(MFace_ptr f) {
-    return MEnt_GEntDim(f);
+    return MEnt_GEntDim((MEntity_ptr) f);
   }
 
   int MF_GEntID(MFace_ptr f) {
-    return MEnt_GEntID(f);
+    return MEnt_GEntID((MEntity_ptr) f);
   }
 
   GEntity_ptr MF_GEntity(MFace_ptr f) {
-    return MEnt_GEntity(f);
+    return MEnt_GEntity((MEntity_ptr) f);
   }
 
   int MFs_AreSame(MFace_ptr f1, MFace_ptr f2) {
-    RepType RTYPE = MEnt_RepType(f1);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f1);
     return (*MFs_AreSame_jmp[RTYPE])(f1,f2);
   }
 
   int MF_UsesEntity(MFace_ptr f, MEntity_ptr e, int etype) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
 
     switch (etype) {
     case 3:
@@ -203,72 +203,72 @@ extern "C" {
   }
 
   int MF_Num_Vertices(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Num_Vertices_jmp[RTYPE])(f);
   }
 
   int MF_Num_Edges(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Num_Edges_jmp[RTYPE])(f);
   }
 
   List_ptr MF_Vertices(MFace_ptr f, int dir, MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Vertices_jmp[RTYPE])(f,dir, v);
   }
 
   List_ptr MF_Edges(MFace_ptr f, int dir, MVertex_ptr v) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Edges_jmp[RTYPE])(f,dir,v);
   }
 
   int MF_Num_AdjFaces(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Num_AdjFaces_jmp[RTYPE])(f);
   }
 
   int MF_EdgeDir(MFace_ptr f, MEdge_ptr e) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_EdgeDir_jmp[RTYPE])(f,e);
   }
 
   int MF_EdgeDir_i(MFace_ptr f, int i) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_EdgeDir_i_jmp[RTYPE])(f,i);
   }
 
   List_ptr MF_AdjFaces(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_AdjFaces_jmp[RTYPE])(f);
   }
 
   List_ptr MF_Regions(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Regions_jmp[RTYPE])(f);
   }
 
   MRegion_ptr MF_Region(MFace_ptr f, int side) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Region_jmp[RTYPE])(f,side);
   }
 
   void MF_Add_AdjFace(MFace_ptr f, int edgnum, MFace_ptr af) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Add_AdjFace_jmp[RTYPE])(f,edgnum,af);
   }
 
   void MF_Rem_AdjFace(MFace_ptr f, int edgnum, MFace_ptr af) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Rem_AdjFace_jmp[RTYPE])(f,edgnum,af);
   }
 
   void MF_Add_Region(MFace_ptr f, MRegion_ptr r, int side) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Add_Region_jmp[RTYPE])(f,r,side);
   }
 
   void MF_Rem_Region(MFace_ptr f, MRegion_ptr r) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     (*MF_Rem_Region_jmp[RTYPE])(f,r);
   }
 
@@ -357,32 +357,32 @@ extern "C" {
   /* Extra functionality for hash-tables */
   
   MFace_ptr MF_NextInHash(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return MF_NextInHash_jmp[RTYPE](f);
   }
   
   void MF_Set_NextInHash(MFace_ptr f, MFace_ptr next) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     MF_Set_NextInHash_jmp[RTYPE](f, next);
   }
 
   void MF_HashKey(MFace_ptr f, unsigned int *pn, void* **pp) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     MF_HashKey_jmp[RTYPE](f, pn, pp);
   }
 
   void MF_Lock(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     MF_Lock_jmp[RTYPE](f);
   }
   
   void MF_UnLock(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     MF_UnLock_jmp[RTYPE](f);
   }
   
   int MF_IsLocked(MFace_ptr f) {
-    RepType RTYPE = MEnt_RepType(f);
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return MF_IsLocked_jmp[RTYPE](f);
   }
   
