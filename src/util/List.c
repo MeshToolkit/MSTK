@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "List.h"
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -144,13 +145,28 @@ extern "C" {
     return pvtList_Get_Nent(l);
   }
 
+
+
+
+  /* Return the total number of valid and blanked out entries in the list or 
+     in other words, one plus the raw index of the last entry in the list */ 
+
+  int List_Size_Raw(List_ptr l) {
+    int nent, p, nrem, rem1;
+
+    pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
+    return nent+nrem;
+  }
+
+
+
+
   /* Return i'th valid entry (not necessarily the i'th element of the
      array if the array has gaps) */
   /* returns NULL pointer if index is greater than number of valid entries */
   /* index goes from 0 to (NumberOfEntries-1)                              */
 
   void *List_Entry(List_ptr l, int i) {
-    void *entry=NULL;
     int ic=0, ip=0, p, ntot, nent, nrem, rem1;
 
     pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
@@ -175,9 +191,7 @@ extern "C" {
 	 entry */
 
       for (ip = 0; ip < ntot; ip++) {
-	entry = l->entry[ip];
-    
-	if (entry != (void *) NULL) {
+	if (l->entry[ip]) {
 	  ic++;
 	  if (ic == i)
 	    break;
@@ -192,9 +206,31 @@ extern "C" {
     return l->entry[ip];
   }
 
+
+
+
+  /* Return the value in the raw position 'i' in the list - don't count the
+     i'th valid entry like in List_Entry */
+
+  void *List_Entry_Raw(List_ptr l, int i) {
+    int p, ntot, nent, nrem, rem1;
+
+    pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
+    ntot = nent + nrem;   /* total number of list entries */
+
+    if (i >= ntot)
+      return (void *) NULL;
+    else
+      return l->entry[i];
+  }
+
+
+
+
+  /* Next valid entry */
+
   void *List_Next_Entry(List_ptr l, int *index) {
     int ip=0, nent, nrem, p, rem1, ntot=0;
-    void *lentry=NULL;
     
     ip = *index;
 
@@ -205,24 +241,27 @@ extern "C" {
     if (ip < 0 || ip >= ntot)
       return (void *) NULL;
 
-    lentry = l->entry[ip];
-
-    if (lentry != (void *) NULL) {
+    if (l->entry[ip]) {
       (*index)++;
-      return lentry;
+      return l->entry[ip];
     }
     else {
       for (ip = *index; ip < ntot; ip++) {
-	lentry = l->entry[ip];
-	if (lentry != (void *) NULL) {
+	if (l->entry[ip]) {
 	  *index = ip+1;
-	  return lentry;
+	  return l->entry[ip];
 	}
       }
 
       return (void *) NULL;
     }
   }
+
+
+
+
+
+  /* Does List contain a given entry ? */
 
   int List_Contains(List_ptr l, void *entry) {
     int ip, nent, nrem, p, rem1, ntot=0;
@@ -242,6 +281,11 @@ extern "C" {
     return 0;
   }
 
+
+
+
+
+  /* What is the index of the given entry in the list ? */
 
   int List_Locate(List_ptr l, void *entry) {
     int ip, ic=-1, nent, nrem, ntot, p, rem1;
@@ -263,8 +307,9 @@ extern "C" {
     return -1;
   }
       
-      
 
+      
+  /* Add an entry to the list */
 
   List_ptr List_Add(List_ptr l, void *entry) {    
     int nent, nrem, rem1, ntot, p, nalloc;
@@ -289,6 +334,12 @@ extern "C" {
     return l;
   }
 
+
+
+
+
+  
+  /* Add entry to list only if it is not there */
 
   List_ptr List_ChknAdd(List_ptr l, void *entry) {
     int i, nent, nrem, p, ntot, rem1, nalloc;
@@ -319,6 +370,12 @@ extern "C" {
     return l;
   }
 
+
+
+
+
+
+  /* Insert an entry at the i'th valid position */
 
   List_ptr List_Inserti(List_ptr l, void *nuentry, int i) {
     void *entry;
@@ -384,6 +441,13 @@ extern "C" {
     return l;
   }
 
+
+
+
+
+  
+  /* Insert an item before another given item */
+
   List_ptr List_Insert(List_ptr l, void *nuentry, void *b4entry) {
     void *entry;
     int ip, ntot, nent, p, nrem, rem1, nalloc;
@@ -432,6 +496,10 @@ extern "C" {
 
 
 
+
+
+  /* Remove entry from the list */
+
   int List_Rem(List_ptr l, void *entry) {
     int  ip, ntot, nent, p, nrem, rem1;
 
@@ -468,6 +536,11 @@ extern "C" {
 
 
 
+
+
+
+  /* Replace given entry with another entry */
+
   int List_Replace(List_ptr l, void *entry, void *nuentry) {
     int k, ntot, nent, p, nrem, rem1;
 
@@ -486,8 +559,12 @@ extern "C" {
   }
 
 
-  /* Remove the i'th valid entry (not necessarily the i'th entry in
-     the set which could be a pointer to some other location in the
+
+
+
+
+  /* Remove the i'th valid entry (not necessarily the i'th raw entry in
+     the list which could be a pointer to some other location in the
      set) */
 
   int List_Remi(List_ptr l, int i) {
@@ -530,7 +607,7 @@ extern "C" {
       }
     }
     if (ic != i) { 
-      MSTK_Report("List_Remi","Could not find the i'th entry in set",ERROR);
+      MSTK_Report("List_Remi","Could not find the i'th entry in list",ERROR);
       return 0;
     }
 
@@ -545,6 +622,164 @@ extern "C" {
 
     return 1;
   }
+
+
+
+
+
+
+  /* Remove the i'th entry in the list without paying attention to validity
+     of the entries, i.e. don't look for the i'th valid entry - This must be 
+     invoked only by developers who know what they are doing */
+
+  int List_Remi_Raw(List_ptr l, int i) {
+    int ntot, nent, p, nrem, rem1;
+
+    pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
+    ntot = nent + nrem;
+
+    if (i >= ntot) {
+#ifdef DEBUG
+      MSTK_Report("List_Remi_Raw","Not that many raw entries in list",ERROR);
+#endif
+      return 0;
+    }
+
+
+    if (l->entry[i] != NULL) {
+      l->entry[i] = (void *) NULL;
+      nent--;
+      nrem++;
+      if (rem1 == -1 || rem1 > i)
+        rem1 = i;
+
+      pvtList_Set_Pars(l,nent,p,nrem,rem1);
+    }
+
+    return 1;
+  }
+
+
+
+
+  /* Remove an entry from a list assuming that the list is sorted (in
+     increasing order) according to some criterion. This makes the
+     list search of O(logN) complexity instead of O(N) complexity. The
+     criterion according to which the list is sorted is given by the
+     function entry2int. Given an entry of type (void *), the function
+     entry2int must return an integer value corresponding to the entry
+     and the list is assumed to be sorted according to these integer
+     values. In MSTK, it would be most common to send in MEnt_ID as
+     the function entry2int */
+
+
+  int List_RemSorted(List_ptr l, void *entry, int (*entry2int)(void *)) {
+    int imin, imax, imid, idmin, idmax, idmid, done, fnd, fnd1, imid1;
+    int nent, p, nrem, rem1, ntot, i, id;
+
+    pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
+    ntot = nent + nrem;
+
+    imin = 0; imax = ntot-1;
+    if (!(l->entry[imin])) {
+
+      /* Search for the first valid entry */      
+      fnd1 = 0;
+      while (!fnd1 && imin <= imax)
+	if (l->entry[++imin]) fnd1 = 1;
+      if (!fnd1) 
+	MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+
+    }
+
+    if (!(l->entry[imax])) {
+
+      /* Search for the the last valid entry */
+      fnd1 = 0;
+      while (!fnd1 && imax >= imin)
+	if (l->entry[--imin]) fnd1 = 1;
+      if (!fnd1)
+	MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+
+    }
+      
+    idmin = (*entry2int)(l->entry[imin]);
+    idmax = (*entry2int)(l->entry[imax]);
+
+    done = 0;
+    i = 0;
+    id = (*entry2int)(entry);
+    while (!done) { 
+      imid = (int)(0.5+(imin+imax)/2.0);
+
+      if (!(l->entry[imid])) {
+
+	/* Search for next valid entry */
+	fnd1 = 0;
+	imid1 = imid;
+	while (!fnd1 && imid1 <= imax)
+	  if (l->entry[++imid1]) fnd1 = 1;
+	if (!fnd1)
+	  MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+	else
+	  imid = imid1;
+      
+	if (imid1 == imax) {
+	  /* there were no valid entries from imid to imax */
+	  /* Search back from imid to imin */
+	  
+	  fnd1 = 0;
+	  imid1 = imid;
+	  while (!fnd1 && imid1 >= imin)
+	    if (l->entry[--imid1]) fnd1 = 1;
+	  if (!fnd1)
+	    MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+	  else
+	    imid = imid1;
+	}
+      }
+
+      idmid = (*entry2int)(l->entry[imid]);
+      
+      if (id <= idmid) {
+	imax = imid;
+	idmax = idmid;
+      }
+      else {
+	imin = imid;
+	idmin = idmid;
+      }      
+
+      if (id == idmin) {
+	i = imin;
+	fnd = 1;
+	done = 1;
+      }
+      else if (id == idmax) {
+	i = imax;
+	fnd = 1;
+	done = 1;
+      }
+      else if (imax == imin) {
+	done = 1;
+      }
+    }
+
+    if (fnd) {
+      l->entry[i] = (void *) NULL;
+      nent--;
+      nrem++;
+      if (rem1 == -1 || rem1 > i)
+	rem1 = i;
+
+      pvtList_Set_Pars(l,nent,p,nrem,rem1);
+      return 1;
+    }
+
+    return 0;
+  }
+
+
 
 
   /* Replace the i'th valid entry (not necessarily the i'th entry in
@@ -590,6 +825,9 @@ extern "C" {
     l->entry[ip] = nuentry;
     return 1;
   }
+
+
+
 
 
   List_ptr List_Compress(List_ptr l) {
@@ -666,6 +904,13 @@ extern "C" {
     return l;
   }
 
+
+
+
+
+
+  /* Concatenate two lists */
+
   List_ptr List_Cat(List_ptr dest, List_ptr src) {
     int ntot, ntot_d, ntot_s, nent_d, nent_s, nrem_d, nrem_s, rem1_d, rem1_s;
     int p, p_d, p_s, nalloc;
@@ -731,6 +976,8 @@ extern "C" {
 #endif
 
   /* Extra functionality for hash-tables */
+  /* RVG: summer student circumvented the data hiding I had. Need to fix
+     the hash tables code to avoid this */
 
   void*   *List_Entries(List_ptr l) {
     return l->entry;
