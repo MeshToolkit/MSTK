@@ -1,53 +1,51 @@
 
-MSTK Usage instructions for T-7 users
+MSTK Usage instructions for T-5 users
 -------------------------------------
 
-If you are part of the T-7 network and want to use MSTK, you do not
+If you are part of the T-5 network and want to use MSTK, you do not
 have to download it and build it yourself. You can use the existing
 libraries. Here are some instructions on the process.
 
 Packages:
 ---------
 
-To use MSTK, you must link to two packages - MSTKUTIL and MSTK. 
+To use MSTK, you must link to the MSTK libraries. 
 
 
 Include files:
 --------------
 
-The include files for the latest stable version of MSTK and MSTKUTIL
-are available in the directory '/u/rao/include/mstk' and
-'/u/rao/include/mstkutil'. In your code, include "MSTK.h". Then in your
-Makefile, use '-I/u/rao/include/mstkutil -I/u/rao/include/mstk' when
-compiling files.
+The include files for the latest stable version of MSTK 
+are available in the directory '/u/rao/include/mstk'.
+In your code, include "MSTK.h". Then in your Makefile, use 
+'-I/u/rao/include/mstk' when compiling files.
 
 If you 'ls' the directory '/u/rao/include/mstk' you will see that it is
 a symbolic link to a specific version of MSTK. If you want to use a
 different version of MSTK, your include path has to reflect that. For
 example, you could include the files from the latest development
-version of MSTK by using  '-I/u/rao/include/mstkutil-1.5dev
--I/u/rao/include/mstk-1.5dev' to compile your files.
+version of MSTK by using  '-I/u/rao/include/mstk-1.5dev' to compile your files.
 
 Library files:
 --------------
 
-The library files for the latest stable version of MSTK and MSTKUTIL
+The library files for the latest stable version of MSTK
 are available in the directory '/u/rao/lib/i686_linux'. The debug
 versions of the libraries have a '-d' in their names, the optimized
-versions don't. To link to the MSTK and MSTKUTIL libraries, use 
+versions don't. To link to the MSTK libraries, use 
 
--L/u/rao/lib/i686_linux -lmstkutil -lmstk 
+-L/u/rao/lib/i686_linux -lmstk 
 
 or
 
--L/u/rao/lib/i686_linux -lmstkutil-d -lmstk-d
+-L/u/rao/lib/i686_linux -lmstk-d
 
 in your Makefile link line.
 
 If you want to link to a different version of mstk, you could include
 the following in your link line
 
--L/u/rao/lib/i686_linux -lmstkutil-d-1.5dev -lmstk-d-1.5dev
+-L/u/rao/lib/i686_linux -lmstk-d-1.5dev
 
 
 OTHER LIBRARIES AND UTILITIES
