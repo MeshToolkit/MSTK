@@ -14,18 +14,18 @@ extern "C" {
   }
 
   void MR_Delete_F4(MRegion_ptr r, int keep) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
     MFace_ptr f;
     MEdge_ptr e;
     List_ptr fedges;
     int i, j, idx, ne;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
-    if (MEnt_Dim(r) != MDELETED) { /* if regn hasnt been temporarily deleted */
-      if (downadj) {
+    if (MEnt_Dim((MEntity_ptr) r) != MDELETED) { /* if regn hasnt been temporarily deleted */
+      if (adj) {
 	idx = 0;
-	while ((f = List_Next_Entry(downadj->rfaces,&idx))) {	  
+	while ((f = List_Next_Entry(adj->rfaces,&idx))) {	  
 	  fedges = MF_Edges(f,1,0);
 	  ne = List_Num_Entries(fedges);
 	  for (j = 0; j < ne; j++) {
@@ -38,25 +38,25 @@ extern "C" {
     }
 
     if (!keep) {
-      if (downadj) {
-	if (downadj->rfaces)
-	  List_Delete(downadj->rfaces);
-	MSTK_free(downadj);
+      if (adj) {
+	if (adj->rfaces)
+	  List_Delete(adj->rfaces);
+	MSTK_free(adj);
       }
     }
   }
 
   void MR_Restore_F4(MRegion_ptr r) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
     MFace_ptr f;
     MEdge_ptr e;
     List_ptr fedges;
     int i, j, idx, ne;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
     idx = 0;
-    while ((f = List_Next_Entry(downadj->rfaces,&idx))) {
+    while ((f = List_Next_Entry(adj->rfaces,&idx))) {
 
       fedges = MF_Edges(f,1,0);
       ne = List_Num_Entries(fedges);

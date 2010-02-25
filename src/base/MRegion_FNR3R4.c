@@ -10,70 +10,70 @@ extern "C" {
 #endif
 
   void MR_Set_RepType_FNR3R4(MRegion_ptr r) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    r->downadj = (MRegion_DownAdj_FN *) MSTK_malloc(sizeof(MRegion_DownAdj_FN));
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    r->adj = (MRegion_Adj_FN *) MSTK_malloc(sizeof(MRegion_Adj_FN));
+    adj = (MRegion_Adj_FN *) r->adj;
 
-    downadj->fdirs = NULL;
-    downadj->rfaces = NULL;
+    adj->fdirs = NULL;
+    adj->rfaces = NULL;
   }
 
   void MR_Delete_F1F3R3R4(MRegion_ptr r, int keep) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
     MFace_ptr f;
     int idx;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
       
-    if (MEnt_Dim(r) != MDELETED) { /* if regn hasnt been temporarily deleted */
-      if (downadj) {
+    if (MEnt_Dim((MEntity_ptr) r) != MDELETED) { /* if regn hasnt been temporarily deleted */
+      if (adj) {
 	idx = 0;
-	while ((f = List_Next_Entry(downadj->rfaces,&idx)))
+	while ((f = List_Next_Entry(adj->rfaces,&idx)))
 	  MF_Rem_Region(f,r);
       }
     }
 
     if (!keep) {
-      if (downadj) {	
-	if (downadj->rfaces) {
-	  MSTK_free(downadj->fdirs);
-	  List_Delete(downadj->rfaces);
+      if (adj) {	
+	if (adj->rfaces) {
+	  MSTK_free(adj->fdirs);
+	  List_Delete(adj->rfaces);
 	}
-	MSTK_free(downadj);
+	MSTK_free(adj);
       }
     }
   }
 
   void MR_Restore_F1F3R3R4(MRegion_ptr r) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
     MFace_ptr f;
     int i, j, k, nf, side;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
-    nf = List_Num_Entries(downadj->rfaces);
+    nf = List_Num_Entries(adj->rfaces);
     for (i = 0; i < nf; i++) {
-      f = List_Entry(downadj->rfaces,i);
+      f = List_Entry(adj->rfaces,i);
  
       j = (int) i/(8*sizeof(unsigned int));
       k = i%(8*sizeof(unsigned int));
-      side = !((downadj->fdirs[j])>>k & 1);
+      side = !((adj->fdirs[j])>>k & 1);
 
       MF_Add_Region(f,r,side);
     }
   }
 
   void MR_Destroy_For_MESH_Delete_FNR3R4(MRegion_ptr r) {
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    if (downadj) {
-      if (downadj->rfaces) {
-	MSTK_free(downadj->fdirs);
-	List_Delete(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    if (adj) {
+      if (adj->rfaces) {
+	MSTK_free(adj->fdirs);
+	List_Delete(adj->rfaces);
       }
-      MSTK_free(downadj);
+      MSTK_free(adj);
     }
   }
 
