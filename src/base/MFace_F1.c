@@ -28,7 +28,7 @@ extern "C" {
 
     adj = (MFace_Adj_F1F3 *) f->adj;
 
-    if (MEnt_Dim(f) != MDELETED) { /* if face hasnt been temporarily deleted */
+    if (MEnt_Dim((MEntity_ptr) f) != MDELETED) { /* if face hasnt been temporarily deleted */
       if (adj) {
 	if (adj->fedges) {
 	  ne = List_Num_Entries(adj->fedges);
@@ -54,7 +54,7 @@ extern "C" {
     MEdge_ptr e;
     int i, ne;
 
-    MEnt_Set_Dim(f,MFACE);
+    MEnt_Set_Dim((MEntity_ptr) f,MFACE);
 
     adj = (MFace_Adj_F1F3 *) f->adj;
 
@@ -77,23 +77,23 @@ extern "C" {
   }
 
   int MF_Set_GInfo_Auto_F1(MFace_ptr f) {
-    return MF_Set_GInfo_Auto_FN(f);
+    return MF_Set_GInfo_Auto_F1F3(f);
   }
 
   void MF_Set_Edges_F1(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
-    MF_Set_Edges_FN(f,n,e,dir);
+    MF_Set_Edges_F1F3(f,n,e,dir);
   }
 
   void MF_Replace_Edges_F1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges) {
-    MF_Replace_Edges_FN(f,nold,oldedges,nnu,nuedges);
+    MF_Replace_Edges_F1F3(f,nold,oldedges,nnu,nuedges);
   }
 
   void MF_Replace_Edges_i_F1(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) {
-    MF_Replace_Edges_i_FN(f,nold,i,nnu,nuedges);
+    MF_Replace_Edges_i_F1F3(f,nold,i,nnu,nuedges);
   }
 
   void MF_Set_Vertices_F1(MFace_ptr f, int n, MVertex_ptr *v) {
-    MF_Set_Vertices_FN(f,n,v);
+    MF_Set_Vertices_F1F3(f,n,v);
   }
 
   void MF_Replace_Vertex_F1(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
@@ -121,11 +121,11 @@ extern "C" {
   }
 
   int MF_Rev_EdgeDir_F1(MFace_ptr f, MEdge_ptr e) {
-    return MF_Rev_EdgeDir_FN(f,e);
+    return MF_Rev_EdgeDir_F1F3(f,e);
   }
 
   int MF_Rev_EdgeDir_i_F1(MFace_ptr f, int i) {
-    return MF_Rev_EdgeDir_i_FN(f,i);
+    return MF_Rev_EdgeDir_i_F1F3(f,i);
   }
 			
   int MFs_AreSame_F1(MFace_ptr f1, MFace_ptr f2) {
@@ -133,13 +133,11 @@ extern "C" {
   }
 
   int MF_Num_Vertices_F1(MFace_ptr f) {
-    List_ptr fedges = ((MFace_Adj_F1F3 *)f->adj)->fedges;
-    return List_Num_Entries(fedges);
+    return MF_Num_Vertices_F1F3(f);
   }
 
   int MF_Num_Edges_F1(MFace_ptr f) {
-    List_ptr fedges = ((MFace_Adj_F1F3 *)f->adj)->fedges;
-    return List_Num_Entries(fedges);
+    return MF_Num_Edges_F1F3(f);
   }
 
   int MF_Num_AdjFaces_F1(MFace_ptr f) {
@@ -157,28 +155,28 @@ extern "C" {
   }
 
   List_ptr MF_Vertices_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
-    return MF_Vertices_FN(f,dir,v0);
+    return MF_Vertices_F1F3(f,dir,v0);
   }
 	
 
   List_ptr MF_Edges_F1(MFace_ptr f, int dir, MVertex_ptr v0) {
-    return MF_Edges_FN(f,dir,v0);
+    return MF_Edges_F1F3(f,dir,v0);
   }
 
   int MF_EdgeDir_F1(MFace_ptr f, MEdge_ptr e) {
-    return MF_EdgeDir_FN(f,e);
+    return MF_EdgeDir_F1F3(f,e);
   }
 
   int MF_EdgeDir_i_F1(MFace_ptr f, int i) {
-    return MF_EdgeDir_i_FN(f,i);
+    return MF_EdgeDir_i_F1F3(f,i);
   }
 			
   int MF_UsesEdge_F1(MFace_ptr f, MEdge_ptr e) {
-    return MF_UsesEdge_FN(f,e);
+    return MF_UsesEdge_F1F3(f,e);
   }
 
   int MF_UsesVertex_F1(MFace_ptr f, MVertex_ptr v) {
-    return MF_UsesVertex_FN(f,v);
+    return MF_UsesVertex_F1F3(f,v);
   }
 
   List_ptr MF_AdjFaces_F1(MFace_ptr f) {
