@@ -60,7 +60,7 @@ extern "C" {
 
 	idx1 = 0;
 	while ((face = List_Next_Entry(rfaces,&idx1))) {
-	  if (MF_UsesEntity(face,e,MEDGE)) {
+	  if (MF_UsesEntity(face,(MEntity_ptr) e,MEDGE)) {
 	    
 	    idx2 = 0; found = 0;
 	    while ((lstface = List_Next_Entry(efaces,&idx2))) {

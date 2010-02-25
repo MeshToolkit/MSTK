@@ -25,7 +25,7 @@ extern "C" {
       if (adj) {
 	MSTK_free(adj);
       }
-      MEnt_Set_DelFlag(e);
+      MEnt_Set_DelFlag((MEntity_ptr) e);
     }
     return;
   }

@@ -19,7 +19,7 @@ extern "C" {
   void ME_Delete_F4(MEdge_ptr e, int keep) {
     MEdge_Adj_F4 *adj;
 
-    if (MEnt_Dim(e) != MDELETED) { /* if edge hasnt been temporarily deleted */
+    if (MEnt_Dim((MEntity_ptr) e) != MDELETED) { /* if edge hasnt been temporarily deleted */
       MV_Rem_Edge(e->vertex[0],e);
       MV_Rem_Edge(e->vertex[1],e);
     }
@@ -36,7 +36,7 @@ extern "C" {
 
   void ME_Restore_F4(MEdge_ptr e) {
  
-    MEnt_Set_Dim(e,MEDGE);
+    MEnt_Set_Dim((MEntity_ptr) e,MEDGE);
 
     MV_Add_Edge(e->vertex[0],e);
     MV_Add_Edge(e->vertex[1],e);
@@ -118,7 +118,7 @@ extern "C" {
 	  rface = List_Entry(rfaces,j);
 
 	  if (!MEnt_IsMarked(rface,mkr)) {
-	    if (MF_UsesEntity(rface,e,1)) {
+	    if (MF_UsesEntity(rface,(MEntity_ptr) e,1)) {
 	      MEnt_Mark(rface,mkr);
 	      List_Add(efaces,rface);
 	      nf++;
