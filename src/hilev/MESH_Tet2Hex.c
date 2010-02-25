@@ -52,7 +52,7 @@ extern "C" {
     atr_v = MAttrib_New(tetmesh, "vertex", POINTER, MVERTEX);
 
     idv = 0;
-    while( ptr_v = MESH_Next_Vertex(tetmesh, &idv) ) {
+    while( (ptr_v = MESH_Next_Vertex(tetmesh, &idv)) ) {
       MV_Coords(ptr_v, xyz);
       
       ptr_v_new = MV_New(*hexmesh);
@@ -68,7 +68,7 @@ extern "C" {
     atr_e = MAttrib_New(tetmesh, "edge", POINTER, MEDGE);
 
     ide = 0;
-    while( ptr_e = MESH_Next_Edge(tetmesh, &ide) ) {
+    while( (ptr_e = MESH_Next_Edge(tetmesh, &ide)) ) {
       for( i=0; i<2; i++ ) {
         ptr_v = ME_Vertex(ptr_e, i);
         MV_Coords(ptr_v, xyz_lst[i]);
@@ -89,7 +89,7 @@ extern "C" {
     atr_f = MAttrib_New(tetmesh, "face", POINTER, MFACE);
 
     idf = 0;
-    while( ptr_f = MESH_Next_Face(tetmesh, &idf) ) {
+    while( (ptr_f = MESH_Next_Face(tetmesh, &idf)) ) {
       MF_Coords(ptr_f, &n, xyz_lst);
       if( n != 3 ) {
 	MSTK_Report("MESH_Tet2Hex","Input mesh is not a tetrahedral mesh",WARN);
@@ -112,7 +112,7 @@ extern "C" {
     atr_r = MAttrib_New(tetmesh, "region", POINTER, MREGION);
 
     idr = 0;
-    while( ptr_r = MESH_Next_Region(tetmesh, &idr) ) {
+    while( (ptr_r = MESH_Next_Region(tetmesh, &idr)) ) {
       MR_Coords(ptr_r, &n, xyz_lst);
 
       for( i=0; i<3; i++ ) xyz[i] = 0;
@@ -133,7 +133,7 @@ extern "C" {
 
     /* convert tets to hexes */
     idr = 0;
-    while( ptr_r = MESH_Next_Region(tetmesh, &idr) ) {
+    while( (ptr_r = MESH_Next_Region(tetmesh, &idr)) ) {
       lst_v = MR_Vertices(ptr_r);
       n = List_Num_Entries(lst_v);
 
@@ -184,13 +184,13 @@ extern "C" {
 
     /* remove attributes on edges of tet mesh */
     idv = 0;
-    while( ptr_v = MESH_Next_Vertex(tetmesh, &idv) ) {
+    while( (ptr_v = MESH_Next_Vertex(tetmesh, &idv)) ) {
       MEnt_Rem_AttVal(ptr_v, atr_v);
     }
     MAttrib_Delete(atr_v);
 
     ide = 0;
-    while( ptr_e = MESH_Next_Edge(tetmesh, &ide) ) {
+    while( (ptr_e = MESH_Next_Edge(tetmesh, &ide)) ) {
       MEnt_Rem_AttVal(ptr_e, atr_e);
     }
     MAttrib_Delete(atr_e);
@@ -198,14 +198,14 @@ extern "C" {
   
     /* remove attributes on faces of tet mesh */
     idf = 0;
-    while( ptr_f = MESH_Next_Face(tetmesh, &idf) ) {
+    while( (ptr_f = MESH_Next_Face(tetmesh, &idf)) ) {
       MEnt_Rem_AttVal(ptr_f, atr_f);
     }
     MAttrib_Delete(atr_f);
 
     /* remove attributes on regions of tet mesh */
     idr = 0;
-    while( ptr_r = MESH_Next_Region(tetmesh, &idr) ) {
+    while( (ptr_r = MESH_Next_Region(tetmesh, &idr)) ) {
       MEnt_Rem_AttVal(ptr_r, atr_r);
     }
     MAttrib_Delete(atr_r);
