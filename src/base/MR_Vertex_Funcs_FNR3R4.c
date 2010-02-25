@@ -16,20 +16,20 @@ extern "C" {
     MEdge_ptr edge, fedge00, upedge;
     MVertex_ptr vert, rv0, rvopp0=NULL;
     List_ptr rvertices, fverts, fedges0, adjfedges;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
+    adj = (MRegion_Adj_FN *) r->adj;
 
-    nf = List_Num_Entries(downadj->rfaces);
+    nf = List_Num_Entries(adj->rfaces);
     switch (nf) {
     case 4: /* Tet! */
       /* Add vertices of first face to list of region vertices */
-      face0 = List_Entry(downadj->rfaces,0); /* first face */
-      fdir0 = downadj->fdirs[0] & 1;    /* Sense in which face is used in region */
+      face0 = List_Entry(adj->rfaces,0); /* first face */
+      fdir0 = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
       rvertices = MF_Vertices(face0,!fdir0,0);
       n = 3;
 
-      face = List_Entry(downadj->rfaces,1);
+      face = List_Entry(adj->rfaces,1);
       fverts = MF_Vertices(face,1,0);
       for (i = 0; i < 3 && n < 4; i++) { 
 	vert = List_Entry(fverts,i);
@@ -47,7 +47,7 @@ extern "C" {
       /* All faces must have 4 edges each */
       fecheck = 1;
       for (i = 0; i < nf; i++) {
-	face = List_Entry(downadj->rfaces,i);
+	face = List_Entry(adj->rfaces,i);
 	if (MF_Num_Edges(face) != 4)
 	  fecheck = 0;
       }
@@ -55,8 +55,8 @@ extern "C" {
       if (!fecheck)
 	break;
 
-      face0 = List_Entry(downadj->rfaces,0); /* face 0 */
-      fdir0 = downadj->fdirs[0] & 1; /* dir of face w.r.t. region */
+      face0 = List_Entry(adj->rfaces,0); /* face 0 */
+      fdir0 = adj->fdirs[0] & 1; /* dir of face w.r.t. region */
 
       
       /* Add vertices of first face */
@@ -76,7 +76,7 @@ extern "C" {
 
       fopp = NULL; fadj0 = NULL;
       for (i = 1; i < nf; i++) {
-	face = List_Entry(downadj->rfaces,i);
+	face = List_Entry(adj->rfaces,i);
 
 	/* Check if face uses any edge of face 0 */
 
@@ -88,7 +88,7 @@ extern "C" {
 	      /* face uses edge 0 of face 0 (w.r.t. face dir pointing
 		 into region) */
 	      fadj0 = face;
-	      diradj0 = (downadj->fdirs[0])>>i & 1;  
+	      diradj0 = (adj->fdirs[0])>>i & 1;  
 	    }
 	    found = 1;
 	    break;
@@ -96,7 +96,7 @@ extern "C" {
 	}
 	if (!found) {
 	  fopp = face;
-	  diropp = (downadj->fdirs[0])>>i & 1;
+	  diropp = (adj->fdirs[0])>>i & 1;
 	}
 	if (fopp && fadj0)
 	  break;
@@ -148,14 +148,14 @@ extern "C" {
     mkr = MSTK_GetMarker();
     
     /* Add vertices of first face */
-    face = List_Entry(downadj->rfaces,0); /* first face */
-    fdir = downadj->fdirs[0] & 1;    /* Sense in which face is used in region */
+    face = List_Entry(adj->rfaces,0); /* first face */
+    fdir = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
     
     rvertices = MF_Vertices(face,!fdir,0); 
     List_Mark(rvertices,mkr);
     
     for (i = 1; i < nf-1; i++) {
-      face = List_Entry(downadj->rfaces,i);
+      face = List_Entry(adj->rfaces,i);
       fverts = MF_Vertices(face,1,0);
       n = List_Num_Entries(fverts);
       for (j = 0; j < n; j++) {
@@ -191,13 +191,13 @@ extern "C" {
   int MR_UsesVertex_FNR3R4(MRegion_ptr r, MVertex_ptr v) {
     int i, nf;
     MFace_ptr face;
-    MRegion_DownAdj_FN *downadj;
+    MRegion_Adj_FN *adj;
 
-    downadj = (MRegion_DownAdj_FN *) r->downadj;
-    nf = List_Num_Entries(downadj->rfaces);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
 
     for (i = 0; i < nf; i++) {
-      face = List_Entry(downadj->rfaces,i);
+      face = List_Entry(adj->rfaces,i);
       if (MF_UsesEntity(face,v,MVERTEX))
 	return 1;
     }
