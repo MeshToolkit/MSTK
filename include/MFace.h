@@ -6,10 +6,13 @@ extern "C" {
 #endif
 
 #include "MSTK_types.h"
-#include "List.h"
-#include "Hash.h"
+#include "MSTK_defines.h"
 
 #ifdef _H_MFace_Private
+#define _H_MEntity_Private
+
+#include "MEntity.h"
+
   typedef struct MFace {
 
     /* Common data structure for all mesh entities */
