@@ -19,18 +19,10 @@ extern "C" {
 #ifndef _H_MRegion_Private
   typedef void     *MRegion_ptr;
 #endif
-#ifndef _H_MEntity_Private
-  typedef struct MEntity_Data {
-    void *mesh;
-    unsigned int dim_id;
-    unsigned int rtype_gdim_gid;
-    unsigned int marker;
-    void *AttInsList;
-  } MEntity_Data;
-
-
+#if !(defined _H_MEntity_Private || defined _H_MVertex_Private ||  \
+      defined _H_MEdge_Private || defined _H_MFace_Private || \
+      defined _H_MRegion_Private)
   typedef void     *MEntity_ptr;
-  typedef void     *MEntity_Data_ptr;
 #endif
 #ifndef _H_GModel_Private
   typedef void     *GModel_ptr;
@@ -41,6 +33,12 @@ extern "C" {
 #ifndef _H_MAttrib_Private
   typedef void     *MAttrib_ptr;
   typedef void     *MAttIns_ptr;
+#endif
+#ifndef _H_List_Private
+  typedef void     *List_ptr;
+#endif
+#ifndef _H_Hash_Private
+  typedef void     *Hash_ptr;
 #endif
 
 typedef enum RepType {UNKNOWN_REP=-1, F1=0, F4, R1, R2, R4} RepType;
