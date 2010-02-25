@@ -3,8 +3,6 @@
 
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
-#include "List.h"
-#include "Hash.h"
 
 #ifdef _cplusplus
 extern "C" {
