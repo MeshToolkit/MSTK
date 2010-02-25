@@ -12,134 +12,179 @@ extern "C" {
   /* Functions */
 
   void MV_Set_RepType_R4(MVertex_ptr v) {
-    MVertex_UpAdj_R3R4 *upadj;
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
 
-    upadj = v->upadj = (MVertex_UpAdj_R3R4 *) MSTK_malloc(sizeof(MVertex_UpAdj_R3R4));
-    upadj->vfaces = List_New(10);
-    sameadj = v->sameadj = (MVertex_SameAdj_R2R4 *) MSTK_malloc(sizeof(MVertex_SameAdj_R2R4));
-    sameadj->adjverts = List_New(10);
+    adj = v->adj = (MVertex_Adj_R4 *) MSTK_malloc(sizeof(MVertex_Adj_R4));
+    adj->vfaces = List_New(10);
+    adj->adjverts = List_New(10);
   }
 
   void MV_Delete_R4(MVertex_ptr v, int keep) {
-    MVertex_UpAdj_R3R4 *upadj;
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
     int idx;
     MVertex_ptr adjv;
 
-    if (MEnt_Dim(v) != MDELETED) { /* if vtx has not been temporarily deleted*/
-      sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-      if (sameadj) {
+    if (MEnt_Dim((MEntity_ptr) v) != MDELETED) { /* if vtx has not been temporarily deleted*/
+      adj = (MVertex_Adj_R4 *) v->adj;
+      if (adj) {
 	idx = 0;
-	while ((adjv = List_Next_Entry(sameadj->adjverts,&idx)))
+	while ((adjv = List_Next_Entry(adj->adjverts,&idx)))
 	  MV_Rem_AdjVertex_R4(adjv,v);
       }
     }
 
     if (!keep) {
-      upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
-      if (upadj) {
-	if (upadj->vfaces)
-	  List_Delete(upadj->vfaces);
-	MSTK_free(upadj);
-      }
-      
-      sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-      if (sameadj) {
-	if (sameadj->adjverts)
-	  List_Delete(sameadj->adjverts);
-	MSTK_free(sameadj);
+      adj = (MVertex_Adj_R4 *) v->adj;
+      if (adj) {
+	if (adj->vfaces)
+	  List_Delete(adj->vfaces);
+	if (adj->adjverts)
+	  List_Delete(adj->adjverts);
+	MSTK_free(adj);
       }
     }
   }
 
   void MV_Restore_R4(MVertex_ptr v) {
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
     int idx;
     MVertex_ptr adjv;
 
-    MEnt_Set_Dim(v,MVERTEX);
+    MEnt_Set_Dim((MEntity_ptr) v,MVERTEX);
 
-    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
+    adj = (MVertex_Adj_R4 *) v->adj;
     idx = 0;
-    while ((adjv = List_Next_Entry(sameadj->adjverts,&idx)))
+    while ((adjv = List_Next_Entry(adj->adjverts,&idx)))
       MV_Add_AdjVertex_R4(adjv,v);
   }
 
   void MV_Destroy_For_MESH_Delete_R4(MVertex_ptr v) {
-    MVertex_UpAdj_R3R4 *upadj;
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
 
-
-    upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
-    if (upadj) {
-      if (upadj->vfaces)
-	List_Delete(upadj->vfaces);
-      MSTK_free(upadj);
-    }
-
-    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    if (sameadj) {
-      if (sameadj->adjverts)
-	List_Delete(sameadj->adjverts);
-      MSTK_free(sameadj);
+    adj = (MVertex_Adj_R4 *) v->adj;
+    if (adj) {
+      if (adj->vfaces)
+	List_Delete(adj->vfaces);
+      if (adj->adjverts)
+	List_Delete(adj->adjverts);
+      MSTK_free(adj);
     }
   }
 
   int MV_Num_AdjVertices_R4(MVertex_ptr v) {
-    List_ptr adjverts = ((MVertex_SameAdj_R2R4 *)v->sameadj)->adjverts;
+    List_ptr adjverts = ((MVertex_Adj_R4 *)v->adj)->adjverts;
     return List_Num_Entries(adjverts);
   }
 
   int MV_Num_Edges_R4(MVertex_ptr v) {
-    List_ptr adjverts = ((MVertex_SameAdj_R2R4 *)v->sameadj)->adjverts;
+    List_ptr adjverts = ((MVertex_Adj_R4 *)v->adj)->adjverts;
     return List_Num_Entries(adjverts);
   }
 
   int MV_Num_Faces_R4(MVertex_ptr v) {
-    List_ptr vfaces = ((MVertex_UpAdj_R3R4 *)v->upadj)->vfaces;
+    List_ptr vfaces = ((MVertex_Adj_R4 *)v->adj)->vfaces;
     return List_Num_Entries(vfaces);
   }
   
   int MV_Num_Regions_R4(MVertex_ptr v) {
-    return MV_Num_Regions_R3R4(v);
+    List_ptr vregions;
+    int nr;
+
+#ifdef DEBUG
+    MSTK_Report("MV_Num_Regions_R4",
+		"Inefficient to call this routine with this representation",
+		MESG);
+#endif
+    vregions = MV_Regions_R4(v);
+    nr = List_Num_Entries(vregions);
+    List_Delete(vregions);
+
+    return nr;
   }
 
   List_ptr MV_AdjVertices_R4(MVertex_ptr v) {
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
 
-    sameadj = (MVertex_SameAdj_R2R4 *)v->sameadj;
-    return List_Copy(sameadj->adjverts);
+    adj = (MVertex_Adj_R4 *)v->adj;
+    return List_Copy(adj->adjverts);
   }
 
   List_ptr MV_Edges_R4(MVertex_ptr v) {
-    /* Have to create volatile edges */
-    return MV_Edges_R2R4(v);
+    int i, nvadj;
+    MVertex_ptr adjv;
+    List_ptr vedges;
+    MVertex_Adj_R4 *adj;
+
+    MSTK_Report("MV_Edges_R4","Incomplete implementation",ERROR);
+
+    adj = (MVertex_Adj_R4 *) v->adj;
+    nvadj = List_Num_Entries(adj->adjverts);
+
+    /* Have to create volatile edges - SEEMS INCOMPLETE */
+
+    vedges = List_New(nvadj);
+    for (i = 0; i < nvadj; i++) {
+      /* create a volatile edge from v and the adjacent vertex */
+      adjv = List_Entry(adj->adjverts,i);
+    }
+
+    return vedges;
   }
 
   List_ptr MV_Faces_R4(MVertex_ptr v) {
-    MVertex_UpAdj_R3R4 *upadj;
-    upadj = (MVertex_UpAdj_R3R4 *)v->upadj;
+    MVertex_Adj_R4 *adj;
+    adj = (MVertex_Adj_R4 *)v->adj;
 
-    return List_Copy(upadj->vfaces);
+    return List_Copy(adj->vfaces);
   }
 
   List_ptr MV_Regions_R4(MVertex_ptr v) {
-    return MV_Regions_R3R4(v);
+    int i, j, nr, nf, mkr;
+    MFace_ptr face;
+    MRegion_ptr reg;
+    List_ptr vregions, vfaces;
+ 
+    vregions = List_New(10);
+    nr = 0;
+    mkr = MSTK_GetMarker();
+
+    vfaces = MV_Faces_R4(v);
+    nf = List_Num_Entries(vfaces);
+    for (i = 0; i < nf; i++) {
+      face = List_Entry(vfaces,i);
+      for (j = 0; j < 2; j++) {
+	reg = MF_Region(face,j);
+	if (reg && !MEnt_IsMarked(reg,mkr)) {
+	  MEnt_Mark(reg,mkr);
+	  List_Add(vregions,reg);
+	  nr++;
+	}
+      }
+    }
+    List_Delete(vfaces);
+    List_Unmark(vregions,mkr);
+    MSTK_FreeMarker(mkr);
+
+    if (nr > 0)
+      return vregions;
+    else {
+      List_Delete(vregions);
+      return 0;
+    }
   }
 
   void MV_Add_AdjVertex_R4(MVertex_ptr v, MVertex_ptr adjv) {
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
 
-    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    List_Add(sameadj->adjverts,adjv);
+    adj = (MVertex_Adj_R4 *) v->adj;
+    List_Add(adj->adjverts,adjv);
   }
 
   void MV_Rem_AdjVertex_R4(MVertex_ptr v, MVertex_ptr adjv) {
-    MVertex_SameAdj_R2R4 *sameadj;
+    MVertex_Adj_R4 *adj;
 
-    sameadj = (MVertex_SameAdj_R2R4 *) v->sameadj;
-    List_Rem(sameadj->adjverts,adjv);
+    adj = (MVertex_Adj_R4 *) v->adj;
+    List_Rem(adj->adjverts,adjv);
   }
 
   void MV_Add_Edge_R4(MVertex_ptr v, MEdge_ptr medge) {
@@ -156,18 +201,18 @@ extern "C" {
   }
 
   void MV_Add_Face_R4(MVertex_ptr v, MFace_ptr mface) {
-    MVertex_UpAdj_R3R4 *upadj;
+    MVertex_Adj_R4 *adj;
 
-    upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
-    List_Add(upadj->vfaces,mface);
+    adj = (MVertex_Adj_R4 *) v->adj;
+    List_Add(adj->vfaces,mface);
   }
 
   void MV_Rem_Face_R4(MVertex_ptr v, MFace_ptr mface) {
-    MVertex_UpAdj_R3R4 *upadj;
+    MVertex_Adj_R4 *adj;
 
-    upadj = (MVertex_UpAdj_R3R4 *) v->upadj;
+    adj = (MVertex_Adj_R4 *) v->adj;
 
-    List_Rem(upadj->vfaces,mface);
+    List_Rem(adj->vfaces,mface);
   }
 
   void MV_Add_Region_R4(MVertex_ptr v, MRegion_ptr mregion) {

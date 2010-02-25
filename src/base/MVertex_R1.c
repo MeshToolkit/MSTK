@@ -10,37 +10,37 @@ extern "C" {
 #endif
 
   void MV_Set_RepType_R1(MVertex_ptr v) {
-    MVertex_UpAdj_R1R2 *upadj;
+    MVertex_Adj_R1 *adj;
 
-    upadj = v->upadj = (MVertex_UpAdj_R1R2 *) MSTK_malloc(sizeof(MVertex_UpAdj_R1R2));
-    upadj->velements = List_New(10);
+    adj = v->adj = (MVertex_Adj_R1 *) MSTK_malloc(sizeof(MVertex_Adj_R1));
+    adj->velements = List_New(10);
   }
 
   void MV_Delete_R1(MVertex_ptr v, int keep) {
-    MVertex_UpAdj_R1R2 *upadj;
+    MVertex_Adj_R1 *adj;
 
     if (!keep) {
-      upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-      if (upadj) {
-	if (upadj->velements)
-	  List_Delete(upadj->velements);
-	MSTK_free(upadj);
+      adj = (MVertex_Adj_R1 *) v->adj;
+      if (adj) {
+	if (adj->velements)
+	  List_Delete(adj->velements);
+	MSTK_free(adj);
       }
     }
   }
 
   void MV_Restore_R1(MVertex_ptr v) {
-    MEnt_Set_Dim(v,MVERTEX);
+    MEnt_Set_Dim((MEntity_ptr) v,MVERTEX);
   }
 
   void MV_Destroy_For_MESH_Delete_R1(MVertex_ptr v) {
-    MVertex_UpAdj_R1R2 *upadj;
+    MVertex_Adj_R1 *adj;
 
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
-    if (upadj) {
-      if (upadj->velements)
-	List_Delete(upadj->velements);
-      MSTK_free(upadj);
+    adj = (MVertex_Adj_R1 *) v->adj;
+    if (adj) {
+      if (adj->velements)
+	List_Delete(adj->velements);
+      MSTK_free(adj);
     }
   }
 
@@ -70,11 +70,39 @@ extern "C" {
   }
 
   int MV_Num_Faces_R1(MVertex_ptr v) {
-    return MV_Num_Faces_R1R2(v);
+    int i, nf;
+    List_ptr vfaces;
+    MFace_ptr vface;
+
+#ifdef DEBUG
+    MSTK_Report("MV_Num_Faces_R1",
+		"Inefficient to call this routine with this representation",
+		MESG);
+#endif
+    vfaces = MV_Faces_R1(v);
+    nf = List_Num_Entries(vfaces);
+    for (i = 0; i < nf; i++) {
+      vface = List_Entry(vfaces,i);
+      if (MEnt_IsVolatile(vface))
+	MF_Delete(vface,0);
+    }
+    List_Delete(vfaces);
+
+    return nf;
   }
   
   int MV_Num_Regions_R1(MVertex_ptr v) {
-    return MV_Num_Regions_R1R2(v);
+    MVertex_Adj_R1 *adj;
+    int idx, nr = 0;
+    MEntity_ptr ent;
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+    idx = 0;
+    while ((ent = (MEntity_ptr) List_Next_Entry(adj->velements,&idx))) {
+      if (MEnt_Dim(ent) == MREGION)
+	nr++;
+    }
+    return nr;
   }
 
   List_ptr MV_AdjVertices_R1(MVertex_ptr v) {
@@ -96,27 +124,27 @@ extern "C" {
   }
 
   List_ptr MV_Edges_R1(MVertex_ptr v) {
-    MVertex_UpAdj_R1R2 *upadj;
+    MVertex_Adj_R1 *adj;
     int idx, idx1, idx2, found, nfv;
     MEntity_ptr ent;
     MFace_ptr lstface;
     MEdge_ptr edge, redge, lstedge;
     MVertex_ptr ev[2], vtmp;
     List_ptr redges, vedges, fverts;
-    Mesh_ptr mesh = MEnt_Mesh(v);
+    Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) v);
 
     vedges = List_New(0);
 
-    upadj = (MVertex_UpAdj_R1R2 *) v->upadj;
+    adj = (MVertex_Adj_R1 *) v->adj;
     idx = 0;
-    while ((ent = (MEntity_ptr) List_Next_Entry(upadj->velements,&idx))) {
+    while ((ent = (MEntity_ptr) List_Next_Entry(adj->velements,&idx))) {
       if (MEnt_Dim(ent) == MREGION) {
 
 	redges = MR_Edges(ent);
 
 	idx1 = 0;
 	while ((redge = List_Next_Entry(redges,&idx1))) {
-	  if (ME_UsesEntity(redge,v,MVERTEX)) {
+	  if (ME_UsesEntity(redge,(MEntity_ptr) v,MVERTEX)) {
 	    
 	    idx2 = 0; found = 0;
 	    while ((lstedge = List_Next_Entry(vedges,&idx2))) {
@@ -142,8 +170,8 @@ extern "C" {
 
 	idx2 = 0; found = 0;
 	while ((lstedge = List_Next_Entry(vedges,&idx2))) {
-	  if (ME_UsesEntity(lstedge,ev[0],MVERTEX) &&
-	      ME_UsesEntity(lstedge,ev[1],MVERTEX)) {
+	  if (ME_UsesEntity(lstedge,(MEntity_ptr) ev[0],MVERTEX) &&
+	      ME_UsesEntity(lstedge,(MEntity_ptr) ev[1],MVERTEX)) {
 	    found = 1;
 	    break;
 	  }
@@ -180,8 +208,8 @@ extern "C" {
 
 	idx2 = 0; found = 0;
 	while ((lstedge = List_Next_Entry(vedges,&idx2))) {
-	  if (ME_UsesEntity(lstedge,ev[0],MVERTEX) &&
-	      ME_UsesEntity(lstedge,ev[1],MVERTEX)) {
+	  if (ME_UsesEntity(lstedge,(MEntity_ptr) ev[0],MVERTEX) &&
+	      ME_UsesEntity(lstedge,(MEntity_ptr) ev[1],MVERTEX)) {
 	    found = 1;
 	    break;
 	  }
@@ -234,27 +262,119 @@ extern "C" {
   }
 
   List_ptr MV_Faces_R1(MVertex_ptr v) {
-    return MV_Faces_R1R2(v);
+    MVertex_Adj_R1 *adj;
+    int idx, idx1, idx2, found;
+    MEntity_ptr ent;
+    MFace_ptr rface, lstface;
+    List_ptr rfaces, vfaces;
+
+    vfaces = List_New(0);
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+    idx = 0;
+    while ((ent = (MEntity_ptr) List_Next_Entry(adj->velements,&idx))) {
+
+      if (MEnt_Dim(ent) == MREGION) {
+
+	rfaces = MR_Faces(ent);
+
+	idx1 = 0;
+	while ((rface = List_Next_Entry(rfaces,&idx1))) {
+	  if (MF_UsesEntity(rface,(MEntity_ptr) v,MVERTEX)) {
+	    
+	    idx2 = 0; found = 0;
+	    while ((lstface = List_Next_Entry(vfaces,&idx2))) {
+	      if (MFs_AreSame(rface,lstface)) {
+		found = 1;
+		break;
+	      }
+	    }
+
+	    if (!found)
+	      List_Add(vfaces,rface);
+	  }
+	}
+	
+	List_Delete(rfaces);
+      }
+      else { /* Must be a face */
+	List_Add(vfaces,ent);
+      }
+    }
+
+    if (List_Num_Entries(vfaces))
+      return vfaces;
+    else {
+      List_Delete(vfaces);
+      return NULL;
+    }
   }
 
   List_ptr MV_Regions_R1(MVertex_ptr v) {
-    return MV_Regions_R1R2(v);
+    MVertex_Adj_R1 *adj;
+    int idx, nel, nr = 0, dim;
+    MEntity_ptr ent;
+    List_ptr vregions;
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+    nel = List_Num_Entries(adj->velements);
+    vregions = List_New(nel);
+
+    idx = 0;
+    while ((ent = (MEntity_ptr) List_Next_Entry(adj->velements,&idx))) {
+      if (MEnt_Dim(ent) == MREGION) {
+	List_Add(vregions,ent);
+	nr++;
+      }
+    }
+    if (nr)
+      return vregions;
+    else {
+      List_Delete(vregions);
+      return 0;
+    }      
   }
 
   void MV_Add_Region_R1(MVertex_ptr v, MRegion_ptr mregion) {
-    MV_Add_Region_R1R2(v,mregion);
+    MVertex_Adj_R1 *adj;
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+    List_Add(adj->velements,mregion);
   }
 
   void MV_Rem_Region_R1(MVertex_ptr v, MRegion_ptr mregion) {
-    MV_Rem_Region_R1R2(v,mregion);
+   MVertex_Adj_R1 *adj;
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+    List_Rem(adj->velements,mregion);
   }
 
   void MV_Add_Face_R1(MVertex_ptr v, MFace_ptr mface) {
-    MV_Add_Face_R1R2(v,mface);
+    MVertex_Adj_R1 *adj;
+
+    if (MF_Region(mface,0) || MF_Region(mface,1)) {
+      MSTK_Report("MV_Add_Face_R1",
+		 "Can only add faces with no regions in this representation",
+		 ERROR);
+      return;
+    }
+
+    adj = (MVertex_Adj_R1 *)v->adj;
+    List_Add(adj->velements,mface);
   }
 
   void MV_Rem_Face_R1(MVertex_ptr v, MFace_ptr mface) {
-    MV_Rem_Face_R1R2(v,mface);
+    MVertex_Adj_R1 *adj;
+
+    if (MF_Region(mface,0) || MF_Region(mface,1)) {
+      MSTK_Report("MV_Rem_Face_R1",
+      "Set should contain only faces with no regions in this representation",
+		 ERROR);
+      return;
+    }
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+    List_Rem(adj->velements,mface);
   }
 
   void MV_Add_AdjVertex_R1(MVertex_ptr v, MVertex_ptr av) {

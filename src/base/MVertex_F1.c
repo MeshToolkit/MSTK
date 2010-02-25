@@ -11,47 +11,47 @@ extern "C" {
 
 
   void MV_Set_RepType_F1(MVertex_ptr v) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
 
-    upadj = v->upadj = (MVertex_UpAdj_F1F4 *) MSTK_malloc(sizeof(MVertex_UpAdj_F1F4));
-    upadj->vedges = List_New(5);
+    adj = v->adj = (MVertex_Adj_F1F4 *) MSTK_malloc(sizeof(MVertex_Adj_F1F4));
+    adj->vedges = List_New(5);
   }
 
   void MV_Delete_F1(MVertex_ptr v, int keep) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
 
     if (!keep) {
-      upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-      if (upadj) {
-	if (upadj->vedges)
-	  List_Delete(upadj->vedges);
-	MSTK_free(upadj);
+      adj = (MVertex_Adj_F1F4 *) v->adj;
+      if (adj) {
+	if (adj->vedges)
+	  List_Delete(adj->vedges);
+	MSTK_free(adj);
       }
     }
   }
 
   void MV_Restore_F1(MVertex_ptr v) {
-    MEnt_Set_Dim(v,MVERTEX);
+    MEnt_Set_Dim((MEntity_ptr) v,MVERTEX);
   }
 
   void MV_Destroy_For_MESH_Delete_F1(MVertex_ptr v) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    if (upadj) {
-      if (upadj->vedges)
-	List_Delete(upadj->vedges);
-      MSTK_free(upadj);
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+    if (adj) {
+      if (adj->vedges)
+	List_Delete(adj->vedges);
+      MSTK_free(adj);
     }
   }
 
   int MV_Num_AdjVertices_F1(MVertex_ptr v) {
-    List_ptr vedges = ((MVertex_UpAdj_F1F4 *) v->upadj)->vedges;
+    List_ptr vedges = ((MVertex_Adj_F1F4 *) v->adj)->vedges;
     return List_Num_Entries(vedges);
   }
 
   int MV_Num_Edges_F1(MVertex_ptr v) {
-    List_ptr vedges = ((MVertex_UpAdj_F1F4 *) v->upadj)->vedges;
+    List_ptr vedges = ((MVertex_Adj_F1F4 *) v->adj)->vedges;
     return List_Num_Entries(vedges);
   }
 
@@ -93,14 +93,14 @@ extern "C" {
   }
 
   List_ptr MV_AdjVertices_F1(MVertex_ptr v) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
     List_ptr vedges, adjv;
     int ne, i;
     MEdge_ptr vedge;
     MVertex_ptr ov;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    vedges = upadj->vedges;
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+    vedges = adj->vedges;
     if (vedges == 0)
       return 0;
 
@@ -117,25 +117,25 @@ extern "C" {
     
 
   List_ptr MV_Edges_F1(MVertex_ptr v) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
     List_ptr vedges=NULL;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    if (List_Num_Entries(upadj->vedges))
-      vedges = List_Copy(upadj->vedges);
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+    if (List_Num_Entries(adj->vedges))
+      vedges = List_Copy(adj->vedges);
     return vedges;
   }
 
   List_ptr MV_Faces_F1(MVertex_ptr v) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
     int i, j, ne, nf, n, mkr;
     List_ptr vedges, efaces, vfaces;
     MEdge_ptr edge;
     MFace_ptr face;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    vedges = upadj->vedges;
-    if (!upadj->vedges)
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+    vedges = adj->vedges;
+    if (!adj->vedges)
       return NULL;
     ne = List_Num_Entries(vedges);
 
@@ -173,18 +173,18 @@ extern "C" {
   }
 
   List_ptr MV_Regions_F1(MVertex_ptr v) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
     int i, j, k, ne, nf, n, mkr;
     List_ptr vedges, efaces, vregions;
     MEdge_ptr edge;
     MFace_ptr eface;
     MRegion_ptr region;
 
-    upadj = (MVertex_UpAdj_F1F4 *) v->upadj;
-    vedges = upadj->vedges;
-    if (!upadj->vedges)
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+    vedges = adj->vedges;
+    if (!adj->vedges)
       return NULL;
-    ne = List_Num_Entries(upadj->vedges);
+    ne = List_Num_Entries(adj->vedges);
 
     n = 0;
     vregions = List_New(ne);
@@ -235,21 +235,21 @@ extern "C" {
   }
 
   void MV_Add_Edge_F1(MVertex_ptr v, MEdge_ptr e) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
     
-    upadj = v->upadj;
-    if (upadj->vedges == NULL)
-      upadj->vedges = List_New(10);
-    List_Add(upadj->vedges,e);
+    adj = v->adj;
+    if (adj->vedges == NULL)
+      adj->vedges = List_New(10);
+    List_Add(adj->vedges,e);
   }
 
   void MV_Rem_Edge_F1(MVertex_ptr v, MEdge_ptr e) {
-    MVertex_UpAdj_F1F4 *upadj;
+    MVertex_Adj_F1F4 *adj;
 
-    upadj = (MVertex_UpAdj_F1F4 *)v->upadj;
-    if (upadj->vedges == NULL)
+    adj = (MVertex_Adj_F1F4 *)v->adj;
+    if (adj->vedges == NULL)
       return;
-    List_Rem(upadj->vedges,e);
+    List_Rem(adj->vedges,e);
   }
 
   void MV_Add_Face_F1(MVertex_ptr v, MFace_ptr f) {
