@@ -10,8 +10,6 @@ extern "C" {
 #include "MSTK_types.h"
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
-#include "List.h"
-#include "Hash.h"
 #include "MSTK_malloc.h"
 
 
@@ -386,6 +384,45 @@ void        MSTK_Init();
 /*******************************************/
 
   void MSTK_Report(const char *module, const char *message, ErrType severity);
+
+
+/*******************************************/
+/* LISTS                                   */
+/*******************************************/
+
+  List_ptr List_New(int inisize);
+  void List_Delete(List_ptr list);
+  List_ptr List_Compress(List_ptr list);
+  List_ptr List_Copy(List_ptr list);
+  
+  List_ptr List_Add(List_ptr l, void *entry);
+  List_ptr List_ChknAdd(List_ptr l, void *entry);
+  List_ptr List_Insert(List_ptr l, void *nuentry, void *b4entry);
+  List_ptr List_Inserti(List_ptr l, void *nuentry, int i);
+  int      List_Rem(List_ptr l, void *entry);
+  int      List_Remi(List_ptr l, int i);
+  int      List_RemSorted(List_ptr l, void *entry, int (*entry2int)(void *));
+  int      List_Replace(List_ptr l, void *entry, void *nuentry);
+  int      List_Replacei(List_ptr l, int i, void *nuentry);
+  int      List_Contains(List_ptr l, void *entry);
+  int      List_Locate(List_ptr l, void *entry);
+  void    *List_Entry(List_ptr l, int i);
+  void    *List_Next_Entry(List_ptr l, int *i);
+  int      List_Num_Entries(List_ptr l);
+  List_ptr List_Cat(List_ptr dest, List_ptr src);
+
+#ifdef DEBUG
+  void     List_Print(List_ptr l);
+#endif
+
+  /* Extra functionality for hash-tables */
+
+  void*   *List_Entries(List_ptr l);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef DEBUG
   void List_PrintID(List_ptr l);
