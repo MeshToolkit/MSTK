@@ -7,10 +7,11 @@ extern "C" {
 
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
-#include "List.h"
-#include "Hash.h"
 
 #ifdef _H_MVertex_Private
+#define _H_MEntity_Private
+
+#include "MEntity.h"
 
   typedef struct MVertex {
 
@@ -20,54 +21,42 @@ extern "C" {
 
     /* specific to mesh vertices */
 
-    void *upadj;
-    void *sameadj;
+    void *adj;
     double xyz[3];
 
   } MVertex, *MVertex_ptr;
 
     /*----- Upward adjacency definitions --------*/
 
-  typedef struct MVertex_UpAdj_F1F4 {
+  typedef struct MVertex_Adj_F1F4 {
     List_ptr vedges;
-  } MVertex_UpAdj_F1F4;
+  } MVertex_Adj_F1F4;
 
-  typedef struct MVertex_UpAdj_F2 {
+  typedef struct MVertex_Adj_F2 {
     List_ptr vregions;
-  } MVertex_UpAdj_F2;
+  } MVertex_Adj_F2;
 
-  typedef struct MVertex_UpAdj_F3 {
+  typedef struct MVertex_Adj_F3 {
     List_ptr vfaces;
-  } MVertex_UpAdj_F3;
+  } MVertex_Adj_F3;
 
-  typedef struct MVertex_UpAdj_F5 {
-    List_ptr vedges;
-    List_ptr vfaces;
-    List_ptr vregions;
-  } MVertex_UpAdj_F5;
-
-  typedef struct MVertex_UpAdj_F6 {
-    List_ptr vfaces;
-    List_ptr vregions;
-  } MVertex_UpAdj_F6;
-
-  typedef struct MVertex_UpAdj_R1R2 {
+  typedef struct MVertex_Adj_R1 {
     List_ptr velements;
-  } MVertex_UpAdj_R1R2;
+  } MVertex_Adj_R1;
 
-  typedef struct MVertex_UpAdj_R3R4 {
-    List_ptr vfaces;
-  } MVertex_UpAdj_R3R4;
-
-  /*-------  Same Level adjacency definitions --------*/
-
-  typedef struct MVertex_SameAdj_R2R4 {
+  typedef struct MVertex_Adj_R2 {
+    List_ptr velements;
     List_ptr adjverts;
-  } MVertex_SameAdj_R2R4;
+  } MVertex_Adj_R2;
 
-  /*-------- Downward adjacency definitions ----------*/
+  typedef struct MVertex_Adj_R3 {
+    List_ptr vfaces;
+  } MVertex_Adj_R3;
 
-  /*    NONE     */
+  typedef struct MVertex_Adj_R4 {
+    List_ptr vfaces;
+    List_ptr adjverts;
+  } MVertex_Adj_R4;
 
 #else
   typedef void *MVertex_ptr;
