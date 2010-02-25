@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "Hash.h"
 #include "MSTK_private.h"
+#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,7 +112,7 @@ extern "C" {
 
 
   void Hash_Delete(Hash_ptr h) {
-    unsigned int nent, pwr, size, i, count=0;
+    unsigned int nent, pwr, size, i;
     int t;
     void *ent, *next;
 
