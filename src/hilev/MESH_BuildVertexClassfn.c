@@ -25,8 +25,8 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
   List_ptr vedges;
 
 
-  /* Verify that mesh edges on the boundary have classification
-     information; if not, assign all edges to the same model vertex */
+  /* Verify that mesh vertices on the boundary have classification
+     information; if not, assign all vertices to the same model vertex */
 
   ngverts = 0; ngvalloc = 10;
   gvids = (int *) malloc(ngvalloc*sizeof(int)); /* model vertex ids */
@@ -60,7 +60,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
       nve = List_Num_Entries(vedges);
 
       /* i is uninitialized here - FIX FIX FIX */
-      gvedgeids[i] = (int *) malloc((1+nve)*sizeof(int));
+      gvedgeids[ngverts] = (int *) malloc((1+nve)*sizeof(int));
       ngve = 0;
       for (i = 0; i < nve; i++) {
 	vedge = List_Entry(vedges,i);
@@ -69,7 +69,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
 	  ngve++;
 	}
       }
-      gvedgeids[i][0] = ngve;
+      gvedgeids[ngverts][0] = ngve;
 
       List_Delete(vedges);
     }
