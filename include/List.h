@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "MSTK_util.h"
+#include "MSTK_types.h"
 #include "MSTK_malloc.h"
 
 #ifdef __cplusplus
@@ -37,13 +37,17 @@ extern "C" {
   List_ptr List_Inserti(List_ptr l, void *nuentry, int i);
   int      List_Rem(List_ptr l, void *entry);
   int      List_Remi(List_ptr l, int i);
+  int      List_Remi_Raw(List_ptr l, int i);
+  int      List_RemSorted(List_ptr l, void *entry, int (*entry2int)(void *));
   int      List_Replace(List_ptr l, void *entry, void *nuentry);
   int      List_Replacei(List_ptr l, int i, void *nuentry);
   int      List_Contains(List_ptr l, void *entry);
   int      List_Locate(List_ptr l, void *entry);
   void    *List_Entry(List_ptr l, int i);
+  void    *List_Entry_Raw(List_ptr l, int i);
   void    *List_Next_Entry(List_ptr l, int *i);
   int      List_Num_Entries(List_ptr l);
+  int      List_Num_Entries_Raw(List_ptr l);
   List_ptr List_Cat(List_ptr dest, List_ptr src);
 
 #ifdef DEBUG
