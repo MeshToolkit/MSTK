@@ -178,6 +178,42 @@ design algorithms optimized for each representation.
   \end{center}
 \end{figure}
 
+\subsection{Volatile mesh entities in reduced representations}
+
+As discussed above reduced representations, do not explicitly
+represent all types of mesh entities. For example, R1 representations
+do not explicitly represent edges and faces while R4 representations
+do explicitly represent edges only. However, whenever an implicit
+entity is requested from MSTK, the software creates a temporary entity
+so that it appears that the entity actually exists in the
+database. Since these entities are created-on-the-fly they are called
+{\em volatile} mesh entities. For example, if an application asked for
+the faces of a region in an R1 representation, MSTK will create as
+many volatile faces as necessary, put them in a list and return them
+to the calling application. Thus the application can pretend to work
+with a full representation (although it is not always efficient to do so).
+
+Volatile entities are stored for a period of time in internal data
+structures in MSTK. Whenever there is a request for a new volatile
+mesh entity, the code first checks if this entity has already been
+created. If the volatile already exists in the database, then the
+entity is returned as is and if it does not, it is created. This
+ensures that many copies of the same entity are not created in
+MSTK. However, to ensure that MSTK also does not store every volatile
+entity forever (thereby, recreating a full representation), there is a
+mechanism to perform garbage cleaning on volatile
+entities. Periodically through the execution of the code, volatile
+entities that have not been used for a long time are deleted from the
+database freeing up valuable memory (which was the main point of using
+a reduced representation after all).
+
+To ensure that garbage cleaning does not delete a volatile mesh entity
+that is being processed or stored by a calling application, MSTK also
+provides a mechanism for locking entities. One can specify an autolock
+mechanism for the entire mesh which means that no volatile entity will
+ever be deleted once it is created. On the other hand, applications
+may lock specific entities and unlock them when they cease to be
+useful. 
 
 \subsection{Mesh entity classification}
 
@@ -780,6 +816,19 @@ GModel\_ptr geom):} Assign a geometric model handle to the mesh.
   one need not call this since {\bf {\em MR\_Delete}} will
   remove the region from the mesh. Use this only if you know exactly
   what you are doing.
+
+
+\item[]{\bf {\em void} MESH\_Set\_AutoLock({\em Mesh\_ptr} mesh, {\em
+      int} autolock):} If autolock is 1, all volatile mesh entities
+  created in reduced representations will be automatically locked and
+  cannot be removed by garbage cleaning procedures (They can still be
+  removed by explicitly calling a delete on them). If it 0, volatile
+  mesh entities can be deleted internally after a period of disuse.
+
+\item[]{\bf {\em int} MESH\_AutoLock({\em Mesh\_ptr} mesh):} Return
+the autolock status for volatile entities (See {\bf
+  MESH\_Set\_AutoLock} for details).
+
 \end{description}
 
 \newpage
@@ -1038,6 +1087,14 @@ List of regions connected to the vertex.
   edges are described by the same vertices, the edges are considered
   to be the same.
 
+\item[]
+
+\item[]{\bf {\em void} ME\_Lock({\em MEdge\_ptr} e):} Lock a volatile
+  edge so that it cannot be deleted by garbage cleaning procedures (It
+  can still be deleted by {\bf ME\_Delete}.
+
+\item[]{\bf {\em void} ME\_UnLock({\em MEdge\_ptr} e):} Unlock a volatile
+  edge so that it may be deleted freely by garbage cleaning procedures.
 
 \end{description}
 
@@ -1266,6 +1323,16 @@ vertices.
 % If 'dir' is 1, the coordinates are returned with a  ccw
 % ordering while looking down the face normal; if 'dir' is 0, they are
 % returned with a cw ordering (See Figure~\ref{fig:face_def}).
+
+\item[]
+
+\item[]{\bf {\em void} MF\_Lock({\em MFace\_ptr} f):} Lock a volatile
+  face so that it cannot be deleted by garbage cleaning procedures (It
+  can still be deleted by {\bf MF\_Delete}.
+
+\item[]{\bf {\em void} MF\_UnLock({\em MFace\_ptr} f):} Unlock a volatile
+  face so that it may be deleted freely by garbage cleaning procedures.
+
 \end{description}
 
 \newpage
