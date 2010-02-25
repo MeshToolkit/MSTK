@@ -37,6 +37,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MFace_ptr	        face;
   MRegion_ptr           region;
   MAttrib_ptr           attrib, *nodatts=NULL, *cellatts=NULL, oppatt;
+  MAttrib_ptr           vidatt, eidatt, fidatt, ridatt;
   MAttType              atttype;
   char                  attname[256], matname[256], tmpstr[256];
   int                   jv, je, jr, jf;
@@ -47,9 +48,32 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   int                   ndup, max_nrf, max_nfe;
   int                   oppfid, oppeid, nf2, ne2;
   int                   nnodatt, ncellatt;
+  int                   vid, eid, fid, rid;
   double		vxyz[3], rval;
   void                 *pval;
   FILE		        *fp;
+
+
+  vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
+  eidatt = MAttrib_New(mesh,"eidatt",INT,MEDGE);
+  fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
+  ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
+
+  idx = 0; i = 0;
+  while ((vertex = MESH_Next_Vertex(mesh,&idx)))
+    MEnt_Set_AttVal(vertex,vidatt,++i,0.0,NULL);
+
+  idx = 0; i = 0;
+  while ((edge = MESH_Next_Edge(mesh,&idx)))
+    MEnt_Set_AttVal(edge,eidatt,++i,0.0,NULL);
+
+  idx = 0; i = 0;
+  while ((face = MESH_Next_Face(mesh,&idx)))
+    MEnt_Set_AttVal(face,fidatt,++i,0.0,NULL);
+
+  idx = 0; i = 0;
+  while ((region = MESH_Next_Region(mesh,&idx)))
+    MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
 
 
   if (!(fp = fopen(filename,"w"))) {
@@ -405,9 +429,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   for (jv = 0; jv < nv; jv++) {
     vertex = MESH_Vertex(mesh,jv);
     MV_Coords(vertex,vxyz);
-    fprintf(fp,"% 10d % 22.14E % 22.14E % 22.14E\n",MV_ID(vertex),
+    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+    fprintf(fp,"% 10d % 22.14E % 22.14E % 22.14E\n",vid,
 	    vxyz[0],vxyz[1],vxyz[2]);
-    MV_Set_ID(vertex,(jv+1));
   }
   fprintf(fp,"end_nodes\n");
 
@@ -433,7 +457,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       fregs = MF_Regions(face);
       nfr = fregs ? List_Num_Entries(fregs) : 0;
 
-      fprintf(fp,"% 10d",MF_ID(face));
+      MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+      fprintf(fp,"% 10d",fid);
       k = 1;
 
       if (nfr == 2) {
@@ -449,7 +474,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	
 	for (jv = 0; jv < nfv; jv++) {
 	  vertex = List_Entry(fverts,jv);
-	  fprintf(fp,"% 10d",MV_ID(vertex));
+	  MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	  fprintf(fp,"% 10d",vid);
 	  if ((++k)%13 == 0)
 	    fprintf(fp,"\n");
 	}
@@ -511,7 +537,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	
 	for (jv = 0; jv < nfv; jv++) {
 	  vertex = List_Entry(fverts,jv);
-	  fprintf(fp,"% 10d",MV_ID(vertex));
+	  MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	  fprintf(fp,"% 10d",vid);
 	  if ((++k)%13 == 0)
 	    fprintf(fp,"\n");
 	}	
@@ -579,7 +606,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
       for (jv = 0; jv < nfv; jv++) {
 	vertex = List_Entry(fverts,jv);
-	fprintf(fp,"% 10d",MV_ID(vertex));
+	MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	fprintf(fp,"% 10d",vid);
 	if ((++k)%13 == 0)
 	  fprintf(fp,"\n");
       }
@@ -600,7 +628,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       
       /* ID of the duplicate (in this case, original) face */
       
-      fprintf(fp,"% 10d",MF_ID(face));
+      MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+      fprintf(fp,"% 10d",fid);
       if ((++k)%13 == 0)
 	fprintf(fp,"\n");
 
@@ -629,7 +658,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       efaces = ME_Faces(edge);
       nef = efaces ? List_Num_Entries(efaces) : 0;
 
-      fprintf(fp,"% 10d",ME_ID(edge));
+      MEnt_Get_AttVal(edge,eidatt,&eid,&rval,&pval);
+      fprintf(fp,"% 10d",eid);
 
       if (nef == 2) {
 	/* Two faces connected to edge - write edge out in its
@@ -640,7 +670,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	
 	for (jv = 0; jv < 2; jv++) {
 	  vertex = ME_Vertex(edge,jv);
-	  fprintf(fp,"% 10d",MV_ID(vertex));
+	  MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	  fprintf(fp,"% 10d",vid);
 	}
 
 	List_Delete(efaces);
@@ -682,13 +713,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	if (MF_EdgeDir(List_Entry(efaces,0),edge) == 1) {
 	  for (jv = 0; jv < 2; jv++) {
 	    vertex = ME_Vertex(edge,jv);
-	    fprintf(fp,"% 10d",MV_ID(vertex));
+	    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	    fprintf(fp,"% 10d",vid);
 	  }
 	}
 	else {
 	  for (jv = 0; jv < 2; jv++) {
 	    vertex = ME_Vertex(edge,!jv);
-	    fprintf(fp,"% 10d",MV_ID(vertex));
+	    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	    fprintf(fp,"% 10d",vid);
 	  }
 	}
 
@@ -733,7 +766,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
       for (jv = 0; jv < 2; jv++) {
 	vertex = ME_Vertex(edge,!jv);
-	fprintf(fp,"% 10d",MV_ID(vertex));
+	MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+	fprintf(fp,"% 10d",vid);
       }
       
       /* ID of the processor owning this edge */
@@ -748,7 +782,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       
       /* ID of the duplicate (in this case, original) face */
       
-      fprintf(fp,"% 10d",ME_ID(edge));
+      MEnt_Get_AttVal(edge,eidatt,&eid,&rval,&pval);
+      fprintf(fp,"% 10d",eid);
 
       /* Five dummy arguments required by FLAG X3D format specification */
       
@@ -769,7 +804,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
     idx = 0;    
     while ((region = MESH_Next_Region(mesh,&idx))) {
-      fprintf(fp,"% 10d",MR_ID(region));
+      MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
+      fprintf(fp,"% 10d",rid);
       k = 1;
 
       rfaces = MR_Faces(region);
@@ -788,8 +824,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	     +ve sense (the face normal points out of the region); write
 	     out the duplicate face id, if not */
 	  
-	  if (MR_FaceDir_i(region,jf))
-	    fprintf(fp,"% 10d",MF_ID(face));
+	  if (MR_FaceDir_i(region,jf)) {
+	    MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+	    fprintf(fp,"% 10d",fid);
+	  }
 	  else
 	    fprintf(fp,"% 10d",oppfid);
 	}
@@ -798,8 +836,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	  /* Write out the face id - any necessary reordered writing
 	     of nodes so that the face points out of the region was
 	     done earlier */
-
-	  fprintf(fp,"% 10d",MF_ID(face));
+	  
+	  MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+	  fprintf(fp,"% 10d",fid);
 	}
 
 	k++;
@@ -821,7 +860,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
     idx = 0;
     while ((face = MESH_Next_Face(mesh,&idx))) {
-      fprintf(fp,"% 10d",MF_ID(face));
+      MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+      fprintf(fp,"% 10d",fid);
       k = 1;
 
       fedges = MF_Edges(face,1,0);
@@ -839,8 +879,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	  /* Write out the edge id, if the face uses the edge in the
 	     +ve sense; write out the duplicate edge id, if not */
 
-	  if (MF_EdgeDir_i(face,je))
-	    fprintf(fp,"% 10d",ME_ID(edge));
+	  if (MF_EdgeDir_i(face,je)) {
+	    MEnt_Get_AttVal(edge,eidatt,&eid,&rval,&pval);
+	    fprintf(fp,"% 10d",eid);
+	  }
 	  else
 	    fprintf(fp,"% 10d",oppeid);
 	}
@@ -849,7 +891,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	     so that the face uses the edge in the +ve sense was done
 	     earlier */
 
-	  fprintf(fp,"% 10d",ME_ID(edge));
+	  MEnt_Get_AttVal(edge,eidatt,&eid,&rval,&pval);
+	  fprintf(fp,"% 10d",eid);
 	}
 
 	k++;
@@ -1036,6 +1079,28 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /* Clean up */
 
   MSTK_free(gentities);
+
+  idx = 0;
+  while ((vertex = MESH_Next_Vertex(mesh,&idx)))
+    MEnt_Rem_AttVal(vertex,vidatt);
+
+  idx = 0;
+  while ((edge = MESH_Next_Edge(mesh,&idx)))
+    MEnt_Rem_AttVal(edge,eidatt);
+
+  idx = 0;
+  while ((face = MESH_Next_Face(mesh,&idx)))
+    MEnt_Rem_AttVal(face,fidatt);
+
+  idx = 0;
+  while ((region = MESH_Next_Region(mesh,&idx)))
+    MEnt_Rem_AttVal(region,ridatt);
+
+
+  MAttrib_Delete(vidatt);
+  MAttrib_Delete(eidatt);
+  MAttrib_Delete(fidatt);
+  MAttrib_Delete(ridatt);
 
   return 1;
 }
