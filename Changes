@@ -1,3 +1,23 @@
+Changes v1.7
+
+* THE MSTKUTIL LIBS HAVE BEEN ABSORBED INTO MSTK. THERE IS NO NEED TO
+  COMPILE MSTKUTIL AND MSTK SEPARATELY
+
+* A major change was made to MESH_Rem_* routines. These cut the removal
+  time of each mesh entity from O(n) to O(log(n)) with mesh renumbering 
+  and O(1) - WOW - without mesh renumbering. This should make mesh
+  modification codes much faster
+
+* Support for reduced representations has been added with on-the-fly 
+  creation of virtual entities, automatic cleanup of virtual entities,
+  and locking of virtual entities to avoid intermediate deletion.
+ 
+  NOTE: THIS HAS NOT BEEN TESTED EXTENSIVELY SO SOME BUGS MAY EXIST
+
+* Minor bug fixes and efficiency improvements
+
+
+
 Changes 
 
 * The make file arguments have changed in this version of MSTK. Now

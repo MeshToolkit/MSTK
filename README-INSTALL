@@ -1,5 +1,5 @@
 
-I am enclosing gzipped, tarred files containing MSTK and MSTKutil sources 
+I am enclosing gzipped, tarred files containing MSTK sources 
 version N.n. The following steps describe how to make, install and use
 the MSTK and MSTutil libraries. In the descriptions, substitute N.n by
 the major and minor version numbers of MSTK that you downloaded (for
@@ -23,29 +23,29 @@ NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE
 
 
 
-
-
 ------------------------------------------------------------------------
-A.      --------- Make and install MSTK Utilities ----------------
+A.      --------- Make install MSTK ----------------
 ------------------------------------------------------------------------
 
 1. Unpack the sources by issuing the commands
-     tar xvzf MSTK-N.n.tar.gz   - creates directories mstkutil-N.n and mstk-N.n
+     tar xvzf MSTK-N.n.tar.gz   - creates directories mstk-N.n
 
-2. cd to mstkutil-N.n
+2. cd to mstk-N.n
 
 3. Edit the Makefile to set the compiler and compiler flags (ONLY IF
    NECESSARY). In general, on a Linux system you have to make little
    or no change to the Makefile.
 
 4. Also edit the TOPDIR variable in the Makefile to reflect where the
-   mstk and mstkutil directories are located. For example, if both
-   mstkutil and mstk directories are in the directory $HOME/develop/,
-   then set TOPDIR to $HOME/develop.
+   mstk directories are located. For example, if the mstk directories 
+   are in the directory $HOME/develop/, then set TOPDIR to $HOME/develop.
 
 5. Type 'make' to make the debug and optimized versions of the
-   libraries which are ./lib/$ARCHOS/libmstkutil-d.a and
-   ./lib/$ARCHOS/libmstkutil.a respectively.
+   libraries which are ./lib/$ARCHOS/libmstk-d.a and
+   ./lib/$ARCHOS/libmstk.a respectively. 
+
+	To include the mesh partitioning code MESH_Partition with
+	METIS, you have to type 'make PAR=1'
 
 6. Edit the 'install' file and modify the INSTALL_TOPDIR variable to
    be where you want the header files and include files to be
@@ -54,28 +54,10 @@ A.      --------- Make and install MSTK Utilities ----------------
    Then type 'install N.n' (e.g., 'install 1.5')
 
    The script will install the header files in
-   $INSTALL_TOPDIR/include/mstkutil-N.n. If you answer 'y' to the
+   $INSTALL_TOPDIR/include/mstk-N.n. If you answer 'y' to the
    question "Do you to make the installed version the default?", it
    will make a symbolic link to it called
-   $INSTALL_TOPDIR/include/mstkutil
-
-
-------------------------------------------------------------------------
-B.      --------- Make and install MSTK ----------------
-------------------------------------------------------------------------
-
-1. Repeat step 1 to 7 in section A for MSTK starting with unzipping
-   and untarring mstk.tar.gz
-
-
-*************************
-NOTE:NOTE:NOTE:
-*************************
-
-	To include the mesh partitioning code MESH_Partition with
-	METIS, you have to type 'make PAR=1'
-
-*************************
+   $INSTALL_TOPDIR/include/mstk
 
 
 ------------------------------------------------------------------------
@@ -86,11 +68,11 @@ B.      --------- Use MSTK for code development ----------------
 
 2. Include "MSTK.h" in any code that uses MSTK
 
-3. Edit the makefile to indicate the paths to MSTK Util and MSTK
-   libraries. If necessary, also indicate where the metis library
-   paths are.
+3. Edit the makefile to indicate the paths to MSTK libraries. 
+   If necessary, also indicate where the metis library paths are.
 
-4. Include "-lmstk -lmstkutil" on the link line.
+4. Include "-lmstk" on the link line for the optimized libs and 
+   "-lmstk-d" for the debug libs
 
 
 
@@ -119,7 +101,7 @@ Rao
 -- 
 --------------------------------------------------------------------
 Rao V Garimella  			Tel: (505) 665-2928
-T-7, MS B284 	 	   '\   '\ 	FAX: (505) 665-5757
+T-5, MS B284 	 	   '\   '\ 	FAX: (505) 665-5757
 Los Alamos National Lab	     ( )-( )   	Email: rao@lanl.gov
 Los Alamos, NM 87545	                http://math.lanl.gov/~rao		
 --------------------------------------------------------------------
