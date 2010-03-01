@@ -268,12 +268,12 @@ MSTK.
 
 Even though MSTK is written in C, MSTK is designed in an object
 oriented manner. Mesh entities, mesh attributes and entity lists are
-considered to be objects which have their private data and a set of
-operators to query and manipulate this data. Even though methods may
-be devised to circumvent the data hiding in MSTK, this is highly
-discouraged. If you think that a particular operator is not efficient
-or you don'thave access to some mesh data, please contact the
-developer for assistance.
+considered to be like objects which have their private data and a set
+of operators to query and manipulate this data. Even though methods
+may be devised to circumvent the data hiding in MSTK, since it is
+written in C, this is highly discouraged. If you think that a
+particular operator is not efficient or you don'thave access to some
+mesh data, please contact the MSTK developer for assistance.
 
 An important feature of MSTK is its ability to provide the full set of
 mesh operators regardless of the representation used. When using
@@ -284,23 +284,6 @@ most MSTK operators on such objects as well.
 Currently, MSTK offers only a C API but C++ and Fortran APIs are
 planned for the near future.
 
-
-\subsection{Getting meshes in and out of MSTK}
-
-There are a few ways of getting mesh data into MSTK. The first is to
-prepare an MSTK file with the full connectivity of an F1
-representation and to read it in using MESH\_InitFromFile. This is
-typically a difficult task for many applications which only have
-element-node data. In such cases, one can prepare an MSTK file in the
-R1 file format (in which the node listing is followed by the
-region-node connectivity) and read it in to any of the other
-representations, say F1. The other possibility is to write a file in
-the GMV format and use MESH\_ImportFromFile to import the mesh in.
-
-MSTK can write meshes out to different formats including GMV, STL and
-FLAG X3D. When compiled with the appropriate options and using a
-partitioner from an external library, MSTK can also write out a
-parallel X3D file.
 
 \newpage
 \section{MSTK Data Types}
@@ -1817,6 +1800,115 @@ utility to print the IDs of the entities in a set.
 
 \newpage
 \appendix
+
+\section{Getting meshes in and out of MSTK}
+
+There are a few ways of getting mesh data into MSTK. The first is to
+prepare an MSTK file with the full connectivity of an F1
+representation and to read it in using MESH\_InitFromFile. This is
+typically a difficult task for many applications which only have
+element-node data. In such cases, one can prepare an MSTK file in the
+R1 file format (in which the node listing is followed by the
+region-node connectivity) and read it in to any of the other
+representations, say F1. The other possibility is to write a file in
+the GMV format and use MESH\_ImportFromFile to import the mesh in.
+
+MSTK can write meshes out to different formats including GMV, STL and
+FLAG X3D. When compiled with the appropriate options and using a
+partitioner from an external library, MSTK can also write out a
+parallel X3D file.
+
+
+\section{Using MSTK in a numerical simulation code}
+
+In addition to mesh generation and mesh manipulation algorithms, MSTK
+can be used to write mesh-based numerical simulation codes such as
+Finite element, finite volume and finite difference methods. MSTK is
+particularly suited to developing methods which operate on general
+unstructured meshes. There is some overhead to using operators to
+access mesh data instead of directly accessing arrays; however, we
+believe that the ease of managing complex mesh data through an API
+outweighs this cost. Without a framework like MSTK, applications have
+to devise their own unstructured mesh data structures and the code is
+littered with direct accesses to these data structures (often
+complicated array-based data structures). This makes even small
+changes to the data structure very onerous because thousands to tens
+of thousands of lines of code are affected. In the end, individual
+developers create adhoc patches (often duplicated in different ways)
+to overcome any deficiencies in the data structures and eventually the
+code becomes unmanageable. We believe this is poor software
+engineering.
+
+\subsection{Simulation Variables}
+
+When using MSTK in a physics based code, the question of storing
+physics variables (node velocities, element
+pressures) is an important one. 
+
+There are two ways of storing physics in combination with MSTK. The
+first is to use the attributes feature in MSTK. Scalar variables can
+be stored with entities as double precision values of mesh attributes;
+vector and tensor variables can be stored as pointer variables. When
+storing vectors as pointers, it is more efficient to allocate a large
+array to store the vectors for all entities and store pointers into
+that large array with the individual entities. This way the
+application does not allocate a huge number of small arrays. This
+method is very convenient as the variables are readily available using
+the handle of the entity, i.e., by calling {\bf MEnt\_Get\_AttVal}.
+However, this method could be somewhat inefficient and also requires a
+paradigm shift in how codes are written.
+
+The other way of managing physics variables is to directly allocate
+linear arrays for each variable and using the entity ID to reference
+entries in this array. For example, one might have a linear array {\bf
+  rho} for the densities of all elements and we use {\bf
+  rho[MR\_ID(r)-1]} to find the density of a particular element {\bf
+  r}. The ID of elements is obtained quite easily and stays static
+unless {\bf MESH\_Renumber} is called explicitly. If there is mesh
+modification, there will be intermediate parts of this array which
+will no longer be relevant but this is easily managed. This method is
+closer to traditional approaches and can be adopted quite easily. It
+could be more efficient than using attributes but is less
+``object-oriented.''
+
+\subsection{Boundary Conditions, Material Properties}
+
+Applying boundary conditions in an MSTK-based simulation code can be
+much easier than in a ``traditional'' simulation code, {\em if} the
+mesh carries the right classification information. In a
+``traditional'' simulation code, boundary conditions are specified
+using one of two ways: 
+
+\begin{itemize}
+\item An implicit geometric entity is defined and the boundary
+  condition is specified on that geometry, e.g., normal velocity is 1.0
+  for all nodes on the plane [1.35 2.7695 1]. This requires one to check
+  the coordinates of all nodes to see if they lie on this plane and
+  apply the boundary condition on those nodes.
+
+\item Entity sets like node sets or face sets are defined as a
+  collection of entity IDs on which a particular boundary conditions
+  are applied. The user has pre-selected a set of nodes and applied
+  the boundary condition one them.
+\end{itemize}
+
+MSTK, on the other hand, provides for an easier way to specify
+boundary conditions, initial conditions and material properties
+provided the mesh has classification information. For example, if we
+knew that model face 51 has a pressure boundary condition on it, we
+only need to find all faces that are classified on model face 51
+(MF\_GEntDim(f)=2, MF\_GEntID(f)=51) and specify the pressure on that
+face in the code. The input file for the boundary conditions does not
+have to explicitly list any face sets nor do we have to use error
+prone geometric checks on the entire mesh to apply boundary
+conditions. In fact, if the mesh is directly tied to a geometric model
+(using a GEntity\_ptr), it is possible to specify a boundary condition
+on a complex surface such as a Trimmed NURBS surface and still apply
+the condition without error-prone geometric checks or large input
+files. Similarly, material properties can be specified per geometric
+model region and applied automatically to every mesh region classified
+in that model region without the need for element sets in input files.
+
 
 \section{Conventions for Vertex, Edge Numbering in Standard Region Types}
 \label{app:reg_conventions}
