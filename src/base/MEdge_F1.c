@@ -126,7 +126,7 @@ extern "C" {
 
     if (adj->efaces == NULL)
       adj->efaces = List_New(10);
-    List_Add(adj->efaces,f);
+    List_ChknAdd(adj->efaces,f);
   }
 
   void ME_Rem_Face_F1(MEdge_ptr e, MFace_ptr f) {

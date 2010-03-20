@@ -179,7 +179,7 @@ extern "C" {
 
     if (adj->elements == NULL)
       adj->elements = List_New(10);
-    List_Add(adj->elements,f);
+    List_ChknAdd(adj->elements,f);
   }
 
   void ME_Rem_Face_F4(MEdge_ptr e, MFace_ptr f) {
@@ -198,7 +198,7 @@ extern "C" {
     adj = (MEdge_Adj_F4 *) e->adj;
     if (adj->elements == NULL)
       adj->elements = List_New(10);
-    List_Add(adj->elements,r);
+    List_ChknAdd(adj->elements,r);
   }
 
   void ME_Rem_Region_F4(MEdge_ptr e, MRegion_ptr r) {

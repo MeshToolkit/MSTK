@@ -258,7 +258,7 @@ extern "C" {
 
     if (adj->vedges == NULL)
       adj->vedges = List_New(10);
-    List_Add(adj->vedges,e);
+    List_ChknAdd(adj->vedges,e);
   }
 
   void MV_Rem_Edge_F4(MVertex_ptr v, MEdge_ptr e) {

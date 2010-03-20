@@ -112,6 +112,8 @@ extern "C" {
 
     adj = (MFace_Adj_F2F4 *) f->adj;
     adj->edirs = 0;
+    if (adj->fedges)
+      List_Delete(adj->fedges);
     adj->fedges = List_New(n);
     
     for (i = 0; i < n; i++) {

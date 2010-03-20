@@ -255,7 +255,7 @@ extern "C" {
     MVertex_Adj_R2 *adj;
     
     adj = (MVertex_Adj_R2 *) v->adj;
-    List_Add(adj->adjverts,adjv);
+    List_ChknAdd(adj->adjverts,adjv);
   }
 
   void MV_Rem_AdjVertex_R2(MVertex_ptr v, MVertex_ptr adjv) {
@@ -292,7 +292,7 @@ extern "C" {
     }
 
     adj = (MVertex_Adj_R2 *)v->adj;
-    List_Add(adj->velements,mface);
+    List_ChknAdd(adj->velements,mface);
   }
 
   void MV_Rem_Face_R2(MVertex_ptr v, MFace_ptr mface) {
@@ -313,7 +313,7 @@ extern "C" {
     MVertex_Adj_R2 *adj;
 
     adj = (MVertex_Adj_R2 *) v->adj;
-    List_Add(adj->velements,mregion);
+    List_ChknAdd(adj->velements,mregion);
   }
 
   void MV_Rem_Region_R2(MVertex_ptr v, MRegion_ptr mregion) {

@@ -177,7 +177,7 @@ extern "C" {
     MVertex_Adj_R4 *adj;
 
     adj = (MVertex_Adj_R4 *) v->adj;
-    List_Add(adj->adjverts,adjv);
+    List_ChknAdd(adj->adjverts,adjv);
   }
 
   void MV_Rem_AdjVertex_R4(MVertex_ptr v, MVertex_ptr adjv) {
@@ -204,7 +204,7 @@ extern "C" {
     MVertex_Adj_R4 *adj;
 
     adj = (MVertex_Adj_R4 *) v->adj;
-    List_Add(adj->vfaces,mface);
+    List_ChknAdd(adj->vfaces,mface);
   }
 
   void MV_Rem_Face_R4(MVertex_ptr v, MFace_ptr mface) {

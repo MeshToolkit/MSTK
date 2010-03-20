@@ -164,6 +164,8 @@ extern "C" {
     int i;
 
     adj = (MFace_Adj_R2 *) f->adj;
+    if (adj->fvertices)
+      List_Delete(adj->fvertices);
     adj->fvertices = List_New(n);
 
     for (i = 0; i < n; i++) {
