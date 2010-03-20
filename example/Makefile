@@ -1,5 +1,11 @@
+# Get the machine type and kernel name. Piping the output of uname
+# # through (tr '[A-Z]' '[a-z]') converts the string to lower case
 
-ARCHOS = i686_linux
+
+ARCH := $(shell (uname -m | tr '[A-Z]' '[a-z]'))
+OS := $(shell (uname -s | tr '[A-Z]' '[a-z]'))
+ARCHOS := $(ARCH)_$(OS)
+
 
 BASEDIR := $(HOME)/develop
 
@@ -9,21 +15,24 @@ CFLAGS = -g -Wall
 OCFLAGS = -O -Wall
 DEFINES = -DDEBUG -DDEBUG2
 endif
+ifeq ($(ARCHOS),x86_64_linux)
+CC = gcc
+CFLAGS = -g -Wall
+OCFLAGS = -O -Wall
+DEFINES = -DDEBUG -DDEBUG2
+endif
 
 
-DEPS := mstk/1.4dev \
-	mstkutil/1.4dev
+DEPS := mstk/1.7 
 
 INCDIR   := -I./include $(addsuffix /include,$(addprefix -I$(BASEDIR)/,$(DEPS)))
 LIBDIR := $(addsuffix /lib/$(ARCHOS),$(addprefix -L$(BASEDIR)/,$(DEPS)))
 
 LIBS := $(LIBDIR) \
-	-lmstk-d \
-	-lmstkutil-d
+	-lmstk-d 
 
 OPTLIBS := $(LIBDIR) \
-	-lmstk \
-	-lmstkutil \
+	-lmstk
 
 OTHERLIBS := -lm
 
