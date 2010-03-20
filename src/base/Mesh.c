@@ -761,17 +761,23 @@ int  MESH_ChangeRepType(Mesh_ptr mesh, RepType nureptype){
 int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   FILE *fp;
   char inp_rtype[16], temp_str[256], fltype_str[16], rltype_str[16];
+  char attname[256], atttype_str[256], attent_str[256];
   int i, j, found, NV=0, NE=0, NF=0, NR=0, nav, nar, gdim, gid;
-  int vid1, vid2, eid, fid, rid, adjvid, adjrid, adjv_flag;
+  int id, dim, vid1, vid2, eid, fid, rid, adjvid, adjrid, adjv_flag;
   int nfv, max_nfv=0, nfe, max_nfe=0, nrv, max_nrv=0, nrf, max_nrf=0;
-  int *fedirs, *rfdirs, status;
+  int *fedirs, *rfdirs, ival, ncomp, nent, done, status;
   int processed_vertices=0, processed_adjv=0, processed_edges=0;
   int processed_faces=0, processed_regions=0, processed_adjr=0;
-  double ver, xyz[3];
+  double ver, xyz[3], rval;
+  double *rval_arr;
   MVertex_ptr mv, ev1, ev2, adjv, *fverts, *rverts;
   MEdge_ptr me, *fedges;
   MFace_ptr mf, *rfaces;
   MRegion_ptr mr, adjr;
+  MEntity_ptr ent;
+  MAttrib_ptr attrib;
+  MType attent;
+  MAttType atttype;
 
 
   if (!(fp = fopen(filename,"r"))) {
@@ -1432,6 +1438,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MR_Add_AdjRegion(mr,j,adjr);
 	}
       }
+
+      processed_adjr = 1;
     }
     else {
       for (i = 0; i < NR; i++) {
@@ -1455,7 +1463,176 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 			"Error in reading adjacent region data",FATAL);
 	}
       }
+
+      processed_adjr = 1;
     }
+  }
+
+  if (processed_adjr) {
+    status = fscanf(fp,"%s",temp_str);
+    if (status == EOF) {
+      if (mesh->reptype == R2)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file after reading regions",FATAL);
+      else {
+        fclose(fp);
+	return 1;
+      }
+    }
+  }
+
+  /* ATTRIBUTE DATA */
+
+  if (strncmp(temp_str,"attributes",10) == 0) {
+
+    done = 0;
+    while (!done) {
+      status = fscanf(fp,"%s",attname);
+      if (status == EOF) {
+	done = 1;
+	continue;
+      }
+      else if (status == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Error in reading attribute data",FATAL);
+
+      status = fscanf(fp,"%s",atttype_str);
+      if (status == EOF)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file while reading attributes",FATAL);
+      else if (status == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Error in reading attribute data",FATAL);
+
+      if (strncmp(atttype_str,"INT",3) == 0)
+	atttype = INT;
+      else if (strncmp(atttype_str,"DOUBLE",6) == 0)
+	atttype = DOUBLE;
+      else if (strncmp(atttype_str,"POINTER",7) == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Cannot specify POINTER attributes in file",FATAL);
+      else if (strncmp(atttype_str,"VECTOR",6) == 0)
+	atttype = VECTOR;
+      else if (strncmp(atttype_str,"TENSOR",6) == 0)
+	atttype = TENSOR;
+      else {
+	sprintf(temp_str,"%-s not a recognized attribute type",atttype_str);
+	MSTK_Report("MESH_InitFromFile",temp_str,FATAL);
+      }
+
+      status = fscanf(fp,"%d",&ncomp);
+      if (status == EOF)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file while reading attributes",FATAL);
+      else if (status == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Error in reading attribute data",FATAL);
+
+      if ((atttype == INT || atttype == DOUBLE) && (ncomp != 1)) 
+	MSTK_Report("MESH_InitFromFile","Number of components should be 1 for attributes of type INT or DOUBLE",WARN);
+      else if ((atttype == VECTOR || atttype == TENSOR) && (ncomp == 0))
+	MSTK_Report("MESH_InitFromFile","Number of components should be non-zero for attributes of type VECTOR or TENSOR",FATAL);
+
+
+
+      status = fscanf(fp,"%s",attent_str);
+      if (status == EOF)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file while reading attributes",FATAL);
+      else if (status == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Error in reading attribute data",FATAL);
+      if (strncmp(attent_str,"MVERTEX",7) == 0) 
+	attent = MVERTEX;
+      else if (strncmp(attent_str,"MEDGE",5) == 0)
+	attent = MEDGE;
+      else if (strncmp(attent_str,"MFACE",5) == 0)
+	attent = MFACE;
+      else if (strncmp(attent_str,"MREGION",7) == 0)
+	attent = MREGION;
+      else if (strncmp(attent_str,"MALLTYPE",8) == 0)
+	attent = MALLTYPE;
+      else {
+	sprintf(temp_str,"%s not a recognized entity type for attributes",
+		attent_str);
+	MSTK_Report("MESH_InitFromFile",temp_str,FATAL);
+      }
+
+      status = fscanf(fp,"%d",&nent);
+      if (status == EOF)
+	MSTK_Report("MESH_InitFromFile",
+		    "Premature end of file while reading attributes",FATAL);
+      else if (status == 0)
+	MSTK_Report("MESH_InitFromFile",
+		    "Error in reading attribute data",FATAL);
+
+      if (nent < 1) 
+	MSTK_Report("MESH_InitFromFile",
+		    "Attribute applied on no entities?",FATAL);
+
+      if (atttype == INT || atttype == DOUBLE || atttype == POINTER)
+	attrib = MAttrib_New(mesh,attname,atttype,attent);
+      else
+	attrib = MAttrib_New(mesh,attname,atttype,attent,ncomp);
+      
+      for (i = 0; i < nent; i++) {
+	fscanf(fp,"%d %d",&dim,&id);
+	if (status == EOF)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Premature end of file while reading attributes",FATAL);
+	else if (status == 0)
+	  MSTK_Report("MESH_InitFromFile",
+		      "Error in reading attribute data",FATAL);
+	
+	if (attent != dim && attent != MALLTYPE) {
+	  MSTK_Report("MESH_InitFromFile",
+		      "Attribute not applicable to this type of entity",WARN);
+	  if (atttype == INT)
+	    fscanf(fp,"%d",&ival);
+	  else
+	    for (j = 0; j < ncomp; j++)
+	      fscanf(fp,"%lf",&rval);
+	}
+	else {
+
+	  if (atttype == INT)
+	    fscanf(fp,"%d",&ival);
+	  else if (atttype == DOUBLE)
+	    fscanf(fp,"%lf",&rval);
+	  else if (atttype == VECTOR || atttype == TENSOR) {
+	    ival = ncomp;
+	    rval_arr = (double *) MSTK_malloc(ncomp*sizeof(double));
+	    for (j = 0; j < ncomp; j++) {
+	      fscanf(fp,"%lf",&(rval_arr[j]));
+	    }
+	  }
+
+	  switch (dim) {
+	  case MVERTEX:
+	    ent = MESH_VertexFromID(mesh,id);
+	    break;
+	  case MEDGE:
+	    ent = MESH_EdgeFromID(mesh,id);
+	    break;
+	  case MFACE:
+	    ent = MESH_FaceFromID(mesh,id);
+	    break;
+	  case MREGION:
+	    ent = MESH_RegionFromID(mesh,id);
+	    break;
+	  default:
+	    ent = NULL;
+	    MSTK_Report("MESH_InitFromFile","Invalid entity type",FATAL);
+	  }
+	  
+	  MEnt_Set_AttVal(ent,attrib,ival,rval,(void *)rval_arr);
+	  
+	}
+
+      } /* for (i = 0; i < nent; i++) */
+
+    } /* while (!done) */
+
   }
 
   fclose(fp);
@@ -1465,14 +1642,15 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
 int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
   FILE *fp;
-  char mesg[80];
-  int i, j, idx;
+  char mesg[80], attname[256];
+  int i, j, k, idx;
   int gdim, gid;
-  int mvid, mvid0, mvid1, mvid2, mrid2, meid, mfid;
+  int mvid, mvid0, mvid1, mvid2, mrid2, meid, mfid, mrid;
   int nav, nar, nfe, nfv, nrf, nrv, dir=0;
   int nv, ne, nf, nr;
-  double xyz[3], rval;
-  void *pval;
+  int natt, ncomp, ival, nent;
+  double xyz[3], rval, rdummy, *rval_arr;
+  void *pval, *pdummy;
   MVertex_ptr mv, mv0, mv1, mv2;
   MEdge_ptr me;
   MFace_ptr mf;
@@ -1480,7 +1658,9 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
   GEntity_ptr gent;
   List_ptr adjverts, mfedges, mfverts, mrfaces, mrverts, adjregs;
   RepType reptype;
-  MAttrib_ptr vidatt, eidatt, fidatt, ridatt;
+  MAttrib_ptr attrib, vidatt, eidatt, fidatt, ridatt;
+  MType attentdim;
+  MAttType atttype;
   
 
   if (!(fp = fopen(filename,"w"))) {
@@ -1730,7 +1910,335 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
     }
   }
 
-  fclose(fp);
+
+  /* Write out attributes if there are more than the 4 that we created 
+    in this routine */
+
+
+  if ((natt = MESH_Num_Attribs(mesh)) > 4) {
+
+    fprintf(fp,"attributes\n");
+
+    for (i = 0; i < natt; i++) {
+      
+      attrib = MESH_Attrib(mesh,i);
+
+      /* Don't write out attribs we created for the internal use of 
+	 this routine */
+      if (attrib == vidatt || attrib == eidatt || attrib == fidatt || 
+	  attrib == ridatt) continue;
+      
+      MAttrib_Get_Name(attrib,attname);
+
+      atttype = MAttrib_Get_Type(attrib);
+      if (atttype == POINTER) continue;  /* cannot write it out */
+
+      ncomp = MAttrib_Get_NumComps(attrib);
+
+      attentdim = MAttrib_Get_EntDim(attrib);
+
+
+      /* First count how many entities actually have the attribute assigned */
+
+      nent = 0;
+      switch(attentdim) {
+      case MVERTEX:
+	idx = 0;
+	while ((mv = MESH_Next_Vertex(mesh,&idx)))
+	  if (MEnt_Get_AttVal(mv,attrib,&ival,&rval,&pval)) nent++;
+	break;
+      case MEDGE:
+	idx = 0;
+	while ((me = MESH_Next_Edge(mesh,&idx)))
+	  if (MEnt_Get_AttVal(me,attrib,&ival,&rval,&pval)) nent++;
+	break;
+      case MFACE:
+	idx = 0;
+	while ((mf = MESH_Next_Face(mesh,&idx)))
+	  if (MEnt_Get_AttVal(mf,attrib,&ival,&rval,&pval)) nent++;	    
+	break;
+      case MREGION: 
+	idx = 0;
+	while ((mr = MESH_Next_Region(mesh,&idx)))
+	  if (MEnt_Get_AttVal(mr,attrib,&ival,&rval,&pval)) nent++;
+	break;
+      case MALLTYPE:
+	idx = 0;
+	while ((mv = MESH_Next_Vertex(mesh,&idx)))
+	  if (MEnt_Get_AttVal(mv,attrib,&ival,&rval,&pval)) nent++;
+	idx = 0;
+	while ((me = MESH_Next_Edge(mesh,&idx)))
+	  if (MEnt_Get_AttVal(me,attrib,&ival,&rval,&pval)) nent++;
+	idx = 0;
+	while ((mf = MESH_Next_Face(mesh,&idx)))
+	  if (MEnt_Get_AttVal(mf,attrib,&ival,&rval,&pval)) nent++;	    
+	idx = 0;
+	while ((mr = MESH_Next_Region(mesh,&idx)))
+	  if (MEnt_Get_AttVal(mr,attrib,&ival,&rval,&pval)) nent++;
+	break;	
+      default:
+	break;
+      } /* switch (attentdim) */
+
+
+      /* No point in writing out attribute if no entity uses it! Or is there? */
+
+      if (!nent) continue;
+
+
+
+      fprintf(fp,"%-s\n",attname);
+
+      switch(atttype) {
+      case INT:
+	fprintf(fp,"INT\n");
+	break;
+      case DOUBLE:
+	fprintf(fp,"DOUBLE\n");
+	break;
+      case VECTOR:
+	fprintf(fp,"VECTOR\n");
+	break;
+      case TENSOR:
+	fprintf(fp,"TENSOR\n");
+	break;
+      default:
+	MSTK_Report("MESH_WriteToFile",
+		    "Unrecognizable or unprintable attribute type\n",WARN);
+	continue;	
+      }
+
+      fprintf(fp,"%-d\n",ncomp);
+
+      switch(attentdim) {
+      case MVERTEX:
+	fprintf(fp,"MVERTEX\n");
+	break;
+      case MEDGE:
+	fprintf(fp,"MEDGE\n");
+	break;
+      case MFACE:
+	fprintf(fp,"MFACE\n");
+	break;
+      case MREGION:
+	fprintf(fp,"MREGION\n");
+	break;
+      case MALLTYPE:
+	fprintf(fp,"MALLTYPE\n");
+	break;
+      default:
+	MSTK_Report("Mesh_WriteToFile","Unrecognized entity type",WARN);
+	break;
+      }
+
+      fprintf(fp,"%-d\n",nent);
+
+
+      switch(attentdim) {
+      case MVERTEX:
+	idx = 0;
+	while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(mv,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(mv,vidatt,&mvid,&rdummy,&pdummy);
+	    fprintf(fp,"0 %-d ",mvid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	break;
+      case MEDGE:
+	idx = 0;
+	while ((me = MESH_Next_Edge(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(me,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(me,eidatt,&meid,&rdummy,&pdummy);
+	    fprintf(fp,"1 %-d ",meid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	break;
+      case MFACE:
+	idx = 0;
+	while ((mf = MESH_Next_Face(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(mf,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(mf,fidatt,&mfid,&rdummy,&pdummy);
+	    fprintf(fp,"2 %-d ",mfid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	break;
+
+      case MREGION: 
+	idx = 0;
+	while ((mr = MESH_Next_Region(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(mr,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(mr,ridatt,&mrid,&rdummy,&pdummy);
+	    fprintf(fp,"3 %-d ",mrid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	break;
+
+      case MALLTYPE:
+	idx = 0;
+	while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(mv,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(mv,vidatt,&mvid,&rdummy,&pdummy);
+	    fprintf(fp,"0 %-d ",mvid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	idx = 0;
+	while ((me = MESH_Next_Edge(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(me,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(me,eidatt,&meid,&rdummy,&pdummy);
+	    fprintf(fp,"1 %-d ",meid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	idx = 0;
+	while ((mf = MESH_Next_Face(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(mf,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(mf,fidatt,&mfid,&rdummy,&pdummy);
+	    fprintf(fp,"2 %-d ",mfid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	idx = 0;
+	while ((mr = MESH_Next_Region(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(mr,attrib,&ival,&rval,&pval)) {
+	    MEnt_Get_AttVal(mr,ridatt,&mrid,&rdummy,&pdummy);
+	    fprintf(fp,"3 %-d ",mrid);
+	    switch (atttype) {
+	    case INT:
+	      fprintf(fp," %-d",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(fp," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(fp," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(fp,"\n");
+	  }
+	}
+	break;	
+      default:
+	break;
+      } /* switch (attentdim) */
+
+    } /* for (i = 0; i < natt) */
+    
+  } /* if (Mesh_Num_Attribs(mesh)) */
+  
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_Vertex(mesh,&idx)))
@@ -1752,6 +2260,11 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
   MAttrib_Delete(eidatt);
   MAttrib_Delete(fidatt);
   MAttrib_Delete(ridatt);
+
+
+
+
+  fclose(fp);
 
   return 1;
 }
