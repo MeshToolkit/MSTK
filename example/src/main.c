@@ -7,15 +7,19 @@
 
 
 int main(int argc, char *argv[]) {
-  int i, idx, idx2, ok, edir, nv, ne;
-  double xyz[3];
-  char meshname[256];
+  int i, k, len, suff, idx, idx2, ok, edir, nv, ne, natt, ival, ncomp;
+  double xyz[3], rval, *rval_arr;
+  void *pval;
+  char mname[256], filename[256], attname[256];
   Mesh_ptr mesh;
   MVertex_ptr v;
   MEdge_ptr e;
   MFace_ptr f;
+  MAttrib_ptr attrib;
   GEntity_ptr gent;
   List_ptr fedges;
+  MType attentdim;
+  MAttType atttype;
 
   
   fprintf(stderr,"\n");
@@ -28,13 +32,29 @@ int main(int argc, char *argv[]) {
 
   /* Load the mesh */
 
-  strcpy(meshname,argv[1]);
-  strcat(meshname,".mstk");
+  strcpy(mname,argv[1]);
+  len = strlen(mname);
+  suff = 0;
+  if (len > 5) {
+    k = len-5;
+    while (!suff && k > 1) {
+      if (strncmp(&(mname[k]),".mstk",5) == 0) {
+        suff = 1;
+      }
+      else
+        k--;
+    }
+  }
+  if (suff)
+    mname[len-5] = '\0';
+
+  strcpy(filename,mname);
+  strcat(filename,".mstk");
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_InitFromFile(mesh,meshname);
+  ok = MESH_InitFromFile(mesh,filename);
   if (!ok) {
-    fprintf(stderr,"Cannot file input file %s\n\n\n",meshname);
+    fprintf(stderr,"Cannot open input file %s\n\n\n",filename);
     exit(-1);
   }
 
@@ -115,11 +135,109 @@ int main(int argc, char *argv[]) {
   }
 
 
+  if ((natt = MESH_Num_Attribs(mesh))) {
+
+    fprintf(stderr,"Attributes on the mesh:\n\n");
+    
+    for (i = 0; i < natt; i++) {
+
+      attrib = MESH_Attrib(mesh,i);
+      
+      attentdim = MAttrib_Get_EntDim(attrib);
+
+     /* Won't print out edge, face and region based attributes
+        but the code should be quite similar */
+
+      if (attentdim != MVERTEX) continue;
+
+      fprintf(stderr,"Attribute Number %-d\n",i+1);
+
+      MAttrib_Get_Name(attrib,attname);
+      fprintf(stderr,"Name: %-s\n",attname);
+
+      atttype = MAttrib_Get_Type(attrib);
+      switch(atttype) {
+      case INT:
+	fprintf(stderr,"Type: Integer\n");
+	break;
+      case DOUBLE:
+	fprintf(stderr,"Type: Double\n");
+	break;
+      case VECTOR:
+	fprintf(stderr,"Type: Vector\n");
+	break;
+      case TENSOR:
+	fprintf(stderr,"Type: Tensor\n");
+	break;
+      default:
+	fprintf(stderr,"Unrecognizable or unprintable attribute type\n");
+	continue;	
+      }
+
+      attentdim = MAttrib_Get_EntDim(attrib);
+      switch(attentdim) {
+      case MVERTEX:
+	fprintf(stderr,"Applicable to vertices only\n");
+	break;
+      case MEDGE:
+      case MFACE:
+      case MREGION:
+      case MALLTYPE:
+      default:
+	fprintf(stderr,"Unrecognized entity type\n");
+	continue;
+      }
+
+      ncomp = MAttrib_Get_NumComps(attrib);
+      fprintf(stderr,"Number of components: %-d\n",ncomp);
+
+      switch(attentdim) {
+      case MVERTEX:
+	idx = 0;
+	while ((v = MESH_Next_Vertex(mesh,&idx))) {
+	  if (MEnt_Get_AttVal(v,attrib,&ival,&rval,&pval)) {
+	    fprintf(stderr,"V %-d: ",MV_ID(v));
+	    switch (atttype) {
+	    case INT:
+	      fprintf(stderr," %-d\n",ival);
+	      break;
+	    case DOUBLE: 
+	      fprintf(stderr," %-lf ",rval);
+	      break;
+	    case VECTOR: case TENSOR:
+	      rval_arr = (double *) pval;
+	      for (k = 0; k < ncomp; k++)
+		fprintf(stderr," %-lf ",rval_arr[k]);
+	      break;
+	    default:
+	      break;
+	    }
+	    fprintf(stderr,"\n");
+	  }
+	}
+	break;
+      case MEDGE:
+      case MFACE:
+      case MREGION: 
+      case MALLTYPE:
+	/* Won't print out edge, face and region based attributes
+	   but the code should be quite similar */
+	continue;
+      default:
+	break;
+      } /* switch (attentdim) */
+
+    } /* for (i = 0; i < natt) */
+    
+  } /* if (Mesh_Num_Attribs(mesh)) */
+  
+
+
   /* Write out a copy of the mesh */
 
-  strcpy(meshname,argv[1]);
-  strcat(meshname,"-copy.mstk");
-  MESH_WriteToFile(mesh,meshname,F1);
+  strcpy(filename,mname);
+  strcat(filename,"-copy.mstk");
+  MESH_WriteToFile(mesh,filename,F1);
 
   
   /* Deleting of mesh is not necessary if this the end of the program */
