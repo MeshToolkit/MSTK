@@ -1,7 +1,7 @@
 #ifndef _H_MSTK
 #define _H_MSTK
 
-#ifdef   __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -330,11 +330,27 @@ void        MSTK_Init();
   /* ATTRIBUTE DEFINITION                                                 */
   /************************************************************************/
 
+  /*
+    MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, 
+    MAttType att_type, MType entdim, ...);
+
+    When the attribute type is INT, DOUBLE or POINTER, the calling routine
+    can end the argument list at entdim, like so:
+
+    myatt = MAttrib_New(mesh,"anatt",INT,MVERTEX);
+
+    When the attribute type is VECTOR OR DOUBLE, the calling routine has
+    to specify the number of components as the last argument like so:	     
+
+    myatt = MAttrib_New(mesh,"stress_tensor",TENSOR,MREGION,21);
+  */
+
   MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, 
-			  MAttType att_type, MType entdim);
+			  MAttType att_type, MType entdim, ...);
   char       *MAttrib_Get_Name(MAttrib_ptr attrib, char *att_name);
   MAttType    MAttrib_Get_Type(MAttrib_ptr attrib);
   MType       MAttrib_Get_EntDim(MAttrib_ptr attrib);
+  int         MAttrib_Get_NumComps(MAttrib_ptr attrib);
   void        MAttrib_Delete(MAttrib_ptr attrib);
 
 
@@ -418,15 +434,6 @@ void        MSTK_Init();
   /* Extra functionality for hash-tables */
 
   void*   *List_Entries(List_ptr l);
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef DEBUG
-  void List_PrintID(List_ptr l);
-#endif
 
 
   /* Functions to print information about mesh entities. The argument
