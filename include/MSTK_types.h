@@ -50,7 +50,7 @@ typedef enum MType {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOW
 
 
 /* typedefs needed for attributes */
-typedef enum MAttType {INT=0, DOUBLE, POINTER} MAttType;
+typedef enum MAttType {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
 
 
 #ifdef __cplusplus
