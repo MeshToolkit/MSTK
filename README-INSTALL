@@ -51,7 +51,7 @@ A.      --------- Make install MSTK ----------------
    be where you want the header files and include files to be
    installed. It could be $HOME or /usr/local. 
 
-   Then type 'install N.n' (e.g., 'install 1.5')
+   Then type './install N.n' (e.g., 'install 1.5')
 
    The script will install the header files in
    $INSTALL_TOPDIR/include/mstk-N.n. If you answer 'y' to the
