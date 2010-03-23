@@ -5,7 +5,7 @@ Changes v1.7
 
 * A major change was made to MESH_Rem_* routines. These cut the removal
   time of each mesh entity from O(n) to O(log(n)) with mesh renumbering 
-  and O(1) - WOW - without mesh renumbering. This should make mesh
+  and O(1) without mesh renumbering. This should make mesh
   modification codes much faster
 
 * Support for reduced representations has been added with on-the-fly 
@@ -14,43 +14,11 @@ Changes v1.7
  
   NOTE: THIS HAS NOT BEEN TESTED EXTENSIVELY SO SOME BUGS MAY EXIST
 
-* Minor bug fixes and efficiency improvements
+* Can read/write MSTK files in R1 format while the mesh is of type F1
 
+* Support for VECTOR and TENSOR type attributes added
 
+* Support for reading/writing attributes in MSTK files added
 
-Changes 
+* Many bug fixes and efficiency improvements
 
-* The make file arguments have changed in this version of MSTK. Now
-  just typing 'make' will make the debug and optimized versions - No
-  need to type 'make' and 'make opt' separately. 'make par' will
-  include the mesh partitioning routines and you must link with METIS
-
-* 'install' script forces new links to be made
-
-* Arguments of MF_CondNums changed to return number of nvertices at
-  which condition number is being returned. This avoids query the face
-  for the number of vertices
-
-* MR_CondNums added. It is similar to MF_CondNums. The condition
-  number returned at an non-trivalent vertex may be quite arbitrary
-  since it will pick one triplet of edge vectors from the various
-  combinations possible
-
-* MESH_PrintStats added. If 'lvl' = 1, it will print basic counts for
-  the different types of entities. If 'lvl' = 2, it will print
-  condition numbers for the various elements
-
-* Added the function MESH_PartitionWithMETIS. To include this
-  functionality you must make using the command 'make par'
-
-* Added functions MESH_ExportToFLAGX3D_Par and associated functions
-  MESH_Surf_ExportToFLAGX3D_Par and MESH_Vol_ExportToFLAGX3D_Par
-
-* Added some stopgap functions to emulate parallel functionality for now.
-
-* Bug fix in MESH_ExportToFLAGX3D
-
-* Bug fix in MF_CondNums
-
-* Added MESH_Tet2Hex (Lipnikov) - creates a new hex mesh by splitting
-  faces and edges of a tet mesh
