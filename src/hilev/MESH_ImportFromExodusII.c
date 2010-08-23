@@ -17,7 +17,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
   char mesg[256], funcname[256]="MESH_ImportFromExodusII";
   char title[256], elem_type[256];
-  char (*elem_blknames)[256];
+  char **elem_blknames;
   int i, j, k, k1;
   int comp_ws = sizeof(double), io_ws = 0;
   int exoid, status;
@@ -26,13 +26,18 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
   int *elem_blk_ids, *connect, *node_map, *elem_map;
   int nelem_i, nelnodes, neledges, nelfaces, natts;
+  int *sideset_ids, *ss_elem_list, *ss_side_list, *nodeset_ids, *ns_node_list;
+  int num_nodes_in_set, num_sides_in_set, num_df_in_set;
+
   double *xvals, *yvals, *zvals, xyz[3];
   float version;
-  
+
+  List_ptr fedges, rfaces;
   MVertex_ptr mv, *fverts, *rverts;
+  MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
-  MAttrib_ptr nmapatt, nelmapatt, elblockatt;
+  MAttrib_ptr nmapatt, nelmapatt, elblockatt, nodesetatt, sidesetatt;
   
   
   ex_init_params exopar;
@@ -66,6 +71,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   nedgesets = exopar.num_edge_sets;
   nfacesets = exopar.num_face_sets;
   nelemsets = exopar.num_elem_sets;
+  nsidesets = exopar.num_side_sets;
   nnodemaps = exopar.num_node_maps;
   nedgemaps = exopar.num_edge_maps;
   nfacemaps = exopar.num_face_maps;
@@ -94,7 +100,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     xyz[0] = xvals[i]; xyz[1] = yvals[i]; xyz[2] = zvals[i];
     MV_Set_Coords(mv,xyz);
   }
-  
+
+  free(xvals);
+  free(yvals);
+  free(zvals);
   
 
   /* read node number map - store it as an attribute to spit out later
@@ -119,7 +128,54 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     
   }
   
-  
+
+  /* Read node sets */
+
+  if (nnodesets) {
+    nodeset_ids = (int *) malloc(nnodesets*sizeof(int));
+
+    status = ex_get_node_set_ids(exoid,nodeset_ids);
+    if (status < 0) {
+      sprintf(mesg,
+	      "Error while reading nodeset IDs in Exodus II file %s\n",
+	      filename);
+      MSTK_Report(funcname,mesg,FATAL);
+    }
+    
+    
+    nodesetatt = MAttrib_New(mesh,"nodeset",INT,MVERTEX);
+    
+    for (i = 0; i < nnodesets; i++) {
+      
+      status = ex_get_node_set_param(exoid,nodeset_ids[i],&num_nodes_in_set,
+				     &num_df_in_set);
+      
+      ns_node_list = (int *) malloc(num_nodes_in_set*sizeof(int));
+      
+      status = ex_get_node_set(exoid,nodeset_ids[i],ns_node_list);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading nodes in nodeset %-d in Exodus II file %s\n",nodeset_ids[i],filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
+      
+      
+      for (j = 0; j < num_nodes_in_set; j++) {
+	mv = MESH_VertexFromID(mesh,ns_node_list[j]);
+	
+	/* Set attribute value for this node */
+	
+	MEnt_Set_AttVal(mv,nodesetatt,nodeset_ids[i],0.0,NULL);
+      }
+      
+      free(ns_node_list);
+    }
+    
+    free(nodeset_ids);
+      
+  }
+
+
   
   /* Get element block IDs and names */
   
@@ -131,7 +187,9 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     MSTK_Report(funcname,mesg,FATAL);
   }
   
-  elem_blknames = (char (*)[256]) malloc(nelblock*sizeof(char [256]));
+  elem_blknames = (char **) malloc(nelblock*sizeof(char *));
+  for (i = 0; i < nelblock; i++)
+    elem_blknames[i] = (char *) malloc(256*sizeof(char));
   status = ex_get_names(exoid, EX_ELEM_BLOCK, elem_blknames);
   if (status < 0) {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
@@ -149,7 +207,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   }
   else if (ndim == 2) {
     
-    elblockatt = MAttrib_New(mesh, "elblock_id", INT, MFACE);
+    elblockatt = MAttrib_New(mesh, "elemblock", INT, MFACE);
     
     
     /* Read each element block */
@@ -196,14 +254,75 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    fverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
 	  
 	  MF_Set_Vertices(mf,nelnodes,fverts);
+
+	  MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
+
 	}
 	
 	free(fverts);
+
 	
       } /* if (strcmp(elem_type,"NSIDED") ... else */
       
     } /* for (i = 0; i < nelblock; i++) */
     
+
+    /* Read side sets */
+
+    if (nsidesets) {
+
+      sideset_ids = (int *) malloc(nsidesets*sizeof(int));
+      
+      status = ex_get_side_set_ids(exoid,sideset_ids);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading sideset IDs %s in Exodus II file %s\n",
+		elem_blknames[i],filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
+      
+      
+      sidesetatt = MAttrib_New(mesh,"sideset",INT,MEDGE);
+      
+      for (i = 0; i < nsidesets; i++) {
+	
+	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
+				       &num_df_in_set);
+	
+	ss_elem_list = (int *) malloc(num_sides_in_set*sizeof(int));
+	ss_side_list = (int *) malloc(num_sides_in_set*sizeof(int));
+	
+	status = ex_get_side_set(exoid,sideset_ids[i],ss_elem_list,ss_side_list);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading elements in sideset %-d in Exodus II file %s\n",sideset_ids[i],filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+	
+	
+	for (j = 0; j < num_sides_in_set; j++) {
+	  mf = MESH_FaceFromID(mesh,ss_elem_list[j]);
+	  
+	  fedges = MF_Edges(mf,1,0);
+	  me = List_Entry(fedges,ss_side_list[j]-1);
+	  List_Delete(fedges);
+	  
+	  /* Set attribute value for this edge */
+	  
+	  MEnt_Set_AttVal(me,sidesetatt,sideset_ids[i],0.0,NULL);
+	  
+	  /* Interpret sideset attribute as classification info for the edge */
+	  
+	  ME_Set_GEntDim(me,1);
+	  ME_Set_GEntID(me,sideset_ids[i]);
+	}
+	
+	free(ss_elem_list);
+	free(ss_side_list);
+	
+      }
+
+    }
     
     
     /* read element number map - store it as an attribute to spit out
@@ -211,7 +330,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     
     elem_map = (int *) malloc(nelems*sizeof(int));
     
-    status = ex_get_node_num_map(exoid, elem_map);
+    status = ex_get_elem_num_map(exoid, elem_map);
     if (status < 0) {
       sprintf(mesg,"Error while reading element map in Exodus II file %s\n",filename);
       MSTK_Report(funcname,mesg,FATAL);
@@ -231,7 +350,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   }
   else if (ndim == 3) {
     
-    elblockatt = MAttrib_New(mesh, "elblock_id", INT, MREGION);
+    elblockatt = MAttrib_New(mesh, "elemblock", INT, MREGION);
     
     
     for (i = 0; i < nelblock; i++) {
@@ -270,19 +389,19 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	rverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
 	
-	if (strcmp(elem_type,"TETRA") == 0) {
+	if (strncmp(elem_type,"TETRA",5) == 0) {
 	  if (nelnodes > 4) {
 	    MSTK_Report(funcname,"Higher order tets not supported",WARN);
 	    continue;
 	  }
 	}
-	else if (strcmp(elem_type,"WEDGE") == 0) {
+	else if (strncmp(elem_type,"WEDGE",5) == 0) {
 	  if (nelnodes > 6) {
 	    MSTK_Report(funcname,"Higher order prisms/wedges not supported",WARN);
 	    continue;
 	  }
 	}
-	else if (strcmp(elem_type,"HEX") == 0) {
+	else if (strncmp(elem_type,"HEX",3) == 0) {
 	  if (nelnodes > 8) {
 	    MSTK_Report(funcname,"Higher order hexes not supported",WARN);
 	    continue;
@@ -305,9 +424,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    rverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
 	  
 	  MR_Set_Vertices(mr,nelnodes,rverts,0,NULL);
+
+	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
+
 	}
 	
 	free(rverts);
+
+	free(connect);
 	
       } /* if (strcmp(elem_type,"NSIDED") ... else */
       
@@ -315,6 +439,63 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     
     
     
+    /* Read side sets */
+
+    if (nsidesets) {
+
+      sideset_ids = (int *) malloc(nsidesets*sizeof(int));
+
+      status = ex_get_side_set_ids(exoid,sideset_ids);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading sideset IDs %s in Exodus II file %s\n",
+		elem_blknames[i],filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
+      
+      
+      sidesetatt = MAttrib_New(mesh,"sideset",INT,MFACE);
+      
+      for (i = 0; i < nsidesets; i++) {
+	
+	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
+				       &num_df_in_set);
+	
+	ss_elem_list = (int *) malloc(num_sides_in_set*sizeof(int));
+	ss_side_list = (int *) malloc(num_sides_in_set*sizeof(int));
+
+	status = ex_get_side_set(exoid,sideset_ids[i],ss_elem_list,ss_side_list);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading elements in sideset %-d in Exodus II file %s\n",sideset_ids[i],filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+	
+	
+	for (j = 0; j < num_sides_in_set; j++) {
+	  mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
+	  
+	  rfaces = MR_Faces(mr);
+	  mf = List_Entry(rfaces,ss_side_list[j]-1);
+	  List_Delete(rfaces);
+	  
+	  /* Set attribute value for this edge */
+	  
+	  MEnt_Set_AttVal(mf,sidesetatt,sideset_ids[i],0.0,NULL);
+	  
+	  /* Interpret sideset attribute as classification info for the edge */
+	  
+	  MF_Set_GEntDim(mf,2);
+	  MF_Set_GEntID(mf,sideset_ids[i]);
+	}
+	
+	free(ss_elem_list);
+	free(ss_side_list);
+	
+      }
+
+    }
+
 
     
     
@@ -323,7 +504,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     
     elem_map = (int *) malloc(nelems*sizeof(int));
     
-    status = ex_get_node_num_map(exoid, elem_map);
+    status = ex_get_elem_num_map(exoid, elem_map);
     if (status < 0) {
       sprintf(mesg,"Error while reading element map in Exodus II file %s\n",filename);
       MSTK_Report(funcname,mesg,FATAL);
@@ -339,7 +520,13 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       }
       
     }
+
+    free(elem_map);
   }
+
+  free(elem_blk_ids);
+  free(elem_blknames);
+
 
   ex_close(exoid);
 
