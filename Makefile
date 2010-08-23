@@ -30,6 +30,12 @@ METISDIR = $(HOME)/packages/metis-4.0
 METISINC = $(METISDIR)/Lib
 
 
+# EXODUS II Directory
+
+EXODUSIIDIR = $(HOME)/packages/ACCESS/libraries/exodusii
+EXODUSIIINC = $(EXODUSIIDIR)/cbind/include
+
+
 # STANDARD DIRECTORY
 
 TOPDIR = $(HOME)
@@ -38,7 +44,7 @@ DEPINCS := -I$(METISINC)
 # DEVELOP DIRECTORY
 
 TOPDIR = $(HOME)/develop
-DEPINCS := -I$(METISINC)
+DEPINCS := -I$(METISINC) -I$(EXODUSIIINC)
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
