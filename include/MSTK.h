@@ -31,6 +31,7 @@ void        MSTK_Init();
   int        MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
 				 const char *format);
   int        MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename);
+  int        MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename);
   int        MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
 			       const char *format, const int natt, 
 			       const char **attnames, int *opts);
