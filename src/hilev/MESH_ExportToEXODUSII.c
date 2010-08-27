@@ -19,14 +19,13 @@ extern "C" {
   /* this function collects side set information                                  */
   int MESH_Num_Face_Set(List_ptr esides, int *side_set_id, int enable_set);
   int MESH_Num_Edge_Set(List_ptr esides, int *side_set_id, int enable_set);
-  void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int num_side_set, int num_side, int side_dim, \
-			      int *side_set_ids, int *num_side_per_set);
+
   /* this function get the local side number */
   int Get_Local_Face_Number(MFace_ptr mf, List_ptr mrvertices);
   int Get_Local_Edge_Number(MEdge_ptr me, List_ptr mfvertices);
+  static  int compare(const void * a, const void * b);
   void itoa(int n, char s[]);
   void reverse(char s[]);
-  int compare_GID(const void * a, const void * b);
 
 
   /*this defines the maximum number of side set per element block*/
@@ -332,8 +331,6 @@ extern "C" {
 	  List_Delete(mrvertices);
 	}
 	
-	/* sort esides based on geometric ID */
-	/* qsort(esides,index_side,sizeof(MFace_ptr),compare_GID);*/
        switch (num_node_per_element[i]) { 
        case 4 :
 	 strcpy(buf,"TETRA");
@@ -526,14 +523,9 @@ extern "C" {
 }
 
 
-  int compare(const void * a, const void * b) {
+static  int compare(const void * a, const void * b) {
     return ( *(int*)a - *(int*)b );
   }
-
-  int compare_GID(const void * a, const void * b) {
-    return (MEnt_GEntID((MEntity_ptr*)a) - MEnt_GEntID((MEntity_ptr*)b));
-  }
-
 
   /* some functions used by the converter */
   void MESH_Num_Element_Block(Mesh_ptr mesh, int *nevs, int num_element, int element_dim, \
@@ -607,95 +599,6 @@ extern "C" {
     }
     num_element_per_block[k-1] = num_element_this_block;
 
-  }
-  
-
-  void  MESH_Num_Side_Set(Mesh_ptr mesh, int num_side, int side_dim, int *num_side_set) {
-    
-    *num_side_set = 1;
-    if (side_dim < 1) {
-      MSTK_Report("MESH_Num_Side_Set", "No side information\n",WARN);
-      return;
-    }
-    int *gids = (int *) MSTK_malloc(num_side*sizeof(int));
-    MFace_ptr mf;
-    MEdge_ptr me;
-    int idx = 0, i = 0;
-    if (side_dim == 1) {
-    while ((me = MESH_Next_Edge(mesh,&idx)))
-      gids[i++] = ((MEnt_GEntID(me)+1)<<3) | MEnt_GEntDim(me) ;
-    }
-    if (side_dim == 2) {
-    while ((mf = MESH_Next_Face(mesh,&idx)))
-      gids[i++] = ((MEnt_GEntID(mf)+1)<<3) | MEnt_GEntDim(mf) ;
-    } 
-
-    qsort(gids, num_side, sizeof(int), compare);
-    int prev_gid = gids[0];
-    /* first sweep counts the number of different node sets based on geometric entity id and dimension */
-    for (i=0;i<num_side;i++) {
-      if (gids[i] != prev_gid) { 
-	(*num_side_set)++;
-	prev_gid = gids[i];
-      }
-    }
-    MSTK_free(gids);
-  }
-
-	
-
- 
-  void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int num_side_set, int num_side, int side_dim, int *side_set_ids, int *num_side_per_set) {
-    MFace_ptr mf;
-    MEdge_ptr me;
-    int idx = 0, i = 0;
-    /* if num_side_set is 1, then quick return */
-    if (num_side_set == 1) {
-      if (side_dim == 2) {
-	mf = MESH_Next_Face(mesh,&idx);
-	side_set_ids[0] = ((MEnt_GEntID(mf)+1)<<3) | MEnt_GEntDim(mf) ;
-      }
-      else {
-	me = MESH_Next_Edge(mesh, &idx);
-	side_set_ids[0] = ((MEnt_GEntID(me)+1)<<3) | MEnt_GEntDim(me) ;
-      }
-      num_side_per_set[0] = num_side;
-      return;
-    }
-
-    int *gids = (int *) MSTK_malloc(num_side*sizeof(int)); 
-    
-    if (side_dim == 2) {
-      while ((mf = MESH_Next_Face(mesh,&idx)))
-	gids[i++] = ((MEnt_GEntID(mf)+1)<<3) | MEnt_GEntDim(mf) ;
-    }
-    if (side_dim == 1) {
-      while ((me = MESH_Next_Edge(mesh, &idx)))
-	gids[i++] = ((MEnt_GEntID(me)+1)<<3) | MEnt_GEntDim(me) ;
-    }
-    qsort(gids,num_side,sizeof(int),compare);
-    int prev_gid = gids[0];
-    int num_side_this_set = 0;
-    /* if there is only one node set */
-    side_set_ids[0] = gids[0];
-    num_side_per_set[0] = num_side;
-    /* second sweep record node set id and number of nodes */    
-    int k = 1;
-    prev_gid = gids[0];
-    for (i=0;i<num_side;i++) {
-      if (gids[i] == prev_gid) 
-	num_side_this_set++;
-      else  {
-	num_side_per_set[k-1] = num_side_this_set;
-	k++;
-	side_set_ids[k-1] = gids[i];
-	prev_gid = gids[i];
-	num_side_this_set = 1;
-      }
-    }
-    num_side_per_set[k-1] = num_side_this_set;
-
-    MSTK_free(gids);
   }
   
 
