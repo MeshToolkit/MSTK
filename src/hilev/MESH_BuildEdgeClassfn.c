@@ -69,21 +69,23 @@ int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
 	  gefaceids = (int **)realloc(gefaceids,ngealloc*sizeof(int *));
 	}
 
-	geids[ngedges++] = geid;
+	geids[ngedges] = geid;
 
 	efaces = ME_Faces(edge);
 	nef = List_Num_Entries(efaces);
 
-	gefaceids[i] = (int *) malloc((1+nef)*sizeof(int));
+	gefaceids[ngedges] = (int *) malloc((1+nef)*sizeof(int));
         ngef = 0;
 	for (i = 0; i < nef; i++) {
 	  eface = List_Entry(efaces,i);
 	  if (MF_GEntDim(eface) == 2) {
-	    gefaceids[i][1+ngef] = MF_GEntID(eface);
+	    gefaceids[ngedges][1+ngef] = MF_GEntID(eface);
 	    ngef++;
 	  }
 	}
-	gefaceids[i][0] = ngef;
+	gefaceids[ngedges][0] = ngef;
+
+	ngedges++;
 
 	List_Delete(efaces);
       }
