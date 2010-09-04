@@ -12,9 +12,9 @@ int MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, const char *format)
   if (strncmp(format,"gmv",3) == 0) {
     return MESH_ImportFromGMV(mesh,filename);
   }
-  /*  else (strncmp(format,"avs",3) == 0) {
-    return MESH_ImportFromUCD(mesh,filename);
-    } */
+  else if (strncmp(format,"exo",3) == 0) {
+    return MESH_ImportFromExodusII(mesh,filename);
+  } 
   else {
     MSTK_Report("MESH_ImportFromFile","Unsupported import format",ERROR);
     return 0;
