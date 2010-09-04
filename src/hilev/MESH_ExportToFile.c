@@ -16,9 +16,9 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
   else if (strncmp(format,"flag",4) == 0) {
     return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts);
   }
-  /*  else (strncmp(format,"dx",2) == 0) {
-    return MESH_ExportToDX(mesh,filename,natt,attnames);
-    } */
+  else if (strncmp(format,"exodusii",8) == 0) {
+    return MESH_ExportToExodusII(mesh,filename,natt,attnames,opts);
+  } 
   else {
     MSTK_Report("MESH_ExportFromFile","Unsupported export format",ERROR);
     return 0;
