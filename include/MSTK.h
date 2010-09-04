@@ -41,6 +41,9 @@ void        MSTK_Init();
   int        MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
 			      const int natt, const char **attnames, 
 			      int *opts);
+  int        MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
+				   const int natt, const char **attnames, 
+				   int *opts);
   int        MESH_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
@@ -59,6 +62,11 @@ void        MSTK_Init();
   MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i);
   MAttrib_ptr MESH_Next_Attrib(Mesh_ptr mesh, int *index);
   MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, const char *name);
+
+  int         MESH_Num_MSets(Mesh_ptr mesh);
+  MSet_ptr    MESH_MSet(Mesh_ptr mesh, int i);
+  MSet_ptr    MESH_Next_MSet(Mesh_ptr mesh, int *index);
+  MSet_ptr    MESH_MSetByName(Mesh_ptr mesh, const char *name);
 
   int        MESH_Num_Vertices(Mesh_ptr mesh);
   int        MESH_Num_Edges(Mesh_ptr mesh);
@@ -312,6 +320,40 @@ void        MSTK_Init();
   void  MEnt_Rem_AllAttVals(MEntity_ptr);
 
 
+  /************************************************************************/
+  /* ENTITY SET OPERATORS                                             */
+  /************************************************************************/
+
+  MSet_ptr    MSet_New(Mesh_ptr mesh, const char *set_name, MType entdim);
+  char       *MSet_Name(MSet_ptr set, char *set_name);
+  Mesh_ptr    MSet_Mesh(MSet_ptr set);
+  MType       MSet_EntDim(MSet_ptr set);
+  void        MSet_Delete(MSet_ptr set);
+
+  MSet_ptr    MSet_Add(MSet_ptr set, void *entry);
+  MSet_ptr    MSet_ChknAdd(MSet_ptr set, void *entry);
+  MSet_ptr    MSet_Insert(MSet_ptr set, void *nuentry, void *b4entry);
+  MSet_ptr    MSet_Inserti(MSet_ptr set, void *nuentry, int i);
+  int         MSet_Rem(MSet_ptr set, void *entry);
+  int         MSet_Remi(MSet_ptr set, int i);
+  int         MSet_Replace(MSet_ptr set, void *entry, void *nuentry);
+  int         MSet_Replacei(MSet_ptr set, int i, void *nuentry);
+  int         MSet_Contains(MSet_ptr set, void *entry);
+  int         MSet_Locate(MSet_ptr set, void *entry);
+  void       *MSet_Entry(MSet_ptr set, int i);
+  void       *MSet_Next_Entry(MSet_ptr set, int *i);
+  int         MSet_Num_Entries(MSet_ptr set);
+  MSet_ptr    MSet_Cat(MSet_ptr dest, MSet_ptr src);
+  MSet_ptr    MSet_Copy(MSet_ptr oldset);
+
+  MSet_ptr    MSets_Union(MSet_ptr s1, MSet_ptr s2);
+  MSet_ptr    MSets_Intersect(MSet_ptr s1, MSet_ptr s2);
+  MSet_ptr    MSets_Subtract(MSet_ptr s1, MSet_ptr s2);
+
+#ifdef DEBUG
+  void        MSet_Print(MSet_ptr set);
+#endif
+
 
 
   /************************************************************************/
@@ -325,6 +367,8 @@ void        MSTK_Init();
   void MEnt_Unmark(MEntity_ptr ent, int mkr);
   void List_Mark(List_ptr list, int mkr);
   void List_Unmark(List_ptr list, int mkr);
+  void MSet_Mark(MSet_ptr set, int mkr);
+  void MSet_Unmark(MSet_ptr set, int mkr);
 
 
   /************************************************************************/
@@ -375,8 +419,9 @@ void        MSTK_Init();
   
 
 /**********************************************************************/
-/* Higher level Mesh Query Operators                                  */
+/* Higher level Mesh Operators                                  */
 /**********************************************************************/
+
 
 
 

@@ -37,6 +37,9 @@ extern "C" {
 #ifndef _H_List_Private
   typedef void     *List_ptr;
 #endif
+#ifndef _H_MSet_Private
+  typedef void     *MSet_ptr;
+#endif
 #ifndef _H_Hash_Private
   typedef void     *Hash_ptr;
 #endif

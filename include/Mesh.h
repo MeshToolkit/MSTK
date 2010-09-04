@@ -15,6 +15,7 @@ extern "C" {
     List_ptr mvertex, medge, mface, mregion;
     GModel_ptr geom;
     List_ptr AttribList;
+    List_ptr MSetList;
     int max_vid, max_eid, max_fid, max_rid;
     Hash_ptr hedge, hface;
     int autolock;
@@ -40,6 +41,14 @@ extern "C" {
   MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, const char *name);
   void        MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
   void        MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
+
+  int         MESH_Num_MSets(Mesh_ptr mesh);
+  MSet_ptr    MESH_MSet(Mesh_ptr mesh, int i);
+  MSet_ptr    MESH_Next_MSet(Mesh_ptr mesh, int *index);
+  MSet_ptr    MESH_MSetByName(Mesh_ptr mesh, const char *name);
+  void        MESH_Add_MSet(Mesh_ptr mesh, MSet_ptr mset);
+  void        MESH_Rem_MSet(Mesh_ptr mesh, MSet_ptr mset);
+
 
   int        MESH_Num_Vertices(Mesh_ptr mesh);
   int        MESH_Num_Edges(Mesh_ptr mesh);
