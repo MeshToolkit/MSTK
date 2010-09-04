@@ -343,25 +343,6 @@ extern "C" {
     ent->entdat.marker = ent->entdat.marker & ~(1<<(markerID-1));
   }
 
-  void List_Mark(List_ptr list, int markerID) {
-    MEntity_ptr ent;
-    int i, n = List_Num_Entries(list);
-    
-    for (i = 0; i < n; i++) {
-      ent = (MEntity_ptr) List_Entry(list,i);
-      MEnt_Mark(ent,markerID);
-    }
-  }
-
-  void List_Unmark(List_ptr list, int markerID) {
-    MEntity_ptr ent;
-    int i, n = List_Num_Entries(list);
-    
-    for (i = 0; i < n; i++) {
-      ent = (MEntity_ptr) List_Entry(list,i);
-      MEnt_Unmark(ent,markerID);
-    }
-  }
 
 
 
