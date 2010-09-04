@@ -30,8 +30,6 @@ extern "C" {
   int MSTK_GetMarker() {
     int i;
 
-    /*** CHECK CAREFULLY ***/
-
     if (MSTK_lastbit < MSTK_MAXBITS-1) {
       MSTK_lastbit++;
       MSTK_marker = MSTK_marker | 1<<MSTK_lastbit;
