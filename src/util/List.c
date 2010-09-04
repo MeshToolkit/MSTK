@@ -905,10 +905,6 @@ extern "C" {
   }
 
 
-
-
-
-
   /* Concatenate two lists */
 
   List_ptr List_Cat(List_ptr dest, List_ptr src) {
@@ -947,6 +943,21 @@ extern "C" {
     return dest;    
   }
 
+  void List_Mark(List_ptr list, int markerID) {
+    MEntity_ptr ent;
+    int idx = 0;
+    
+    while ((ent = (MEntity_ptr) List_Next_Entry(list,&idx)))
+      MEnt_Mark(ent,markerID);
+  }
+
+  void List_Unmark(List_ptr list, int markerID) {
+    MEntity_ptr ent;
+    int idx = 0;
+    
+    while ((ent = (MEntity_ptr) List_Next_Entry(list,&idx)))
+      MEnt_Unmark(ent,markerID);
+  }
 
 #ifdef DEBUG
 
