@@ -24,8 +24,9 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   int ndim, nnodes, nelems, nelblock, nnodesets, nsidesets;
   int nedges, nedge_blk, nfaces, nface_blk, nelemsets;
   int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
-  int *elem_blk_ids, *connect, *node_map, *elem_map;
-  int nelem_i, nelnodes, neledges, nelfaces, natts;
+  int *elem_blk_ids, *connect, *node_map, *elem_map, *nnpe;
+  int nelnodes, neledges, nelfaces, ntotnodes, ntotedges, ntotfaces;
+  int nelem_i, natts;
   int *sideset_ids, *ss_elem_list, *ss_side_list, *nodeset_ids, *ns_node_list;
   int num_nodes_in_set, num_sides_in_set, num_df_in_set;
 
@@ -38,7 +39,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   MFace_ptr mf;
   MRegion_ptr mr;
   MAttrib_ptr nmapatt, nelmapatt, elblockatt, nodesetatt, sidesetatt;
-  
+  MSet_ptr faceset;
   
   ex_init_params exopar;
   
@@ -84,14 +85,18 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   /* read the vertex information */
   
   xvals = (double *) malloc(nnodes*sizeof(double));
-  yvals = (double *) malloc(nnodes*sizeof(double));
-  zvals = (double *) malloc(nnodes*sizeof(double));
+  yvals = (double *) malloc(nnodes*sizeof(double));  
+  if (ndim == 2)
+    zvals = (double *) calloc(nnodes,sizeof(double));
+  else
+    zvals = (double *) malloc(nnodes*sizeof(double));
   
   status = ex_get_coord(exoid, xvals, yvals, zvals);
   if (status < 0) {
     sprintf(mesg,"Error while reading vertex info in Exodus II file %s\n",filename);
     MSTK_Report(funcname,mesg,FATAL);
   }
+
 
   for (i = 0; i < nnodes; i++) {
     
@@ -176,12 +181,95 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   }
 
 
+
+  /* Read face blocks if they are there - these will be used by
+     polyhedral elements - There should only be one per EXODUS II
+     specification and the following coding */
+
+  if (nface_blk) {
+    int nfblock, ntotnodes, *face_blk_ids;    
+
+    face_blk_ids = (int *) MSTK_malloc(nface_blk*sizeof(int));
+
+    status = ex_get_ids(exoid, EX_FACE_BLOCK, face_blk_ids);
+    if (status < 0) {
+      sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
+      MSTK_Report(funcname,mesg,FATAL);
+  }
+    for (i = 0; i < nface_blk; i++) {
+
+      status = ex_get_block(exoid, EX_FACE_BLOCK, face_blk_ids[i], "nsided",
+			    &nfblock, &ntotnodes, NULL, NULL, NULL);
+
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading face block info in Exodus II file %s\n",
+		filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
+
+      connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
+
+      status = ex_get_conn(exoid, EX_FACE_BLOCK, face_blk_ids[i], connect,
+			   NULL, NULL);
+
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading face block info in Exodus II file %s\n",
+		filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
+
+      
+      nnpe = (int *) MSTK_malloc(nfblock*sizeof(int));
+
+      status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
+						 face_blk_ids[i], nnpe);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading face block info in Exodus II file %s\n",
+		filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
+
+      int max = 0;
+      for (j = 0; j < nfblock; j++) 
+	if (nnpe[j] > max) max = nnpe[j];
+
+
+      fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
+
+      faceset = MSet_New(mesh,"faceset",MFACE);
+
+      int offset = 0;
+      for (j = 0; j < nfblock; j++) {
+	mf = MF_New(mesh);
+
+	for (k = 0; k < nnpe[j]; k++) 
+	  fverts[k] = MESH_VertexFromID(mesh,connect[offset+k]);
+
+	MF_Set_Vertices(mf,nnpe[j],fverts);
+
+	offset += nnpe[j];
+
+	MSet_Add(faceset,mf);
+      }
+
+      MSTK_free(fverts);
+      MSTK_free(connect);
+      MSTK_free(nnpe);
+    }
+
+  }
+
+
+
   
   /* Get element block IDs and names */
   
   
   elem_blk_ids = (int *) malloc(nelblock*sizeof(int));
-  status = ex_get_elem_blk_ids(exoid, elem_blk_ids);
+  status = ex_get_ids(exoid, EX_ELEM_BLOCK, elem_blk_ids);
   if (status < 0) {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
     MSTK_Report(funcname,mesg,FATAL);
@@ -197,9 +285,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   }
   
   
-  
-  
-  
+
   if (ndim == 1) {
     
     MSTK_Report("MESH_ImportFromExodusII","Not implemented",FATAL);
@@ -218,21 +304,72 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 			    elem_type, &nelem_i, &nelnodes, 
 			    &neledges, &nelfaces, &natts);
       if (status < 0) {
-	sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
+	sprintf(mesg,
+		"Error while reading element block %s in Exodus II file %s\n",
+		elem_blknames[i],filename);
 	MSTK_Report(funcname,mesg,FATAL);
       }
       
       
       if (strcmp(elem_type,"NSIDED") == 0 || 
 	  strcmp(elem_type,"nsided") == 0) {
+
+	/* In this case the nelnodes parameter is actually total number of 
+	   nodes referenced by all the polygons (counting duplicates) */
+
+	ntotnodes = nelnodes;
 	
-	MSTK_Report("MESH_ImportFromExodusII","Reading of polyhedral elements not yet implemented",WARN);
+	connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
+
+	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
+			   NULL, NULL);
+
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading face block info in Exodus II file %s\n",
+		  filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+
+      
+	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
+
+	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
+						   elem_blk_ids[i], nnpe);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading face block info in Exodus II file %s\n",
+		  filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+
+	int max = 0;
+	for (j = 0; j < nelem_i; j++) 
+	  if (nnpe[j] > max) max = nnpe[j];
+
+	fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
+
+	int offset = 0;
+	for (j = 0; j < nelem_i; j++) {
+	  mf = MF_New(mesh);
+
+	  for (k = 0; k < nnpe[j]; k++) 
+	    fverts[k] = MESH_VertexFromID(mesh,connect[offset+k]);
+	  
+	  MF_Set_Vertices(mf,nnpe[j],fverts);
+	  
+	  offset += nnpe[j];
+	}
 	
+	MSTK_free(fverts);
+	MSTK_free(connect);
+	MSTK_free(nnpe);
+
       }
       else {
 	
 	/* Get the connectivity of all elements in this block */
-	
+
 	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
 	
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
@@ -241,7 +378,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report(funcname,mesg,FATAL);
 	}
 	
-	
+
 	/* Create the MSTK faces */
 	
 	fverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
@@ -349,10 +486,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     
   }
   else if (ndim == 3) {
-    
-    elblockatt = MAttrib_New(mesh, "elemblock", INT, MREGION);
-    
-    
+
+
+    /* Check if this is a strictly solid mesh, strictly surface mesh
+       or mixed */
+
+    int surf_elems=0, solid_elems=0;
+    int mesh_type=0;  /* 1 - Surface, 2 - Solid, 3 - mixed */
+
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
@@ -364,15 +505,102 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 		elem_blknames[i],filename);
 	MSTK_Report(funcname,mesg,FATAL);
       }
+
+      if (strncasecmp(elem_type,"NFACED",6) == 0 ||
+	  strncasecmp(elem_type,"TETRA",5) == 0 ||
+	  strncasecmp(elem_type,"WEDGE",5) == 0 ||
+	  strncasecmp(elem_type,"HEX",3) == 0)
+	solid_elems = 1;
+      else if (strncasecmp(elem_type,"NSIDED",6) == 0 ||
+	       strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
+	       strncasecmp(elem_type,"QUAD",4) == 0)
+	surf_elems = 1;      
+    }
+
+    mesh_type = surf_elems + solid_elems;
+    
+    if (mesh_type == 1) 
+      elblockatt = MAttrib_New(mesh, "elemblock", INT, MFACE);
+    else if (mesh_type == 2)
+      elblockatt = MAttrib_New(mesh, "elemblock", INT, MREGION);
+    else if (mesh_type == 3)
+      elblockatt = MAttrib_New(mesh, "elemblock", INT, MALLTYPE);
+    
+
+    for (i = 0; i < nelblock; i++) {
+      
+      status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
+			    elem_type, &nelem_i, &ntotnodes, 
+			    &ntotedges, &ntotfaces, &natts);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading element block %s in Exodus II file %s\n",
+		elem_blknames[i],filename);
+	MSTK_Report(funcname,mesg,FATAL);
+      }
       
       
       if (strcmp(elem_type,"NFACED") == 0 || 
 	  strcmp(elem_type,"nfaced") == 0) {
 	
-	MSTK_Report("MESH_ImportFromExodusII","Reading of polyhedral elements not yet implemented",WARN);
+	/* In this case the nelnodes parameter is actually total number of 
+	   nodes referenced by all the polyhedra (counting duplicates) */
+
+	ntotfaces = nelfaces;
 	
+	connect = (int *) MSTK_malloc(ntotfaces*sizeof(int));
+
+	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], NULL, NULL,
+			     connect);
+
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading elem block info in Exodus II file %s\n",
+		  filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+
+      
+	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
+	
+	status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
+						   elem_blk_ids[i], nnpe);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading elem block info in Exodus II file %s\n",
+		  filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+
+	int max = 0;
+	for (j = 0; j < nelem_i; j++) 
+	  if (nnpe[j] > max) max = nnpe[j];
+
+	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(max*sizeof(MFace_ptr));
+	int *rfdirs = (int *) MSTK_malloc(max*sizeof(int *));
+
+	int offset = 0;
+	for (j = 0; j < nelem_i; j++) {
+	  mr = MR_New(mesh);
+
+	  for (k = 0; k < nnpe[j]; k++) {
+	    rfarr[k] = MSet_Entry(faceset,connect[offset+k]-1);
+	    rfdirs[k] = 1;   /* THIS IS WRONG - EXODUS HAS TO GIVE US THIS INFO */
+	  }
+	  
+	  MR_Set_Faces(mf,nnpe[j], rfarr, rfdirs);
+	  
+	  offset += nnpe[j];
+	}
+	
+	MSTK_free(rfarr);
+	MSTK_free(connect);
+	MSTK_free(nnpe);
+
       }
-      else {
+      else if (strncasecmp(elem_type,"TETRA",5) == 0 ||
+	       strncasecmp(elem_type,"WEDGE",5) == 0 ||
+	       strncasecmp(elem_type,"HEX",3) == 0) {
 	
 	/* Get the connectivity of all elements in this block */
 	
@@ -389,19 +617,19 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	rverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
 	
-	if (strncmp(elem_type,"TETRA",5) == 0) {
+	if (strncasecmp(elem_type,"TETRA",5) == 0) {
 	  if (nelnodes > 4) {
 	    MSTK_Report(funcname,"Higher order tets not supported",WARN);
 	    continue;
 	  }
 	}
-	else if (strncmp(elem_type,"WEDGE",5) == 0) {
+	else if (strncasecmp(elem_type,"WEDGE",5) == 0) {
 	  if (nelnodes > 6) {
 	    MSTK_Report(funcname,"Higher order prisms/wedges not supported",WARN);
 	    continue;
 	  }
 	}
-	else if (strncmp(elem_type,"HEX",3) == 0) {
+	else if (strncasecmp(elem_type,"HEX",3) == 0) {
 	  if (nelnodes > 8) {
 	    MSTK_Report(funcname,"Higher order hexes not supported",WARN);
 	    continue;
@@ -433,7 +661,97 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 	free(connect);
 	
-      } /* if (strcmp(elem_type,"NSIDED") ... else */
+      } 
+      else if (strncasecmp(elem_type,"NSIDED",6) == 0) {
+	
+	/* In this case the nelnodes parameter is actually total number of 
+	   nodes referenced by all the polygons (counting duplicates) */
+
+	ntotnodes = nelnodes;
+	
+	connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
+
+	status = ex_get_conn(exoid, EX_FACE_BLOCK, elem_blk_ids[i], connect,
+			   NULL, NULL);
+
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading face block info in Exodus II file %s\n",
+		  filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+
+      
+	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
+
+	status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
+						   elem_blk_ids[i], nnpe);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading face block info in Exodus II file %s\n",
+		  filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+
+	int max = 0;
+	for (j = 0; j < nelem_i; j++) 
+	  if (nnpe[j] > max) max = nnpe[j];
+
+	fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
+
+	int offset = 0;
+	for (j = 0; j < nelem_i; j++) {
+	  mf = MF_New(mesh);
+
+	  for (k = 0; k < nnpe[j]; k++) 
+	    fverts[k] = MESH_VertexFromID(mesh,connect[offset+k]);
+	  
+	  MF_Set_Vertices(mf,nnpe[j],fverts);
+	  
+	  offset += nnpe[j];
+	}
+	
+	MSTK_free(fverts);
+	MSTK_free(connect);
+	MSTK_free(nnpe);
+
+      }
+      else if (strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
+	       strncasecmp(elem_type,"QUAD",4) == 0) {
+	
+	/* Get the connectivity of all elements in this block */
+	
+	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
+	
+	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
+	if (status < 0) {
+	  sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
+	  MSTK_Report(funcname,mesg,FATAL);
+	}
+	
+	
+	/* Create the MSTK faces */
+	
+	fverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
+	
+	for (j = 0; j < nelem_i; j++) {
+	  
+	  mf = MF_New(mesh);
+	  
+	  for (k = 0; k < nelnodes; k++)
+	    fverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
+	  
+	  MF_Set_Vertices(mf,nelnodes,fverts);
+
+	  MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
+
+	}
+	
+	free(fverts);
+
+	
+      } /* if (strcmp(elem_type,"NFACED") ... else */
+      
       
     } /* for (i = 0; i < nelblock; i++) */
     
@@ -512,11 +830,26 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     
     if (status == 0) {
       
-      nmapatt = MAttrib_New(mesh, "elem_map", INT, MREGION);
-      
-      for (i = 0; i < nelems; i++) {
-	mr = MESH_Region(mesh, i);
-	MEnt_Set_AttVal(mr, nmapatt, elem_map[i], 0.0, NULL);
+      if (mesh_type == 1) {
+	nmapatt = MAttrib_New(mesh, "elem_map", INT, MFACE);
+	
+	for (i = 0; i < nelems; i++) {
+	  mf = MESH_Face(mesh, i);
+	  MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+	}
+      }
+      else if (mesh_type == 2) {
+	nmapatt = MAttrib_New(mesh, "elem_map", INT, MREGION);
+	
+	for (i = 0; i < nelems; i++) {
+	  mr = MESH_Region(mesh, i);
+	  MEnt_Set_AttVal(mr, nmapatt, elem_map[i], 0.0, NULL);
+	}
+      }
+      else {
+	MSTK_Report("MESH_ImportFromExodusII",
+	       "Element maps not supported for mixed surface-solid meshes",
+		    WARN);
       }
       
     }
