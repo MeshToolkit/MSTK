@@ -47,7 +47,7 @@ extern "C" {
 	}
 	else if (vgdim[(i+1)%n] > vgdim[i]) {
 	  egdim = vgdim[(i+1)%n];
-	  egid = vgid[i];
+	  egid = vgid[(i+1)%n];
 	}
 	else { /* vgdim[i] == vgdim[(i+1)%n] */
 	  if (vgdim[i] == 0) {
