@@ -193,6 +193,57 @@ void MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
     List_Rem(mesh->AttribList,attrib);
 }
 
+
+int MESH_Num_MSets(Mesh_ptr mesh) {
+  if (mesh->MSetList)
+    return List_Num_Entries(mesh->MSetList);
+  else
+    return 0;
+}
+
+MSet_ptr MESH_MSet(Mesh_ptr mesh, int i) {
+  if (mesh->MSetList)
+    return List_Entry(mesh->MSetList,i);
+  else
+    return NULL;
+}
+  
+MSet_ptr MESH_Next_MSet(Mesh_ptr mesh, int *index) {
+  if (mesh->MSetList)
+    return List_Next_Entry(mesh->MSetList,index);
+  else
+    return NULL;
+}
+
+MSet_ptr MESH_MSetByName(Mesh_ptr mesh, const char *name) {
+  if (mesh->MSetList) {
+    int idx = 0;
+    MSet_ptr mset;
+    char attname[256];
+    
+    while ((mset = List_Next_Entry(mesh->MSetList,&idx))) {
+      MSet_Name(mset,attname);
+      if (strcmp(name,attname) == 0)
+	return mset;
+    }
+  }
+  
+  return NULL;
+}
+
+void MESH_Add_MSet(Mesh_ptr mesh, MSet_ptr mset) {
+  if (!mesh->MSetList)
+    mesh->MSetList = List_New(3);
+  
+  List_Add(mesh->MSetList,mset);
+}
+
+void MESH_Rem_MSet(Mesh_ptr mesh, MSet_ptr mset) {
+  if (mesh->MSetList)
+    List_Rem(mesh->MSetList,mset);
+}
+
+
 void MESH_FillHash_Edges(Mesh_ptr mesh) {
   MRegion_ptr region;
   MEdge_ptr edge;
