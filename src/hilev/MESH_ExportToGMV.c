@@ -68,12 +68,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 					 {3,4,5,0,1,2,-1,-1},
 					 {-1,-1,-1,-1,-1,-1,-1,-1},
 					 {4,5,6,7,0,1,2,3}};
-  MAttrib_ptr    vidatt=0,fidatt=0,ridatt=0;
-
-
-  vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
-  fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
-  ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
+  MAttrib_ptr    vidatt=0,eidatt=0,fidatt=0,ridatt=0;
 
 
   gmodel = 1;
@@ -91,6 +86,11 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   ctime = time(&ctime);
   strftime(date_str,sizeof(date_str),"%m/%d/%Y",localtime(&ctime));
   fprintf(fp,"simdate %s\n",date_str);
+
+
+
+
+  vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
 
   if (!opts || opts[0] == 0) {
     fprintf(fp,"nodev %d\n",nv);
@@ -135,44 +135,64 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     MSTK_free(zcoord);
   }
 
+
+
   cellmk = MSTK_GetMarker();
 
   /* number of regions */
 
   ncells = MESH_Num_Regions(mesh); 
 
-  /* May have problems if we want to write polygons as 'faces' */
-  /* number of faces not connected to a region */
-  ncells2 = 0;
-  idx = 0; i = 0;
-  while ((face = MESH_Next_Face(mesh,&idx))) {
-    if ((fregs = MF_Regions(face)))
-      List_Delete(fregs);
-    else {
-      MEnt_Mark(face,cellmk);
-      ncells++;
-      ncells2++;
-    }
-    MEnt_Set_AttVal(face,fidatt,++i,0.0,NULL);
+  if (ncells) {
+    ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
+
+    idx = 0; i = 0;
+    while ((region = MESH_Next_Region(mesh,&idx)))
+      MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
   }
-  
-  /* number of edges not connected to a face */
-  ncells1 = 0;
-  idx = 0; i = 0;
-  while ((edge = MESH_Next_Edge(mesh,&idx))) {
-    if ((efaces = ME_Faces(edge)))
-      List_Delete(efaces);
-    else {
-      MEnt_Mark(edge,cellmk);
-      ncells++;
-      ncells1++;
+
+  /* May have problems if we want to write polygons as 'faces' */
+  /* number of faces not connected to a region */  
+
+  if (MESH_Num_Faces(mesh)) {
+
+    fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
+
+    ncells2 = 0;
+    idx = 0; i = 0;
+    while ((face = MESH_Next_Face(mesh,&idx))) {
+      if ((fregs = MF_Regions(face)))
+	List_Delete(fregs);
+      else {
+	MEnt_Mark(face,cellmk);
+	ncells++;
+	ncells2++;
+      }
+      MEnt_Set_AttVal(face,fidatt,++i,0.0,NULL);
     }
   }
 
-  idx = 0; i = 0;
-  while ((region = MESH_Next_Region(mesh,&idx)))
-    MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
-  
+
+  /* number of edges not connected to a face */
+  if (MESH_Num_Edges(mesh)) {
+
+    eidatt = MAttrib_New(mesh,"eidatt",INT,MEDGE);
+
+    ncells1 = 0;
+    idx = 0; i = 0;
+    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+      if ((efaces = ME_Faces(edge)))
+	List_Delete(efaces);
+      else {
+	MEnt_Mark(edge,cellmk);
+	ncells++;
+	ncells1++;
+      }
+      MEnt_Set_AttVal(edge,eidatt,++i,0.0,NULL);
+    }
+  }
+
+
 
   /* write region connectivity for entire mesh */
 
@@ -622,7 +642,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   if (gmodel) {
     fprintf(fp,"material %d 0\n",ngent);
     for (i = 0; i < ngent; i++) {
-      sprintf(matname,"mat%-d\n",(i+1));
+      sprintf(matname,"mat%-d\n",gentities[i]);
       fprintf(fp,"%s",matname);
     }
     
@@ -815,6 +835,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	    k++;
 	  }
 	}
+	if (k%5 != 0) fprintf(fp,"\n");
       }
       
       if (attentdim != MVERTEX && attentdim != MUNKNOWNTYPE) {
@@ -837,6 +858,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	    k++;
 	  }
 	}
+	if (k%5 != 0) fprintf(fp,"\n");
 
 	if (ncells2) {
 	  idx = 0;
@@ -857,6 +879,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	      k++;
 	    }
 	  }
+	  if (k%5 != 0) fprintf(fp,"\n");
 	}
 	
 	if (ncells1) {
@@ -878,6 +901,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	      k++;
 	    }
 	  }
+	  if (k%5 != 0) fprintf(fp,"\n");
 	}
       }
     }
@@ -932,7 +956,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   MAttrib_Delete(vidatt);
   MAttrib_Delete(fidatt);
-  MAttrib_Delete(ridatt);
+  if (MESH_Num_Regions(mesh))
+    MAttrib_Delete(ridatt);
 
   return 1;
 }
