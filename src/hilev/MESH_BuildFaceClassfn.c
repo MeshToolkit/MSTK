@@ -68,25 +68,24 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
 	  gfregids = (int (*)[2])realloc(gfregids,ngfalloc*sizeof(int [2]));
 	}
 
-	gfids[ngfaces++] = gfid;
-
+	gfids[ngfaces] = gfid;
+	gfregids[ngfaces][0] = gfregids[ngfaces][1] = 0;
 	fregs = MF_Regions(face);
 	if (fregs) {
 	  nfr = List_Num_Entries(fregs);
       
 	  freg0 = List_Entry(fregs,0);
-	  gfregids[i][0] = MR_GEntID(freg0); /* NOTE 1 (see EOF) */
+	  gfregids[ngfaces][0] = MR_GEntID(freg0); /* NOTE 1 (see EOF) */
       
 	  if (nfr == 2) {
 	    freg1 = List_Entry(fregs,1); 
-	    gfregids[i][1] = MR_GEntID(freg1);
+	    gfregids[ngfaces][1] = MR_GEntID(freg1);
 	  }	  
 	  
 	  List_Delete(fregs);
 	}
-	else {
-	  gfregids[i][0] = gfregids[i][1] = 0;
-	}
+
+	ngfaces++;
       }
 
     }
