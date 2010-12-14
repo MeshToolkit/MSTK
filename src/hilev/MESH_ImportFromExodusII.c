@@ -16,7 +16,7 @@ extern "C" {
 int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
   char mesg[256], funcname[256]="MESH_ImportFromExodusII";
-  char title[256], elem_type[256];
+  char title[256], elem_type[256], sidesetname[256], nodesetname[256];
   char **elem_blknames;
   int i, j, k, k1;
   int comp_ws = sizeof(double), io_ws = 0;
@@ -33,13 +33,22 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   double *xvals, *yvals, *zvals, xyz[3];
   float version;
 
+  int exo_nrf[3] = {4,5,6};
+  int exo_nrfverts[3][6] =
+    {{3,3,3,3,0,0},{4,4,4,3,3,0},{4,4,4,4,4,4}};
+  int exo_rfverts[3][6][4] =
+    {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{2,1,0,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
+     {{0,1,4,3},{1,2,5,4},{2,0,3,5},{2,1,0,-1},{3,4,5,-1},{-1,-1,-1,-1}},
+     {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{3,2,1,0},{4,5,6,7}}};
+
+
   List_ptr fedges, rfaces;
   MVertex_ptr mv, *fverts, *rverts;
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
   MAttrib_ptr nmapatt, nelmapatt, elblockatt, nodesetatt, sidesetatt;
-  MSet_ptr faceset;
+  MSet_ptr faceset, nodeset, sideset;
   
   ex_init_params exopar;
   
@@ -148,10 +157,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     }
     
     
-    nodesetatt = MAttrib_New(mesh,"nodeset",INT,MVERTEX);
-    
     for (i = 0; i < nnodesets; i++) {
-      
+
+      sprintf(nodesetname,"nodeset_%-d",nodeset_ids[i]);
+
+      nodesetatt = MAttrib_New(mesh,nodesetname,INT,MVERTEX);
+
+      nodeset = MSet_New(mesh,nodesetname,MVERTEX);
+    
       status = ex_get_node_set_param(exoid,nodeset_ids[i],&num_nodes_in_set,
 				     &num_df_in_set);
       
@@ -171,6 +184,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	/* Set attribute value for this node */
 	
 	MEnt_Set_AttVal(mv,nodesetatt,nodeset_ids[i],0.0,NULL);
+
+	/* Add node to a nodeset */
+
+	MSet_Add(nodeset,mv);
       }
       
       free(ns_node_list);
@@ -419,10 +436,13 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       }
       
       
-      sidesetatt = MAttrib_New(mesh,"sideset",INT,MEDGE);
-      
       for (i = 0; i < nsidesets; i++) {
+
+	sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
+	sidesetatt = MAttrib_New(mesh,sidesetname,INT,MEDGE);
+	sideset = MSet_New(mesh,sidesetname,MEDGE);
+      
 	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
 				       &num_df_in_set);
 	
@@ -447,6 +467,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  /* Set attribute value for this edge */
 	  
 	  MEnt_Set_AttVal(me,sidesetatt,sideset_ids[i],0.0,NULL);
+
+	  /* Add the edge to a set */
+
+	  MSet_Add(sideset,me);
 	  
 	  /* Interpret sideset attribute as classification info for the edge */
 	  
@@ -517,7 +541,15 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	surf_elems = 1;      
     }
 
-    mesh_type = surf_elems + solid_elems;
+    if (surf_elems && !solid_elems)
+      mesh_type = 1;
+    else if (!surf_elems && solid_elems)
+      mesh_type = 2;
+    else if (surf_elems && solid_elems)
+      mesh_type = 3;
+    else {
+      MSTK_Report(funcname,"Mesh has neither surface nor solid elements?",FATAL);
+    }
     
     if (mesh_type == 1) 
       elblockatt = MAttrib_New(mesh, "elemblock", INT, MFACE);
@@ -601,6 +633,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       else if (strncasecmp(elem_type,"TETRA",5) == 0 ||
 	       strncasecmp(elem_type,"WEDGE",5) == 0 ||
 	       strncasecmp(elem_type,"HEX",3) == 0) {
+	int nrf, eltype;
+	MFace_ptr face;
 	
 	/* Get the connectivity of all elements in this block */
 	
@@ -618,43 +652,93 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	rverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
 	
 	if (strncasecmp(elem_type,"TETRA",5) == 0) {
+	  eltype = 0;
+	  nrf = 4;
 	  if (nelnodes > 4) {
 	    MSTK_Report(funcname,"Higher order tets not supported",WARN);
 	    continue;
 	  }
 	}
 	else if (strncasecmp(elem_type,"WEDGE",5) == 0) {
+	  eltype = 1;
+	  nrf = 5;
 	  if (nelnodes > 6) {
 	    MSTK_Report(funcname,"Higher order prisms/wedges not supported",WARN);
 	    continue;
 	  }
 	}
 	else if (strncasecmp(elem_type,"HEX",3) == 0) {
+	  eltype = 2;
+	  nrf = 6;
 	  if (nelnodes > 8) {
 	    MSTK_Report(funcname,"Higher order hexes not supported",WARN);
 	    continue;
 	  }
 	}
 	else {
-	  sprintf(mesg,"Unrecognized or unsupported solid element type: %s",elem_type);
+	  sprintf(mesg,"Unrecognized or unsupported solid element type: %s",
+		  elem_type);
 	  MSTK_Report(funcname,mesg,WARN);
 	  continue;
 	}
 	
-	
+	fverts = (MVertex_ptr *) MSTK_malloc(6*sizeof(MVertex_ptr));
+
+	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(nrf*sizeof(MFace_ptr));
+	int *rfdirs = (int *) MSTK_malloc(nrf*sizeof(int *));
+
 	for (j = 0; j < nelem_i; j++) {
 	  
 	  mr = MR_New(mesh);
 	  
-	  /* Exodus II and MSTK node conventions are the same */
+	  /* Exodus II and MSTK node conventions are the same but the
+	     face conventions are not - so instead of using
+	     MR_Set_Vertices we will create the faces individually and
+	     then do MR_Set_Faces */
 	  
 	  for (k = 0; k < nelnodes; k++)
 	    rverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
 	  
-	  MR_Set_Vertices(mr,nelnodes,rverts,0,NULL);
+
+	  for (k = 0; k < exo_nrf[eltype]; k++) {
+	    for (k1 = 0; k1 < exo_nrfverts[eltype][k]; k1++) {
+	      fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
+	    }
+
+	    if ((face = MVs_CommonFace(exo_nrfverts[eltype][k],fverts))) {
+	      List_ptr fregs;
+
+	      rfarr[k] = face;
+	      fregs = MF_Regions(face);
+	      if (!fregs || !List_Num_Entries(fregs)) {
+		rfdirs[k] = 1;
+	      }
+	      else {
+		if (List_Num_Entries(fregs) == 1) {
+		  int dir;
+		  MRegion_ptr freg;
+
+		  freg = List_Entry(fregs,0);
+		  dir = MR_FaceDir(freg,face);
+		  rfdirs[k] = !dir;
+		}
+		else if (List_Num_Entries(fregs) == 2) {
+		  MSTK_Report("MESH_ImportFromExodusII",
+			      "Face already connected two faces",FATAL);
+		}
+	      }
+	    }
+	    else {
+	      face = MF_New(mesh);
+	      MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
+	      rfarr[k] = face;
+	      rfdirs[k] = 1;
+	    }
+	  }
+	  
+	  MR_Set_Faces(mr,nrf,rfarr,rfdirs);
 
 	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
-
 	}
 	
 	free(rverts);
@@ -772,10 +856,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       }
       
       
-      sidesetatt = MAttrib_New(mesh,"sideset",INT,MFACE);
-      
       for (i = 0; i < nsidesets; i++) {
+
+	sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
+	sidesetatt = MAttrib_New(mesh,sidesetname,INT,MFACE);
+
+	sideset = MSet_New(mesh,sidesetname,MFACE);
+      
 	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
 				       &num_df_in_set);
 	
@@ -791,15 +879,60 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	
 	for (j = 0; j < num_sides_in_set; j++) {
+	  int eltype;
+	  List_ptr rverts;
+
 	  mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
 	  
-	  rfaces = MR_Faces(mr);
-	  mf = List_Entry(rfaces,ss_side_list[j]-1);
+	  rfaces = MR_Faces(mr);       /* No particular order */
+	  rverts = MR_Vertices(mr); /* Ordered for standard elements */
+
+	  if (List_Num_Entries(rverts) == 4)
+	    eltype = 0;
+	  else if (List_Num_Entries(rverts) == 6)
+	    eltype = 1;
+	  else if (List_Num_Entries(rverts) == 8)
+	    eltype = 2;
+	  else
+	    eltype = 3; /* Polyhedron */
+
+	  if (eltype == 3) { 
+	    mf = List_Entry(rfaces,ss_side_list[j]-1);
+	  }
+	  else {
+	    int found = 0;
+	    for (k = 0; k < exo_nrf[eltype]; k++) {
+	      int has_all_verts = 1;
+	      int k1, lfnum;
+
+	      lfnum = ss_side_list[j]-1;
+
+	      mf = List_Entry(rfaces,k);
+	      for (k1 = 0; k1 < exo_nrfverts[eltype][k]; k1++) {
+		mv = List_Entry(rverts,exo_rfverts[eltype][lfnum][k1]);
+		if (!MF_UsesEntity(mf,mv,0)) {
+		  has_all_verts = 0;
+		  break;
+		}
+	      }
+	      if (has_all_verts) {
+		found = 1;
+		break;
+	      }
+	    }
+	  }
+	  if (!mf)
+	    MSTK_Report(funcname,"Could not find sideset face",FATAL);
+
 	  List_Delete(rfaces);
 	  
-	  /* Set attribute value for this edge */
+	  /* Set attribute value for this face */
 	  
 	  MEnt_Set_AttVal(mf,sidesetatt,sideset_ids[i],0.0,NULL);
+
+	  /* Add the face to a set */
+
+	  MSet_Add(sideset,mf);
 	  
 	  /* Interpret sideset attribute as classification info for the edge */
 	  
