@@ -54,6 +54,13 @@ void        MSTK_Init();
   int        MESH_DelInterior(Mesh_ptr mesh);
   int        MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
 
+  /* Check if mesh topology is valid */
+  int        MESH_CheckTopo(Mesh_ptr mesh);
+
+  /* Check if mesh geometry is valid */
+  int        MESH_CheckGeom(Mesh_ptr mesh);
+
+
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
   RepType    MESH_RepType(Mesh_ptr mesh);
   char      *MESH_RepType_Str(Mesh_ptr mesh);
