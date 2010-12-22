@@ -90,7 +90,7 @@ extern "C" {
 	vregions= MV_Regions(v);
 	if (vregions) {
 	  nr = List_Num_Entries(vregions);
-	  fprintf(stderr,"Regions: %-d",nr);
+	  fprintf(stderr,"Regions: %-d\n",nr);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
@@ -190,7 +190,7 @@ extern "C" {
 	eregions= ME_Regions(e);
 	if (eregions) {
 	  nr = List_Num_Entries(eregions);
-	  fprintf(stderr,"Regions: %-d",nr);
+	  fprintf(stderr,"Regions: %-d\n",nr);
 	  
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
