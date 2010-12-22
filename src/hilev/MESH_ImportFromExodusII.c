@@ -41,13 +41,12 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
      {{0,1,4,3},{1,2,5,4},{2,0,3,5},{2,1,0,-1},{3,4,5,-1},{-1,-1,-1,-1}},
      {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{3,2,1,0},{4,5,6,7}}};
 
-
   List_ptr fedges, rfaces;
   MVertex_ptr mv, *fverts, *rverts;
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
-  MAttrib_ptr nmapatt, nelmapatt, elblockatt, nodesetatt, sidesetatt;
+  MAttrib_ptr nmapatt, elblockatt, nodesetatt, sidesetatt;
   MSet_ptr faceset, nodeset, sideset;
   
   ex_init_params exopar;
@@ -701,11 +700,13 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  
 
 	  for (k = 0; k < exo_nrf[eltype]; k++) {
-	    for (k1 = 0; k1 < exo_nrfverts[eltype][k]; k1++) {
-	      fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
-	    }
+	    int nfv;
 
-	    if ((face = MVs_CommonFace(exo_nrfverts[eltype][k],fverts))) {
+	    nfv = exo_nrfverts[eltype][k];
+	    for (k1 = 0; k1 < nfv; k1++)
+	      fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
+
+	    if ((face = MVs_CommonFace(nfv,fverts))) {
 	      List_ptr fregs;
 
 	      rfarr[k] = face;
@@ -900,30 +901,27 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    mf = List_Entry(rfaces,ss_side_list[j]-1);
 	  }
 	  else {
-	    int found = 0;
-	    for (k = 0; k < exo_nrf[eltype]; k++) {
-	      int has_all_verts = 1;
-	      int k1, lfnum;
+	    int lfnum;
+	    lfnum = ss_side_list[j]-1;
 
-	      lfnum = ss_side_list[j]-1;
+	    /* Since we made the faces of the region according the
+	       convention that Exodus II uses, the local face number
+	       of the Exodus II element matches that of the MSTK element */
 
-	      mf = List_Entry(rfaces,k);
-	      for (k1 = 0; k1 < exo_nrfverts[eltype][k]; k1++) {
-		mv = List_Entry(rverts,exo_rfverts[eltype][lfnum][k1]);
-		if (!MF_UsesEntity(mf,mv,0)) {
-		  has_all_verts = 0;
-		  break;
-		}
-	      }
-	      if (has_all_verts) {
-		found = 1;
-		break;
-	      }
-	    }
+	    mf = List_Entry(rfaces,lfnum);
 	  }
 	  if (!mf)
 	    MSTK_Report(funcname,"Could not find sideset face",FATAL);
-
+	  else {
+	    List_ptr fregs;
+	    fregs = MF_Regions(mf);
+	    if (List_Num_Entries(fregs) == 2) {
+	      MSTK_Report("MESH_ImportFromExodusII",
+			  "Interior face identified as being on the boundary",
+			  ERROR);
+	    }
+	    if (fregs) List_Delete(fregs);
+	  }
 	  List_Delete(rfaces);
 	  
 	  /* Set attribute value for this face */
