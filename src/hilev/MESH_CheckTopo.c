@@ -55,7 +55,7 @@ extern "C" {
       idx2 = 0;
       while ((ve = List_Next_Entry(vedges,&idx2))) {
 	
-	eid = ME_ID(me);
+	eid = ME_ID(ve);
 	     
 	if (ME_Vertex(ve,0) != mv && ME_Vertex(ve,1) != mv) {
 	  sprintf(mesg,"Vertex %-d connected to edge %-d but edge does not use vertex",vid,eid);
@@ -159,7 +159,7 @@ extern "C" {
 	}
 
 	if (!done) {
-	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find connected face classified on this model face",vid,gvid);
+	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find ring of faces classified on this model face",vid,gvid);
 	  MSTK_Report(funcname,mesg,WARN);
 	}
       }
