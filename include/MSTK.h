@@ -49,6 +49,7 @@ void        MSTK_Init();
 				      const char **attnames, int *opts,
 				      int *procids);
   int        MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
+  int        MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
   int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
   int        MESH_BuildClassfn(Mesh_ptr mesh);
   int        MESH_DelInterior(Mesh_ptr mesh);
@@ -421,7 +422,8 @@ void        MSTK_Init();
 /***********************************************************************/
 
   int ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
-  MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v1 is retained */
+  MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
+  MEdge_ptr MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
   MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
   
 

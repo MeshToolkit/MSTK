@@ -141,6 +141,9 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_BuildEdgeClassfn(Mesh_ptr mesh);
   int MESH_BuildVertexClassfn(Mesh_ptr mesh);
 
+
+  /* Export */
+
   int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
@@ -149,6 +152,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
 				      int *procids);
+
+  int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
 
   /* Adhoc routines for parallel output of MSTK files */
 
