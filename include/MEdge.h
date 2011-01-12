@@ -77,6 +77,8 @@ extern "C" {
   void ME_Rem_Face(MEdge_ptr medge, MFace_ptr mface);
   void ME_Rem_Region(MEdge_ptr medge, MRegion_ptr mregion);
 
+  MEdge_ptr MEs_Merge(MEdge_ptr e1, MEdge_ptr e2);
+
   void ME_Lock(MEdge_ptr e);
   void ME_UnLock(MEdge_ptr e);
   int ME_IsLocked(MEdge_ptr e);
