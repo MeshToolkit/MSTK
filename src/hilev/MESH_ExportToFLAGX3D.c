@@ -380,11 +380,19 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       }
     }
   }
-  
+
+  /* Apparently writing out non-standard node data is causing problems - so skip */
+  /*
   fprintf(fp,"   %-22s %10d\n","node_data_fields",nnodatt);
+  */
+  fprintf(fp,"   %-22s %10d\n","node_data_fields",0);
   
   /* must write out matid and partelm and then add additional cell data */
-  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2); 
+  /* Apparently writing out non-standard node data is causing problems - so write out only matid and partelm data */
+  /*
+  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
+  */
+  fprintf(fp,"   %-22s %10d\n","cell_data_fields",2);
   
   
   /* End of header information */
@@ -993,6 +1001,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /* Write out any other cell based attributes, if requested */
 
+  /* Apparently these are causing problems so we will comment it out */
+
+  /*
   for (i = 0; i < ncellatt; i++) {
     attrib = cellatts[i];
     atttype = MAttrib_Get_Type(attrib);
@@ -1029,6 +1040,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     strcat(tmpstr,attname);
     fprintf(fp,"%s\n",tmpstr);
   }
+  */
 
   if (cellatts) MSTK_free(cellatts);
   
@@ -1041,6 +1053,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   fprintf(fp,"node_data\n");
 
+  /*
   for (i = 0; i < ncellatt; i++) {
     attrib = nodatts[i];
     atttype = MAttrib_Get_Type(attrib);
@@ -1065,6 +1078,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   }
 
   if (nodatts) MSTK_free(nodatts);
+  */
   
   fprintf(fp,"end_node_data\n");
 
