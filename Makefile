@@ -35,16 +35,16 @@ METISINC = $(METISDIR)/Lib
 EXODUSIIDIR = $(HOME)/packages/ACCESS/libraries/exodusii
 EXODUSIIINC = $(EXODUSIIDIR)/cbind/include
 
+# NETCDF DIRECTORY
 
-# STANDARD DIRECTORY
-
-TOPDIR = $(HOME)
-DEPINCS := -I$(METISINC)
+NETCDFDIR = $(HOME)/packages/netcdf-4.0.1
+NETCDFINC = $(NETCDFDIR)/include
+NETCDFLIB = $(NETCDFDIR)/lib
 
 # DEVELOP DIRECTORY
 
 TOPDIR = $(HOME)/develop
-DEPINCS := -I$(METISINC) -I$(EXODUSIIINC)
+DEPINCS := -I$(METISINC) -I$(NETCDFINC) -I$(EXODUSIIINC)
 
 # ---------------- DO NOT EDIT BELOW THIS LINE --------------------------------
 
