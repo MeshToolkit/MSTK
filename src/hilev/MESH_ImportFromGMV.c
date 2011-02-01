@@ -715,7 +715,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
     }
     else if (strncmp(temp_str,"material",8) == 0) {
       int nmats, matnum;
-      char matname[10];
+      char matname[256];
 
       if (strcmp(temp_str,"material") != 0) {
         sprintf(mesg_str,"Keyword should be 'material' not '%s'. Accepting for now...",temp_str);
