@@ -619,7 +619,9 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    rfdirs[k] = 1;   /* THIS IS WRONG - EXODUS HAS TO GIVE US THIS INFO */
 	  }
 	  
-	  MR_Set_Faces(mf,nnpe[j], rfarr, rfdirs);
+	  MR_Set_Faces(mr, nnpe[j], rfarr, rfdirs);
+
+	  MR_Set_GEntID(mr, elem_blk_ids[i]);
 	  
 	  offset += nnpe[j];
 	}
@@ -739,6 +741,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  
 	  MR_Set_Faces(mr,nrf,rfarr,rfdirs);
 
+	  MR_Set_GEntID(mr, elem_blk_ids[i]);
+
 	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
 	}
 	
@@ -792,6 +796,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    fverts[k] = MESH_VertexFromID(mesh,connect[offset+k]);
 	  
 	  MF_Set_Vertices(mf,nnpe[j],fverts);
+
+	  MF_Set_GEntID(mf, elem_blk_ids[i]);
 	  
 	  offset += nnpe[j];
 	}
@@ -827,6 +833,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    fverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
 	  
 	  MF_Set_Vertices(mf,nelnodes,fverts);
+
+	  MF_Set_GEntID(mf, elem_blk_ids[i]);
 
 	  MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
 
