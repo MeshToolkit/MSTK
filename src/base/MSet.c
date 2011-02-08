@@ -159,7 +159,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+1)*sizeof(char));
+    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+7)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_or_");
@@ -219,7 +219,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+1)*sizeof(char));
+    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+8)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_and_");
@@ -294,7 +294,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+1)*sizeof(char));
+    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+10)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_minus_");
