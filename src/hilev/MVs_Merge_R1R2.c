@@ -9,7 +9,7 @@ MVertex_ptr MVs_Merge_R1R2(MVertex_ptr v1, MVertex_ptr v2) {
   MFace_ptr   face;
   MRegion_ptr region;
   Mesh_ptr    mesh;
-  List_ptr    vedges2, vfaces2, vregions2;
+  List_ptr    vfaces2, vregions2;
 
   mesh = MV_Mesh(v1);
   gid = MV_GEntID(v1);

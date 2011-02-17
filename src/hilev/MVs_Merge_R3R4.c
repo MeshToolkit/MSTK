@@ -5,7 +5,7 @@
 
 
 MVertex_ptr MVs_Merge_R3R4(MVertex_ptr v1, MVertex_ptr v2) {
-  int i, idx, gdim, gid;
+  int idx, gdim, gid;
   MFace_ptr   face;
   Mesh_ptr    mesh;
   List_ptr    vfaces2;
