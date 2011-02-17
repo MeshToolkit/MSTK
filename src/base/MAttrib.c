@@ -13,17 +13,19 @@ extern "C" {
 
   MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, MAttType att_type, MType entdim, ...) {
     MAttrib_ptr attrib;
-    int i, natt, ncomponents;
+    int i, natt, ncomponents=1;
     va_list ap;
 
 #ifdef DEBUG
-    natt = MESH_Num_Attribs(mesh);
-    for (i = 0; i < natt; i++) {
-      attrib = MESH_Attrib(mesh,i);
-      if (strcmp(att_name,attrib->name) == 0) {
-	MSTK_Report("MAttrib_New","Attribute with given name exists",WARN);
-	return attrib;
-      }
+    if(mesh) {
+      natt = MESH_Num_Attribs(mesh);
+      for (i = 0; i < natt; i++) {
+	attrib = MESH_Attrib(mesh,i);
+	if (strcmp(att_name,attrib->name) == 0) {
+	  MSTK_Report("MAttrib_New","Attribute with given name exists",WARN);
+	  return attrib;
+	}
+      }      
     }
 #endif
 
@@ -59,10 +61,10 @@ extern "C" {
       attrib->ncomp = 1;
     else
       attrib->ncomp = ncomponents;
-    
-    attrib->mesh = mesh;
-    MESH_Add_Attrib(mesh,attrib);
-
+    if(mesh) {
+      attrib->mesh = mesh;
+      MESH_Add_Attrib(mesh,attrib);
+    }
     va_end(ap);
 
     return attrib;
