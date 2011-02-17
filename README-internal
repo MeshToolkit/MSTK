@@ -67,11 +67,5 @@ unstructured mesh)
 2) mkstruc3 - Make a rectangular 3D mesh (represented as an
 unstructured mesh)
 
-3) mskt2gmv - Convert mstk to GMV file format
+3) meshconvert - Convert between different formats and MSTK
 
-4) gmv2mstk - Convert a GMV mesh file to an MSTK mesh with detection
-   of features
-
-5) mstk2flag - Convert MSTK to FLAG X3D format
-
-6) pmstk2flag - Partition an MSTK file and write it out in FLAG X3D format
