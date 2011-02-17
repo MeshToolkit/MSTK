@@ -3,7 +3,8 @@
 #include <string.h>
 #include "MSTK.h"
 
-#include "test.h"
+
+/* Example program to read a mesh and print out some information about it */
 
 
 int main(int argc, char *argv[]) {
@@ -24,6 +25,10 @@ int main(int argc, char *argv[]) {
   
   fprintf(stderr,"\n");
 
+  if (argc == 1) {
+    fprintf(stderr,"Usage: %s testfile.mstk",argv[0]);
+    exit(-1);
+  }
 
   /* Initialize MSTK - Always do this even if it does not seem to
      matter in this version of MSTK */
@@ -91,7 +96,7 @@ int main(int argc, char *argv[]) {
 
 
   idx = 0;
-  while (f = MESH_Next_Face(mesh,&idx)) {
+  while ((f = MESH_Next_Face(mesh,&idx))) {
 
     /* Basic info */
     fprintf(stderr,"\n");
@@ -118,7 +123,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"Edges: %-d\n",ne);
     fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
     idx2 = 0; i = 0;
-    while (e = List_Next_Entry(fedges,&idx2)) {
+    while ((e = List_Next_Entry(fedges,&idx2))) {
       edir = MF_EdgeDir_i(f,i);
       if (edir) 
 	fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
@@ -233,7 +238,7 @@ int main(int argc, char *argv[]) {
   
 
 
-  /* Write out a copy of the mesh */
+  /* Write out a copy of the mesh in the F1 format */
 
   strcpy(filename,mname);
   strcat(filename,"-copy.mstk");
