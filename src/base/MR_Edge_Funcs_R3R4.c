@@ -283,7 +283,7 @@ extern "C" {
   }
 
   int MR_UsesEdge_R3R4(MRegion_ptr r, MEdge_ptr e) {
-    int i, idx;
+    int idx;
     MFace_ptr face;
     MRegion_Adj_FN *adj;
 

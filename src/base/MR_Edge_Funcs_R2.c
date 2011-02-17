@@ -76,7 +76,7 @@ extern "C" {
 	    Hash_Add(MESH_Hash_Edges(MEnt_Mesh((MEntity_ptr) r)), edge, 2, v);
 	  }
 #else
-	  edge = ME_New(MEnt_Mesh(r));
+	  edge = ME_New(MEnt_Mesh((MEntity_ptr)r));
 	  MEnt_Set_Volatile(edge);
 	  ME_Set_Vertex(edge,0,v[0]);
 	  ME_Set_Vertex(edge,1,v[1]);

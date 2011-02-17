@@ -228,7 +228,7 @@ extern "C" {
 
   List_ptr MV_Regions_R2(MVertex_ptr v) {
     MVertex_Adj_R2 *adj;
-    int idx, nel, nr = 0, dim;
+    int idx, nel, nr = 0;
     MEntity_ptr ent;
     List_ptr vregions;
 

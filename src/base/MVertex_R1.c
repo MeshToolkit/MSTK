@@ -127,7 +127,6 @@ extern "C" {
     MVertex_Adj_R1 *adj;
     int idx, idx1, idx2, found, nfv;
     MEntity_ptr ent;
-    MFace_ptr lstface;
     MEdge_ptr edge, redge, lstedge;
     MVertex_ptr ev[2], vtmp;
     List_ptr redges, vedges, fverts;
@@ -312,7 +311,7 @@ extern "C" {
 
   List_ptr MV_Regions_R1(MVertex_ptr v) {
     MVertex_Adj_R1 *adj;
-    int idx, nel, nr = 0, dim;
+    int idx, nel, nr = 0;
     MEntity_ptr ent;
     List_ptr vregions;
 

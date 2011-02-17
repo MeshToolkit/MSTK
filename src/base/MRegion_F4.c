@@ -18,7 +18,7 @@ extern "C" {
     MFace_ptr f;
     MEdge_ptr e;
     List_ptr fedges;
-    int i, j, idx, ne;
+    int j, idx, ne;
 
     adj = (MRegion_Adj_FN *) r->adj;
 
@@ -51,7 +51,7 @@ extern "C" {
     MFace_ptr f;
     MEdge_ptr e;
     List_ptr fedges;
-    int i, j, idx, ne;
+    int j, idx, ne;
 
     adj = (MRegion_Adj_FN *) r->adj;
 

@@ -21,7 +21,7 @@ extern "C" {
 
   void MR_Delete_R2(MRegion_ptr r, int keep) {
     MRegion_Adj_R2 *adj;
-    int idx, nr;
+    int idx;
     MVertex_ptr v;
     MRegion_ptr r2;
 
@@ -61,7 +61,7 @@ extern "C" {
 
   void MR_Restore_R2(MRegion_ptr r) {
     MRegion_Adj_R2 *adj;
-    int idx, nr,i;
+    int idx, i;
     MVertex_ptr v;
     MRegion_ptr r2;
 

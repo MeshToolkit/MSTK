@@ -11,7 +11,7 @@ extern "C" {
 
 
   List_ptr MR_Vertices_FNR3R4(MRegion_ptr r) {
-    int i, j, n, nf, mkr, found, diradj0=0, diropp=0, edir, fdir, fdir0, fecheck;
+    int i, j, n, nf, mkr, found, diradj0=0, diropp=0, fdir, fdir0, fecheck;
     MFace_ptr face=NULL, face0=NULL, fadj0=NULL, fopp=NULL;
     MEdge_ptr edge, fedge00, upedge;
     MVertex_ptr vert, rv0, rvopp0=NULL;
