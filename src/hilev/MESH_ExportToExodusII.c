@@ -31,7 +31,6 @@ extern "C" {
   int Get_Local_Edge_Number(MEdge_ptr me, List_ptr mfvertices);
   void itoa(int n, char s[]);
   void reverse(char s[]);
-  int compare_GID(const void * a, const void * b);
 
 
   /*this defines the maximum number of side set per element block*/
@@ -52,7 +51,6 @@ extern "C" {
 
     int enable_set, verbose;
     int i, j, k, idx, idx2;
-    int nfe, nfv, nrv, nrf;
     int nv, ne, nf, nr;
     int num_element_block, num_side_set, num_node_set;
     int nvfblock, mkid, block_id, *connect, *nnpe;
@@ -60,10 +58,8 @@ extern "C" {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
-    MEntity_ptr ms;
     RepType reptype;
     char MESH_rtype_str[5][3] = {"F1\0","F4\0","R1\0","R2\0","R4\0"};
-    int eid = 0;
     /*For pure 2D mesh, boundary_dim is 1, for surface mesh, it is 2 */
     int jv;
     double xyz_coord[3];
@@ -372,9 +368,6 @@ extern "C" {
     
 
     /* write element blocks, side sets and node sets information */
-
-    int *num_node_per_element = MSTK_malloc(num_element_block*sizeof(int));
-    int index_element = 0, index_side = 0;
 
     if (verbose) {
       fprintf(stdout,"\nSide sets and node sets information:\n");
@@ -765,14 +758,6 @@ extern "C" {
   }
 
 
-  int compare(const void * a, const void * b) {
-    return ( *(int*)a - *(int*)b );
-  }
-
-  int compare_GID(const void * a, const void * b) {
-    return (MEnt_GEntID((MEntity_ptr*)a) - MEnt_GEntID((MEntity_ptr*)b));
-  }
-
 
   /* Categorize the elements into blocks based on their geometric
      entity ID and the element type */
@@ -781,7 +766,7 @@ extern "C" {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
-    int i, nb, nballoc, *nbids, bid, found;
+    int i, nb, nballoc, bid, found;
 
     nb = 0; nballoc=10;
     *element_block_ids = (int *) calloc(nballoc,sizeof(int));
