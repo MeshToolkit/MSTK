@@ -27,7 +27,7 @@ extern "C" {
   }
 
   List_ptr ME_Regions_RN(MEdge_ptr e) {
-    int ne, idx;
+    int idx;
     MRegion_ptr reg;
     List_ptr eregs, vregs;
 
