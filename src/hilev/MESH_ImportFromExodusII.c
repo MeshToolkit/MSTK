@@ -13,10 +13,17 @@ extern "C" {
 #endif
 
 
+  /* Right now we are creating an attribute for material sets, side
+     sets and node sets. We are ALSO creating meshsets for each of
+     these entity sets. We are also setting mesh geometric entity IDs
+     - Should we pick one of the first two? */
+
+
 int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
   char mesg[256], funcname[256]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
+  char matsetname[256];
   char **elem_blknames;
   int i, j, k, k1;
   int comp_ws = sizeof(double), io_ws = 0;
@@ -47,7 +54,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   MFace_ptr mf;
   MRegion_ptr mr;
   MAttrib_ptr nmapatt, elblockatt, nodesetatt, sidesetatt;
-  MSet_ptr faceset, nodeset, sideset;
+  MSet_ptr faceset, nodeset, sideset, matset;
   
   ex_init_params exopar;
   
@@ -325,7 +332,9 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 		elem_blknames[i],filename);
 	MSTK_Report(funcname,mesg,FATAL);
       }
-      
+
+      sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
+      matset = MSet_New(mesh,matsetname,MFACE);
       
       if (strcmp(elem_type,"NSIDED") == 0 || 
 	  strcmp(elem_type,"nsided") == 0) {
@@ -373,7 +382,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    fverts[k] = MESH_VertexFromID(mesh,connect[offset+k]);
 	  
 	  MF_Set_Vertices(mf,nnpe[j],fverts);
-	  
+
+	  MSet_Add(matset,mf);
+	  MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
+
 	  offset += nnpe[j];
 	}
 	
@@ -408,6 +420,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  
 	  MF_Set_Vertices(mf,nelnodes,fverts);
 
+	  MSet_Add(matset,mf);
 	  MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
 
 	}
@@ -570,6 +583,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	MSTK_Report(funcname,mesg,FATAL);
       }
       
+      sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
+      if (mesh_type == 1)
+	matset = MSet_New(mesh,matsetname,MFACE);
+      else if (mesh_type == 2)
+	matset = MSet_New(mesh,matsetname,MREGION);
+      else if (mesh_type == 3)
+	matset = MSet_New(mesh,matsetname,MALLTYPE);
+
       
       if (strcmp(elem_type,"NFACED") == 0 || 
 	  strcmp(elem_type,"nfaced") == 0) {
@@ -621,8 +642,11 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  
 	  MR_Set_Faces(mr, nnpe[j], rfarr, rfdirs);
 
-	  MR_Set_GEntID(mr, elem_blk_ids[i]);
-	  
+	  MR_Set_GEntID(mr, elem_blk_ids[i]);	  
+
+	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
+	  MSet_Add(matset,mr);
+
 	  offset += nnpe[j];
 	}
 	
@@ -744,6 +768,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  MR_Set_GEntID(mr, elem_blk_ids[i]);
 
 	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
+	  MSet_Add(matset,mr);
 	}
 	
 	free(rverts);
@@ -798,7 +823,12 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  MF_Set_Vertices(mf,nnpe[j],fverts);
 
 	  MF_Set_GEntID(mf, elem_blk_ids[i]);
-	  
+
+	  if (mesh_type == 1 && mesh_type == 3) {
+	    MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
+	    MSet_Add(matset,mf);
+	  }
+
 	  offset += nnpe[j];
 	}
 	
@@ -836,7 +866,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 	  MF_Set_GEntID(mf, elem_blk_ids[i]);
 
-	  MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
+	  if (mesh_type == 1 && mesh_type == 3) {
+	    MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
+	    MSet_Add(matset,mf);
+	  }
 
 	}
 	
