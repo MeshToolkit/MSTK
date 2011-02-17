@@ -21,16 +21,16 @@ extern "C" {
 
     switch (type) {
     case MESG:
-      fprintf(stdout, "\n%s: %s\n",funcname,message);
+      fprintf(stdout, "%s: %s\n",funcname,message);
       break;
     case WARN:
-      fprintf(stderr, "\nWarning!! in %s: %s\n",funcname,message);
+      fprintf(stderr, "Warning!! in %s: %s\n",funcname,message);
       break;
     case ERROR:
-      fprintf(stderr, "\nERROR!! in %s: %s\n",funcname,message);
+      fprintf(stderr, "ERROR!! in %s: %s\n",funcname,message);
       break;
     case FATAL:
-      fprintf(stderr, "\nFATAL ERROR!! in %s: %s\n",funcname,message);
+      fprintf(stderr, "FATAL ERROR!! in %s: %s\n",funcname,message);
       exit(-1);
     }
   }
