@@ -43,7 +43,14 @@ extern "C" {
 
     if (MEnt_Dim((MEntity_ptr) r) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) r);
-      MESH_Rem_Region(mesh,r);
+
+#ifdef MSTK_HAVE_MPI
+      if (MR_PType(r) == PGHOST)
+	MESH_Rem_GhostRegion(mesh,r);
+      else
+#endif
+	MESH_Rem_Region(mesh,r);
+
       MEnt_Set_DelFlag((MEntity_ptr) r);
     }
 
@@ -67,7 +74,12 @@ extern "C" {
 
     MEnt_Rem_DelFlag((MEntity_ptr) r);
 
-    MESH_Add_Region(mesh,r);
+#ifdef MSTK_HAVE_MPI
+    if (MR_PType(r) == PGHOST)
+      MESH_Add_GhostRegion(mesh,r);
+    else
+#endif
+      MESH_Add_Region(mesh,r);
 
     (*MR_Restore_jmp[RTYPE])(r);
   }
@@ -118,7 +130,7 @@ extern "C" {
     (*MR_Set_Faces_jmp[RTYPE])(r,nf,mfaces,dirs);
   }
 
-  void MR_Set_Vertices(MRegion_ptr r, int nv, MFace_ptr *mvertices, int nf, int **template) {
+  void MR_Set_Vertices(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf, int **template) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
     (*MR_Set_Vertices_jmp[RTYPE])(r,nv,mvertices,nf,template);
   }
@@ -318,6 +330,57 @@ extern "C" {
     }
     return 0;
   }
+
+#ifdef MSTK_HAVE_MPI
+
+  PType MR_PType(MRegion_ptr r) {
+    return MEnt_PType((MEntity_ptr) r);
+  }
+
+  void  MR_Set_PType(MRegion_ptr r, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) r, ptype);
+  }
+
+  int   MR_MasterParID(MRegion_ptr r) {
+    return MEnt_MasterParID((MEntity_ptr) r ); 
+  }
+
+  void  MR_Set_MasterParID(MRegion_ptr r, int masterparid) {
+    MEnt_Set_MasterParID((MEntity_ptr) r, masterparid) ;
+  }
+
+  int   MR_GlobalID(MRegion_ptr r) {
+    return   MEnt_GlobalID((MEntity_ptr) r);
+  }
+
+  void  MR_Set_GlobalID(MRegion_ptr r, int globalid) {
+    MEnt_Set_GlobalID((MEntity_ptr) r, globalid);
+  }
+
+  MRegion_ptr MR_GhostNew(Mesh_ptr mesh) {
+    MRegion_ptr r;
+    RepType RTYPE;
+    r = (MRegion_ptr) MSTK_malloc(sizeof(MRegion));
+
+    MEnt_Init_CmnData((MEntity_ptr) r);
+    MEnt_Set_Mesh((MEntity_ptr) r,mesh);
+    MEnt_Set_Dim((MEntity_ptr) r,3);
+    MEnt_Set_GEntDim((MEntity_ptr) r,3);
+    MEnt_Set_GEntID((MEntity_ptr) r,0);
+
+    r->adj = (void *) NULL;
+
+    RTYPE = mesh ? MESH_RepType(mesh) : F1;
+    MR_Set_RepType(r,RTYPE);
+
+    if (mesh) {
+	MESH_Add_GhostRegion(mesh,r);
+    }
+
+    return r;
+  }
+
+#endif /* MSTK_HAVE_MPI */
 
   
 #ifdef __cplusplus

@@ -40,7 +40,14 @@ extern "C" {
 
     if (MEnt_Dim((MEntity_ptr) f) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) f);
-      MESH_Rem_Face(mesh,f);
+
+#ifdef MSTK_HAVE_MPI
+      if (MF_PType(f) == PGHOST) 
+	MESH_Rem_GhostFace(mesh,f);
+      else
+#endif
+	MESH_Rem_Face(mesh,f);
+
       MEnt_Set_DelFlag((MEntity_ptr) f);
     }
 
@@ -64,7 +71,12 @@ extern "C" {
 
     MEnt_Rem_DelFlag((MEntity_ptr) f);
 
-    MESH_Add_Face(mesh,f);
+#ifdef MSTK_HAVE_MPI
+    if (MF_PType(f) == PGHOST)
+      MESH_Add_GhostFace(mesh,f);
+    else
+#endif
+      MESH_Add_Face(mesh,f);
 
     (*MF_Restore_jmp[RTYPE])(f);
   }
@@ -385,6 +397,56 @@ extern "C" {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return MF_IsLocked_jmp[RTYPE](f);
   }
+
+
+#ifdef MSTK_HAVE_MPI
+  PType MF_PType(MFace_ptr f) {
+    return MEnt_PType((MEntity_ptr) f);
+  }
+
+  void  MF_Set_PType(MFace_ptr f, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) f, ptype);
+  }
+
+  int   MF_MasterParID(MFace_ptr f) {
+    return MEnt_MasterParID((MEntity_ptr) f ); 
+  }
+
+  void  MF_Set_MasterParID(MFace_ptr f, int masterparid) {
+    MEnt_Set_MasterParID((MEntity_ptr) f, masterparid) ;
+  }
+
+  int   MF_GlobalID(MFace_ptr f) {
+    return   MEnt_GlobalID((MEntity_ptr) f);
+  }
+
+  void  MF_Set_GlobalID(MFace_ptr f, int globalid) {
+    MEnt_Set_GlobalID((MEntity_ptr) f, globalid);
+  }
+
+  MFace_ptr MF_GhostNew(Mesh_ptr mesh) {
+    MFace_ptr f;
+    RepType RTYPE;
+    f = (MFace_ptr) MSTK_malloc(sizeof(MFace));
+
+    MEnt_Init_CmnData((MEntity_ptr) f);
+    MEnt_Set_Mesh((MEntity_ptr) f,mesh);
+    MEnt_Set_Dim((MEntity_ptr) f,2);
+    MEnt_Set_GEntDim((MEntity_ptr) f,4); /* nonsensical value as we don't know what it is */
+    MEnt_Set_GEntID((MEntity_ptr) f,0);
+
+    f->adj = (void *) NULL;
+
+    RTYPE = mesh ? MESH_RepType(mesh) : F1;
+    MF_Set_RepType(f,RTYPE);
+    
+    if (mesh) {
+	MESH_Add_GhostFace(mesh,f);
+    }
+
+    return f;
+  }
+#endif /* MSTK_HAVE_MPI */
   
 #ifdef __cplusplus
 }

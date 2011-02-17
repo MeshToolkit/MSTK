@@ -41,7 +41,14 @@ extern "C" {
 
     if (MEnt_Dim((MEntity_ptr) e) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) e);
-      MESH_Rem_Edge(mesh,e);
+
+#ifdef MSTK_HAVE_MPI
+      if (ME_PType(e) == PGHOST)
+	MESH_Rem_GhostEdge(mesh,e);
+      else
+#endif
+	MESH_Rem_Edge(mesh,e);
+
       MEnt_Set_DelFlag((MEntity_ptr) e);
     }
 
@@ -65,7 +72,12 @@ extern "C" {
 
     MEnt_Rem_DelFlag((MEntity_ptr) e);
 
-    MESH_Add_Edge(mesh,e);
+#ifdef MSTK_HAVE_MPI
+    if (ME_PType(e) == PGHOST)
+      MESH_Add_GhostEdge(mesh,e);
+    else
+#endif
+      MESH_Add_Edge(mesh,e);
 
     (*ME_Restore_jmp[RTYPE])(e);
   }
@@ -408,6 +420,62 @@ extern "C" {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return ME_IsLocked_jmp[RTYPE](e);
   }
+
+#ifdef MSTK_HAVE_MPI
+
+  PType ME_PType(MEdge_ptr e) {
+    return MEnt_PType((MEntity_ptr) e);
+  }
+
+  void  ME_Set_PType(MEdge_ptr e, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) e, ptype);
+  }
+
+  int   ME_MasterParID(MEdge_ptr e) {
+    return MEnt_MasterParID((MEntity_ptr) e ); 
+  }
+
+  /* Rename to ME_Set_MasterPartID? */
+
+  void  ME_Set_MasterParID(MEdge_ptr e, int masterparid) {
+    MEnt_Set_MasterParID((MEntity_ptr) e, masterparid) ;
+  }
+
+  int   ME_GlobalID(MEdge_ptr e) {
+    return   MEnt_GlobalID((MEntity_ptr) e);
+  }
+
+  void  ME_Set_GlobalID(MEdge_ptr e, int globalid) {
+    MEnt_Set_GlobalID((MEntity_ptr) e, globalid);
+  }
+
+
+  MEdge_ptr ME_GhostNew(Mesh_ptr mesh) {
+    MEdge_ptr e;
+    RepType RTYPE;
+    e = (MEdge_ptr) MSTK_malloc(sizeof(MEdge));
+
+    MEnt_Init_CmnData((MEntity_ptr) e);
+    MEnt_Set_Mesh((MEntity_ptr) e,mesh);
+    MEnt_Set_Dim((MEntity_ptr) e,1);
+    MEnt_Set_GEntDim((MEntity_ptr) e,4); /* Nonsensical value as we don't 
+                                            know what it is */
+    MEnt_Set_GEntID((MEntity_ptr) e,0);
+
+    e->adj = (void *) NULL;
+    e->vertex[0] = e->vertex[1] = (MVertex_ptr) NULL;
+
+    RTYPE = mesh ? MESH_RepType(mesh) : F1;
+    ME_Set_RepType(e,RTYPE);
+
+    if (mesh) {
+	MESH_Add_GhostEdge(mesh,e);
+    }
+    return e;
+  }
+
+#endif
+
   
 #ifdef __cplusplus
 }

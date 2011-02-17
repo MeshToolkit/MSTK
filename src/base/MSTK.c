@@ -11,6 +11,18 @@ extern "C" {
 
 
   void MSTK_Init() {
+
+#ifdef MSTK_HAVE_MPI
+    int initstatus;
+    MPI_Initialized(&initstatus);
+    if (initstatus == 0) {
+      int loc_argc=1;
+      char **loc_argv=NULL;
+
+      MPI_Init(&loc_argc,&loc_argv);
+    }
+#endif
+
     MV_Print(0,0);
     ME_Print(0,0);
     MF_Print(0,0);

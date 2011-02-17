@@ -27,8 +27,23 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->medge = (List_ptr) NULL;
   newmesh->mface = (List_ptr) NULL;
   newmesh->mregion = (List_ptr) NULL;
+
+#ifdef MSTK_HAVE_MPI
+  newmesh->ghvertex = (List_ptr) NULL;
+  newmesh->ghedge = (List_ptr) NULL;
+  newmesh->ghface = (List_ptr) NULL;
+  newmesh->ghregion = (List_ptr) NULL;
+  newmesh->ovvertex = (List_ptr) NULL;
+  newmesh->ovedge = (List_ptr) NULL;
+  newmesh->ovface = (List_ptr) NULL;
+  newmesh->ovregion = (List_ptr) NULL;
+  newmesh->global_info = NULL;
+  newmesh->local_info = NULL;
+#endif
+
   newmesh->geom = (GModel_ptr) NULL;
   newmesh->AttribList = (List_ptr) NULL;
+  newmesh->MSetList = (List_ptr) NULL;
   newmesh->autolock = 0;
 
   if (type >= R1 && type <= R4) newmesh->hedge = Hash_New(0, 1);
@@ -39,16 +54,37 @@ Mesh_ptr MESH_New(RepType type) {
 
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
 
+#ifdef MSTK_HAVE_MPI
+  newmesh->max_ghvid = newmesh->max_gheid = newmesh->max_ghfid = newmesh->max_ghrid = 0;
+#endif
+
   return newmesh;
 }
 
+#ifdef MSTK_HAVE_MPI
+int* MESH_GlobalInfo(Mesh_ptr mesh) {
+  return mesh->global_info;
+}
+
+int* MESH_LocalInfo(Mesh_ptr mesh) {
+  return mesh->local_info;
+}
+
+void MESH_Set_GlobalInfo(Mesh_ptr mesh, int *global_info) {
+  mesh->global_info = global_info;
+}
+
+void MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info) {
+  mesh->local_info = local_info;
+}
+#endif
 
 void MESH_Delete(Mesh_ptr mesh) {
   int i, nv, ne, nf, nr;
-  MVertex_ptr mv;
-  MEdge_ptr me;
-  MFace_ptr mf;
-  MRegion_ptr mr;
+  MVertex_ptr mv, ghv;
+  MEdge_ptr me, ghe;
+  MFace_ptr mf, ghf;
+  MRegion_ptr mr, ghr;
   MAttrib_ptr attrib;
 
 #ifdef DEBUGHIGH
@@ -59,6 +95,17 @@ void MESH_Delete(Mesh_ptr mesh) {
     Hash_Print(mesh->hface);
   }
 #endif 
+
+#ifdef MSTK_HAVE_MPI
+  if(mesh->ovvertex)
+    List_Delete(mesh->ovvertex);
+  if(mesh->ovedge)
+    List_Delete(mesh->ovedge);
+  if(mesh->ovface)
+    List_Delete(mesh->ovface);
+  if(mesh->ovregion)
+    List_Delete(mesh->ovregion);
+#endif
 
   if (mesh->mregion) {
     nr = mesh->nr;
@@ -108,6 +155,37 @@ void MESH_Delete(Mesh_ptr mesh) {
     }
     List_Delete(mesh->mvertex);
   }
+
+#ifdef MSTK_HAVE_MPI
+  if (mesh->ghregion) {
+    i = 0;
+    while ((ghr = List_Next_Entry(mesh->ghregion,&i))) {
+      MR_Destroy_For_MESH_Delete(ghr);
+    }
+    List_Delete(mesh->ghregion);
+  }
+  if (mesh->ghface) {
+    i = 0;
+    while ((ghf = List_Next_Entry(mesh->ghface,&i))) {
+      MF_Destroy_For_MESH_Delete(ghf);
+    }
+    List_Delete(mesh->ghface);
+  }
+  if (mesh->ghedge) {
+    i = 0;
+    while ((ghe = List_Next_Entry(mesh->ghedge,&i))) {
+      ME_Destroy_For_MESH_Delete(ghe);
+    }
+    List_Delete(mesh->ghedge);
+  }
+  if (mesh->ghvertex) {
+    i = 0;
+    while ((ghv = List_Next_Entry(mesh->ghvertex,&i))) {
+      MV_Destroy_For_MESH_Delete(ghv);
+    }
+    List_Delete(mesh->ghvertex);
+  }
+#endif /* MSTK_HAVE_MPI */
   
   if (mesh->AttribList) {
     i = 0;
@@ -588,6 +666,24 @@ MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
   return NULL;
 }
 
+MEntity_ptr MESH_EntityFromID(Mesh_ptr mesh, int mtype, int id) {
+
+  switch (mtype) {
+  case 0:
+    return MESH_VertexFromID(mesh,id);
+  case 1:
+    return MESH_EdgeFromID(mesh,id);
+  case 2:
+    return MESH_FaceFromID(mesh,id);
+  case 3:
+    return MESH_RegionFromID(mesh,id);
+  default:
+    MSTK_Report("MESH_EntityFromID","Unrecognized entity type",ERROR);
+    return NULL;
+  }
+
+}
+
 void MESH_Add_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
   if (mesh->mvertex == (List_ptr) NULL)
     mesh->mvertex = List_New(10);
@@ -783,6 +879,634 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
 
   mesh->nr = List_Num_Entries(mesh->mregion);
 }    
+
+List_ptr   MESH_Vertex_List(Mesh_ptr mesh) {
+  return mesh->mvertex;
+}
+List_ptr   MESH_Edge_List(Mesh_ptr mesh) {
+  return mesh->medge;
+}
+List_ptr   MESH_Face_List(Mesh_ptr mesh) {
+  return mesh->mface;
+}
+List_ptr   MESH_Region_List(Mesh_ptr mesh) {
+  return mesh->mregion;
+}
+
+
+#ifdef MSTK_HAVE_MPI
+
+  int MESH_Sort_GhostLists(Mesh_ptr mesh, 
+	       int (*compfunc)(MEntity_ptr, MEntity_ptr)) {
+
+    if (mesh->ghvertex)
+      List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
+    if (mesh->ghedge)
+      List_Sort(mesh->ghedge,List_Num_Entries(mesh->ghedge),sizeof(MEdge_ptr),compfunc);
+    if (mesh->ghface)
+      List_Sort(mesh->ghface,List_Num_Entries(mesh->ghface),sizeof(MFace_ptr),compfunc);
+    if (mesh->ghregion)
+      List_Sort(mesh->ghregion,List_Num_Entries(mesh->ghregion),sizeof(MRegion_ptr),compfunc);
+
+    if (mesh->ovvertex)
+      List_Sort(mesh->ovvertex,List_Num_Entries(mesh->ovvertex),sizeof(MVertex_ptr),compfunc);
+    if (mesh->ovedge)
+      List_Sort(mesh->ovedge,List_Num_Entries(mesh->ovedge),sizeof(MEdge_ptr),compfunc);
+    if (mesh->ovface)
+      List_Sort(mesh->ovface,List_Num_Entries(mesh->ovface),sizeof(MFace_ptr),compfunc);
+    if (mesh->ovregion)
+      List_Sort(mesh->ovregion,List_Num_Entries(mesh->ovregion),sizeof(MRegion_ptr),compfunc);
+  }
+
+int MESH_Num_GhostVertices(Mesh_ptr mesh) {
+  if(mesh->ghvertex)
+    return List_Num_Entries(mesh->ghvertex);
+  else
+    return 0;
+}
+int MESH_Num_OverlapVertices(Mesh_ptr mesh) {
+  if(mesh->ovvertex)
+    return List_Num_Entries(mesh->ovvertex);
+  else
+    return 0;
+}
+
+int MESH_Num_InteriorVertices(Mesh_ptr mesh) {
+  if(mesh->mvertex)
+    return List_Num_Entries(mesh->mvertex) -\
+      List_Num_Entries(mesh->ovvertex)- \
+      List_Num_Entries(mesh->ghvertex);
+  else
+    return 0;
+}
+
+int MESH_Num_GhostEdges(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_Num_GhostEdges",
+		"No ghost edges in reduced representations",WARN);
+    return 0;
+  }
+  if (mesh->ghedge)
+    return List_Num_Entries(mesh->ghedge);
+  else
+    return 0;
+}
+int MESH_Num_OverlapEdges(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_Num_OverlapEdges",
+		"No ghost edges in reduced representations",WARN);
+    return 0;
+  }
+  if (mesh->ovedge)
+    return List_Num_Entries(mesh->ovedge);
+  else
+    return 0;
+}
+int MESH_Num_InteriorEdges(Mesh_ptr mesh) {
+  RepType rtype;
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_Num_InteriorEdges",
+		"No interior edges in reduced representations",WARN);
+    return 0;
+  }
+  else 
+    return List_Num_Entries(mesh->medge) -\
+      List_Num_Entries(mesh->ovedge)- \
+      List_Num_Entries(mesh->ghedge);
+}
+
+int MESH_Num_GhostFaces(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if ((mesh->nr == 0) && (mesh->ghface))  /* 2D mesh */
+      return List_Num_Entries(mesh->ghface);   
+    else {
+      MSTK_Report("MESH_Num_GhostFaces",
+		  "No ghost faces in reduced representation",WARN);
+      return 0;
+    }
+  }
+  if (mesh->ghface)
+    return List_Num_Entries(mesh->ghface);
+  else
+    return 0;
+}
+int MESH_Num_OverlapFaces(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if ((mesh->nr == 0) && (mesh->ovface))    /* 2D mesh */
+      return List_Num_Entries(mesh->ovface);   
+    else {
+      MSTK_Report("MESH_Num_OverlapFaces",
+		  "No ghost faces in reduced representation",WARN);
+      return 0;
+    }
+  }
+  if (mesh->ovface)
+    return List_Num_Entries(mesh->ovface);
+  else
+    return 0;
+}
+
+int MESH_Num_InteriorFaces(Mesh_ptr mesh) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if ((mesh->nr == 0) && (mesh->mface))    /* 2D mesh */
+      return List_Num_Entries(mesh->mface)\
+	-List_Num_Entries(mesh->ovface)\
+	-List_Num_Entries(mesh->ghface);   
+    else {
+      MSTK_Report("MESH_Num_InteriorFaces",
+		  "No interior faces in reduced representation",WARN);
+      return 0;
+    }
+  }
+  if (mesh->mface)
+    return List_Num_Entries(mesh->mface)\
+      -List_Num_Entries(mesh->ovface)\
+      -List_Num_Entries(mesh->ghface);   
+  else
+    return 0;
+}
+
+int MESH_Num_GhostRegions(Mesh_ptr mesh) {
+  if (mesh->ghregion)
+    return List_Num_Entries(mesh->ghregion);
+  else
+    return 0;
+}
+int MESH_Num_OverlapRegions(Mesh_ptr mesh) {
+  if(mesh->ovregion)
+    return List_Num_Entries(mesh->ovregion);
+  else
+    return 0;
+}
+int MESH_Num_InteriorRegions(Mesh_ptr mesh) {
+  if(mesh->mregion)
+    return List_Num_Entries(mesh->mregion)\
+      -List_Num_Entries(mesh->ovregion)
+      -List_Num_Entries(mesh->ghregion);
+  else
+    return 0;
+}
+
+
+MVertex_ptr MESH_GhostVertex(Mesh_ptr mesh, int i) {
+  return (MVertex_ptr) List_Entry(mesh->ghvertex, i);
+}
+MVertex_ptr MESH_OverlapVertex(Mesh_ptr mesh, int i) {
+  return (MVertex_ptr) List_Entry(mesh->ovvertex, i);
+}
+MEdge_ptr MESH_GhostEdge(Mesh_ptr mesh, int i) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_GhostEdge",
+		"No ghost edges in reduced representation",FATAL);
+  }
+  return (MEdge_ptr) List_Entry(mesh->ghedge, i);
+}
+
+MEdge_ptr MESH_OverlapEdge(Mesh_ptr mesh, int i) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_OverlapEdge",
+		"No ghost edges in reduced representation",FATAL);
+  }
+  return (MEdge_ptr) List_Entry(mesh->ovedge, i);
+}
+
+MFace_ptr MESH_GhostFace(Mesh_ptr mesh, int i) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if (mesh->nr) {
+      MSTK_Report("MESH_GhostFace",
+		  "No ghost faces in reduced representation",FATAL);
+    }
+  }
+
+  return (MFace_ptr) List_Entry(mesh->ghface, i);
+}
+
+MFace_ptr MESH_OverlapFace(Mesh_ptr mesh, int i) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if (mesh->nr) {
+      MSTK_Report("MESH_OverlapFace",
+		  "No ghost faces in reduced representation",FATAL);
+    }
+  }
+
+  return (MFace_ptr) List_Entry(mesh->ovface, i);
+}
+
+MRegion_ptr MESH_GhostRegion(Mesh_ptr mesh, int i) {
+  return (MRegion_ptr) List_Entry(mesh->ghregion, i);
+}
+MRegion_ptr MESH_OverlapRegion(Mesh_ptr mesh, int i) {
+  return (MRegion_ptr) List_Entry(mesh->ovregion, i);
+}
+
+MVertex_ptr MESH_Next_GhostVertex(Mesh_ptr mesh, int *index) {
+  if (mesh->ghvertex)
+    return (MVertex_ptr) List_Next_Entry(mesh->ghvertex, index);
+  else
+    return NULL;
+}
+
+
+MVertex_ptr MESH_Next_OverlapVertex(Mesh_ptr mesh, int *index) {
+  if (mesh->ovvertex)
+    return (MVertex_ptr) List_Next_Entry(mesh->ovvertex, index);
+  else
+    return NULL;
+}
+
+MVertex_ptr MESH_Next_InteriorVertex(Mesh_ptr mesh, int *index) {
+  MVertex_ptr mv;
+  if (mesh->mvertex) {
+    mv = List_Next_Entry(mesh->mvertex,index);
+    while( MV_PType(mv) != PINTERIOR )
+      mv = List_Next_Entry(mesh->mvertex,index);
+    return mv;
+  }
+  else
+    return NULL;
+}
+
+MEdge_ptr MESH_Next_GhostEdge(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_Next_GhostEdge",
+		"No ghost edges in reduced representation",WARN);
+    return NULL;
+  }
+  if (mesh->ghedge)
+    return (MEdge_ptr) List_Next_Entry(mesh->ghedge, index);
+  else
+    return NULL;
+}
+MEdge_ptr MESH_Next_OverlapEdge(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_Next_OverlapEdge",
+		"No ghost edges in reduced representation",WARN);
+    return NULL;
+  }
+  if (mesh->ovedge)
+    return (MEdge_ptr) List_Next_Entry(mesh->ovedge, index);
+  else
+    return NULL;
+}
+
+MEdge_ptr MESH_Next_InteriorEdge(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+  MEdge_ptr me;
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R4)) {
+    MSTK_Report("MESH_Next_InteriorEdge",
+		"No interior edges in reduced representation",WARN);
+    return NULL;
+  }
+  if (mesh->medge) {
+    me = List_Next_Entry(mesh->medge,index);
+    while( ME_PType(me) != PINTERIOR )
+      me = List_Next_Entry(mesh->medge,index);
+    return me;
+  }
+  else
+    return NULL;
+}
+
+MFace_ptr MESH_Next_GhostFace(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if (mesh->nr) {
+      MSTK_Report("MESH_Next_GhostFace",
+		  "No ghost faces in reduced representation",WARN);
+      return NULL;
+    }
+  }
+  if (mesh->ghface)
+    return (MFace_ptr) List_Next_Entry(mesh->ghface, index);
+  else
+    return NULL;
+}
+MFace_ptr MESH_Next_OverlapFace(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if (mesh->nr) {
+      MSTK_Report("MESH_Next_OverlapFace",
+		  "No ghost faces in reduced representation",WARN);
+      return NULL;
+    }
+  }
+  if (mesh->ovface)
+    return (MFace_ptr) List_Next_Entry(mesh->ovface, index);
+  else
+    return NULL;
+}
+
+MFace_ptr MESH_Next_InteriorFace(Mesh_ptr mesh, int *index) {
+  RepType rtype;
+  MFace_ptr mf;
+  rtype = MESH_RepType(mesh);
+  if ((rtype >= R1) && (rtype <= R2)) {
+    if (mesh->nr) {
+      MSTK_Report("MESH_Next_InteriorFace",
+		  "No interior faces in reduced representation",WARN);
+      return NULL;
+    }
+  }
+  if (mesh->mface) {
+    mf = List_Next_Entry(mesh->mface,index);
+    while( MF_PType(mf) != PINTERIOR )
+      mf = List_Next_Entry(mesh->mface,index);
+    return mf;
+  }
+  else
+    return NULL;
+}
+
+MRegion_ptr MESH_Next_GhostRegion(Mesh_ptr mesh, int *index) {
+  if (mesh->ghregion)
+    return (MRegion_ptr) List_Next_Entry(mesh->ghregion, index);
+  else
+    return NULL;
+}
+MRegion_ptr MESH_Next_OverlapRegion(Mesh_ptr mesh, int *index) {
+  if (mesh->ovregion)
+    return (MRegion_ptr) List_Next_Entry(mesh->ovregion, index);
+  else
+    return NULL;
+}
+MRegion_ptr MESH_Next_InteriorRegion(Mesh_ptr mesh, int *index) {
+  MRegion_ptr mr;
+
+  if (mesh->mregion) {
+    mr = List_Next_Entry(mesh->mregion,index);
+    while( MR_PType(mr) != PINTERIOR )
+      mr = List_Next_Entry(mesh->mregion,index);
+    return mr;
+  }
+  else
+    return NULL;
+}
+
+void MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
+  if (mesh->ghvertex == (List_ptr) NULL)
+    mesh->ghvertex = List_New(10);
+
+  mesh->ghvertex = List_Add(mesh->ghvertex, (void *) v);
+  
+  if (MV_ID(v) == 0) {
+    (mesh->max_ghvid)++;
+    MV_Set_ID(v,mesh->max_ghvid);
+  }
+}
+void MESH_Add_OverlapVertex(Mesh_ptr mesh, MVertex_ptr v) {
+  if (mesh->ovvertex == (List_ptr) NULL)
+    mesh->ovvertex = List_New(10);
+  mesh->ovvertex = List_Add(mesh->ovvertex, (void *) v);
+}
+
+void MESH_Add_GhostEdge(Mesh_ptr mesh, MEdge_ptr e){
+  /* Have to check if edges exist in this type of representation */
+  if (mesh->reptype >= R1 && mesh->reptype <= MSTK_MAXREP)
+    return;
+
+  if (mesh->ghedge == (List_ptr) NULL)
+    mesh->ghedge = List_New(10);
+
+  mesh->ghedge = List_Add(mesh->ghedge, (void *) e);
+
+  if (ME_ID(e) == 0) {
+    (mesh->max_gheid)++;
+    ME_Set_ID(e,mesh->max_gheid);
+  }
+}    
+void MESH_Add_OverlapEdge(Mesh_ptr mesh, MEdge_ptr e){
+  /* Have to check if edges exist in this type of representation */
+  if (mesh->reptype >= R1 && mesh->reptype <= MSTK_MAXREP)
+    return;
+
+  if (mesh->ovedge == (List_ptr) NULL)
+    mesh->ovedge = List_New(10);
+
+  mesh->ovedge = List_Add(mesh->ovedge, (void *) e);
+}    
+     
+void MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f){
+  /* Have to check if faces exist in this type of representation */
+  if (mesh->nr && (mesh->reptype == R1 || mesh->reptype == R2))
+    return;
+
+  if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
+#ifdef DEBUG
+    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",ERROR);
+#endif
+    return;
+  }
+
+  if (mesh->ghface == (List_ptr) NULL)
+    mesh->ghface = List_New(10);
+  
+  mesh->ghface = List_Add(mesh->ghface, (void *) f);
+
+  if (MF_ID(f) == 0) {
+    (mesh->max_ghfid)++;
+    MF_Set_ID(f,mesh->max_ghfid);
+  }
+}    
+
+void MESH_Add_OverlapFace(Mesh_ptr mesh, MFace_ptr f){
+  /* Have to check if faces exist in this type of representation */
+  if (mesh->nr && (mesh->reptype == R1 || mesh->reptype == R2))
+    return;
+
+  if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
+#ifdef DEBUG
+    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",ERROR);
+#endif
+    return;
+  }
+
+  if (mesh->ovface == (List_ptr) NULL)
+    mesh->ovface = List_New(10);
+  
+  mesh->ovface = List_Add(mesh->ovface, (void *) f);
+}    
+     
+void MESH_Add_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
+  if (mesh->ghregion == (List_ptr) NULL)
+    mesh->ghregion = List_New(10);
+
+  mesh->ghregion = List_Add(mesh->ghregion, (void *) r);
+
+  if (MR_ID(r) == 0) {
+    (mesh->max_ghrid)++;
+    MR_Set_ID(r,mesh->max_ghrid);
+  }
+}    
+void MESH_Add_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r){
+  if (mesh->ovregion == (List_ptr) NULL)
+    mesh->ovregion = List_New(10);
+
+  mesh->ovregion = List_Add(mesh->ovregion, (void *) r);
+}    
+     
+void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
+  int fnd=0, i, id;
+
+  if (mesh->ghvertex == (List_ptr) NULL) {
+#ifdef DEBUG
+    MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", ERROR);
+#endif
+    return;
+  }
+
+  /* If the list of vertices has not been compressed or the mesh has not
+     been renumbered, the real position of the entry will be ID-1. If it
+     is then delete it directly */
+
+  id = MV_ID(v);
+
+  i = id-1;
+  if (List_Entry_Raw(mesh->ghvertex,i) == v) {
+    List_Remi_Raw(mesh->ghvertex,i);
+    fnd = 1;
+  }
+
+  if (!fnd)
+    fnd = List_RemSorted(mesh->ghvertex,v,&(MV_GlobalID));
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in list",FATAL);
+
+  return;
+}    
+     
+void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
+  int fnd=0, i, id;
+
+  if (mesh->ghedge == (List_ptr) NULL) {
+#ifdef DEBUG
+    MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",ERROR);
+#endif
+    return;
+  }
+
+  /* If the list of edges has not been compressed or the mesh has not
+     been renumbered, the real position of the entry will be ID-1. If it
+     is then delete it directly */
+
+  id = ME_ID(e);
+
+  i = id-1;
+  if (List_Entry_Raw(mesh->ghedge,i) == e) {
+    List_Remi_Raw(mesh->ghedge,i);
+    fnd = 1;
+  }
+  
+  if (!fnd)
+    fnd = List_RemSorted(mesh->ghedge,e,&(ME_ID));
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_GhostEdge","Edge not found in list",FATAL);
+
+  return;
+}    
+     
+void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
+  int fnd=0, i, id;
+
+  if (mesh->ghface == (List_ptr) NULL) {
+#ifdef DEBUG
+    MSTK_Report("Mesh_Rem_GhostFace","No Faces in mesh to remove",ERROR);
+#endif
+    return;
+  }
+
+  /* If the list of faces has not been compressed or the mesh has not
+     been renumbered, the real position of the entry will be ID-1. If it
+     is then delete it directly */
+  
+  id = MF_ID(f);
+
+  i = id-1;
+  if (List_Entry_Raw(mesh->ghface,i) == f) {
+    List_Remi_Raw(mesh->ghface,i);
+    fnd = 1;
+  }
+
+  if (!fnd)
+    fnd = List_RemSorted(mesh->ghface,f,&(MF_ID));
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_Face","Face not found in list",FATAL);
+
+  return;
+}    
+     
+void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
+  int fnd=0, i, id;
+
+  if (mesh->ghregion == (List_ptr) NULL) {
+    MSTK_Report("Mesh_Rem_GhostRegion","No regions in mesh to remove",ERROR);
+    return;
+  }
+
+  /* If the list of regions has not been compressed or the mesh has not
+     been renumbered, the real position of the entry will be ID-1. If it
+     is then delete it directly */
+
+  
+  id = MR_ID(r);
+
+  i = id-1;
+  if (List_Entry_Raw(mesh->ghregion,i) == r) {
+    List_Remi_Raw(mesh->ghregion,i);
+    fnd = 1;
+  }
+
+  if (!fnd)
+    fnd = List_RemSorted(mesh->ghregion,r,&(MR_ID));
+
+  if (!fnd)
+    MSTK_Report("MESH_Rem_GhostRegion","Region not found in list",FATAL);
+
+  return;
+}    
+
+#endif /* MSTK_HAVE_MPI */
 
      
 void MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom){
@@ -1706,7 +2430,6 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr, mr2;
-  GEntity_ptr gent;
   List_ptr adjverts, mfedges, mfverts, mrfaces, mrverts, adjregs;
   RepType reptype;
   MAttrib_ptr attrib, vidatt, eidatt, fidatt, ridatt;
@@ -2366,6 +3089,9 @@ Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
 }
 
   */
+
+
+  /* Time for this function to go */
 
 
   int MESH_Init_ParAtts(Mesh_ptr mesh) {

@@ -22,6 +22,11 @@ extern "C" {
     ent->entdat.rtype_gdim_gid = 0;
     ent->entdat.marker = 0;
     ent->entdat.AttInsList = 0;
+
+#ifdef MSTK_HAVE_MPI
+    ent->entdat.ptype_masterparid = (0<<2 | PINTERIOR); /* ?? */
+    ent->entdat.globalid = 0;
+#endif
   }
 
   void MEnt_Free_CmnData(MEntity_ptr ent) {    
@@ -432,9 +437,7 @@ extern "C" {
   /* Clear value of attribute */
 
   void MEnt_Rem_AllAttVals(MEntity_ptr ent) {
-    int i, idx, found;
-    MAttrib_ptr attrib;
-    MType attentdim, entdim;
+    int idx;
     MAttIns_ptr attins;
     List_ptr attinslist;
     
@@ -499,6 +502,9 @@ extern "C" {
   /* Some functions to emulate parallel functionality for now. We will
      do this right later on */
   /********************************************************************/
+
+  /* TIME TO GET RID OF THIS???? */
+
 
 
   /* Get the number of processors connected to entity */
@@ -750,6 +756,44 @@ extern "C" {
       return 0;
     }
   }
+
+
+#ifdef MSTK_HAVE_MPI
+
+  PType MEnt_PType(MEntity_ptr ent) {
+    unsigned int data = ent->entdat.ptype_masterparid;
+    return data & 3 /*00...00011*/;
+  }
+
+  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype) {
+    unsigned int data = ent->entdat.ptype_masterparid;
+    data = (data & ~3); /* zero out last 2 digits*/
+    data = (data | ptype);
+    ent->entdat.ptype_masterparid = data;
+  }
+
+  int   MEnt_MasterParID(MEntity_ptr ent) {
+    unsigned int data = ent->entdat.ptype_masterparid;
+    return data>>2;
+  }
+
+  void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid) {
+    unsigned int data = ent->entdat.ptype_masterparid;
+    data = (data & 3); /* zero out high bits*/
+    data = (data | masterparid<<2);
+    ent->entdat.ptype_masterparid = data;
+  }
+
+  int   MEnt_GlobalID(MEntity_ptr ent) {
+    return ent->entdat.globalid;
+  }
+
+  void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid) {
+    ent->entdat.globalid = globalid;
+  }
+#endif /* MSTK_HAVE_MPI */
+
+
 #ifdef __cplusplus
 }
 #endif
