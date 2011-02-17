@@ -159,7 +159,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+7)*sizeof(char));
+    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_or_");
@@ -219,7 +219,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+8)*sizeof(char));
+    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_and_");
@@ -294,7 +294,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+10)*sizeof(char));
+    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_minus_");
@@ -332,19 +332,19 @@ extern "C" {
   }
 
 
-  void MSet_Mark(MSet_ptr list, int markerID) {
+  void MSet_Mark(MSet_ptr set, int markerID) {
     MEntity_ptr ent;
     int idx = 0;
     
-    while ((ent = (MEntity_ptr) List_Next_Entry(list,&idx)))
+    while ((ent = (MEntity_ptr) MSet_Next_Entry(set,&idx)))
       MEnt_Mark(ent,markerID);
   }
 
-  void MSet_Unmark(MSet_ptr list, int markerID) {
+  void MSet_Unmark(MSet_ptr set, int markerID) {
     MEntity_ptr ent;
     int idx = 0;
     
-    while ((ent = (MEntity_ptr) List_Next_Entry(list,&idx)))
+    while ((ent = (MEntity_ptr) MSet_Next_Entry(set,&idx)))
       MEnt_Unmark(ent,markerID);
   }
 
