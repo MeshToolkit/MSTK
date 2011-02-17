@@ -184,8 +184,6 @@ extern "C" {
 
   void ME_Rem_Face_F4(MEdge_ptr e, MFace_ptr f) {
     MEdge_Adj_F4 *adj;
-    List_ptr fregs;
-    int ok;
 
     adj = (MEdge_Adj_F4 *) e->adj;
 
