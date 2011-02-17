@@ -33,7 +33,7 @@ extern "C" {
     MR_Set_Faces_FNR3R4(r,nf,rfaces,dirs);
   }
 
-  void MR_Set_Vertices_F1(MRegion_ptr r, int nv, MFace_ptr *mvertices, int nf, int **template) {
+  void MR_Set_Vertices_F1(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf, int **template) {
     MR_Set_Vertices_FNR3R4(r,nv,mvertices,nf,template);
   }
 
