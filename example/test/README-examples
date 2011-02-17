@@ -1,0 +1,9 @@
+
+After building the executables serial_example and parallel_examples, cd into
+the test directory and execute
+
+../serial_example serial_example_mesh.mstk
+
+mpirun -n 4 ../parallel_example parallel_example_mesh.mstk
+
+
