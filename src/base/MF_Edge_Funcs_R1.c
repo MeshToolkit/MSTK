@@ -15,7 +15,7 @@ extern "C" {
 
   List_ptr MF_Edges_R1(MFace_ptr f, int dir, MVertex_ptr v0) {
     MFace_Adj_R1 *adj = (MFace_Adj_R1 *) f->adj;
-    int i, j, k, ne, nv, vgdim0, vgdim1, egdim, vgid0, vgid1, egid;
+    int i, j, k, ne, nv;
     List_ptr fedges;
     MVertex_ptr v, evtx[2], vtmp;
     MEdge_ptr e;
@@ -63,7 +63,7 @@ extern "C" {
 	Hash_Add(MESH_Hash_Edges(MEnt_Mesh((MEntity_ptr) f)), e, 2, evtx);
       }
 #else
-      e = ME_New(MEnt_Mesh(f));
+      e = ME_New(MEnt_Mesh((MEntity_ptr)f));
       MEnt_Set_Volatile(e);
 
       ME_Set_Vertex(e,0,evtx[0]);
@@ -124,7 +124,7 @@ extern "C" {
   int MF_EdgeDir_i_R1(MFace_ptr f, int i) {
 #ifdef HASHTABLE
     MFace_Adj_R1 *adj = (MFace_Adj_R1 *) f->adj;
-    int j, tdir, ne;
+    int j, ne;
     MVertex_ptr evtx[2];
 
     ne = List_Num_Entries(adj->fvertices);
