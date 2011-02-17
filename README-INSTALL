@@ -1,53 +1,70 @@
 
-I am enclosing gzipped, tarred files containing MSTK sources 
-version N.n. The following steps describe how to make, install and use
-the MSTK and MSTutil libraries. In the descriptions, substitute N.n by
-the major and minor version numbers of MSTK that you downloaded (for
-example, 1.5).
+------------------------------------------------------------------------------
+A. BUILD AND INSTALL MSTK
+------------------------------------------------------------------------------
 
+PREFERRED METHOD:
 
+Starting from MSTK v1.8, we are including CMakeLists.txt files to allow
+users to build and install MSTK on a wide variety of platforms with various 
+options enable/disabled easily. If you are unfamiliar with CMake, it is an 
+open-source project configuration system developed by Kitware, Inc. (See 
+http://www.cmake.org). 
 
+The following are the steps for build and installing MSTK using cmake
 
+1. Verify that you have cmake or install it on your system (system-wide or
+   locally)
 
-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE
-*********************************************************************
+2. Examine and Modify the file config/do-configure-mstk. This is the driver 
+   file for telling the build system what options are needed in the MSTK 
+   build. DO NOT HACK the CMakeLists.txt files. Try to control the build 
+   system behavior through the configure script. Using this script, you can 
+   turn on/off Exodus support, parallel mesh support, specify where to find
+   third-party libraries, where to install the mstk libraries etc. The most
+   up-to-date options for the configuration are given in the example configure
+   script supplied with the distribution (config/do-configure-mstk).
 
-It is no longer necessary to type setup to create the various object
-file and library directories. The included make file will now detect
-the architecture and os of your machine and create the necessary
-directories
+3. Choose a build directory. This could be a subdirectory named build in
+   the mstk source tree or some other directory. If you want to build both
+   debug and optimized targets you have to run cmake and build in separate
+   subdirectories or one build will clobber the other. I like to create 
+   subdirectories build/Debug and build/Release in the mstk directory and
+   build the different versions there.
 
-*********************************************************************
-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE-NOTE
+4. cd to the build directory and run the do-configure-mstk script there.
+   This will create the appropriate Makefiles.
+
+5. Then run 'make' followed by 'make install' or just run 'make install'
+   right away. 'make VERBOSE=1' will display details about what compile 
+   commands make is using.
+
 
 
 
 
 ------------------------------------------------------------------------
-A.      --------- Make install MSTK ----------------
+Building using standalone Makefile (NOT PREFERRED)
 ------------------------------------------------------------------------
 
-1. Unpack the sources by issuing the commands
-     tar xvzf MSTK-N.n.tar.gz   - creates directories mstk-N.n
-
-2. cd to mstk-N.n
-
-3. Edit the Makefile to set the compiler and compiler flags (ONLY IF
+1. Edit the Makefile to set the compiler and compiler flags (ONLY IF
    NECESSARY). In general, on a Linux system you have to make little
    or no change to the Makefile.
 
-4. Also edit the TOPDIR variable in the Makefile to reflect where the
+2. Also edit the TOPDIR variable in the Makefile to reflect where the
    mstk directories are located. For example, if the mstk directories 
    are in the directory $HOME/develop/, then set TOPDIR to $HOME/develop.
 
-5. Type 'make' to make the debug and optimized versions of the
+3. Edit the locations of the third-party libraries like METIS etc.
+
+4. Type 'make' to make the debug and optimized versions of the
    libraries which are ./lib/$ARCHOS/libmstk-d.a and
    ./lib/$ARCHOS/libmstk.a respectively. 
 
 	To include the mesh partitioning code MESH_Partition with
 	METIS, you have to type 'make PAR=1'
 
-6. Edit the 'install' file and modify the INSTALL_TOPDIR variable to
+5. Edit the 'install' file and modify the INSTALL_TOPDIR variable to
    be where you want the header files and include files to be
    installed. It could be $HOME or /usr/local. 
 
@@ -76,14 +93,7 @@ B.      --------- Use MSTK for code development ----------------
 
 
 
-
 NOTES:
--------------------------------------------------------------------------
-
-The make file arguments have changed in this version of MSTK. Now just
-typing 'make' will make the debug and optimized versions - No need to
-type 'make' and 'make opt' separately. 'make PAR=1' will include the
-mesh partitioning routines and you must link with METIS
 
 I have tested MSTK only on a Linux system with the gcc compiler. I do not 
 see why it should not work on other systems with a ANSI compliant 
@@ -92,7 +102,7 @@ not support the -z option. In this case, gunzip the file first and
 then issue a 'tar xvf file.tar' command.
 
 Feel free to contact me if you need any assistance. Also, see the MSTK
-website http://math.lanl.gov/~rao/Meshing-Projects/MSTK/
+website https://software.lanl.gov/MeshTools/trac/
 
 Regards
 Rao
