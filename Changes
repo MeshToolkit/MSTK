@@ -1,3 +1,15 @@
+Changes v1.71
+
+* Fixes to import from Exodus file format
+
+* Added MSets which are Mesh entity sets or named lists
+
+* Exodus export routine
+
+* DX export routine
+
+* Bug fixes
+
 Changes v1.7
 
 * THE MSTKUTIL LIBS HAVE BEEN ABSORBED INTO MSTK. THERE IS NO NEED TO
@@ -19,6 +31,7 @@ Changes v1.7
 * Support for VECTOR and TENSOR type attributes added
 
 * Support for reading/writing attributes in MSTK files added
+
 
 * Many bug fixes and efficiency improvements
 
