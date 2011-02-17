@@ -208,9 +208,16 @@ extern "C" {
 
 
 
+  /* List_sort similar as qsort, except the first parameter is a list
+     pointer, not array */
 
-  /* Return the value in the raw position 'i' in the list - don't count the
-     i'th valid entry like in List_Entry */
+  void List_Sort(List_ptr l, size_t num, size_t size, 
+		 int(*comp)(const void *,const void *)) {
+    qsort(List_Entries(l),num,size,comp);
+  }
+
+  /* Return the value in the raw position 'i' in the list - don't
+     count the i'th valid entry like in List_Entry */
 
   void *List_Entry_Raw(List_ptr l, int i) {
     int p, ntot, nent, nrem, rem1;
