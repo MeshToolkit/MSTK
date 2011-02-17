@@ -25,7 +25,6 @@ extern "C" {
 
   List_ptr ME_Faces_R1R2(MEdge_ptr e) {
     int idx, idx1, idx2, found;
-    MEntity_ptr ent;
     MFace_ptr face, lstface;
     MRegion_ptr reg;
     List_ptr rfaces, vfaces1, efaces, vregs0, vregs1, cmnregs=NULL;
