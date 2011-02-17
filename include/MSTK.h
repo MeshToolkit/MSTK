@@ -1,6 +1,7 @@
 #ifndef _H_MSTK
 #define _H_MSTK
 
+#include <stdarg.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,10 +13,12 @@ extern "C" {
 #include "MSTK_util.h"
 #include "MSTK_malloc.h"
 
+#ifdef MSTK_HAVE_MPI
+#include <mpi.h>
+#endif
 
 /*******************************************************************/
-
-void        MSTK_Init();
+void MSTK_Init(void);
 
 /********************************************************************/
 /*        MESH OBJECT OPERATORS                                     */
@@ -96,18 +99,45 @@ void        MSTK_Init();
   MEdge_ptr    MESH_EdgeFromID(Mesh_ptr mesh, int i);
   MFace_ptr    MESH_FaceFromID(Mesh_ptr mesh, int i);
   MRegion_ptr  MESH_RegionFromID(Mesh_ptr mesh, int i);
+  MEntity_ptr  MESH_EntityFromID(Mesh_ptr mesh, MType mtype, int i);
 
-  void       MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom);
+  
+  int        MESH_SetRepType(Mesh_ptr mesh, RepType type);
+  void       MESH_SetGModel(Mesh_ptr mesh, GModel_ptr geom);
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
 
   void       MESH_Renumber(Mesh_ptr mesh);
 
-  /* Use 'make PAR=1' to include this subroutine. You must link the
-     METIS libraries. 'part' is an array that contains the partition
-     number for each mesh face (surface meshes) or mesh region (volume
-     meshes) */
-  
-  int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
+
+#ifdef MSTK_HAVE_MPI
+
+
+
+  /* parallel wrapper functions for user */
+
+  /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
+
+  /* Read a mesh in, partition it and distribute it to 'num' processors */
+
+  int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
+				const char* global_mesh_name, 
+				int dim, int ring, int with_attr, 
+				int rank, int num, MPI_Comm comm);
+
+  /* Partition an existing mesh and distribute it to 'num' processors */
+
+  int MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
+			   int dim, int ring, int with_attr, 
+			   int rank, int num, MPI_Comm comm);
+
+  /* Parallel update attribute values for ghost entities */
+
+  int MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm);
+
+  /* END PRIMARY ROUTINES FOR PARALLEL APPLICATION */
+#endif
+
+
 
   Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh);
   Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh);
@@ -147,6 +177,21 @@ void        MSTK_Init();
   List_ptr MV_Edges(MVertex_ptr mvertex);
   List_ptr MV_Faces(MVertex_ptr mvertex);
   List_ptr MV_Regions(MVertex_ptr mvertex);
+
+#ifdef MSTK_HAVE_MPI
+
+  /* If you call the routines to set master partition ID or Global ID
+     without knowing what you are doing, you can shoot yourself in the
+     foot. So if you are casual MSTK user, you are strongly advised
+     against calling the Set_MasterParID and Set_GlobalID routines */  
+
+  PType MV_PType(MVertex_ptr v);
+  void  MV_Set_PType(MVertex_ptr v, PType ptype);
+  int   MV_MasterParID(MVertex_ptr v);
+  void  MV_Set_MasterParID(MVertex_ptr v, int masterparid);
+  int   MV_GlobalID(MVertex_ptr v);
+  void  MV_Set_GlobalID(MVertex_ptr v, int globalid);
+#endif
 
 
 /********************************************************************/
@@ -190,6 +235,22 @@ void        MSTK_Init();
 
   void ME_Lock(MEdge_ptr e);
   void ME_UnLock(MEdge_ptr e);
+
+#ifdef MSTK_HAVE_MPI
+ /*for mpi*/
+  /* If you call the routines to set master partition ID or Global ID
+     without knowing what you are doing, you can shoot yourself in the
+     foot. So if you are casual MSTK user, you are strongly advised
+     against calling the Set_MasterParID and Set_GlobalID routines */  
+
+  PType ME_PType(MEdge_ptr e);
+  void  ME_Set_PType(MEdge_ptr e, PType ptype);
+  int   ME_MasterParID(MEdge_ptr e);
+  void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
+  int   ME_GlobalID(MEdge_ptr e);
+  void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
+  /*end for mpi*/
+#endif
 
 /********************************************************************/
 /*        MESH FACE OPERATORS                                       */
@@ -246,6 +307,22 @@ void        MSTK_Init();
   void MF_Lock(MFace_ptr f);
   void MF_UnLock(MFace_ptr f);
 
+#ifdef MSTK_HAVE_MPI
+ /*for mpi*/
+  /* If you call the routines to set master partition ID or Global ID
+     without knowing what you are doing, you can shoot yourself in the
+     foot. So if you are casual MSTK user, you are strongly advised
+     against calling the Set_MasterParID and Set_GlobalID routines */  
+
+  PType MF_PType(MFace_ptr f);  
+  void  MF_Set_PType(MFace_ptr f, PType ptype);
+  int   MF_MasterParID(MFace_ptr f);
+  void  MF_Set_MasterParID(MFace_ptr f, int masterparid);
+  int   MF_GlobalID(MFace_ptr f);
+  void  MF_Set_GlobalID(MFace_ptr f, int globalid);
+  /*end for mpi*/
+#endif
+
 /********************************************************************/
 /*        MESH REGN OPERATORS                                       */
 /********************************************************************/
@@ -295,10 +372,44 @@ void        MSTK_Init();
 
   void MR_Coords(MRegion_ptr mregion, int *n, double (*xyz)[3]);
 
+#ifdef MSTK_HAVE_MPI
+
+  /* If you call the routines to set master partition ID or Global ID
+     without knowing what you are doing, you can shoot yourself in the
+     foot. So if you are casual MSTK user, you are strongly advised
+     against calling the Set_MasterParID and Set_GlobalID routines */  
+
+  PType MR_PType(MRegion_ptr r);  
+  void  MR_Set_PType(MRegion_ptr r, PType ptype);
+  int   MR_MasterParID(MRegion_ptr r);
+  void  MR_Set_MasterParID(MRegion_ptr r, int masterparid);
+  int   MR_GlobalID(MRegion_ptr r);
+  void  MR_Set_GlobalID(MRegion_ptr r, int globalid);
+
+#endif
+
 
   /************************************************************************/
   /* GENERIC ENTITY OPERATORS                                             */
   /************************************************************************/
+
+#ifdef MSTK_HAVE_MPI
+
+  /* If you call the routines to set master partition ID or Global ID
+     without knowing what you are doing, you can shoot yourself in the
+     foot. So if you are casual MSTK user, you are strongly advised
+     against calling the Set_MasterParID and Set_GlobalID routines */  
+
+  PType MEnt_PType(MEntity_ptr ent);
+  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
+
+  int   MEnt_MasterParID(MEntity_ptr ent);
+  void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid);
+
+  int   MEnt_GlobalID(MEntity_ptr ent);
+  void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
+
+#endif
 
   void MEnt_Set_GEntity(MEntity_ptr mentity, GEntity_ptr gent);
   void MEnt_Set_GEntDim(MEntity_ptr mentity, int gdim);
@@ -368,7 +479,7 @@ void        MSTK_Init();
   /* ENTITY MARKING                                                       */
   /************************************************************************/
 
-  int  MSTK_GetMarker();
+  int  MSTK_GetMarker(void);
   void MSTK_FreeMarker(int mkr);
   void MEnt_Mark(MEntity_ptr ent, int mkr);
   int  MEnt_IsMarked(MEntity_ptr ent, int mkr);
@@ -432,6 +543,79 @@ void        MSTK_Init();
 /**********************************************************************/
 
 
+#ifdef MSTK_HAVE_MPI
+
+  /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
+  /* IF YOU MUCK CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND */
+  /* YOU WILL GET WHAT YOU DESERVE                                   */
+
+  int MSTK_SendMesh(Mesh_ptr mesh, int rank, int with_attr, MPI_Comm comm);
+  int MSTK_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, 
+		    int with_attr, MPI_Comm comm);
+
+
+  /* Mesh Partition Routines*/
+
+  int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
+  int        MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, 
+				 int ring, int with_attr);
+  int        MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num);
+  int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
+
+  /* build processor boundary */
+  int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
+
+  /* add ghost elements */
+  int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
+  /* send and receive mesh */
+  int        MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm);
+  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm);
+  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, MPI_Comm comm);
+  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int rank, int recv_rank, MPI_Comm comm);
+
+  int        MESH_Num_GhostVertices(Mesh_ptr mesh);
+  int        MESH_Num_GhostEdges(Mesh_ptr mesh);
+  int        MESH_Num_GhostFaces(Mesh_ptr mesh);
+  int        MESH_Num_GhostRegions(Mesh_ptr mesh);
+
+  int        MESH_Num_OverlapVertices(Mesh_ptr mesh);
+  int        MESH_Num_OverlapEdges(Mesh_ptr mesh);
+  int        MESH_Num_OverlapFaces(Mesh_ptr mesh);
+  int        MESH_Num_OverlapRegions(Mesh_ptr mesh);
+
+  int        MESH_Num_InteriorVertices(Mesh_ptr mesh);
+  int        MESH_Num_InteriorEdges(Mesh_ptr mesh);
+  int        MESH_Num_InteriorFaces(Mesh_ptr mesh);
+  int        MESH_Num_InteriorRegions(Mesh_ptr mesh);
+  
+  MVertex_ptr  MESH_GhostVertex(Mesh_ptr mesh, int i);
+  MEdge_ptr    MESH_GhostEdge(Mesh_ptr mesh, int i);
+  MFace_ptr    MESH_GhostFace(Mesh_ptr mesh, int i);
+  MRegion_ptr  MESH_GhostRegion(Mesh_ptr mesh, int i);
+
+  MVertex_ptr  MESH_OverlapVertex(Mesh_ptr mesh, int i);
+  MEdge_ptr    MESH_OverlapEdge(Mesh_ptr mesh, int i);
+  MFace_ptr    MESH_OverlapFace(Mesh_ptr mesh, int i);
+  MRegion_ptr  MESH_OverlapRegion(Mesh_ptr mesh, int i);
+
+  MVertex_ptr  MESH_Next_GhostVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr    MESH_Next_GhostEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr    MESH_Next_GhostFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr  MESH_Next_GhostRegion(Mesh_ptr mesh, int *index);
+
+  MVertex_ptr  MESH_Next_OverlapVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr    MESH_Next_OverlapEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr    MESH_Next_OverlapFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr  MESH_Next_OverlapRegion(Mesh_ptr mesh, int *index);
+
+  MVertex_ptr  MESH_Next_InteriorVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr    MESH_Next_InteriorEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr    MESH_Next_InteriorFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr  MESH_Next_InteriorRegion(Mesh_ptr mesh, int *index);
+
+  /*end for mpi */
+#endif
+
 
 
 /**********************************************************************/
@@ -481,7 +665,9 @@ void        MSTK_Init();
   void    *List_Next_Entry(List_ptr l, int *i);
   int      List_Num_Entries(List_ptr l);
   List_ptr List_Cat(List_ptr dest, List_ptr src);
-
+  /* Sort a list based on a user/application supplied comparison function */
+  void     List_Sort(List_ptr l, size_t num, size_t size,
+		     int(*comp)(const void *,const void *));
 #ifdef DEBUG
   void     List_Print(List_ptr l);
 #endif

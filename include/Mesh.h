@@ -4,7 +4,7 @@
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -19,6 +19,16 @@ extern "C" {
     int max_vid, max_eid, max_fid, max_rid;
     Hash_ptr hedge, hface;
     int autolock;
+
+#ifdef MSTK_HAVE_MPI
+    /* for mpi */
+    List_ptr ghvertex, ghedge, ghface, ghregion;
+    int max_ghvid, max_gheid, max_ghfid, max_ghrid;
+    List_ptr ovvertex, ovedge, ovface, ovregion;
+    int *global_info;
+    int *local_info;
+    /* end for mpi */
+#endif
   } Mesh, *Mesh_ptr;
 #else
   typedef void *Mesh;
@@ -75,6 +85,54 @@ extern "C" {
   void       MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r);
 
+#ifdef HAVE_MPI
+  int        MESH_Num_GhostVertices(Mesh_ptr mesh);
+  int        MESH_Num_GhostEdges(Mesh_ptr mesh);
+  int        MESH_Num_GhostFaces(Mesh_ptr mesh);
+  int        MESH_Num_GhostRegions(Mesh_ptr mesh);
+
+  MVertex_ptr  MESH_GhostVertex(Mesh_ptr mesh, int i);
+  MEdge_ptr    MESH_GhostEdge(Mesh_ptr mesh, int i);
+  MFace_ptr    MESH_GhostFace(Mesh_ptr mesh, int i);
+  MRegion_ptr  MESH_GhostRegion(Mesh_ptr mesh, int i);
+  
+  MVertex_ptr  MESH_Next_GhostVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr    MESH_Next_GhostEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr    MESH_Next_GhostFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr  MESH_Next_GhostRegion(Mesh_ptr mesh, int *index);
+
+  void       MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v);
+  void       MESH_Add_GhostEdge(Mesh_ptr mesh, MEdge_ptr e);
+  void       MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f);
+  void       MESH_Add_GhostRegion(Mesh_ptr mesh, MRegion_ptr r);
+
+  void       MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v);
+  void       MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e);
+  void       MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f);
+  void       MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r);
+
+  int        MESH_Num_OverlapVertices(Mesh_ptr mesh);
+  int        MESH_Num_OverlapEdges(Mesh_ptr mesh);
+  int        MESH_Num_OverlapFaces(Mesh_ptr mesh);
+  int        MESH_Num_OverlapRegions(Mesh_ptr mesh);
+
+  MVertex_ptr  MESH_OverlapVertex(Mesh_ptr mesh, int i);
+  MEdge_ptr    MESH_OverlapEdge(Mesh_ptr mesh, int i);
+  MFace_ptr    MESH_OverlapFace(Mesh_ptr mesh, int i);
+  MRegion_ptr  MESH_OverlapRegion(Mesh_ptr mesh, int i);
+
+  MVertex_ptr  MESH_Next_OverlapVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr    MESH_Next_OverlapEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr    MESH_Next_OverlapFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr  MESH_Next_OverlapRegion(Mesh_ptr mesh, int *index);
+
+  void       MESH_Add_OverlapVertex(Mesh_ptr mesh, MVertex_ptr v);
+  void       MESH_Add_OverlapEdge(Mesh_ptr mesh, MEdge_ptr e);
+  void       MESH_Add_OverlapFace(Mesh_ptr mesh, MFace_ptr f);
+  void       MESH_Add_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r);
+
+#endif
+
   void       MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom);
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
   
@@ -85,7 +143,7 @@ extern "C" {
   int MESH_AutoLock(Mesh_ptr mesh);
   void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);
   
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

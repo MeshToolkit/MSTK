@@ -16,6 +16,14 @@ extern "C" {
     unsigned int rtype_gdim_gid;
     unsigned int marker;
     List_ptr AttInsList;
+
+#ifdef MSTK_HAVE_MPI
+    /*for mpi*/
+    unsigned int ptype_masterparid;
+    unsigned int globalid;
+    /*end for mpi*/
+#endif
+
   } MEntity_Data, *MEntity_Data_ptr;
 
   typedef struct MEntity {
@@ -24,6 +32,19 @@ extern "C" {
 
 #else
   typedef void *MEntity_ptr;
+#endif
+
+#ifdef MSTK_HAVE_MPI
+  /*for mpi*/
+  PType MEnt_PType(MEntity_ptr ent);
+  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
+
+  int   MEnt_MasterParID(MEntity_ptr ent);
+  void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid);
+
+  int   MEnt_GlobalID(MEntity_ptr ent);
+  void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
+  /*end for mpi*/
 #endif
 
   void MEnt_Init_CmnData(MEntity_ptr ent);
@@ -79,7 +100,7 @@ extern "C" {
   int   MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);
 
-  /* Adhoc routines for parallel output of MSTK files */
+  /* Adhoc routines for output of parallel FLAG X3D files */
 
   int MEnt_NumProcs(MEntity_ptr ent);
   void MEnt_Set_ProcIDs(MEntity_ptr ent, int np, int *procids);

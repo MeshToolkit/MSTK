@@ -133,6 +133,18 @@ extern "C" {
   void MF_UnLock(MFace_ptr f);
   int MF_IsLocked(MFace_ptr f);
 
+#ifdef MSTK_HAVE_MPI
+ /*for mpi*/
+  PType MF_PType(MFace_ptr f);  
+  void  MF_Set_PType(MFace_ptr f, PType ptype);
+  int   MF_MasterParID(MFace_ptr f);
+  void  MF_Set_MasterParID(MFace_ptr f, int masterparid);
+  int   MF_GlobalID(MFace_ptr f);
+  void  MF_Set_GlobalID(MFace_ptr f, int globalid);
+  MFace_ptr MF_GhostNew(Mesh_ptr mesh);
+  /*end for mpi*/
+#endif
+
 #ifdef __cplusplus
 }
 #endif
