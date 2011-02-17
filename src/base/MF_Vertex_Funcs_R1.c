@@ -13,7 +13,7 @@ extern "C" {
     if (f1 == f2)
       return 1;
     else {
-      int nfv1, nfv2, i, j, k, dir=-1;
+      int nfv1, nfv2, j, k, dir=-1;
       MVertex_ptr fv;
       List_ptr fverts1, fverts2;
       
