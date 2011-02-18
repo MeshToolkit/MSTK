@@ -72,8 +72,8 @@ and regions and maintains connectivity between all these entities.
 meshes. However, any entity in MSTK can belong to only one mesh at a
 time.
 
-\par MSTK will eventually support distributed meshes for parallel
-computing. However, this is still not in place.
+\par MSTK has preliminary support of distributed meshes for parallel
+computing. 
 
 \par To support numerical analysis and other applications, MSTK allows
 applications to attach application or field data to entities. This
@@ -90,19 +90,20 @@ FEA Applications,'' {\em International Journal of Numerical Methods
 \subsection{Why should I use MSTK?}
 
 MSTK offers a flexible infrastructure for representing and
-manipulating meshes so that mesh-based application developers do not
-have to deal with the complexitiies of managing their own data
-structures. The functional interface of MSTK is designed to provide
-easy access to mesh data and allow for easy-to-read but efficient code
-to be written for mesh based applications. Accessing the mesh data
-through the functional interface allows the high level application to
-be unchanged even if the lower level data structures in MSTK
-change. MSTK supports a wide array of element types and several
-representations, all of which can take a new developer years to write
-and make robust. New users of MSTK can typically start writing their
-own codes to query and manipulate meshes within a few days of
-familiarizing themselves with MSTK. Finally, use of MSTK allows easy
-integration with other codes using MSTK as their mesh data framework.
+manipulating meshes in a distributed environment so that mesh-based
+application developers do not have to deal with the complexitiies of
+managing their own data structures. The functional interface of MSTK
+is designed to provide easy access to mesh data and allow for
+easy-to-read but efficient code to be written for mesh based
+applications. Accessing the mesh data through the functional interface
+allows the high level application to be unchanged even if the lower
+level data structures in MSTK change. MSTK supports a wide array of
+element types and several representations, all of which can take a new
+developer years to write and make robust. New users of MSTK can
+typically start writing their own codes to query and manipulate meshes
+within a few days of familiarizing themselves with MSTK. Finally, use
+of MSTK allows easy integration with other codes using MSTK as their
+mesh data framework.
 
 
 \section{MSTK Concepts}
@@ -268,6 +269,39 @@ unambiguously. So, wherever possible, users are encouraged to generate
 classification information during mesh generation and supply it to
 MSTK.
 
+\subsection{Parallel Mesh Management}
+
+MSTK now has preliminary support for representation of distributed
+surface and volume meshes for supporting parallel
+simulations. \textit{This is an alpha functionality and the API or
+  behavior of some functions is subject to revision.}
+
+Currently, the only way to distribute meshes on multiple processors is
+to perform a serial read on processor 0 and then distribute it to
+however many processors are necessary. Mesh attributes and mesh entity
+sets are appropriately partitioned and distributed to the different
+processors. Functionality to read a pre-partitioned mesh is planned
+for the future.
+
+MSTK currently supports one (or no) layer of overlapped or ghost
+entities between processors. If a surface mesh requests a layer of
+ghost faces, then all lower order entities (edges and vertices)
+forming the ghost faces are also ghosted. Similarly, if a volume mesh
+requests a layer of ghost regions, all lower order entities (faces,
+edges and vertices) forming the ghost regions are reproduced. Entities
+that are owned by a processor but duplicated on another processor are
+called {\em Overlap} entities. Entities that are duplicates of overlap
+entities are called {\em Ghost} entities. The master processor ID of a
+ghost entity is the processor ID that its corresponding overlap entity
+lives on.
+
+MSTK supports automatic updating of scalars, vectors and tensors on
+mesh entities of all dimensions. The application can update the
+attribute values on its owned entities and call MSTK to update the
+attribute values on ghosts on other processors.
+
+\textit{MSTK does not yet support parallel modification of meshes}.
+
 \subsection{MSTK Application Programming Interface (API)}
 
 Even though MSTK is written in C, MSTK is designed in an object
@@ -298,13 +332,17 @@ typically a difficult task for many applications which only have
 element-node data. In such cases, one can prepare an MSTK file in the
 R1 file format (in which the node listing is followed by the
 region-node connectivity) and read it in to any of the other
-representations, say F1. The other possibility is to write a file in
-the GMV format and use MESH\_ImportFromFile to import the mesh in.
+representations, say F1. 
+
+It is also possible to import meshes in other formats into MSTK. Some
+formats that MSTK can read from are the GMV format and the ExodusII
+format. Applications can use MESH\_ImportFromFile to import the mesh
+into MSTK.
 
 MSTK can write meshes out to different formats including GMV, STL and
-FLAG X3D. When compiled with the appropriate options and using a
-partitioner from an external library, MSTK can also write out a
-parallel X3D file.
+ExodusII and FLAG X3D. When compiled with the appropriate options and
+using a partitioner from an external library, MSTK can also write out
+a parallel X3D file.
 
 \newpage
 \section{MSTK Data Types}
@@ -353,9 +391,9 @@ Can be RDELETED, RUNKNOWN, TET, PYRAMID, PRISM, HEX, POLYHED.
 \section{MSTK Functional Interface}
 \subsection{List}
 
-Unordered sets or lists of entities in MSTK are returned as type
-{\em List\_ptr}. The following are the set operations available in
-MSTK:
+Unordered lists of entities in MSTK are returned as type {\em
+  List\_ptr} (See MSets for named entity sets). The following are the
+list operations available in MSTK:
 
 \begin{description}
 \item[]{\bf {\em List\_ptr} List\_New({\em int} inisize):} Create a
@@ -510,23 +548,28 @@ are derived.
     rfvtemplate} gives the array indices of the vertices for each face
   of the region.
 
-\item[]{\bf {\em int} MESH\_ImportFromFile({\em Mesh\_ptr}
-    mesh, const char *filename, const char *format):} Import a mesh
-  data from an external file format and construct MSTK mesh. Currently
-  the only format supported is the
+\item[]{\bf {\em int} MESH\_ImportFromFile({\em Mesh\_ptr} mesh, const
+    char *filename, const char *format):} Import a mesh data from an
+  external file format and construct MSTK mesh. Currently the formats
+  supported are the
   GMV\footnote{\texttt{http://www-xdiv.lanl.gov/XCM/gmv/GMVHome.html}}
-  file format. The routine imports as many attributes as it can from
-  the input file. It also uses special attributes or keywords as data
-  about element and node classification.  For GMV files, the routine
-  uses the ``material'' data to indicate region or face classification
-  depending on the dimensionality of the mesh. If ``material'' data is
-  not specified, it uses the ``itetclr'' attribute to assign region or
-  face classification. It also uses the ``icr'' keyword describing the
+  file format and the Exodus II file format. The routine imports as
+  many attributes as it can from the input file. It also uses special
+  attributes or keywords as data about element and node
+  classification.  For GMV files, the routine uses the ``material''
+  data to indicate region or face classification depending on the
+  dimensionality of the mesh. If ``material'' data is not specified,
+  it uses the ``itetclr'' attribute to assign region or face
+  classification. It also uses the ``icr'' keyword describing the
   number of constraints on a node to interpret if the node is
   classified on a model region, model face, model edge or a model
   vertex. The ``itetclr'' and ``icr'' keywords are usually present in
   meshes generated by
-  LAGRIT\footnote{\texttt{http://lagrit.lanl.gov}}.
+  LAGRIT\footnote{\texttt{http://lagrit.lanl.gov}}. For Exodus II file
+  formats, element blocks are used to create sets of mesh regions with
+  the name 'matset\_N' (where N is the element block ID), sidesets are
+  used to create sets of faces named 'sideset\_N' and nodesets are used
+  to create sets of vertices named 'nodeset\_N'.
 
   
 \item[]{\bf {\em int} MESH\_BuildClassfn({\em Mesh\_ptr} mesh):} Build
@@ -568,36 +611,37 @@ are derived.
     attributes attached to the mesh except attributes of the type
     POINTER.
   
-%% \item[]{\bf {\em void} MESH\_ExportToFile({\em Mesh\_ptr}
-%%     mesh, const char *filname, const char *format, int natt, char
-%%     **attnames):} Export a mesh to an external file format. Currently,
-%%   the formats supported are the GMV file (format string: ``gmv'') and
-%%   Data Explorer\footnote{\texttt{http://opendx.org}} (format string:
-%%   ``dx''). Only integer and double attributes of the mesh are exported
-%%   to the files.
-  
-\item[]{\bf {\em void} MESH\_ExportToFile({\em Mesh\_ptr} mesh, const
-    char *filname, const char *format, int natt, char **attnames):}
-  Export a mesh to an external file format. Currently, the only
-  formats supported is the GMV file format (format string: ``gmv'')
-  and X3D (format string: ``flag''). Only integer and double
-  attributes of the mesh are exported to GMV files and no attributes
-  are exported to X3D files.
+  \item[]{\bf {\em void} MESH\_ExportToFile({\em Mesh\_ptr} mesh,
+      const char *filname, const char *format, int natt, char
+      **attnames):} Export a mesh to an external file
+    format. Currently, the formats supported are the GMV file format
+    (format: ``gmv'') and X3D (format: ``flag''), Exodus II file
+    format (format: ``exodusii''). In addition surface meshes may be
+    exported to STL (format: ``stl'') and IBM Data Explorer (format:
+    ``dx'') format. Only integer and double attributes of the mesh are
+    exported to GMV files and no attributes are exported to X3D files.
 
-\item[]{\bf {\em void} MESH\_ExportToGMV({\em Mesh\_ptr} mesh, const
-    char *filname, const char *format, int natt, char **attnames):} Export a mesh to a GMV file format. 
+  \item[]{\bf {\em void} MESH\_ExportToGMV({\em Mesh\_ptr} mesh, const
+      char *filname, int natt, char **attnames):} Export a mesh to a
+    GMV file format.
 
-\item[]{\bf {\em void} MESH\_ExportToFLAGX3D({\em Mesh\_ptr} mesh, const
-    char *filname, const char *format, int natt, char **attnames):} Export a mesh to the FLAG X3D format.
+\item[]{\bf {\em void} MESH\_ExportToFLAGX3D({\em Mesh\_ptr} mesh,
+    const char *filname, int natt, char **attnames):} Export a mesh to
+  the FLAG X3D format.
 
-\item[]{\bf {\em void} MESH\_ExportToFLAGX3D\_Par({\em Mesh\_ptr} mesh,
-    const char *filname, const char *format, int natt, char
-    **attnames, int *procids):} Export a mesh to the FLAG X3D format
-  given a partitioned mesh. The owning processor for each element is
-  given in the array {\bf procids}.
+\item[]{\bf {\em void} MESH\_ExportToFLAGX3D\_Par({\em Mesh\_ptr}
+    mesh, const char *filname, int natt, char **attnames, int
+    *procids):} Export a mesh to the FLAG X3D format given a
+  partitioned mesh. The owning processor for each element is given in
+  the array {\bf procids}.
 
-\item[]{\bf {\em void} MESH\_ExportToSTL({\em Mesh\_ptr} mesh, const
-    char *filname):} Export a mesh to the STL format (SURFACE MESHES ONLY!).
+\item[]{\bf {\em void} MESH\_ExportToExodusII({\em Mesh\_ptr} mesh,
+    const char *filname, int natt, char **attnames):} Export a mesh to
+  a GMV file format.
+
+\item[]{\bf {\em void} MESH\_ExportToDX({\em Mesh\_ptr} mesh, const
+    char *filname):} Export a mesh to the IBM Data Explorer format
+  (SURFACE MESHES ONLY!).
 
 \item[]{\bf {\em void} MESH\_Tet2Hex({\em Mesh\_ptr} tetmesh, {\em
       Mesh\_ptr} *hexmesh):} Convert a tet mesh to a hex mesh by
@@ -731,6 +775,10 @@ explanation for {\bf MESH\_Num\_Faces}).
   Return mesh region with given ID if it exists; return NULL
   otherwise.
 
+\item[]{\bf {\em MEntity\_ptr} MESH\_EntityFromID({\em Mesh\_ptr}
+    mesh, {\em MType mtype}, {\em int} id):} Return mesh entity of
+  given type and given ID if it exists; return NULL otherwise.
+
 \item[]
 
 \item[]{\bf {\em int} MESH\_Num\_Attribs({\em Mesh\_ptr}
@@ -748,8 +796,28 @@ explanation for {\bf MESH\_Num\_Faces}).
   
 \item[]{\bf {\em MAttrib\_ptr}
     MESH\_AttribByName({\em Mesh\_ptr} mesh, {\em const char}
-    *name):} Return a mesh attribute with given name if it exisists in
+    *name):} Return a mesh attribute with given name if it exists in
   the mesh. Returns NULL if mesh has no such attribute.
+
+\item[]
+  
+\item[]{\bf {\em int} MESH\_Num\_MSets({\em Mesh\_ptr}
+    mesh):} Number of entity sets associated with the mesh.
+  
+\item[]{\bf {\em MSet\_ptr} MESH\_MSet({\em Mesh\_ptr}
+    mesh, {\em int} i):} Return the i'th entity set in the mesh.
+  Returns NULL if i $<$ 0 or i $>$ number of entity sets.
+ 
+\item[]{\bf {\em MSet\_ptr}
+    MESH\_Next\_MSet({\em Mesh\_ptr} mesh, {\em int} *index):}
+  Returns the next entity set while iterating through the sets of
+  the mesh. See the routine List\_Next\_Entry above for an explanation
+  of how the iteration works.
+  
+\item[]{\bf {\em MSet\_ptr}
+    MESH\_MSetByName({\em Mesh\_ptr} mesh, {\em const char}
+    *name):} Return a mesh entity set with given name if it exists in
+  the mesh. Returns NULL if mesh has no such set.
 
 \item[]
   
@@ -954,6 +1022,20 @@ List of faces connected to the vertex. {\bf The list returned by this
 \item[]{\bf {\em List\_ptr} MV\_Regions({\em MVertex\_ptr} mvertex):}
 List of regions connected to the vertex. {\bf The list returned by this
   operator must be deleted by the calling application using {\em List\_Delete}}.
+
+\item[]
+
+\item[]  {\bf {\em PType} MV\_PType({\em MVertex\_ptr} v)}: Parallel entity type for vertex - can be PINTERIOR, POVERLAP or PGHOST.
+\item[]  {\bf {\em int}   MV\_MasterParID({\em MVertex\_ptr} v)}:
+\item[]  {\bf {\em int}   MV\_GlobalID({\em MVertex\_ptr} v)}:
+
+\item[]
+\item[]  The following three functions affect how mesh entities communicate and how their attributes are updated. IF YOU DON'T KNOW WHAT YOU ARE DOING WHEN YOU CALL THIS FUNCTION, YOU WILL GET WHAT YOU DESERVE.
+\item[]  {\bf {\em void}  MV\_Set\_PType({\em MVertex\_ptr} v, {\em PType} ptype)}: 
+\item[]  {\bf {\em void}  MV\_Set\_MasterParID({\em MVertex\_ptr} v, {\em int} masterparid)}
+\item[]  {\bf {\em void}  MV\_Set\_GlobalID({\em MVertex\_ptr} v, {\em int} globalid)}:  
+
+
 \end{description}
 
 
@@ -1107,6 +1189,19 @@ List of regions connected to the vertex. {\bf The list returned by this
 
 \item[]{\bf {\em void} ME\_UnLock({\em MEdge\_ptr} e):} Unlock a volatile
   edge so that it may be deleted freely by garbage cleaning procedures.
+
+\item[]
+
+\item[]  {\bf {\em PType} ME\_PType({\em MEdge\_ptr} v)}: Parallel entity type for edge - can be PINTERIOR, POVERLAP or PGHOST.
+\item[]  {\bf {\em int}   ME\_MasterParID({\em MEdge\_ptr} v)}:
+\item[]  {\bf {\em int}   ME\_GlobalID({\em MEdge\_ptr} v)}:
+
+\item[]
+\item[]  The following three functions affect how mesh entities communicate and how their attributes are updated. IF YOU DON'T KNOW WHAT YOU ARE DOING WHEN YOU CALL THIS FUNCTION, YOU WILL GET WHAT YOU DESERVE.
+\item[]  {\bf {\em void}  ME\_Set\_PType({\em MEdge\_ptr} v, {\em PType} ptype)}: 
+\item[]  {\bf {\em void}  ME\_Set\_MasterParID({\em MEdge\_ptr} v, {\em int} masterparid)}
+\item[]  {\bf {\em void}  ME\_Set\_GlobalID({\em MEdge\_ptr} v, {\em int} globalid)}:  
+
 
 \end{description}
 
@@ -1332,6 +1427,18 @@ any other type of entity is specified, the function returns 0.
 
 \item[]
 
+\item[]  {\bf {\em PType} MF\_PType({\em MFace\_ptr} v)}: Parallel entity type for face - can be PINTERIOR, POVERLAP or PGHOST.
+\item[]  {\bf {\em int}   MF\_MasterParID({\em MFace\_ptr} v)}:
+\item[]  {\bf {\em int}   MF\_GlobalID({\em MFace\_ptr} v)}:
+
+\item[]
+\item[]  The following three functions affect how mesh entities communicate and how their attributes are updated. IF YOU DON'T KNOW WHAT YOU ARE DOING WHEN YOU CALL THIS FUNCTION, YOU WILL GET WHAT YOU DESERVE.
+\item[]  {\bf {\em void}  MF\_Set\_PType({\em MFace\_ptr} v, {\em PType} ptype)}: 
+\item[]  {\bf {\em void}  MF\_Set\_MasterParID({\em MFace\_ptr} v, {\em int} masterparid)}
+\item[]  {\bf {\em void}  MF\_Set\_GlobalID({\em MFace\_ptr} v, {\em int} globalid)}:  
+
+\item[]
+
 \item[]{\bf {\em void} MF\_Coords({\em MFace\_ptr} mface,
 {\em int} *n, double (*xyz)[3], {\em int} dir):} Returns the
 coordinates of the face vertices in an array along with the number of
@@ -1348,6 +1455,7 @@ vertices.
 
 \item[]{\bf {\em void} MF\_UnLock({\em MFace\_ptr} f):} Unlock a volatile
   face so that it may be deleted freely by garbage cleaning procedures.
+
 
 \end{description}
 
@@ -1533,6 +1641,18 @@ entity is
 
 \item[]
 
+\item[]  {\bf {\em PType} MR\_PType({\em MRegion\_ptr} v)}: Parallel entity type for edge - can be PINTERIOR, POVERLAP or PGHOST.
+\item[]  {\bf {\em int}   MR\_MasterParID({\em MRegion\_ptr} v)}:
+\item[]  {\bf {\em int}   MR\_GlobalID({\em MRegion\_ptr} v)}:
+
+\item[]
+\item[]  The following three functions affect how mesh entities communicate and how their attributes are updated. IF YOU DON'T KNOW WHAT YOU ARE DOING WHEN YOU CALL THIS FUNCTION, YOU WILL GET WHAT YOU DESERVE.
+\item[]  {\bf {\em void}  MR\_Set\_PType({\em MRegion\_ptr} v, {\em PType} ptype)}: 
+\item[]  {\bf {\em void}  MR\_Set\_MasterParID({\em MRegion\_ptr} v, {\em int} masterparid)}
+\item[]  {\bf {\em void}  MR\_Set\_GlobalID({\em MRegion\_ptr} v, {\em int} globalid)}:  
+
+\item[]
+
 \item[]{\bf {\em void} MR\_Coords({\em MRegion\_ptr} mregion,
 {\em int} *n, double (*xyz)[3]):} Returns the coordinates of the
 region vertices in an array along with the number of vertices. For
@@ -1679,6 +1799,101 @@ Returns the mesh that the entity belongs to.
 \end{description}
 
 \newpage
+\subsection{Mesh Sets}
+
+Mesh sets are unordered but named sets of entities. MSets can be
+queried and modified just like Lists. However, unlike Lists, MSets are
+associated with a mesh, can be constrained to contain only particular
+types of entities and have boolean operations performed on them.
+
+\begin{description}
+  
+\item[]{\bf {\em MSet\_ptr} MSet\_New({\em Mesh\_ptr} mesh, {\em const
+      char} *set\_name, {\em MType} entdim):} Define a new mesh entity
+  set. Along with the mesh to which this set is assigned ({\bf mesh})
+  and the name of the set ({\bf att\_name}), the the dimension of the
+  entities that the set can contain must be specified as {\bf
+    MVERTEX}, {\bf MEDGE}, {\bf MFACE}, {\bf MREGION} or {\bf
+    MALLTYPE}.
+
+\item[]{\bf {\em char} *MSet\_Name({\em MSet\_ptr} set, {\em char}
+    *att\_name):} Get the name of the given set.
+  
+\item[]{\bf {\em MType} MSet\_EntDim({\em MSet\_ptr} set):} Get the
+  dimension of entities the set can contain. Can be {\bf MVERTEX},
+  {\bf MEDGE}, {\bf MFACE}, {\bf MREGION} or {\bf MALLTYPE}.
+  
+\item[]{\bf {\em Mesh\_ptr} MSet\_Mesh({\em MSet\_ptr} set):}
+Returns the mesh that the entity set belongs to.
+
+\item[]{\bf {\em void} MSet\_Delete({\em MSet\_ptr} set):} Delete an
+  set.
+
+\item[]{\bf {\em MSet\_ptr} MSet\_Add({\em MSet\_ptr} l, {\em void
+      *}entry):} Add an entry to the set. The entry is strictly
+  appended to the end of the set.
+
+\item[]{\bf {\em MSet\_ptr} MSet\_ChknAdd({\em MSet\_ptr} l, {\em void
+      *}entry):} Add an entry to a set only if it is not already in
+  the set.
+
+\item[]{\bf {\em MSet\_ptr} MSet\_Insert({\em MSet\_ptr} l, {\em void
+      *}nuentry, {\em void *}b4entry):} Insert an entry into the set
+  in the position before 'b4entry'.
+
+\item[]{\bf {\em MSet\_ptr} MSet\_Inserti({\em MSet\_ptr} l, {\em void
+      *}nuentry, {\em int} i):} Insert an entry into the set at the
+  i'th valid position and push the entries previously at the i'th and
+  later position back.
+
+\item[]{\bf {\em int} MSet\_Rem({\em MSet\_ptr} l, {\em void
+      *}entry):} Remove an entry from the set. Returns 1 if
+  successful, 0 otherwise.
+
+\item[]{\bf {\em int} MSet\_Remi({\em MSet\_ptr} l, {\em int} i):}
+  Remove the i'th valid entry in the set. Returns 1 if successful, 0
+  otherwise.
+
+\item[]{\bf {\em int} MSet\_Replace({\em MSet\_ptr} l, {\em void
+      *}entry, {\em void *}nuentry):} Replace 'entry' with 'nuentry'
+  in set. Returns 1 if successful, 0 otherwise.
+
+\item[]{\bf {\em int} MSet\_Replacei({\em MSet\_ptr} l, {\em int} i,
+    void *nuentry):} Replace the i'th valid entry in the set with
+  'nuentry'. Returns 1 if successful, 0 otherwise.
+
+\item[]{\bf {\em int} MSet\_Contains({\em MSet\_ptr} l, void *entry):}
+  Returns 1 if set contains the entry, 0 otherwise.
+
+\item[]{\bf {\em int} MSet\_Locate({\em MSet\_ptr} l, void *entry):}
+  Returns the positional index of the entry in the set. Returns -1 if
+  the set does not contain the entry.
+
+\item[]{\bf {\em void *}MSet\_Entry({\em MSet\_ptr} l, {\em int} i):}
+  Return the i'th valid entry in the set.  Returns a NULL pointer if
+  the i'th valid entry could not be found.
+
+\item[]{\bf {\em void *}MSet\_Next\_Entry({\em MSet\_ptr} l, {\em int}
+    *i):} Return the next valid entry in the set. This routine works
+  just like List\_Next\_Entry.
+
+\item[]{\bf {\em int} MSet\_Num\_Entries({\em MSet\_ptr} l):} Return
+  the number of entries in a set.
+
+\item[]{\bf {\em MSet\_ptr} MSets\_Union({\em MSet\_ptr} s1, {\em
+      MSet\_ptr} s2):} Create a new set from the union of two sets.
+
+\item[]{\bf {\em MSet\_ptr} MSets\_Intersect({\em MSet\_ptr} s1, {\em
+      MSet\_ptr} s2):} Create a new set from the intersection of two
+  sets. Routine returns null if the intersection is a null set.
+
+\item[]{\bf {\em MSet\_ptr} MSets\_Subtract({\em MSet\_ptr} s1, {\em
+      MSet\_ptr} s2):} Create a new set by subtracting set 2 from set
+  1. Routine returns null if the result is a null set.
+
+\end{description}
+
+\newpage
 \subsection{Entity Marks}
 
 Entity marks or markers are a way of tagging entities. Such
@@ -1701,9 +1916,14 @@ which may be used to tag entities.
 
 \item[]{\bf {\em void} MEnt\_Unmark({\em MEntity\_ptr} ent, {\em int} mkr):} Unmark an entity with respect to the given marker 'mkr'
 
-\item[]{\bf {\em void} List\_Mark({\em List\_ptr} list, {\em int} mkr):} Mark a set of entities with given marker.
+\item[]{\bf {\em void} List\_Mark({\em List\_ptr} list, {\em int} mkr):} Mark a list of entities with given marker.
 
 \item[]{\bf {\em void} List\_Unmark({\em List\_ptr} list, {\em int} mkr):}
+Unmark a list of entities with respect to the given marker.
+
+\item[]{\bf {\em void} MSet\_Mark({\em MSet\_ptr} list, {\em int} mkr):} Mark a set of entities with given marker.
+
+\item[]{\bf {\em void} MSet\_Unmark({\em MSet\_ptr} list, {\em int} mkr):}
 Unmark a set of entities with respect to the given marker.
 
 \item[]{\bf {\em void} MSTK\_FreeMarker({\em int} mkr):} Release the
@@ -1749,6 +1969,194 @@ List_Unmark(vfaces,mkid);                 /* Unmark all the marked faces */
 MSTK_FreeMarker(mkid);                    /* Very important to free the marker!! */
                                           /* otherwise, we'll run out of markers */
 \end{verbatim}
+
+
+\newpage 
+\subsection{Parallel Mesh Management}
+
+The following are the highest level of parallel mesh management functions.
+
+\begin{description}
+
+\item[] {\bf {\em int} MSTK\_Mesh\_Read\_Distribute({\em Mesh\_ptr
+      *}recv\_mesh, {\em const char*} global\_mesh\_name, {\em int} dim,
+    {\em int} ring, {\em int} with\_attr, {\em int} rank, {\em int}
+    num, {\em MPI\_Comm} comm)}: Routine reads a mesh of dimension
+  'dim' from file 'global\_mesh\_name' on processor 'rank' and
+  distributes it 'num' processors. 'comm' is the communicator to be
+  used by MPI. If 'ring' is 0, there is no overlap of the highest
+  level entities between processors - only entities on processor
+  boundaries will be duplicated on other processors. If 'ring' is N,
+  then 'N' layers of the highest level entities will overlap between
+  processors ({\em Currently, only 1 layer of overlap elements are
+    supported}). If 'with\_attr' is 1, then MSTK sets up the links
+  necessary to synchronize attribute data across processors. This routine must be called from only one processor.
+
+\item[] {\bf {\em int} MSTK\_Mesh\_Distribute({\em Mesh\_ptr
+      *}recv\_mesh, {\em int} ring, {\em int} with\_attr, {\em int}
+    rank, {\em int} num, {\em MPI\_Comm} comm)}: Similar to the above
+  Read\_Distribute routine except that it does do any read. On the
+  processor, that is doing the distributing, recv\_mesh holds the
+  input and out meshes.
+
+
+\item[] {\bf {\em int} MSTK\_UpdateAttr({\em Mesh\_ptr} mesh, {\em
+      int} rank, {\em int} num, {\em MPI\_Comm} comm)}: Update the
+  attributes of duplicated entities on remote processors.
+
+\end{description}
+
+For users requiring more fine grain control of their application, the
+following a list of lower level parallel mesh functions. Descriptions
+of these functions will be added soon. {\bf NOTE THAT THESE ROUTINES
+  HAVE NOT IN ANYWAY BEEN MADE IDIOT-PROOF AND REQUIRE GOOD KNOWLEDGE
+  OF THE PARALLEL MODEL IN MSTK.}
+
+\begin{description}
+
+  \item[] {\bf {\em int} MSTK\_SendMesh({\em Mesh\_ptr} mesh, {\em int} rank, {\em int} with\_attr, {\em MPI\_Comm} comm)}:
+
+  \item[] {\bf {\em int} MSTK\_RecvMesh({\em Mesh\_ptr} mesh, {\em int} dim, {\em int} send\_rank, {\em int} rank, {\em int} with\_attr, {\em MPI\_Comm} comm)}:
+
+
+  \item[] {\bf {\em int} MESH\_PartitionWithMetis({\em Mesh\_ptr} mesh, {\em int} nparts, {\em int} **part)}:
+  \item[] {\bf {\em int}        MSTK\_Mesh\_Partition({\em Mesh\_ptr} mesh, {\em Mesh\_ptr} *submeshes, {\em int} num, 				 {\em int} ring, {\em int} with\_attr)}
+  \item[] {\bf {\em int}        MESH\_Partition({\em Mesh\_ptr} mesh, {\em Mesh\_ptr} *submeshes, {\em int} num)}
+  \item[] {\bf {\em int}        MESH\_CopyAttr({\em Mesh\_ptr} mesh, {\em Mesh\_ptr} submesh, {\em const char} *attr\_name)}
+
+
+  \item[] {\bf {\em int}        MESH\_BuildPBoundary({\em Mesh\_ptr} mesh, {\em Mesh\_ptr} submesh)}
+
+
+  \item[] {\bf {\em int}        MESH\_AddGhost({\em Mesh\_ptr} mesh, {\em Mesh\_ptr} submesh, {\em int} part\_no, {\em int} ring)}
+
+  \item[] {\bf {\em int}        MESH\_SendMesh({\em Mesh\_ptr} mesh, {\em int} rank, {\em MPI\_Comm} comm)}
+  \item[] {\bf {\em int}        MESH\_SendAttr({\em Mesh\_ptr} mesh, {\em const char} *attr\_name, {\em int} rank, {\em MPI\_Comm} comm)}
+  \item[] {\bf {\em int}        MESH\_RecvMesh({\em Mesh\_ptr} mesh, {\em int} dim, {\em int} send\_rank, {\em int} rank, {\em MPI\_Comm} comm)}
+  \item[] {\bf {\em int}        MESH\_RecvAttr({\em Mesh\_ptr} mesh, {\em const char} *attr\_name, {\em int} rank, {\em int} recv\_rank, {\em MPI\_Comm} comm)}
+
+
+  \item[]{\bf {\em int} MESH\_Num\_GhostVertices({\em Mesh\_ptr} mesh):}
+    Number of ghost vertices in the mesh.
+
+  \item[]{\bf {\em int} MESH\_Num\_GhostEdges({\em Mesh\_ptr} mesh):}
+    Number of ghost edges in the mesh.
+
+  \item[]{\bf {\em int} MESH\_Num\_GhostFaces({\em Mesh\_ptr} mesh):}
+    Number of ghost faces in the mesh. 
+
+  \item[]{\bf {\em int} MESH\_Num\_GhostRegions({\em Mesh\_ptr} mesh):}
+    Number of ghost regions in the mesh.
+
+  \item[]
+
+  \item[]{\bf {\em MVertex\_ptr} MESH\_GhostVertex({\em Mesh\_ptr} mesh,
+      {\em int} i):} Return the i'th ghost vertex in the mesh. Returns NULL if i
+    $<$ 0 or i $>$ number of mesh vertices.
+
+  \item[]{\bf {\em MEdge\_ptr} MESH\_GhostEdge({\em Mesh\_ptr} mesh,
+      {\em int} i):} Return the i'th ghost edge in the mesh. Returns NULL if i $<$
+    0 or i $>$ number of mesh edges. Returns NULL for reduced
+    representations.
+
+  \item[]{\bf {\em MFace\_ptr} MESH\_GhostFace({\em Mesh\_ptr} mesh,
+      {\em int} i):} Return the i'th face in the mesh. Returns NULL if i $<$
+    0 or i $>$ number of mesh faces. Only faces explicitly represented in
+    the mesh are returned for reduced representation.
+
+  \item[]{\bf {\em MRegion\_ptr} MESH\_GhostRegion({\em Mesh\_ptr} mesh, {\em
+        int} i):} Return the i'th region in the mesh. Returns NULL if i
+    $<$ 0 or i $>$ number of mesh region.
+
+  \item[]
+
+  \item[]{\bf {\em MVertex\_ptr} MESH\_Next\_GhostVertex({\em Mesh\_ptr}
+      mesh, {\em int} *idx):} Returns the next ghost vertex while iterating
+    through the vertices of the mesh. See the routine {\bf
+      List\_Next\_Entry} above for an explanation of how the iteration
+    works. This routine is in general faster than using the routine {\bf
+      MESH\_GhostVertex}.
+
+  \item[]{\bf {\em MEdge\_ptr} MESH\_Next\_GhostEdge({\em Mesh\_ptr} mesh,
+      {\em int} *idx):} Returns the next ghost edge while iterating through the
+    edges of the mesh. See the routine List\_Next\_Entry above for an
+    explanation of how the iteration works.  The routine always returns
+    NULL for reduced representations.
+
+  \item[]{\bf {\em MFace\_ptr} MESH\_Next\_GhostFace({\em Mesh\_ptr} mesh,
+      {\em int} *idx):} Returns the next ghost face while iterating through the
+    faces of the mesh. See the routine {\bf List\_Next\_Entry} above for
+    an explanation of how the iteration works.  Only faces explicitly
+    represented in the mesh are returned for reduced representation.
+
+  \item[]{\bf {\em MRegion\_ptr}
+      MESH\_Next\_GhostRegion({\em Mesh\_ptr} mesh, {\em int} *idx):}
+    Returns the next region while iterating through the regions of the
+    mesh. See the routine {\bf List\_Next\_Entry} above for an
+    explanation of how the iteration works.
+    
+  \item[]
+
+  \item[]{\bf {\em int} MESH\_Num\_OverlapVertices({\em Mesh\_ptr} mesh):}
+    Number of overlap vertices in the mesh.
+
+  \item[]{\bf {\em int} MESH\_Num\_OverlapEdges({\em Mesh\_ptr} mesh):}
+    Number of overlap edges in the mesh.
+
+  \item[]{\bf {\em int} MESH\_Num\_OverlapFaces({\em Mesh\_ptr} mesh):}
+    Number of overlap faces in the mesh. 
+
+  \item[]{\bf {\em int} MESH\_Num\_OverlapRegions({\em Mesh\_ptr} mesh):}
+    Number of overlap regions in the mesh.
+
+  \item[]
+
+  \item[]{\bf {\em MVertex\_ptr} MESH\_OverlapVertex({\em Mesh\_ptr} mesh,
+      {\em int} i):} Return the i'th overlap vertex in the mesh. Returns NULL if i
+    $<$ 0 or i $>$ number of mesh vertices.
+
+  \item[]{\bf {\em MEdge\_ptr} MESH\_OverlapEdge({\em Mesh\_ptr} mesh,
+      {\em int} i):} Return the i'th overlap edge in the mesh. Returns NULL if i $<$
+    0 or i $>$ number of mesh edges. Returns NULL for reduced
+    representations.
+
+  \item[]{\bf {\em MFace\_ptr} MESH\_OverlapFace({\em Mesh\_ptr} mesh,
+      {\em int} i):} Return the i'th face in the mesh. Returns NULL if i $<$
+    0 or i $>$ number of mesh faces. Only faces explicitly represented in
+    the mesh are returned for reduced representation.
+
+  \item[]{\bf {\em MRegion\_ptr} MESH\_OverlapRegion({\em Mesh\_ptr} mesh, {\em
+        int} i):} Return the i'th region in the mesh. Returns NULL if i
+    $<$ 0 or i $>$ number of mesh region.
+
+  \item[]
+
+  \item[]{\bf {\em MVertex\_ptr} MESH\_Next\_OverlapVertex({\em Mesh\_ptr}
+      mesh, {\em int} *idx):} Returns the next overlap vertex while iterating
+    through the vertices of the mesh. See the routine {\bf
+      List\_Next\_Entry} above for an explanation of how the iteration
+    works. This routine is in general faster than using the routine {\bf
+      MESH\_OverlapVertex}.
+
+  \item[]{\bf {\em MEdge\_ptr} MESH\_Next\_OverlapEdge({\em Mesh\_ptr} mesh,
+      {\em int} *idx):} Returns the next overlap edge while iterating through the
+    edges of the mesh. See the routine List\_Next\_Entry above for an
+    explanation of how the iteration works.  The routine always returns
+    NULL for reduced representations.
+
+  \item[]{\bf {\em MFace\_ptr} MESH\_Next\_OverlapFace({\em Mesh\_ptr} mesh,
+      {\em int} *idx):} Returns the next overlap face while iterating through the
+    faces of the mesh. See the routine {\bf List\_Next\_Entry} above for
+    an explanation of how the iteration works.  Only faces explicitly
+    represented in the mesh are returned for reduced representation.
+
+  \item[]{\bf {\em MRegion\_ptr}
+      MESH\_Next\_OverlapRegion({\em Mesh\_ptr} mesh, {\em int} *idx):}
+    Returns the next region while iterating through the regions of the
+    mesh. See the routine {\bf List\_Next\_Entry} above for an
+    explanation of how the iteration works.
+    
+\end{description}
 
 
 
