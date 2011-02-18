@@ -1,0 +1,4086 @@
+%TGIF 4.1.45-QPL
+state(0,37,100.000,0,0,0,16,0,9,1,1,3,0,1,1,1,0,'Courier',0,80640,0,0,0,10,0,0,1,1,0,16,0,0,1,1,1,1,1088,1408,1,0,2880,0).
+%
+% @(#)$Header$
+% %W%
+%
+unit("1 pixel/pixel").
+color_info(13,65535,0,[
+	"magenta", 65535, 0, 65535, 65535, 0, 65535, 1,
+	"red", 65535, 0, 0, 65535, 0, 0, 1,
+	"green", 0, 65535, 0, 0, 65535, 0, 1,
+	"blue", 0, 0, 65535, 0, 0, 65535, 1,
+	"yellow", 65535, 65535, 0, 65535, 65535, 0, 1,
+	"pink", 65535, 49344, 52171, 65535, 49344, 52171, 1,
+	"cyan", 0, 65535, 65535, 0, 65535, 65535, 1,
+	"CadetBlue", 24415, 40606, 41120, 24415, 40606, 41120, 1,
+	"white", 65535, 65535, 65535, 65535, 65535, 65535, 1,
+	"black", 0, 0, 0, 0, 0, 0, 1,
+	"DarkSlateGray", 12079, 20303, 20303, 12079, 20303, 20303, 1,
+	"#0000ff", 0, 0, 65535, 0, 0, 65280, 1,
+	"#ff00ff", 65535, 0, 65535, 65280, 0, 65280, 1
+]).
+script_frac("0.6").
+fg_bg_colors('black','white').
+dont_reencode("FFDingbests:ZapfDingbats").
+objshadow_info('#c0c0c0',2,2).
+page(1,"",1,'').
+box('black','',128,64,512,448,0,4,1,0,0,0,0,0,0,'4',0,[
+]).
+oval('black','',112,432,144,464,1,1,1,1,0,0,0,0,0,'1',0,[
+]).
+oval('black','',496,432,528,464,1,1,1,2,0,0,0,0,0,'1',0,[
+]).
+oval('black','',496,48,528,80,1,1,1,3,0,0,0,0,0,'1',0,[
+]).
+oval('black','',112,48,144,80,1,1,1,4,0,0,0,0,0,'1',0,[
+]).
+icon([
+polygon('#0000ff','',5,[
+	536,451,540,451,540,447,536,447,536,451],0,1,0,0,1173,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',536,447,569,464,1,1291,0,33,17,0,0,1,289000,682000,322000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:54:18 2010","/tmp/TgifsuDA6M.eps",218,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/TgifsuDA6M.ps /tmp/TgifsuDA6M",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1154",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 50 /two put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846C877A4B7BC055FBCC0AAB8C936FBC1898F054549",
+    "29F3C68B0C5447D218F5F64C722816F3C655A6F0FFDABE8F56E56555DC5E2696",
+    "4A13F5563BD4C8C2D4ED526C410AF1A8FD07163D15E74D69B53DE759403AF897",
+    "D74239DD82FA00ED954B484154A0A5C8D0A0D604F1B6D0FA8C9E76319D83840D",
+    "FE062407D2225F7613DB6750A35088F5C8BAAD67A2C24CB5235DC1DCFE78880B",
+    "161B949F3834C8F778231F2423A97C5E7837312487E74549917954568148FE39",
+    "147FD33A39BE33E411BF35E6DCEE01F20CCFE17F57B3811EC0D0690CADEBBF13",
+    "4D62B09D5BA1CAD6624694FA37985FCAA7DDCB468FA02040FD800215086C7AAF",
+    "8CC22D71972AA11637A1555922E8C95A65F8FABF39FD53A5411A67724D44FCF4",
+    "09A54B1966357EC71F",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 71 /G put",
+    "dup 86 /V put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B37BB915A3D9E4E8FD7B",
+    "8EFC268E2B29B902CDB84F5AF65F3F9ACBB2AEDEF4EAD7CCA616D8B32049CC89",
+    "8DD3CD0FEA0A01A4CEE77D5DFD7BFA8BA1902181689326D56F27BFD47DACF25E",
+    "14FEEC859B1A9C327FE6A3B6DC775D683D7F8D79C5CC003B2CE74225BBB5D9BB",
+    "FE31D8049416DB619D8C680B808D1CE93797172D37B75427DE6C931E2C7E4572",
+    "0C21A6654CEC6DEB36D0E94D641514C83996F5C3ADD0856E0B92599F60A21468",
+    "936C0F6EC8213FC529816F606AEDE7CEC2F94C0A38C1807C8529219C244A26D4",
+    "1BF891B5453C75AE1DCB8752951D30CF5ED5E04A157AD06CD4F141168A7C9C01",
+    "60000AA0DEFE0B5B2E9487F4117CF0740B69F8D165456913C4323EB41D9810DE",
+    "1363E28E1D5D82675DE4CAFE06322054A7D2E82ADCD238D61E7BD951EB457235",
+    "DA11B9AA864F7C4D8EDB9BA784B1CF530E7E4C8225BFB81AD79101F4D651B635",
+    "3EF3BDF533F2DA391F29968C12D036B00734660B66C712E4FB33ADCD52514EC9",
+    "AA475D1CB7276E8EE2EA4CA8F8D73E1D3FA6DAA37FDFF7180C5C28E9AF67D827",
+    "02B6216228152252300A0754F0A600B0ADF76BCB0852073FF28C18B4E25A173A",
+    "DD5C663565387864247D4C6E8CADD0355418E2E326963B500627D919C56C3913",
+    "0EE69BBFB33C09934021DC83354E932621A8FBCA4EDCD824C0F63EB7B6ED0092",
+    "4E51EAF78BD04B24F61C9B597D3BE05FDA4DC755B1A74820DBB278493DFD345B",
+    "D5EF42193615F8C84CBF701D2F6C559864D4C1D66BF5784592DDCF7E033DE787",
+    "3E68BD",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/TgifsuDA6M.dvi)",
+    "@start /Fa 205[59 50[{}1 119.552 /CMR12 rf /Fb 169[98",
+    "14[133 71[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1803 714 a Fb(GV)2034 740 y Fa(2)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e4f83c00e1c20100180420100200420200600430400400030400c000308008
+     0003107080fc1109880301208880301408840601400860e0180101f201002000
+     00000400000000480000000f8",[
+])
+],
+"eq4",1172,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',536,299,3,0,1,126,45,1181,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,311,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',712,299,11,0,1,270,165,1180,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,311,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',536,48,9,0,1,477,135,1179,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,60,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',536,168,4,0,1,702,60,1178,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,180,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',536,248,3,0,1,540,45,1177,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,260,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/TgifsuDA6M", 0, 1, 1,
+text('blue',536,352,1,0,1,225,15,1176,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,364,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,0,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,0,0,0,0,0,0,
+	"file_name=/tmp/TgifsuDA6M")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',536,368,5,0,1,63,75,1268,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,380,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-3,0,0,0,0,0,
+	"   GV_2")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',536,472,1,0,1,81,15,1174,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,484,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	522,41,526,41,526,37,522,37,522,41],0,1,0,0,1225,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',522,37,555,54,1,1361,0,33,17,0,0,1,289000,682000,322000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:54:45 2010","/tmp/TgifsSMTUv.eps",219,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/TgifsSMTUv.ps /tmp/TgifsSMTUv",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1154",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 51 /three put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846C868C188F2F6E0C8E0398CC60722287F92CB96CC",
+    "19B3B5AE9BAB62173EE45C671C2E1AC7B9670B702384CD1F015CA91234D2C140",
+    "5678C6881FD261D0EE1CB9F64078734B78A2A53F7D50CD395587761AD041FAFC",
+    "F7F60B7ADDAD42B32C5BD41FC8C7D383BCCF07447644A7F18559F4A08DD3F860",
+    "AC92DB9E213303132C832F13DD4D0A514DF7A09BA72A52C8F310E67B8227D315",
+    "30D738644E9B653CC6836F5586D72FFD6D4D9D174A0B5C3581C658D9EAF7DBB0",
+    "A033FC5743E8A7810BF26801620DA726066EB363ED08D74D1D67800F233C551A",
+    "E56CCA1663DB33A8297C9058BEFFACBA7E9388E10EFE3FB2CEBBCA53CF120419",
+    "2CC259FA322030B9A5D47AF73D94C7768AE061392660EF0FEA251BF9FED8A0B8",
+    "6A102DFA4BA5833A5D6DE97D292404A221347F50422D624F8047094145F85A4B",
+    "17D2B6C048EB32FC9972C57623FE30B09D9D1622",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 71 /G put",
+    "dup 86 /V put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B37BB915A3D9E4E8FD7B",
+    "8EFC268E2B29B902CDB84F5AF65F3F9ACBB2AEDEF4EAD7CCA616D8B32049CC89",
+    "8DD3CD0FEA0A01A4CEE77D5DFD7BFA8BA1902181689326D56F27BFD47DACF25E",
+    "14FEEC859B1A9C327FE6A3B6DC775D683D7F8D79C5CC003B2CE74225BBB5D9BB",
+    "FE31D8049416DB619D8C680B808D1CE93797172D37B75427DE6C931E2C7E4572",
+    "0C21A6654CEC6DEB36D0E94D641514C83996F5C3ADD0856E0B92599F60A21468",
+    "936C0F6EC8213FC529816F606AEDE7CEC2F94C0A38C1807C8529219C244A26D4",
+    "1BF891B5453C75AE1DCB8752951D30CF5ED5E04A157AD06CD4F141168A7C9C01",
+    "60000AA0DEFE0B5B2E9487F4117CF0740B69F8D165456913C4323EB41D9810DE",
+    "1363E28E1D5D82675DE4CAFE06322054A7D2E82ADCD238D61E7BD951EB457235",
+    "DA11B9AA864F7C4D8EDB9BA784B1CF530E7E4C8225BFB81AD79101F4D651B635",
+    "3EF3BDF533F2DA391F29968C12D036B00734660B66C712E4FB33ADCD52514EC9",
+    "AA475D1CB7276E8EE2EA4CA8F8D73E1D3FA6DAA37FDFF7180C5C28E9AF67D827",
+    "02B6216228152252300A0754F0A600B0ADF76BCB0852073FF28C18B4E25A173A",
+    "DD5C663565387864247D4C6E8CADD0355418E2E326963B500627D919C56C3913",
+    "0EE69BBFB33C09934021DC83354E932621A8FBCA4EDCD824C0F63EB7B6ED0092",
+    "4E51EAF78BD04B24F61C9B597D3BE05FDA4DC755B1A74820DBB278493DFD345B",
+    "D5EF42193615F8C84CBF701D2F6C559864D4C1D66BF5784592DDCF7E033DE787",
+    "3E68BD",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/TgifsSMTUv.dvi)",
+    "@start /Fa 204[59 51[{}1 119.552 /CMR12 rf /Fb 169[98",
+    "14[133 71[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1803 714 a Fb(GV)2034 740 y Fa(3)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e4f83c00e1c20100180420100200420200600430400400030400c000308008
+     0003107080fc1108880301208880301401040601406060e0180101f201000800
+     0000088000000098000000070",[
+])
+],
+"eq4",1224,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',522,-111,3,0,1,126,45,1227,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,-99,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',698,-111,11,0,1,270,165,1228,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,-99,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',522,-362,9,0,1,477,135,1229,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,-350,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',522,-242,4,0,1,702,60,1230,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,-230,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',522,-162,3,0,1,540,45,1231,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,-150,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/TgifsSMTUv", 0, 1, 1,
+text('blue',522,-58,1,0,1,225,15,1232,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,-46,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-1,0,0,0,0,0,
+	"file_name=/tmp/TgifsSMTUv")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',522,-42,5,0,1,63,75,1338,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,-30,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-2,0,0,0,0,0,
+	"   GV_3")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',522,62,1,0,1,81,15,1234,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,74,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	80,36,84,36,84,32,80,32,80,36],0,1,0,0,1236,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',80,32,114,49,1,1396,0,34,17,0,0,1,289000,682000,323000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:55:01 2010","/tmp/TgifYjhwCE.eps",217,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/TgifYjhwCE.ps /tmp/TgifYjhwCE",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1155",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 52 /four put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846DAEB454AED2A849D444976F3216DC9F6027A1BFD",
+    "E7B9A1A36E496CA497C929DCB0C03EF2551ADEEA96C48EDA5B431C1B2074121E",
+    "4D83C27169CCCD8444436515E6F3AD255EA17722606FBECA2B41C876AB7C627B",
+    "8B015F8DC18F77FA00336294326D30BBB1B3AF8D7E7E00E31ED29A8085A3B146",
+    "3BCA14DD2AD9F773CE3813E7908DC36EB1DD5DFB072FAE42F33C03A4ED6C82ED",
+    "97372F3FD78E194207CAAE301809C244196AEF9F386D3B5B545727265AC40265",
+    "9E9B8F222C4F64CB5A5374E1A0094F171AC9667BB518D7246B9B98D094791D64",
+    "D97B8E5DA03B9328A0E22A8221A414C976434F85D976B3716B62D9AF20B58CE9",
+    "345FE60AFB26B81D0958D4C7470CE0",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 71 /G put",
+    "dup 86 /V put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B37BB915A3D9E4E8FD7B",
+    "8EFC268E2B29B902CDB84F5AF65F3F9ACBB2AEDEF4EAD7CCA616D8B32049CC89",
+    "8DD3CD0FEA0A01A4CEE77D5DFD7BFA8BA1902181689326D56F27BFD47DACF25E",
+    "14FEEC859B1A9C327FE6A3B6DC775D683D7F8D79C5CC003B2CE74225BBB5D9BB",
+    "FE31D8049416DB619D8C680B808D1CE93797172D37B75427DE6C931E2C7E4572",
+    "0C21A6654CEC6DEB36D0E94D641514C83996F5C3ADD0856E0B92599F60A21468",
+    "936C0F6EC8213FC529816F606AEDE7CEC2F94C0A38C1807C8529219C244A26D4",
+    "1BF891B5453C75AE1DCB8752951D30CF5ED5E04A157AD06CD4F141168A7C9C01",
+    "60000AA0DEFE0B5B2E9487F4117CF0740B69F8D165456913C4323EB41D9810DE",
+    "1363E28E1D5D82675DE4CAFE06322054A7D2E82ADCD238D61E7BD951EB457235",
+    "DA11B9AA864F7C4D8EDB9BA784B1CF530E7E4C8225BFB81AD79101F4D651B635",
+    "3EF3BDF533F2DA391F29968C12D036B00734660B66C712E4FB33ADCD52514EC9",
+    "AA475D1CB7276E8EE2EA4CA8F8D73E1D3FA6DAA37FDFF7180C5C28E9AF67D827",
+    "02B6216228152252300A0754F0A600B0ADF76BCB0852073FF28C18B4E25A173A",
+    "DD5C663565387864247D4C6E8CADD0355418E2E326963B500627D919C56C3913",
+    "0EE69BBFB33C09934021DC83354E932621A8FBCA4EDCD824C0F63EB7B6ED0092",
+    "4E51EAF78BD04B24F61C9B597D3BE05FDA4DC755B1A74820DBB278493DFD345B",
+    "D5EF42193615F8C84CBF701D2F6C559864D4C1D66BF5784592DDCF7E033DE787",
+    "3E68BD",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/TgifYjhwCE.dvi)",
+    "@start /Fa 203[59 52[{}1 119.552 /CMR12 rf /Fb 169[98",
+    "14[133 71[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1803 714 a Fb(GV)2034 740 y Fa(4)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e4f83c00e1c20100180420100200420200600430400400030400c000308008
+     0003101080fc1101080301203080301405040601405060e0180901f201011000
+     00001fc00000001000000003c",[
+])
+],
+"eq4",1235,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',80,-116,3,0,1,126,45,1238,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,-104,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',256,-116,11,0,1,270,165,1239,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,-104,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',80,-367,9,0,1,477,135,1240,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,-355,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',80,-247,4,0,1,702,60,1241,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,-235,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',80,-167,3,0,1,540,45,1242,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,-155,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/TgifYjhwCE", 0, 1, 1,
+text('blue',80,-63,1,0,1,225,15,1243,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,-51,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-1,0,0,0,0,0,
+	"file_name=/tmp/TgifYjhwCE")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',80,-47,5,0,1,63,75,1373,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,-35,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-2,0,0,0,0,0,
+	"   GV_4")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',80,57,1,0,1,81,15,1245,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,69,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	74,459,78,459,78,455,74,455,74,459],0,1,0,0,1247,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',74,455,107,472,1,1248,0,33,17,0,0,1,289000,682000,322000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:53:16 2010","/tmp/TgifK7UYKm.eps",216,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/TgifK7UYKm.ps /tmp/TgifK7UYKm",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1153",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 49 /one put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846D3B157372553EBA80472B69EB167FC456F6D9994",
+    "EDCB14D165A89144CD8FAA40BAAF767E880172FF8D6D8F5658A45BBAB2764D65",
+    "5EF40FF9C69878DEF326E32397C36C5632486A97C6F36F488F57F67F26E44E8C",
+    "F57EF76AE4A24BCBD128A83274528DB9962F55659FF3E794F56FD6E2AB2080CC",
+    "2FEFC831E43B311B2716FE5D14890F16DF0F6D563BF5A2DB37DE4A02C25F55FE",
+    "EE7C4808887CB4D21AAD4C8589F04FF484EB715134014A79BD895E3B48C72C88",
+    "0E6D1A317ABF010A4104A07813781180DB221A43BC6E19BBF2E9C9042B01126C",
+    "CCDC015D5155237EBE9A41FC5C8763F95D144AD84D3C5A96BE90",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 71 /G put",
+    "dup 86 /V put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B37BB915A3D9E4E8FD7B",
+    "8EFC268E2B29B902CDB84F5AF65F3F9ACBB2AEDEF4EAD7CCA616D8B32049CC89",
+    "8DD3CD0FEA0A01A4CEE77D5DFD7BFA8BA1902181689326D56F27BFD47DACF25E",
+    "14FEEC859B1A9C327FE6A3B6DC775D683D7F8D79C5CC003B2CE74225BBB5D9BB",
+    "FE31D8049416DB619D8C680B808D1CE93797172D37B75427DE6C931E2C7E4572",
+    "0C21A6654CEC6DEB36D0E94D641514C83996F5C3ADD0856E0B92599F60A21468",
+    "936C0F6EC8213FC529816F606AEDE7CEC2F94C0A38C1807C8529219C244A26D4",
+    "1BF891B5453C75AE1DCB8752951D30CF5ED5E04A157AD06CD4F141168A7C9C01",
+    "60000AA0DEFE0B5B2E9487F4117CF0740B69F8D165456913C4323EB41D9810DE",
+    "1363E28E1D5D82675DE4CAFE06322054A7D2E82ADCD238D61E7BD951EB457235",
+    "DA11B9AA864F7C4D8EDB9BA784B1CF530E7E4C8225BFB81AD79101F4D651B635",
+    "3EF3BDF533F2DA391F29968C12D036B00734660B66C712E4FB33ADCD52514EC9",
+    "AA475D1CB7276E8EE2EA4CA8F8D73E1D3FA6DAA37FDFF7180C5C28E9AF67D827",
+    "02B6216228152252300A0754F0A600B0ADF76BCB0852073FF28C18B4E25A173A",
+    "DD5C663565387864247D4C6E8CADD0355418E2E326963B500627D919C56C3913",
+    "0EE69BBFB33C09934021DC83354E932621A8FBCA4EDCD824C0F63EB7B6ED0092",
+    "4E51EAF78BD04B24F61C9B597D3BE05FDA4DC755B1A74820DBB278493DFD345B",
+    "D5EF42193615F8C84CBF701D2F6C559864D4C1D66BF5784592DDCF7E033DE787",
+    "3E68BD",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/TgifK7UYKm.dvi)",
+    "@start /Fa 206[59 49[{}1 119.552 /CMR12 rf /Fb 169[98",
+    "14[133 71[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1803 714 a Fb(GV)2034 740 y Fa(1)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e4f83c00e1c20100180420100200420200600430400400030400c000308008
+     0003102080fc110e080301202080301402040601402060e0180201f201002000
+     00000200000000200000000f8",[
+])
+],
+"eq4",1246,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',74,307,3,0,1,126,45,1249,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,319,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',250,307,11,0,1,270,165,1250,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,319,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',74,56,9,0,1,477,135,1251,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,68,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',74,176,4,0,1,702,60,1252,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,188,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',74,256,3,0,1,540,45,1253,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,268,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/TgifK7UYKm", 0, 1, 1,
+text('blue',74,360,1,0,1,225,15,1254,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,372,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,0,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,0,0,0,0,0,0,
+	"file_name=/tmp/TgifK7UYKm")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',74,376,5,0,1,63,75,1255,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,388,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-3,0,0,0,0,0,
+	"   GV_1")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',74,480,1,0,1,81,15,1256,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,492,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	323,429,327,429,327,425,323,425,323,429],0,1,0,0,1398,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',323,425,359,442,1,1442,0,36,17,0,0,1,288000,682000,324000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:55:21 2010","/tmp/Tgifa7oYdZ.eps",219,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/Tgifa7oYdZ.ps /tmp/Tgifa7oYdZ",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1155",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 49 /one put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846D3B157372553EBA80472B69EB167FC456F6D9994",
+    "EDCB14D165A89144CD8FAA40BAAF767E880172FF8D6D8F5658A45BBAB2764D65",
+    "5EF40FF9C69878DEF326E32397C36C5632486A97C6F36F488F57F67F26E44E8C",
+    "F57EF76AE4A24BCBD128A83274528DB9962F55659FF3E794F56FD6E2AB2080CC",
+    "2FEFC831E43B311B2716FE5D14890F16DF0F6D563BF5A2DB37DE4A02C25F55FE",
+    "EE7C4808887CB4D21AAD4C8589F04FF484EB715134014A79BD895E3B48C72C88",
+    "0E6D1A317ABF010A4104A07813781180DB221A43BC6E19BBF2E9C9042B01126C",
+    "CCDC015D5155237EBE9A41FC5C8763F95D144AD84D3C5A96BE90",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 69 /E put",
+    "dup 71 /G put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B19EBD352C330AAB64AF",
+    "F506846EF9C9397EB08E8097FE92651E6A82DA247581D4D0FE30278ABA6679DD",
+    "A5F2B45A5127C19691B0BCA9A5ED5AA8EF90B322BB0C31BF47968343635259C6",
+    "47C20A9BE36F2EE6B4A0C25E93D66E109D89CB05830A166C4A20F5F62D344B0C",
+    "BE93BA896C3DC415CB394B7B059A022B5C956D2CFADEA774487B3FFC6098A474",
+    "23BF07BABC797B786DBAC3DA60DC1A89C1E5E831C7BB1E12E25249E86CF567F5",
+    "EB7D59BC84002650FE5B179671376285FA02EA14BE610D9FB68A345B880DF9AF",
+    "74F198F5EC20A30A96B53331B5404AEC850C843EA4137543E599A30E6F851669",
+    "093D87E948643CC9B704F72CEDE6A2B4AF924705FAE55EE217F46427B2363C0B",
+    "F6158F4EA3B32CBCDB6FED7CCCCA36A1B9F1492DBE8F47E38F91EDDB218BE4D2",
+    "DBAF6584C2FC7E2532E92A20338D518BEC3521C25B2FCFDA3657A1110A03C003",
+    "981240228734961657780E7E5475A3F4277F43B30DE39860BE18D85DB8A759FC",
+    "55C5F5693B5ED965CDA02BC52950ABC3DE668597AF9BCFD3A1148AB2DD7A8670",
+    "F6F304902F591039D3697E5F9567B28FF6B84E0BAE558BC1150A281F5D3D7C0F",
+    "831647C50105B55F0FEBA54A1ADEC60A018D64BE3EAF156365841B70A047849B",
+    "6771291E0AD075DB6BAE73DB1C5BB6D774699B92DC5ABFE6B8BC73FABBF7340F",
+    "D2ED4FBB0F91BB1872056A9D48ED39CD2E022C51CE4D5F03EABAC1383F3A6112",
+    "D3476FD8BC64CFDF9E2D752DDEDC74490980A9E170355B22C8B80E8841364D9C",
+    "8ECCA62A925458AE73194233B80E7CF2BF7ADF5F76999455ED613A3B15E01C2E",
+    "3A0C24CFC7A2858A5D58C9A9060511F9B15B1F4EE7941398F9BCFF5C2B019D77",
+    "E73058D704C98ADBFBCB7035A2AEC86F6F4C93F86E04C4C85874111530BB24CD",
+    "4707B6645C5C177DD5B2F3CD51AFBB6D9E5232",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/Tgifa7oYdZ.dvi)",
+    "@start /Fa 206[59 49[{}1 119.552 /CMR12 rf /Fb 184[133",
+    "1[125 69[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1790 714 a Fb(GE)2048 740 y Fa(1)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e41ffe00e1c0602018040602020040402060040c20040000c200c0000fc008
+     0000840480fc1841c80301804480301004440603008460e0301041f20fff0400
+     000000400000000400000001f",[
+])
+],
+"eq4",1397,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',323,277,3,0,1,126,45,1400,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,289,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',499,277,11,0,1,270,165,1401,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,289,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',323,26,9,0,1,477,135,1402,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,38,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',323,146,4,0,1,702,60,1403,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,158,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',323,226,3,0,1,540,45,1404,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,238,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/Tgifa7oYdZ", 0, 1, 1,
+text('blue',323,330,1,0,1,225,15,1405,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,342,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-2,0,0,0,0,0,
+	"file_name=/tmp/Tgifa7oYdZ")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',323,346,5,0,1,63,75,1419,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,358,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-3,0,0,0,0,0,
+	"   GE_1")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',323,450,1,0,1,81,15,1407,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,462,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	522,259,526,259,526,255,522,255,522,259],0,1,0,0,1444,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',522,255,558,272,1,1510,0,36,17,0,0,1,288000,682000,324000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:55:54 2010","/tmp/Tgifenyo5y.eps",221,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/Tgifenyo5y.ps /tmp/Tgifenyo5y",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1155",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 50 /two put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846C877A4B7BC055FBCC0AAB8C936FBC1898F054549",
+    "29F3C68B0C5447D218F5F64C722816F3C655A6F0FFDABE8F56E56555DC5E2696",
+    "4A13F5563BD4C8C2D4ED526C410AF1A8FD07163D15E74D69B53DE759403AF897",
+    "D74239DD82FA00ED954B484154A0A5C8D0A0D604F1B6D0FA8C9E76319D83840D",
+    "FE062407D2225F7613DB6750A35088F5C8BAAD67A2C24CB5235DC1DCFE78880B",
+    "161B949F3834C8F778231F2423A97C5E7837312487E74549917954568148FE39",
+    "147FD33A39BE33E411BF35E6DCEE01F20CCFE17F57B3811EC0D0690CADEBBF13",
+    "4D62B09D5BA1CAD6624694FA37985FCAA7DDCB468FA02040FD800215086C7AAF",
+    "8CC22D71972AA11637A1555922E8C95A65F8FABF39FD53A5411A67724D44FCF4",
+    "09A54B1966357EC71F",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 69 /E put",
+    "dup 71 /G put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B19EBD352C330AAB64AF",
+    "F506846EF9C9397EB08E8097FE92651E6A82DA247581D4D0FE30278ABA6679DD",
+    "A5F2B45A5127C19691B0BCA9A5ED5AA8EF90B322BB0C31BF47968343635259C6",
+    "47C20A9BE36F2EE6B4A0C25E93D66E109D89CB05830A166C4A20F5F62D344B0C",
+    "BE93BA896C3DC415CB394B7B059A022B5C956D2CFADEA774487B3FFC6098A474",
+    "23BF07BABC797B786DBAC3DA60DC1A89C1E5E831C7BB1E12E25249E86CF567F5",
+    "EB7D59BC84002650FE5B179671376285FA02EA14BE610D9FB68A345B880DF9AF",
+    "74F198F5EC20A30A96B53331B5404AEC850C843EA4137543E599A30E6F851669",
+    "093D87E948643CC9B704F72CEDE6A2B4AF924705FAE55EE217F46427B2363C0B",
+    "F6158F4EA3B32CBCDB6FED7CCCCA36A1B9F1492DBE8F47E38F91EDDB218BE4D2",
+    "DBAF6584C2FC7E2532E92A20338D518BEC3521C25B2FCFDA3657A1110A03C003",
+    "981240228734961657780E7E5475A3F4277F43B30DE39860BE18D85DB8A759FC",
+    "55C5F5693B5ED965CDA02BC52950ABC3DE668597AF9BCFD3A1148AB2DD7A8670",
+    "F6F304902F591039D3697E5F9567B28FF6B84E0BAE558BC1150A281F5D3D7C0F",
+    "831647C50105B55F0FEBA54A1ADEC60A018D64BE3EAF156365841B70A047849B",
+    "6771291E0AD075DB6BAE73DB1C5BB6D774699B92DC5ABFE6B8BC73FABBF7340F",
+    "D2ED4FBB0F91BB1872056A9D48ED39CD2E022C51CE4D5F03EABAC1383F3A6112",
+    "D3476FD8BC64CFDF9E2D752DDEDC74490980A9E170355B22C8B80E8841364D9C",
+    "8ECCA62A925458AE73194233B80E7CF2BF7ADF5F76999455ED613A3B15E01C2E",
+    "3A0C24CFC7A2858A5D58C9A9060511F9B15B1F4EE7941398F9BCFF5C2B019D77",
+    "E73058D704C98ADBFBCB7035A2AEC86F6F4C93F86E04C4C85874111530BB24CD",
+    "4707B6645C5C177DD5B2F3CD51AFBB6D9E5232",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/Tgifenyo5y.dvi)",
+    "@start /Fa 205[59 50[{}1 119.552 /CMR12 rf /Fb 184[133",
+    "1[125 69[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1790 714 a Fb(GE)2048 740 y Fa(2)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e41ffe00e1c0602018040602020040402060040c20040000c200c0000fc008
+     0000840e80fc1841380301805180301005140603008160e0301021f20fff0400
+     000000800000000900000001f",[
+])
+],
+"eq4",1443,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',522,107,3,0,1,126,45,1446,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,119,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',698,107,11,0,1,270,165,1447,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,119,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',522,-144,9,0,1,477,135,1448,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,-132,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',522,-24,4,0,1,702,60,1449,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,-12,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',522,56,3,0,1,540,45,1450,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,68,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/Tgifenyo5y", 0, 1, 1,
+text('blue',522,160,1,0,1,225,15,1451,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,172,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-1,0,0,0,0,0,
+	"file_name=/tmp/Tgifenyo5y")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',522,176,5,0,1,63,75,1487,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,188,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-3,0,0,0,0,0,
+	"   GE_2")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',522,280,1,0,1,81,15,1453,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,292,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	86,263,90,263,90,259,86,259,86,263],0,1,0,0,1455,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',86,259,123,276,1,1545,0,37,17,0,0,1,288000,682000,325000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:56:08 2010","/tmp/TgifIBc7on.eps",220,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/TgifIBc7on.ps /tmp/TgifIBc7on",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1156",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 52 /four put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846DAEB454AED2A849D444976F3216DC9F6027A1BFD",
+    "E7B9A1A36E496CA497C929DCB0C03EF2551ADEEA96C48EDA5B431C1B2074121E",
+    "4D83C27169CCCD8444436515E6F3AD255EA17722606FBECA2B41C876AB7C627B",
+    "8B015F8DC18F77FA00336294326D30BBB1B3AF8D7E7E00E31ED29A8085A3B146",
+    "3BCA14DD2AD9F773CE3813E7908DC36EB1DD5DFB072FAE42F33C03A4ED6C82ED",
+    "97372F3FD78E194207CAAE301809C244196AEF9F386D3B5B545727265AC40265",
+    "9E9B8F222C4F64CB5A5374E1A0094F171AC9667BB518D7246B9B98D094791D64",
+    "D97B8E5DA03B9328A0E22A8221A414C976434F85D976B3716B62D9AF20B58CE9",
+    "345FE60AFB26B81D0958D4C7470CE0",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 69 /E put",
+    "dup 71 /G put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B19EBD352C330AAB64AF",
+    "F506846EF9C9397EB08E8097FE92651E6A82DA247581D4D0FE30278ABA6679DD",
+    "A5F2B45A5127C19691B0BCA9A5ED5AA8EF90B322BB0C31BF47968343635259C6",
+    "47C20A9BE36F2EE6B4A0C25E93D66E109D89CB05830A166C4A20F5F62D344B0C",
+    "BE93BA896C3DC415CB394B7B059A022B5C956D2CFADEA774487B3FFC6098A474",
+    "23BF07BABC797B786DBAC3DA60DC1A89C1E5E831C7BB1E12E25249E86CF567F5",
+    "EB7D59BC84002650FE5B179671376285FA02EA14BE610D9FB68A345B880DF9AF",
+    "74F198F5EC20A30A96B53331B5404AEC850C843EA4137543E599A30E6F851669",
+    "093D87E948643CC9B704F72CEDE6A2B4AF924705FAE55EE217F46427B2363C0B",
+    "F6158F4EA3B32CBCDB6FED7CCCCA36A1B9F1492DBE8F47E38F91EDDB218BE4D2",
+    "DBAF6584C2FC7E2532E92A20338D518BEC3521C25B2FCFDA3657A1110A03C003",
+    "981240228734961657780E7E5475A3F4277F43B30DE39860BE18D85DB8A759FC",
+    "55C5F5693B5ED965CDA02BC52950ABC3DE668597AF9BCFD3A1148AB2DD7A8670",
+    "F6F304902F591039D3697E5F9567B28FF6B84E0BAE558BC1150A281F5D3D7C0F",
+    "831647C50105B55F0FEBA54A1ADEC60A018D64BE3EAF156365841B70A047849B",
+    "6771291E0AD075DB6BAE73DB1C5BB6D774699B92DC5ABFE6B8BC73FABBF7340F",
+    "D2ED4FBB0F91BB1872056A9D48ED39CD2E022C51CE4D5F03EABAC1383F3A6112",
+    "D3476FD8BC64CFDF9E2D752DDEDC74490980A9E170355B22C8B80E8841364D9C",
+    "8ECCA62A925458AE73194233B80E7CF2BF7ADF5F76999455ED613A3B15E01C2E",
+    "3A0C24CFC7A2858A5D58C9A9060511F9B15B1F4EE7941398F9BCFF5C2B019D77",
+    "E73058D704C98ADBFBCB7035A2AEC86F6F4C93F86E04C4C85874111530BB24CD",
+    "4707B6645C5C177DD5B2F3CD51AFBB6D9E5232",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/TgifIBc7on.dvi)",
+    "@start /Fa 203[59 52[{}1 119.552 /CMR12 rf /Fb 184[133",
+    "1[125 69[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1790 714 a Fb(GE)2048 740 y Fa(4)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e41ffe000e1c0602001804060200200404020060040c200040000c2000c000
+     0fc000800008402080fc184020803018046080301004a040603008a060e03011
+     201f20fff22000000003f800000000200000000078",[
+])
+],
+"eq4",1454,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',86,111,3,0,1,126,45,1457,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,123,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',262,111,11,0,1,270,165,1458,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,123,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',86,-140,9,0,1,477,135,1459,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,-128,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',86,-20,4,0,1,702,60,1460,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,-8,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',86,60,3,0,1,540,45,1461,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,72,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/TgifIBc7on", 0, 1, 1,
+text('blue',86,164,1,0,1,225,15,1462,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,176,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-1,0,0,0,0,0,
+	"file_name=/tmp/TgifIBc7on")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',86,180,5,0,1,63,75,1522,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,192,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-2,0,0,0,0,0,
+	"   GE_4")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',86,284,1,0,1,81,15,1464,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,296,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	299,45,303,45,303,41,299,41,299,45],0,1,0,0,1466,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',299,41,335,58,1,1580,0,36,17,0,0,1,288000,682000,324000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:56:35 2010","/tmp/TgifWYbXWo.eps",222,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/TgifWYbXWo.ps /tmp/TgifWYbXWo",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1156",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 51 /three put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846C868C188F2F6E0C8E0398CC60722287F92CB96CC",
+    "19B3B5AE9BAB62173EE45C671C2E1AC7B9670B702384CD1F015CA91234D2C140",
+    "5678C6881FD261D0EE1CB9F64078734B78A2A53F7D50CD395587761AD041FAFC",
+    "F7F60B7ADDAD42B32C5BD41FC8C7D383BCCF07447644A7F18559F4A08DD3F860",
+    "AC92DB9E213303132C832F13DD4D0A514DF7A09BA72A52C8F310E67B8227D315",
+    "30D738644E9B653CC6836F5586D72FFD6D4D9D174A0B5C3581C658D9EAF7DBB0",
+    "A033FC5743E8A7810BF26801620DA726066EB363ED08D74D1D67800F233C551A",
+    "E56CCA1663DB33A8297C9058BEFFACBA7E9388E10EFE3FB2CEBBCA53CF120419",
+    "2CC259FA322030B9A5D47AF73D94C7768AE061392660EF0FEA251BF9FED8A0B8",
+    "6A102DFA4BA5833A5D6DE97D292404A221347F50422D624F8047094145F85A4B",
+    "17D2B6C048EB32FC9972C57623FE30B09D9D1622",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 69 /E put",
+    "dup 71 /G put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B19EBD352C330AAB64AF",
+    "F506846EF9C9397EB08E8097FE92651E6A82DA247581D4D0FE30278ABA6679DD",
+    "A5F2B45A5127C19691B0BCA9A5ED5AA8EF90B322BB0C31BF47968343635259C6",
+    "47C20A9BE36F2EE6B4A0C25E93D66E109D89CB05830A166C4A20F5F62D344B0C",
+    "BE93BA896C3DC415CB394B7B059A022B5C956D2CFADEA774487B3FFC6098A474",
+    "23BF07BABC797B786DBAC3DA60DC1A89C1E5E831C7BB1E12E25249E86CF567F5",
+    "EB7D59BC84002650FE5B179671376285FA02EA14BE610D9FB68A345B880DF9AF",
+    "74F198F5EC20A30A96B53331B5404AEC850C843EA4137543E599A30E6F851669",
+    "093D87E948643CC9B704F72CEDE6A2B4AF924705FAE55EE217F46427B2363C0B",
+    "F6158F4EA3B32CBCDB6FED7CCCCA36A1B9F1492DBE8F47E38F91EDDB218BE4D2",
+    "DBAF6584C2FC7E2532E92A20338D518BEC3521C25B2FCFDA3657A1110A03C003",
+    "981240228734961657780E7E5475A3F4277F43B30DE39860BE18D85DB8A759FC",
+    "55C5F5693B5ED965CDA02BC52950ABC3DE668597AF9BCFD3A1148AB2DD7A8670",
+    "F6F304902F591039D3697E5F9567B28FF6B84E0BAE558BC1150A281F5D3D7C0F",
+    "831647C50105B55F0FEBA54A1ADEC60A018D64BE3EAF156365841B70A047849B",
+    "6771291E0AD075DB6BAE73DB1C5BB6D774699B92DC5ABFE6B8BC73FABBF7340F",
+    "D2ED4FBB0F91BB1872056A9D48ED39CD2E022C51CE4D5F03EABAC1383F3A6112",
+    "D3476FD8BC64CFDF9E2D752DDEDC74490980A9E170355B22C8B80E8841364D9C",
+    "8ECCA62A925458AE73194233B80E7CF2BF7ADF5F76999455ED613A3B15E01C2E",
+    "3A0C24CFC7A2858A5D58C9A9060511F9B15B1F4EE7941398F9BCFF5C2B019D77",
+    "E73058D704C98ADBFBCB7035A2AEC86F6F4C93F86E04C4C85874111530BB24CD",
+    "4707B6645C5C177DD5B2F3CD51AFBB6D9E5232",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/TgifWYbXWo.dvi)",
+    "@start /Fa 204[59 51[{}1 119.552 /CMR12 rf /Fb 184[133",
+    "1[125 69[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1790 714 a Fb(GE)2048 740 y Fa(3)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e41ffe00e1c0602018040602020040402060040c20040000c200c0000fc008
+     0000840e80fc1841180301805180301004240603008c60e0301021f20fff0100
+     000001100000001300000000e",[
+])
+],
+"eq4",1465,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',299,-107,3,0,1,126,45,1468,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,-95,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',475,-107,11,0,1,270,165,1469,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,-95,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',299,-358,9,0,1,477,135,1470,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,-346,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',299,-238,4,0,1,702,60,1471,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,-226,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',299,-158,3,0,1,540,45,1472,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,-146,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/TgifWYbXWo", 0, 1, 1,
+text('blue',299,-54,1,0,1,225,15,1473,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,-42,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-1,0,0,0,0,0,
+	"file_name=/tmp/TgifWYbXWo")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',299,-38,5,0,1,63,75,1557,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,-26,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-2,0,0,0,0,0,
+	"   GE_3")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',299,66,1,0,1,81,15,1475,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,78,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
+icon([
+polygon('#0000ff','',5,[
+	302,259,306,259,306,255,302,255,302,259],0,1,0,0,1582,0,0,0,0,0,'1',0,
+    "00",[
+]),
+xbm('black','',302,255,336,272,1,1626,0,34,17,0,0,1,289000,682000,323000,699000,0,0,1,0,0,0,0,
+    "Tue Mar 16 11:56:58 2010","/tmp/Tgifc405KE.eps",218,[
+    "%!PS-Adobe-2.0 EPSF-1.2",
+    "%!PS (but not EPSF; comments have been disabled)",
+    "%DVIPSWebPage: (www.radicaleye.com)",
+    "%DVIPSCommandLine: dvips -N -n 1 -o /tmp/Tgifc405KE.ps /tmp/Tgifc405KE",
+    "%DVIPSParameters: dpi=600",
+    "%DVIPSSource:  TeX output 2010.03.16:1156",
+    "%!",
+    "/TeXDict 300 dict def TeXDict begin/N{def}def/B{bind def}N/S{exch}N/X{S",
+    "N}B/A{dup}B/TR{translate}N/isls false N/vsize 11 72 mul N/hsize 8.5 72",
+    "mul N/landplus90{false}def/@rigin{isls{[0 landplus90{1 -1}{-1 1}ifelse 0",
+    "0 0]concat}if 72 Resolution div 72 VResolution div neg scale isls{",
+    "landplus90{VResolution 72 div vsize mul 0 exch}{Resolution -72 div hsize",
+    "mul 0}ifelse TR}if Resolution VResolution vsize -72 div 1 add mul TR[",
+    "matrix currentmatrix{A A round sub abs 0.00001 lt{round}if}forall round",
+    "exch round exch]setmatrix}N/@landscape{/isls true N}B/@manualfeed{",
+    "statusdict/manualfeed true put}B/@copies{/#copies X}B/FMat[1 0 0 -1 0 0]",
+    "N/FBB[0 0 0 0]N/nn 0 N/IEn 0 N/ctr 0 N/df-tail{/nn 8 dict N nn begin",
+    "/FontType 3 N/FontMatrix fntrx N/FontBBox FBB N string/base X array",
+    "/BitMaps X/BuildChar{CharBuilder}N/Encoding IEn N end A{/foo setfont}2",
+    "array copy cvx N load 0 nn put/ctr 0 N[}B/sf 0 N/df{/sf 1 N/fntrx FMat N",
+    "df-tail}B/dfs{div/sf X/fntrx[sf 0 0 sf neg 0 0]N df-tail}B/E{pop nn A",
+    "definefont setfont}B/Cw{Cd A length 5 sub get}B/Ch{Cd A length 4 sub get",
+    "}B/Cx{128 Cd A length 3 sub get sub}B/Cy{Cd A length 2 sub get 127 sub}",
+    "B/Cdx{Cd A length 1 sub get}B/Ci{Cd A type/stringtype ne{ctr get/ctr ctr",
+    "1 add N}if}B/CharBuilder{save 3 1 roll S A/base get 2 index get S",
+    "/BitMaps get S get/Cd X pop/ctr 0 N Cdx 0 Cx Cy Ch sub Cx Cw add Cy",
+    "setcachedevice Cw Ch true[1 0 0 -1 -.1 Cx sub Cy .1 sub]{Ci}imagemask",
+    "restore}B/D{/cc X A type/stringtype ne{]}if nn/base get cc ctr put nn",
+    "/BitMaps get S ctr S sf 1 ne{A A length 1 sub A 2 index S get sf div put",
+    "}if put/ctr ctr 1 add N}B/I{cc 1 add D}B/bop{userdict/bop-hook known{",
+    "bop-hook}if/SI save N @rigin 0 0 moveto/V matrix currentmatrix A 1 get A",
+    "mul exch 0 get A mul add .99 lt{/QV}{/RV}ifelse load def pop pop}N/eop{",
+    "SI restore userdict/eop-hook known{eop-hook}if showpage}N/@start{",
+    "userdict/start-hook known{start-hook}if pop/VResolution X/Resolution X",
+    "1000 div/DVImag X/IEn 256 array N 2 string 0 1 255{IEn S A 360 add 36 4",
+    "index cvrs cvn put}for pop 65781.76 div/vsize X 65781.76 div/hsize X}N",
+    "/p{show}N/RMat[1 0 0 -1 0 0]N/BDot 260 string N/Rx 0 N/Ry 0 N/V{}B/RV/v{",
+    "/Ry X/Rx X V}B statusdict begin/product where{pop false[(Display)(NeXT)",
+    "(LaserWriter 16/600)]{A length product length le{A length product exch 0",
+    "exch getinterval eq{pop true exit}if}{pop}ifelse}forall}{false}ifelse",
+    "end{{gsave TR -.1 .1 TR 1 1 scale Rx Ry false RMat{BDot}imagemask",
+    "grestore}}{{gsave TR -.1 .1 TR Rx Ry scale 1 1 false RMat{BDot}",
+    "imagemask grestore}}ifelse B/QV{gsave newpath transform round exch round",
+    "exch itransform moveto Rx 0 rlineto 0 Ry neg rlineto Rx neg 0 rlineto",
+    "fill grestore}B/a{moveto}B/delta 0 N/tail{A/delta X 0 rmoveto}B/M{S p",
+    "delta add tail}B/b{S p tail}B/c{-4 M}B/d{-3 M}B/e{-2 M}B/f{-1 M}B/g{0 M}",
+    "B/h{1 M}B/i{2 M}B/j{3 M}B/k{4 M}B/w{0 rmoveto}B/l{p -4 w}B/m{p -3 w}B/n{",
+    "p -2 w}B/o{p -1 w}B/q{p 1 w}B/r{p 2 w}B/s{p 3 w}B/t{p 4 w}B/x{0 S",
+    "rmoveto}B/y{3 2 roll p a}B/bos{/SS save N}B/eos{SS restore}B end",
+    "%!",
+    "TeXDict begin/rf{findfont dup length 1 add dict begin{1 index/FID ne 2",
+    "index/UniqueID ne and{def}{pop pop}ifelse}forall[1 index 0 6 -1 roll",
+    "exec 0 exch 5 -1 roll VResolution Resolution div mul neg 0 0]FontType 0",
+    "ne{/Metrics exch def dict begin Encoding{exch dup type/integertype ne{",
+    "pop pop 1 sub dup 0 le{pop}{[}ifelse}{FontMatrix 0 get div Metrics 0 get",
+    "div def}ifelse}forall Metrics/Metrics currentdict end def}{{1 index type",
+    "/nametype eq{exit}if exch pop}loop}ifelse[2 index currentdict end",
+    "definefont 3 -1 roll makefont/setfont cvx]cvx def}def/ObliqueSlant{dup",
+    "sin S cos div neg}B/SlantFont{4 index mul add}def/ExtendFont{3 -1 roll",
+    "mul exch}def/ReEncodeFont{CharStrings rcheck{/Encoding false def dup[",
+    "exch{dup CharStrings exch known not{pop/.notdef/Encoding true def}if}",
+    "forall Encoding{]exch pop}{cleartomark}ifelse}if/Encoding exch def}def",
+    "end",
+    "%!PS-AdobeFont-1.1: CMR12 1.0",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.0) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMR12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle 0 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMR12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 49 /one put",
+    "readonly def",
+    "/FontBBox{-34 -251 988 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA052A014267B7904EB3C0D3BD0B83D891",
+    "016CA6CA4B712ADEB258FAAB9A130EE605E61F77FC1B738ABC7C51CD46EF8171",
+    "9098D5FEE67660E69A7AB91B58F29A4D79E57022F783EB0FBBB6D4F4EC35014F",
+    "D2DECBA99459A4C59DF0C6EBA150284454E707DC2100C15B76B4C19B84363758",
+    "469A6C558785B226332152109871A9883487DD7710949204DDCF837E6A8708B8",
+    "2BDBF16FBC7512FAA308A093FE5CF4E9D2405B169CD5365D6ECED5D768D66D6C",
+    "68618B8C482B341F8CA38E9BB9BAFCFAAD9C2F3FD033B62690986ED43D9C9361",
+    "3645B82392D5CAE11A7CB49D7E2E82DCD485CBA04C77322EB2E6A79D73DC194E",
+    "59C120A2DABB9BF72E2CF256DD6EB54EECBA588101ABD933B57CE8A3A0D16B28",
+    "51D7494F73096DF53BDC66BBF896B587DF9643317D5F610CD9088F9849126F23",
+    "DDE030F7B277DD99055C8B119CAE9C99158AC4E150CDFC2C66ED92EBB4CC092A",
+    "AA078CE16247A1335AD332DAA950D20395A7384C33FF72EAA31A5B89766E635F",
+    "45C4C068AD7EE867398F0381B07CB94D29FF097D59FF9961D195A948E3D87C31",
+    "821E9295A56D21875B41988F7A16A1587050C3C71B4E4355BB37F255D6B237CE",
+    "96F25467F70FA19E0F85785FF49068949CCC79F2F8AE57D5F79BB9C5CF5EED5D",
+    "9857B9967D9B96CDCF73D5D65FF75AFABB66734018BAE264597220C89FD17379",
+    "26764A9302D078B4EB0E29178C878FD61007EEA2DDB119AE88C57ECFEF4B71E4",
+    "140A34951DDC3568A84CC92371A789021A103A1A347050FDA6ECF7903F67D213",
+    "1D0C7C474A9053866E9C88E65E6932BA87A73686EAB0019389F84D159809C498",
+    "1E7A30ED942EB211B00DBFF5BCC720F4E276C3339B31B6EABBB078430E6A09BB",
+    "377D3061A20B1EB98796B8607EECBC699445EAA866C38E02DF59F5EDD378303A",
+    "0733B90E7835C0AAF32BA04F1566D8161EA89CD4D14DDB953F8B910BFC8A7F03",
+    "5020F55EF8FC2640ADADA156F6CF8F2EB6610F7EE8874A26CBE7CD154469B9F4",
+    "ED76886B3FB679FFDEB59BB6C55AF7087BA48B75EE2FB374B19BCC421A963E15",
+    "FE05ECAAF9EECDF4B2715010A320102E6F8CCAA342FA11532671CD9B29E43E50",
+    "0DDD39AA60A89537A4286846D3B157372553EBA80472B69EB167FC456F6D9994",
+    "EDCB14D165A89144CD8FAA40BAAF767E880172FF8D6D8F5658A45BBAB2764D65",
+    "5EF40FF9C69878DEF326E32397C36C5632486A97C6F36F488F57F67F26E44E8C",
+    "F57EF76AE4A24BCBD128A83274528DB9962F55659FF3E794F56FD6E2AB2080CC",
+    "2FEFC831E43B311B2716FE5D14890F16DF0F6D563BF5A2DB37DE4A02C25F55FE",
+    "EE7C4808887CB4D21AAD4C8589F04FF484EB715134014A79BD895E3B48C72C88",
+    "0E6D1A317ABF010A4104A07813781180DB221A43BC6E19BBF2E9C9042B01126C",
+    "CCDC015D5155237EBE9A41FC5C8763F95D144AD84D3C5A96BE90",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "%!PS-AdobeFont-1.1: CMMI12 1.100",
+    "% Copyright (C) 1997 American Mathematical Society. All Rights Reserved.",
+    "11 dict begin",
+    "/FontInfo 7 dict dup begin",
+    "/version (1.100) readonly def",
+    "/Notice (Copyright (C) 1997 American Mathematical Society. All Rights Reserved) readonly def",
+    "/FullName (CMMI12) readonly def",
+    "/FamilyName (Computer Modern) readonly def",
+    "/Weight (Medium) readonly def",
+    "/ItalicAngle -14.04 def",
+    "/isFixedPitch false def",
+    "end readonly def",
+    "/FontName /CMMI12 def",
+    "/PaintType 0 def",
+    "/FontType 1 def",
+    "/FontMatrix [0.001 0 0 0.001 0 0] readonly def",
+    "/Encoding 256 array",
+    "0 1 255 {1 index exch /.notdef put} for",
+    "dup 70 /F put",
+    "dup 71 /G put",
+    "readonly def",
+    "/FontBBox{-30 -250 1026 750}readonly def",
+    "currentdict end",
+    "currentfile eexec",
+    "D9D66F633B846A97B686A97E45A3D0AA0529731C99A784CCBE85B4993B2EEBDE",
+    "3B12D472B7CF54651EF21185116A69AB1096ED4BAD2F646635E019B6417CC77B",
+    "532F85D811C70D1429A19A5307EF63EB5C5E02C89FC6C20F6D9D89E7D91FE470",
+    "B72BEFDA23F5DF76BE05AF4CE93137A219ED8A04A9D7D6FDF37E6B7FCDE0D90B",
+    "986423E5960A5D9FBB4C956556E8DF90CBFAEC476FA36FD9A5C8175C9AF513FE",
+    "D919C2DDD26BDC0D99398B9F4D03D6A8F05B47AF95EF28A9C561DBDC98C47CF5",
+    "5250011D19E9366EB6FD153D3A100CAA6212E3D5D93990737F8D326D347B7EDC",
+    "4391C9DF440285B8FC159D0E98D4258FC57892DCC57F7903449E07914FBE9E67",
+    "3C15C2153C061EB541F66C11E7EE77D5D77C0B11E1AC55101DA976CCACAB6993",
+    "EED1406FBB7FF30EAC9E90B90B2AF4EC7C273CA32F11A5C1426FF641B4A2FB2F",
+    "4E68635C93DB835737567FAF8471CBC05078DCD4E40E25A2F4E5AF46C234CF59",
+    "2A1CE8F39E1BA1B2A594355637E474167EAD4D97D51AF0A899B44387E1FD933A",
+    "323AFDA6BA740534A510B4705C0A15647AFBF3E53A82BF320DD96753639BE49C",
+    "2F79A1988863EF977B800C9DB5B42039C23EB86953713F730E03EA22FF7BB2C1",
+    "D97D33FD77B1BDCC2A60B12CF7805CFC90C5B914C0F30A673DF9587F93E47CEA",
+    "5932DD1930560C4F0D97547BCD805D6D854455B13A4D7382A22F562D7C55041F",
+    "0FD294BDAA1834820F894265A667E5C97D95FF152531EF97258F56374502865D",
+    "A1E7C0C5FB7C6FB7D3C43FEB3431095A59FBF6F61CEC6D6DEE09F4EB0FD70D77",
+    "2A8B0A4984C6120293F6B947944BE23259F6EB64303D627353163B6505FC8A60",
+    "00681F7A3968B6CBB49E0420A691258F5E7B07B417157803FCBE9B9FB1F80FD8",
+    "CA0DA1186446DD565542BCCC7D339A1EB34C7F49246E8D72E987EB477C6DB757",
+    "99AF86CEBCD7605C487A00CD2CD093098182DC57B20D78ECE0BECF3A0BF88EBA",
+    "C866DB19F34BBBED6634AFC0F08D2AFB2A92578A6F8B4ADCD6594737FF6EED7D",
+    "5B536DA9E3E2CADB40DB7C600EA4D100D33C3B92B1CF857E012C4EB370BA8295",
+    "55B50047CD58E912E67E22C1B92F41D0BEE742201DF1B2AD7001FAEAFD48E1E4",
+    "8ED80A852F60633DD3CB0A6F25CF9218E81BD060334CB84497C10D1A2AF7C88E",
+    "1D3739538014D2B6691813F00CED4A240087061AB2B832B266377D72E27D7437",
+    "EF335A687BC51D651B401805979A4DF20752A8687FA2E4AFBF3DB6354DCB1CA7",
+    "E18A5CD684399DDF1221AC5CD88988D35194FF61DF952BAF771283D835699AB4",
+    "A4A83B718E1AFF2D5D9B65DC3FFA3710EEF32EE8DE1A21BD72A2EA57BA59234F",
+    "2AE17EEFCC5BE16B3F25D797B1E600C545C9ADA3023E52D365A38453CCA3D956",
+    "3148F1A1E9D983B506734EFE2C58B98B7FBBD50BFB0D900716C9F061334715CD",
+    "EDE609D78A1865228692BA68B2E1BCB1915B449A2969047197305E85DAB7A4EC",
+    "88F4D05050FB2438C4E00B71B110155391CD41E4DE9921F10AD99B02C33E0FA1",
+    "0A63E4BC537B5A7A7BFCBFA27DA3724D6314B0AF5011D5FD05D1E3CD3844F2D3",
+    "021A34ACE2B98D0E953C0454BA81B796619D82ACFE0889B61E71D362670FBB11",
+    "B8CAF4FB68051AC5A2D72FA5AEFDB4F2EE7BD1E91C2E7BB4058D0C462C0420E6",
+    "2A893102C25D25DE04D1FE36403E118EBA513C9EF479E33DBD87383BA1A594E5",
+    "6D546EE7AC5E9AA2A52C266C53995E90E5E9146D46D71C8AE5C7587555CFA21D",
+    "DDCD5A340DEFC567CEDD48AB113CE9DA6A59612C60D4C68E14BD992CF18EB336",
+    "C7BE1FE852C212EA79FD4D73D631672AB98C626183C5BD442F7BDD198F13F633",
+    "3C2F9A1C06FE942D16A7E10FAB0674C2C5C9C7C11E3436EAA3BAFBAE88E5F25C",
+    "BC1D95CBDA9A7FBB98347E06C2C44EB16C28D804A802D541062DE40941E37319",
+    "ED189B6DD27B69783BEFAE972588DACDB39BFE000A0789E90BFDCC7A2187DBFF",
+    "723BA8A74BB2ECECFEE0A9EA34B0143489",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "cleartomark",
+    "TeXDict begin 39158280 55380996 1000 600 600 (/tmp/Tgifc405KE.dvi)",
+    "@start /Fa 206[59 49[{}1 119.552 /CMR12 rf /Fb 184[133",
+    "109 70[{}2 172.188 /CMMI12 rf end",
+    "TeXDict begin",
+    "/setpagedevice where",
+    "{ pop << /PageSize [595 842] >> setpagedevice }",
+    "{ /a4 where { pop a4 } if }",
+    "ifelse",
+    " end",
+    "TeXDict begin 1 0 bop 1798 714 a Fb(GF)2040 740 y Fa(1)p",
+    "eop end",
+    "userdict /end-hook known{end-hook}if"],
+    "03e41ffc00e1c0604018040404020040404060040c400400008400c0000fc008
+     0000881080fc1887080301081080301001040603001060e0300101f20fc01000
+     000001000000001000000007c",[
+])
+],
+"eq4",1581,0,0,0,0,[
+attr("footer=", "", 0, 1, 1,
+text('#ff00ff',302,107,3,0,1,126,45,1584,12,3,0,0,0,0,2,126,45,0,0,"",0,0,0,0,119,'',[
+minilines(126,45,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"footer=")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-4,0,0,0,0,0,
+	"\\end{document}")])
+])
+])])),
+attr("header=", "", 0, 1, 1,
+text('#ff00ff',478,107,11,0,1,270,165,1585,12,3,0,0,0,0,2,270,165,0,0,"",0,0,0,0,119,'',[
+minilines(270,165,0,0,0,0,0,[
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,63,12,3,0,-1,0,0,0,0,0,
+	"header=")])
+]),
+mini_line(261,12,3,0,0,0,[
+str_block(0,261,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,261,12,3,0,-4,0,0,0,0,0,
+	"\\documentstyle[12pt]{article}")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,162,12,3,0,-1,0,0,0,0,0,
+	"\\oddsidemargin=0in")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-1,0,0,0,0,0,
+	"\\textwidth=6.5in")])
+]),
+mini_line(126,12,3,0,0,0,[
+str_block(0,126,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,126,12,3,0,-1,0,0,0,0,0,
+	"\\topmargin=0in")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-2,0,0,0,0,0,
+	"\\textheight=609pt")])
+]),
+mini_line(117,12,3,0,0,0,[
+str_block(0,117,12,3,0,-2,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,117,12,3,0,-2,0,0,0,0,0,
+	"\\parskip=14pt")])
+]),
+mini_line(270,12,3,0,0,0,[
+str_block(0,270,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,270,12,3,0,-4,0,0,0,0,0,
+	"\\setlength{\\unitlength}{0.5cm}")])
+]),
+mini_line(153,12,3,0,0,0,[
+str_block(0,153,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,153,12,3,0,-4,0,0,0,0,0,
+	"\\pagestyle{empty}")])
+]),
+mini_line(144,12,3,0,0,0,[
+str_block(0,144,12,3,0,-4,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,144,12,3,0,-4,0,0,0,0,0,
+	"\\begin{document}")])
+]),
+mini_line(9,12,3,0,0,0,[
+str_block(0,9,12,3,0,-1,0,0,0,[
+str_seg('#0000ff','Courier',0,80640,9,12,3,0,-1,0,0,0,0,0,
+	"%")])
+])
+])])),
+attr("exec=", "", 0, 1, 1,
+text('blue',302,-144,9,0,1,477,135,1586,12,3,0,0,0,0,2,477,135,0,0,"",0,0,0,0,-132,'',[
+minilines(477,135,0,0,0,0,0,[
+mini_line(45,12,3,0,0,0,[
+str_block(0,45,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,45,12,3,0,-1,0,0,0,0,0,
+	"exec=")])
+]),
+mini_line(378,12,3,0,0,0,[
+str_block(0,378,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,378,12,3,0,-4,0,0,0,0,0,
+	"    mktemp(\"/tmp/TgifXXXXXX\",\"file_name\");")])
+]),
+mini_line(468,12,3,0,0,0,[
+str_block(0,468,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,468,12,3,0,-4,0,0,0,0,0,
+	"    write_attr_into_file(header,\"$(file_name).tex\");")])
+]),
+mini_line(441,12,3,0,0,0,[
+str_block(0,441,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,441,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(eq,\"$(file_name).tex\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    append_attr_into_file(footer,\"$(file_name).tex\");")])
+]),
+mini_line(162,12,3,0,0,0,[
+str_block(0,162,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,162,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cmd\");")])
+]),
+mini_line(477,12,3,0,0,0,[
+str_block(0,477,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,477,12,3,0,-4,0,0,0,0,0,
+	"    pstoepsi(\"$(file_name).eps\",\"$(file_name).ps\",1);")])
+]),
+mini_line(369,12,3,0,0,0,[
+str_block(0,369,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,369,12,3,0,-4,0,0,0,0,0,
+	"    update_eps_child(\"$(file_name).eps\");")])
+]),
+mini_line(189,12,3,0,0,0,[
+str_block(0,189,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,189,12,3,0,-4,0,0,0,0,0,
+	"    launch(\"cleanup\")")])
+])
+])])),
+attr("cmd=", "", 0, 1, 1,
+text('blue',302,-24,4,0,1,702,60,1587,12,3,0,0,0,0,2,702,60,0,0,"",0,0,0,0,-12,'',[
+minilines(702,60,0,0,0,0,0,[
+mini_line(36,12,3,0,0,0,[
+str_block(0,36,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,36,12,3,0,-1,0,0,0,0,0,
+	"cmd=")])
+]),
+mini_line(108,12,3,0,0,0,[
+str_block(0,108,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,108,12,3,0,-4,0,0,0,0,0,
+	"    cd /tmp;")])
+]),
+mini_line(459,12,3,0,0,0,[
+str_block(0,459,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,459,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e latex $(file_name);")])
+]),
+mini_line(702,12,3,0,0,0,[
+str_block(0,702,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,702,12,3,0,-4,0,0,0,0,0,
+	"    xterm -geom 40x8+200+400 -e dvips -N -n 1 -o $(file_name).ps $(file_name);")])
+])
+])])),
+attr("cleanup=", "", 0, 1, 1,
+text('blue',302,56,3,0,1,540,45,1588,12,3,0,0,0,0,2,540,45,0,0,"",0,0,0,0,68,'',[
+minilines(540,45,0,0,0,0,0,[
+mini_line(72,12,3,0,0,0,[
+str_block(0,72,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,72,12,3,0,-1,0,0,0,0,0,
+	"cleanup=")])
+]),
+mini_line(540,12,3,0,0,0,[
+str_block(0,540,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,540,12,3,0,-2,0,0,0,0,0,
+	"    rm -f $(file_name).tex $(file_name).aux $(file_name).dvi")])
+]),
+mini_line(513,12,3,0,0,0,[
+str_block(0,513,12,3,0,-2,0,0,0,[
+str_seg('blue','Courier',0,80640,513,12,3,0,-2,0,0,0,0,0,
+	"        $(file_name).log $(file_name).ps $(file_name).eps")])
+])
+])])),
+attr("file_name=", "/tmp/Tgifc405KE", 0, 1, 1,
+text('blue',302,160,1,0,1,225,15,1589,12,3,0,0,0,0,2,225,15,0,0,"",0,0,0,0,172,'',[
+minilines(225,15,0,0,0,0,0,[
+mini_line(225,12,3,0,0,0,[
+str_block(0,225,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,225,12,3,0,-1,0,0,0,0,0,
+	"file_name=/tmp/Tgifc405KE")])
+])
+])])),
+attr("eq=", "", 0, 1, 1,
+text('blue',302,176,5,0,1,63,75,1603,12,3,0,0,0,0,2,63,75,0,0,"",0,0,0,0,188,'',[
+minilines(63,75,0,0,0,0,0,[
+mini_line(27,12,3,0,0,0,[
+str_block(0,27,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,27,12,3,0,-1,0,0,0,0,0,
+	"eq=")])
+]),
+mini_line(54,12,3,0,0,0,[
+str_block(0,54,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,54,12,3,0,-1,0,0,0,0,0,
+	"\\LARGE")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-3,0,0,0,0,0,
+	"\\[")])
+]),
+mini_line(63,12,3,0,0,0,[
+str_block(0,63,12,3,0,-3,0,0,0,[
+str_seg('blue','Courier',0,80640,63,12,3,0,-3,0,0,0,0,0,
+	"   GF_1")])
+]),
+mini_line(18,12,3,0,0,0,[
+str_block(0,18,12,3,0,-4,0,0,0,[
+str_seg('blue','Courier',0,80640,18,12,3,0,-4,0,0,0,0,0,
+	"\\]")])
+])
+])])),
+attr("", "not_rigid", 0, 1, 1,
+text('blue',302,280,1,0,1,81,15,1591,12,3,0,0,0,0,2,81,15,0,0,"",0,0,0,0,292,'',[
+minilines(81,15,0,0,0,0,0,[
+mini_line(81,12,3,0,0,0,[
+str_block(0,81,12,3,0,-1,0,0,0,[
+str_seg('blue','Courier',0,80640,81,12,3,0,-1,0,0,0,0,0,
+	"not_rigid")])
+])
+])]))
+]).
