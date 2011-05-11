@@ -63,7 +63,7 @@ ARCHOS=${ARCH}_${OS}
 
 # Top level directory where the code lives
 
-SOURCE=$HOME/develop/mstk/1.81dev
+SOURCE=$HOME/develop/mstk/1.8
 
 
 
@@ -79,15 +79,9 @@ rm -f CMakeCache.txt
   -D CMAKE_BUILD_TYPE:STRING=Debug \
   -D CMAKE_C_COMPILER:FILEPATH="mpicc" \
   -D CMAKE_CXX_COMPILER:FILEPATH="mpiCC" \
-  -D CMAKE_C_FLAGS_DEBUG:STRING="-g -pg" \
-  -D ENABLE_PARALLEL=yes \
-  -D ENABLE_ExodusII=yes \
-  -D NetCDF_DIR:FILEPATH=$HOME/packages/netcdf-4.0.1 \
-  -D ExodusII_DIR:FILEPATH=$HOME/packages/ACCESS/libraries/exodusii \
-  -D Metis_DIR:FILEPATH=$HOME/packages/metis-4.0 \
-  -D ENABLE_Tests=yes \
-  -D UnitTest_DIR:FILEPATH=$HOME/packages/UnitTest++ \
-  -D UnitTest_LIB_DIR:FILEPATH=$HOME/packages/UnitTest++ \
+  -D ENABLE_PARALLEL=no \
+  -D ENABLE_ExodusII=no \
+  -D ENABLE_Tests=no \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
   -D INSTALL_ADD_VERSION=no \
   ${SOURCE} 
