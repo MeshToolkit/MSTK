@@ -131,93 +131,56 @@ extern "C" {
 
 
 
-  /* Replace the i'th edge in a face with a set of edges. Assumption
-     is that the new edges are consecutive */
+  /* Remove an edge from a face */
 
-/*   void MF_Replace_Edge_i_F2F4(MFace_ptr f, int i, int nnu, MEdge_ptr *nuedges, int *nudirs) { */
-/*     MFace_Adj_F2F4 *adj; */
-/*     MEdge_ptr fedge; */
-/*     int j, k, dir; */
+  void MF_Rem_Edge_F2F4(MFace_ptr f, MEdge_ptr remedge) {
+    int i, j, ne, eindex, found;
+    MFace_Adj_F1F3 *adj;
 
-/*     adj = (MFace_Adj_F2F4 *) f->adj; */
+    adj = (MFace_Adj_F1F3 *) f->adj;
+    ne = List_Num_Entries(adj->fedges);
 
-/*     if (adj->ne == 0) */
-/*       MSTK_Report("MF_Replace_Edge_i","No initial set of edges for face", */
-/* 		  ERROR); */
+    if (ne == 0)
+      MSTK_Report("MF_Remove_Edges_F1F3","No initial set of edges for face",
+		  ERROR);
 
-/*     fedge = List_Entry(adj->fedges,i); */
-/*     adj->edirs = (adj->edirs & ~(1<<i)); /\* set bit i to 0 *\/ */
+    /* Order the old edges in the direction of the face */
 
-/*     /\* First one is easy - Just replace the old edge with the new one *\/ */
-/*     List_Replacei(adj->fedges,i,nuedges[0]); */
-/*     adj->edirs = (adj->edirs | (nudirs[0]<<i)); /\* set to dir *\/ */
-
-/*     /\* Insert the rest of the nuedges at the right place *\/ */
-/*     for (j = 1; j < nnu; j++) */
-/*       List_Inserti(adj->fedges,nuedges[j],i+j); */
-
-/*     /\* Move the direction bits after the i'th bit to the left by */
-/*        (nnu-1) spaces and insert the direction bits for the rest of */
-/*        the inserted edges *\/ */
-
-/*     for (k = adj->ne-1; k > i; k--) { */
-
-/*       /\* set bit (k+nnu-1) to 0 *\/ */
-/*       adj->edirs = adj->edirs & ~(1<<(k+nnu-1)); */
-
-/*       /\* get bit k *\/ */
-/*       dir = (adj->edirs>>k) & 1; */
-
-/*       /\* move bit k to (k+nnu-1)'th position *\/ */
-/*       adj->edirs = adj->edirs | (dir<<(k+nnu-1)); */
-
-/*       /\* set bit k to 0 *\/ */
-/*       adj->edirs = adj->edirs & ~(1<<k); */
-/*     } */
-
-/*     /\* set bit j according to input *\/ */
-/*     for (j = 1; j < nnu; j++) */
-/*       adj->edirs = adj->edirs | (nudirs[j]<<(i+j)); */
-
-/*     /\* One edge replaced an existing edge, others were added *\/ */
-/*     adj->ne += nnu-1;  */
-
-/*     /\* Update upward adjacencies *\/ */
-
-/*     ME_Rem_Face(fedge,f); */
-/*     for (i = 0; i < nnu; i++) */
-/*       ME_Add_Face(nuedges[i],f); */
-/*   } */
+    for (j = 0, found = 0; j < ne; j++)
+      if (List_Entry(adj->fedges,j) == remedge) {
+	found = 1;
+	eindex = j;
+	break;
+      }
+    if (!found) {
+      MSTK_Report("MF_Remove_Edge_F1F3","Edge not found in face",ERROR);
+      return;
+    }
 
 
+    List_Remi(adj->fedges,eindex);
 
-  /* Replace an edge in a face with another set of edges. Assumption
-     is that the edges in the new set are consecutive */
+    /* Move the remaining bits to the right */
+    int k, dir;
+    for (k = eindex+1; k < ne-1; k++) {
+      /* set bit k to 0 */
+      adj->edirs = adj->edirs & ~(1<<k);
 
-/*   void MF_Replace_Edge_F2F4(MFace_ptr f, MEdge_ptr e, int nnu, MEdge_ptr *nuedges, int *nudirs) { */
-/*     int i, found = 0; */
-/*     MFace_Adj_F2F4 *adj; */
-/*     MEdge_ptr fedge; */
+      /* get bit k+1 */
+      dir = (adj->edirs>>(k+1)) & 1;
 
-/*     adj = (MFace_Adj_F2F4 *) f->adj; */
+      /* move bit k+1 to k'th position */
+      adj->edirs = adj->edirs | (dir<<k);
+    }
 
+    ne--;
 
-/*     if (adj->ne == 0) */
-/*       MSTK_Report("MF_Replace_Edge_F1","No initial set of edges for face", */
-/* 		  ERROR); */
       
-/*     for (i = 0; i < adj->ne; i++) */
-/*       if ((fedge = List_Entry(adj->fedges,i)) == e) { */
-/* 	found = 1; */
-/* 	break; */
-/*       } */
-/*     if (!found) { */
-/*       MSTK_Report("MF_Replace_Edge","Edge not found in face",ERROR); */
-/*       return; */
-/*     } */
+    /* Tell the edge that it is not connected to the face anymore */
 
-/*     MF_Replace_Edge_i_F2F4(f, i, nnu, nuedges, nudirs); */
-/*   } */
+    ME_Rem_Face(remedge,f);
+
+  }
 
 
 
