@@ -199,17 +199,36 @@ extern "C" {
     List_Replacei(adj->fvertices,i,v);
   }
 
+  void MF_Rem_Vertex_R1(MFace_ptr f, MVertex_ptr v) {
+    MFace_Adj_R1 *adj;
+
+    adj = (MFace_Adj_R1 *) f->adj;
+    if (adj->fvertices == NULL)
+      MSTK_Report("MF_Rem_Vertex_R1",
+		  "No initial set of vertices for face",ERROR);
+
+#ifdef DEBUG
+    if (MF_Mesh(f) != MV_Mesh(v))
+      MSTK_Report("MF_Rem_Vertex_R1",
+		  "Face and Vertex are not from the same mesh",
+		  FATAL);
+#endif
+
+    List_Rem(adj->fvertices,v);
+  }
+
+
   void MF_Replace_Vertex_R1(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
     MFace_Adj_R1 *adj;
 
     adj = (MFace_Adj_R1 *) f->adj;
     if (adj->fvertices == NULL)
-      MSTK_Report("MF_Replace_Vertex_RN",
+      MSTK_Report("MF_Replace_Vertex_R1",
 		  "No initial set of vertices for face",ERROR);
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(v))
-      MSTK_Report("MF_Set_Vertices_R1",
+      MSTK_Report("MF_Replace_Vertex_R1",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);
 #endif
@@ -226,7 +245,7 @@ extern "C" {
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(nuv))
-      MSTK_Report("MF_Set_Vertices_R1",
+      MSTK_Report("MF_Insert_Vertex_R1",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);
 #endif
@@ -243,7 +262,7 @@ extern "C" {
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(nuv))
-      MSTK_Report("MF_Set_Vertices_R1",
+      MSTK_Report("MF_Insert_Vertex_i_R1",
 		  "Face and Vertex are not from the same mesh",
 		  FATAL);
 #endif
@@ -285,7 +304,7 @@ extern "C" {
       }
 
       if (!fnd) {
-	MSTK_Report("MF_Num_Vertices_R1","Cannot find starting vertex",ERROR);
+	MSTK_Report("MF_Vertices_R1","Cannot find starting vertex",ERROR);
 	return 0;
       }
 
