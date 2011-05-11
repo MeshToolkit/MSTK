@@ -60,7 +60,8 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm)
     break;
   default:
     num = 0;
-    MSTK_Report("MESH_SendAttr()","Invalid entity type",FATAL);
+    MSTK_Report("MESH_SendAttr()","Cannot send attributes on entity type MALLTYPE",WARN);
+    return 0;
   }
     
   /* attribute index and global id */ 
@@ -85,7 +86,8 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm)
       ment = MESH_Region(mesh,j);
       break;
     default:
-      MSTK_Report("MESH_SendAttr()","Invalid entity type",FATAL);
+      MSTK_Report("MESH_SendAttr()","Invalid entity type",WARN);
+      return 0;
     }
     
     MEnt_Get_AttVal(ment,attrib,&ival,&rval,&pval);
@@ -164,9 +166,14 @@ int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int send_rank, int rank,
   case MREGION:
     num = MESH_Num_Regions(mesh);
     break;
+  case MALLTYPE:
+    num = 0;
+    MSTK_Report("MESH_SendAttr()","Cannot receive attributes on entity type MALLTYPE",WARN);
+    return 0;
   default:
     num = 0;
-    MSTK_Report("MESH_SendAttr()","Invalid entity type",FATAL);
+    MSTK_Report("MESH_SendAttr()","Invalid entity type MALLTYPE",WARN);
+    return 0;
   }
 
   /* receive info */
