@@ -65,6 +65,7 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
   void MR_Set_Vertices(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf, int **rfvtemplate);
 
   /* Can be called by mesh modification routines */
+  void MR_Rem_Face(MRegion_ptr r, MFace_ptr f);
   void MR_Replace_Face(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int dir);
   void MR_Replace_Vertex(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv);
   void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr f, int dir);

@@ -535,7 +535,9 @@ void MSTK_Init(void);
   int ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
   MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
   MEdge_ptr MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
+  MFace_ptr MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
   MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
+  MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag);
   
 
 /**********************************************************************/
@@ -546,7 +548,7 @@ void MSTK_Init(void);
 #ifdef MSTK_HAVE_MPI
 
   /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
-  /* IF YOU MUCK CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND */
+  /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */
   /* YOU WILL GET WHAT YOU DESERVE                                   */
 
   int MSTK_SendMesh(Mesh_ptr mesh, int rank, int with_attr, MPI_Comm comm);
