@@ -47,18 +47,22 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   MEdge_ptr lme, gme;
   MFace_ptr lmf, gmf;
   List_ptr lmvfaces, gmvfaces, lmefaces, gmefaces;
+  MAttrib_ptr l2gatt;
+
+  l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
   /* Mark all the face to be interior */
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx)))  
     MF_Set_PType(lmf,PINTERIOR);
   
-
   /* Loop through edges */
   idx = 0;
   while((lme = MESH_Next_Edge(submesh,&idx))) {
-    edge_gid = ME_GlobalID(lme);
-    gme = MESH_EdgeFromID(mesh,edge_gid);
+    MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
+    if (!gme)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",ERROR);
+      
 
     lmefaces = ME_Faces(lme);
     gmefaces = ME_Faces(gme);
@@ -78,8 +82,9 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* Loop through vertices */
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    vertex_gid = MV_GlobalID(lmv);
-    gmv = MESH_VertexFromID(mesh,vertex_gid);
+    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
+    if (!gmv)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",ERROR);
 
     lmvfaces = MV_Faces(lmv);
     gmvfaces = MV_Faces(gmv);
@@ -106,6 +111,10 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   List_ptr lmvregs, gmvregs;
   List_ptr lmeregs, gmeregs;
   List_ptr lmfregs, gmfregs;
+  MAttrib_ptr l2gatt;
+
+
+  l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
   /* Mark all the regions to be interior */
   idx = 0;
@@ -116,8 +125,9 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* Loop through faces */
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx))) {
-    face_gid = MF_GlobalID(lmf);
-    gmf = MESH_FaceFromID(mesh,face_gid);
+    MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
+    if (!gmf)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",ERROR);
 
     lmfregs = MF_Regions(lmf);
     gmfregs = MF_Regions(gmf);
@@ -134,8 +144,9 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* Loop through edges */
   idx = 0;
   while((lme = MESH_Next_Edge(submesh,&idx))) {
-    edge_gid = ME_GlobalID(lme);
-    gme = MESH_EdgeFromID(mesh,edge_gid);
+    MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
+    if (!gme)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",ERROR);
 
     lmeregs = ME_Regions(lme);
     gmeregs = ME_Regions(gme);
@@ -153,8 +164,9 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* Loop through vertices */
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    vertex_gid = MV_GlobalID(lmv);
-    gmv = MESH_VertexFromID(mesh,vertex_gid);
+    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
+    if (!gmv)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",ERROR);
 
     lmvregs = MV_Regions(lmv);
     gmvregs = MV_Regions(gmv);
