@@ -22,9 +22,10 @@ int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
   double rval, *pval_arr;
   void *pval;
   MType mtype;
-
   MEntity_ptr local_ment, global_ment;
-  MAttrib_ptr local_attrib, global_attrib;
+  MAttrib_ptr local_attrib, global_attrib, l2gatt;
+
+  l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
   global_attrib = MESH_AttribByName(mesh,attr_name);
   local_attrib = MESH_AttribByName(submesh,attr_name);
@@ -63,24 +64,21 @@ int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
     switch (mtype) {
     case MVERTEX:
       local_ment = MESH_Vertex(submesh,j);
-      global_ment = MESH_VertexFromID(mesh,MEnt_GlobalID(local_ment));
       break;
     case MEDGE:
       local_ment = MESH_Edge(submesh,j);
-      global_ment = MESH_EdgeFromID(mesh,MEnt_GlobalID(local_ment));
       break;
     case MFACE:
       local_ment = MESH_Face(submesh,j);
-      global_ment = MESH_FaceFromID(mesh,MEnt_GlobalID(local_ment));
       break;
     case MREGION:
       local_ment = MESH_Region(submesh,j);
-      global_ment = MESH_RegionFromID(mesh,MEnt_GlobalID(local_ment));
       break;
     default:
       MSTK_Report("MESH_CopyAttr()","Invalid entity type",FATAL);
     }
     
+    MEnt_Get_AttVal(local_ment,l2gatt,0,0,&global_ment);
     MEnt_Get_AttVal(global_ment,global_attrib,&ival,&rval,&pval);
     
     if(ncomp > 1) {
