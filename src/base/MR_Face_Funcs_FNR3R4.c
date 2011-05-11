@@ -468,6 +468,70 @@ extern "C" {
     return ((adj->fdirs[j])>>k & 1);
   }
 
+
+
+
+
+
+  void MR_Rem_Face_FNR3R4(MRegion_ptr r, MFace_ptr remface) {
+    int i, j, k, j1, k1, nf, findex, dir, found;
+    MRegion_Adj_FN *adj;
+
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
+
+    if (nf == 0)
+      MSTK_Report("MR_Remove_Faces_FNR3R4","No initial set of faces for region",
+		  ERROR);
+
+    for (j = 0, found = 0; j < nf; j++)
+      if (List_Entry(adj->rfaces,j) == remface) {
+	found = 1;
+	findex = j;
+	break;
+      }
+    if (!found) {
+      MSTK_Report("MR_Rem_Face_FNR3R4","Face not found in region",ERROR);
+      return;
+    }
+
+
+    List_Remi(adj->rfaces,findex);
+
+    /* Move the remaining bits to the right */
+    
+    for (i = findex+1; i < nf-1; i++) {
+
+      j = (int) i/(8*sizeof(unsigned int));
+      k = i%(8*sizeof(unsigned int));
+      
+      adj->fdirs[j] = (adj->fdirs[j] & ~(1<<k)); /* set bit i to 0 */
+      
+      /* get bit for i+1 */
+      j1 = (int) (i+1)/(8*sizeof(unsigned int));
+      k1 = (i+1)%(8*sizeof(unsigned int));
+      
+      dir = (adj->fdirs[j1]>>(k1+1)) & 1;
+      
+      /* move bit for i+1 to i */
+      
+      adj->fdirs[j] = (adj->fdirs[j] | (dir<<k)); 
+      
+    }
+
+    nf--;
+
+      
+    /* Tell face that it is no longer bounding this region */
+
+    MF_Rem_Region(remface,r);
+
+  }
+
+
+
+
+
   /* If we allow replacing a face with multiple faces, we have to check if 
      we need to expand adj->fdirs */
 
