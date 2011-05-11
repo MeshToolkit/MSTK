@@ -60,7 +60,12 @@ extern "C" {
     mtype = MAttrib_Get_EntDim(attrib);
 
     if (att_type == POINTER) {
-      MSTK_Report("MESH_UpdateAttr()","Meaningless update pointer attributes across processors",WARN);
+      char mesg[1024], attname[256];
+      MAttrib_Get_Name(attrib,attname);
+#ifdef DEBUG
+      sprintf(mesg,"Meaningless to update pointer attributes across processors (attribute: %s", attname);
+      MSTK_Report("MESH_UpdateAttr()",mesg,WARN);
+#endif
       return 0;
     }
 
