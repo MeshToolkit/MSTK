@@ -82,16 +82,17 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
 
 int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   int i, j, k, idx, vertex_id, edge_id, face_id, mkvid, mkvid2, mkfid;
-  int nvf, nfv, nfe;
+  int nvf, nfv, nfe, idx2, found;
   double xyz[3];
   MVertex_ptr gmv, gmv2, lmv, lmv2;
   MEdge_ptr lme, gme;
   MFace_ptr lmf, gmf;
   List_ptr vfaces, fverts, fedges, gghfaces, gbverts, gbverts2;
+  List_ptr lmvlist, lmelist, lmflist;
   MAttrib_ptr g2latt, l2gatt;
 
-  g2latt = MAttrib_New(mesh,"Global2Local",POINTER,MALLTYPE);
-  l2gatt = MAttrib_New(submesh,"Local2Global",POINTER,MALLTYPE);
+  g2latt = MESH_AttribByName(mesh,"Global2Local");
+  l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
 
   /* Mark the list of global entities in this submesh */
@@ -99,34 +100,15 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
   mkvid = MSTK_GetMarker();
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    vertex_id = MV_GlobalID(lmv);
-    gmv = MESH_VertexFromID(mesh,vertex_id);
-    
-    MEnt_Set_AttVal(gmv,g2latt,0,0,lmv);
-    MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
-
+    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
     MEnt_Mark(gmv,mkvid);
-  }
-
-  idx = 0;
-  while((lme = MESH_Next_Edge(submesh,&idx))) {
-    edge_id = ME_GlobalID(lme);
-    gme = MESH_EdgeFromID(mesh,edge_id);
-
-    MEnt_Set_AttVal(gme,g2latt,0,0,lme);
-    MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
   }
 
 
   mkfid = MSTK_GetMarker();  
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx))) {
-    face_id = MF_GlobalID(lmf);
-    gmf = MESH_FaceFromID(mesh,face_id);
-
-    MEnt_Set_AttVal(gmf,g2latt,0,0,lmf);
-    MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
-
+    MEnt_Set_AttVal(lmf,l2gatt,0,0,&gmf);
     MEnt_Mark(gmf,mkfid);
   }
 
@@ -259,8 +241,21 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
     for (i = 0; i < nfv; i++) {
       gmv = List_Entry(fverts,i);
-      MEnt_Get_AttVal(gmv,g2latt,0,0,&lmv);
-      if (!lmv) {
+      MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
+
+      if (!lmvlist)
+	MSTK_Report("MESH_AddGhost","No local vertex list found with global vertex",FATAL);
+
+      idx2 = 0;
+      found = 0;
+      while ((lmv = List_Next_Entry(lmvlist,&idx2))) {
+	if (MV_Mesh(lmv) == submesh) {
+	  found = 1;
+	  break;
+	}
+      }
+
+      if (!found) {
 	lmv = MV_New(submesh);
 	MV_Coords(gmv,xyz);
 	MV_Set_Coords(lmv,xyz);
@@ -269,8 +264,8 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 	MV_Set_PType(lmv,PGHOST);
 	MV_Set_GlobalID(lmv,MV_ID(gmv));
 	MV_Set_MasterParID(lmv,MV_MasterParID(gmv));
-	MEnt_Set_AttVal(gmv,g2latt,0,0,lmv);
 	MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
+	List_Add(lmvlist,lmv);
       }
     }
 
@@ -281,24 +276,47 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
     for (i = 0; i < nfe; i++) {
       gme = List_Entry(fedges,i);
-      MEnt_Get_AttVal(gme,g2latt,0,0,&lme);
-      if (!lme) { 
+      MEnt_Get_AttVal(gme,g2latt,0,0,&lmelist);
+
+      if (!lmelist)
+	MSTK_Report("MESH_AddGhost","No local edge list found with gloval edge list",FATAL);
+
+      idx2 = 0;
+      found = 0;
+      while ((lme = List_Next_Entry(lmelist,&idx2))) {
+	if (ME_Mesh(lme) == submesh) {
+	  found = 1;
+	  break;
+	}
+      }
+
+      if (!found) { 
 	lme = ME_New(submesh);
 	ME_Set_GEntID(lme,ME_GEntID(gme));
 	ME_Set_GEntDim(lme,ME_GEntDim(gme));
 	ME_Set_PType(lme,PGHOST);
 	for (j = 0; j < 2; j++) {
 	  gmv = ME_Vertex(gme,j);
-	  MEnt_Get_AttVal(gmv,g2latt,0,0,&lmv);
-	  if (!lmv) {
-	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",ERROR);
+	  MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
+
+	  idx2 = 0;
+	  found = 0;
+	  while ((lmv = List_Next_Entry(lmvlist,&idx2))) {
+	    if (MV_Mesh(lmv) == submesh) {
+	      found = 1;
+	      break;
+	    }
 	  }
+
+	  if (!lmv)
+	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",ERROR);
+
 	  ME_Set_Vertex(lme,j,lmv);
 	}
 	ME_Set_GlobalID(lme,ME_ID(gme));
 	ME_Set_MasterParID(lme,ME_MasterParID(gme));
-	MEnt_Set_AttVal(gme,g2latt,0,0,lme);
 	MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
+	List_Add(lmelist,lme);
       }
       lfedges[i] = lme;
       lfedirs[i] = MF_EdgeDir_i(gmf,i);	
@@ -314,6 +332,12 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
     MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
     MF_Set_GlobalID(lmf,MF_ID(gmf));
     MF_Set_MasterParID(lmf,MF_MasterParID(gmf));
+
+    MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
+    MEnt_Get_AttVal(gmf,g2latt,0,0,&lmflist);
+    if (!lmflist)
+      MSTK_Report("MESH_AddGhost","Local face list not found with global face",FATAL);
+    List_Add(lmflist,lmf);
   }
   List_Delete(gghfaces);
 
@@ -346,42 +370,20 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
 
 
-  /* Remove the connections between local and global entities */
-
   idx = 0;
   while ((lmv = MESH_Next_Vertex(submesh,&idx))) {
     MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
-    MEnt_Rem_AttVal(lmv,l2gatt);
-
-    if (gmv) {
-      MEnt_Rem_AttVal(gmv,g2latt);
+    if (gmv)
       MEnt_Unmark(gmv,mkvid);
-    }
-  }
-
-  idx = 0;
-  while ((lme = MESH_Next_Edge(submesh,&idx))) {
-    MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
-    MEnt_Rem_AttVal(lme,l2gatt);
-
-    if (gme)
-      MEnt_Rem_AttVal(gme,g2latt);
   }
 
   idx = 0;
   while ((lmf = MESH_Next_Face(submesh,&idx))) {
     MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
-    MEnt_Rem_AttVal(lmf,l2gatt);
-
-    if (gmf) {
-      MEnt_Rem_AttVal(gmf,g2latt);
+    if (gmf)
       MEnt_Unmark(gmf,mkfid);
-    }
   }
 
-
-  MAttrib_Delete(g2latt);
-  MAttrib_Delete(l2gatt);
 
   MSTK_FreeMarker(mkvid);
   MSTK_FreeMarker(mkfid);
@@ -392,18 +394,18 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
 int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   int i, j, k, idx, vertex_id, edge_id, face_id, region_id, mkvid, mkvid2, mkrid;
-  int nvr, nvf, nrf, nre, nrv, nfv, nfe;
+  int nvr, nvf, nrf, nre, nrv, nfv, nfe, idx2, found;
   double xyz[3];
   MVertex_ptr gmv, gmv2, lmv, lmv2;
   MEdge_ptr lme, gme;
   MFace_ptr lmf, gmf;
   MRegion_ptr lmr, gmr;
   List_ptr vregions, rfaces, fedges, fverts, redges, rverts;
-  List_ptr gghregs, gbverts, gbverts2;
+  List_ptr gghregs, gbverts, gbverts2, lmvlist, lmelist, lmflist, lmrlist;
   MAttrib_ptr g2latt, l2gatt;
 
-  g2latt = MAttrib_New(mesh,"Global2Local",POINTER,MALLTYPE);
-  l2gatt = MAttrib_New(submesh,"Local2Global",POINTER,MALLTYPE);
+  g2latt = MESH_AttribByName(mesh,"Global2Local");
+  l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
 
   /* Mark the list of global entities in this submesh */
@@ -411,43 +413,14 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   mkvid = MSTK_GetMarker();
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    vertex_id = MV_GlobalID(lmv);
-    gmv = MESH_VertexFromID(mesh,vertex_id);
-    
-    MEnt_Set_AttVal(gmv,g2latt,0,0,lmv);
-    MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
-
+    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
     MEnt_Mark(gmv,mkvid);
   }
-
-  idx = 0;
-  while((lme = MESH_Next_Edge(submesh,&idx))) {
-    edge_id = ME_GlobalID(lme);
-    gme = MESH_EdgeFromID(mesh,edge_id);
-
-    MEnt_Set_AttVal(gme,g2latt,0,0,lme);
-    MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
-  }
-
-  idx = 0;
-  while((lmf = MESH_Next_Face(submesh,&idx))) {
-    face_id = MF_GlobalID(lmf);
-    gmf = MESH_FaceFromID(mesh,face_id);
-
-    MEnt_Set_AttVal(gmf,g2latt,0,0,lmf);
-    MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
-  }
-
 
   mkrid = MSTK_GetMarker();  
   idx = 0;
   while((lmr = MESH_Next_Region(submesh,&idx))) {
-    region_id = MR_GlobalID(lmr);
-    gmr = MESH_RegionFromID(mesh,region_id);
-
-    MEnt_Set_AttVal(gmr,g2latt,0,0,lmr);
-    MEnt_Set_AttVal(lmr,l2gatt,0,0,gmr);
-
+    MEnt_Get_AttVal(lmr,l2gatt,0,0,&gmr);
     MEnt_Mark(gmr,mkrid);
   }
 
@@ -576,18 +549,28 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
     /* Sanity Check */
 
-    MEnt_Get_AttVal(gmr,g2latt,0,0,&lmr);
-    if (lmr) {
-      MSTK_Report("MESH_Vol_AddGhost_FN","Ghost region already duplicated?",ERROR);
-    }
+    MEnt_Get_AttVal(gmr,g2latt,0,0,&lmrlist);
 
     rverts = MR_Vertices(gmr);
     nrv = List_Num_Entries(rverts);
 
     for (i = 0; i < nrv; i++) {
       gmv = List_Entry(rverts,i);
-      MEnt_Get_AttVal(gmv,g2latt,0,0,&lmv);
-      if (!lmv) {
+      MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
+
+      if (!lmvlist)
+	MSTK_Report("MESH_AddGhost","No local vertex list with global vertexx",FATAL);
+
+      idx2 = 0;
+      found = 0;
+      while ((lmv = List_Next_Entry(lmvlist,&idx2))) {
+	if (MV_Mesh(lmv) == submesh) {
+	  found = 1;
+	  break;
+	}
+      }
+
+      if (!found) {
 	lmv = MV_New(submesh);
 	MV_Coords(gmv,xyz);
 	MV_Set_Coords(lmv,xyz);
@@ -596,8 +579,8 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 	MV_Set_PType(lmv,PGHOST);
 	MV_Set_GlobalID(lmv,MV_ID(gmv));
 	MV_Set_MasterParID(lmv,MV_MasterParID(gmv));
-	MEnt_Set_AttVal(gmv,g2latt,0,0,lmv);
 	MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
+	List_Add(lmvlist,lmv);
       }
     }
     List_Delete(rverts);
@@ -607,24 +590,47 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
     for (i = 0; i < nre; i++) {
       gme = List_Entry(redges,i);
-      MEnt_Get_AttVal(gme,g2latt,0,0,&lme);
-      if (!lme) {
+      MEnt_Get_AttVal(gme,g2latt,0,0,&lmelist);
+      
+      if (!lmelist)
+	MSTK_Report("MESH_AddGhost","No local edge list found with global edge",FATAL);
+
+      idx2 = 0;
+      found = 0;
+      while ((lme = List_Next_Entry(lmelist,&idx2))) {
+	if (MV_Mesh(lme) == submesh) {
+	  found = 1;
+	  break;
+	}
+      }
+
+      if (!found) {
 	lme = ME_New(submesh);
 	ME_Set_GEntID(lme,ME_GEntID(gme));
 	ME_Set_GEntDim(lme,ME_GEntDim(gme));
 	ME_Set_PType(lme,PGHOST);
 	for (j = 0; j < 2; j++) {
 	  gmv = ME_Vertex(gme,j);
-	  MEnt_Get_AttVal(gmv,g2latt,0,0,&lmv);
-	  if (!lmv) {
-	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",ERROR);
+	  MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
+
+	  found = 0;
+	  idx2 = 0;
+	  while ((lmv = List_Next_Entry(lmvlist,&idx2))) {
+	    if (MV_Mesh(lmv) == submesh) {
+	      found = 1;
+	      break;
+	    }
 	  }
+
+	  if (!lmv)
+	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",ERROR);
+
 	  ME_Set_Vertex(lme,j,lmv);
 	}
 	ME_Set_GlobalID(lme,ME_ID(gme));
 	ME_Set_MasterParID(lme,ME_MasterParID(gme));
-	MEnt_Set_AttVal(gme,g2latt,0,0,lme);
 	MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
+	List_Add(lmelist,lme);
       }
     }
     List_Delete(redges);
@@ -634,8 +640,21 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
     for (i = 0; i < nrf; i++) {
       gmf = List_Entry(rfaces,i);
-      MEnt_Get_AttVal(gmf,g2latt,0,0,&lmf);
-      if (!lmf) {
+      MEnt_Get_AttVal(gmf,g2latt,0,0,&lmflist);
+      
+      if (!lmflist)
+	MSTK_Report("MESH_AddGhost","No local face list found with global face",FATAL);
+
+      idx2 = 0;
+      found = 0;
+      while ((lmf = List_Next_Entry(lmflist,&idx2))) {
+	if (MF_Mesh(lmf) == submesh) {
+	  found = 1;
+	  break;
+	}
+      }
+
+      if (!found) {
 	lmf = MF_New(submesh);
 	MF_Set_GEntID(lmf,MF_GEntID(gmf));
 	MF_Set_GEntDim(lmf,MF_GEntDim(gmf));
@@ -644,14 +663,28 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 	nfe = List_Num_Entries(fedges);
 	for (j = 0; j < nfe; j++) {
 	  gme = List_Entry(fedges,j);
-	  MEnt_Get_AttVal(gme,g2latt,0,0,&(lfedges[j]));
+	  MEnt_Get_AttVal(gme,g2latt,0,0,&lmelist);
+
+	  idx2 = 0;
+	  found = 0;
+	  while ((lme = List_Next_Entry(lmelist,&idx2))) {
+	    if (ME_Mesh(lme) == submesh) {
+	      found = 1;
+	      break;
+	    }
+	  }
+
+	  if (!lme) 
+	    MSTK_Report("MESH_Surf_AddGhost_FN","Cannot find local edge of global edge",FATAL);
+	  
+	  lfedges[j] = lme;
 	  lfedirs[j] = MF_EdgeDir_i(gmf,j);
 	}
 	MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
 	MF_Set_GlobalID(lmf,MF_ID(gmf));
 	MF_Set_MasterParID(lmf,MF_MasterParID(gmf));
-	MEnt_Set_AttVal(gmf,g2latt,0,0,lmf);
 	MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
+	List_Add(lmflist,lmf);
       }
       lrfaces[i] = lmf;
       lrfdirs[i] = MR_FaceDir_i(gmr,i);
@@ -665,6 +698,13 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
     MR_Set_Faces(lmr,nrf,lrfaces,lrfdirs);
     MR_Set_GlobalID(lmr,MR_ID(gmr));
     MR_Set_MasterParID(lmr,MR_MasterParID(gmr));
+
+    MEnt_Set_AttVal(lmr,l2gatt,0,0,gmr);
+    MEnt_Get_AttVal(gmr,g2latt,0,0,&lmrlist);
+    if (!lmrlist)
+      MSTK_Report("MESH_AddGhost","No local region list found with global region",FATAL);
+    List_Add(lmrlist,lmr);
+
   }
   List_Delete(gghregs);
 
@@ -714,46 +754,17 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   idx = 0;
   while ((lmv = MESH_Next_Vertex(submesh,&idx))) {
     MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
-    MEnt_Rem_AttVal(lmv,l2gatt);
-
-    if (gmv) {
-      MEnt_Rem_AttVal(gmv,g2latt);
+    if (gmv)
       MEnt_Unmark(gmv,mkvid);
-    }
-  }
-
-  idx = 0;
-  while ((lme = MESH_Next_Edge(submesh,&idx))) {
-    MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
-    MEnt_Rem_AttVal(lme,l2gatt);
-
-    if (gme)
-      MEnt_Rem_AttVal(gme,g2latt);
-  }
-
-  idx = 0;
-  while ((lmf = MESH_Next_Face(submesh,&idx))) {
-    MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
-    MEnt_Rem_AttVal(lmf,l2gatt);
-
-    if (gmf)
-      MEnt_Rem_AttVal(gmf,g2latt);
   }
 
   idx = 0;
   while ((lmr = MESH_Next_Region(submesh,&idx))) {
     MEnt_Get_AttVal(lmr,l2gatt,0,0,&gmr);
-    MEnt_Rem_AttVal(lmr,l2gatt);
-
-    if (gmr) {
-      MEnt_Rem_AttVal(gmr,g2latt);
+    if (gmr)
       MEnt_Unmark(gmr,mkrid);
-    }
   }
 
-
-  MAttrib_Delete(g2latt);
-  MAttrib_Delete(l2gatt);
 
   MSTK_FreeMarker(mkvid);
   MSTK_FreeMarker(mkrid);
