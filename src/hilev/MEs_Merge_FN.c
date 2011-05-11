@@ -6,23 +6,33 @@
 /* Replace e2 with e1 in all the faces using e2 and delete e2 */
 
 MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2) {
-  int i, idx, gdim, gid;
+  int i, idx, gdim1, gid1, gdim2, gid2;
   MVertex_ptr v11, v12, v21, v22;
   MFace_ptr   face;
   Mesh_ptr    mesh;
   List_ptr    efaces2;
 
   mesh = ME_Mesh(e1);
-  gid = ME_GEntID(e1);
-  gdim = ME_GEntDim(e1);
+  gid1 = ME_GEntID(e1);
+  gdim1 = ME_GEntDim(e1);
+  gid2 = ME_GEntID(e2);
+  gdim2 = ME_GEntDim(e2);
 
   if (mesh != MF_Mesh(e2)) {
     MSTK_Report("MEs_Merge","Edges not from same mesh - Cannot merge",ERROR);
     return 0;
   }
-  else if (gid != ME_GEntID(e2) || gdim != ME_GEntDim(e2)) {
-    MSTK_Report("MEs_Merge","Edges not from same geometric entity - Cannot merge",ERROR);
-    return 0;
+  else {
+    if (gdim1 == gdim2) {
+      if (gid1 != gid2) {
+	MSTK_Report("MEs_Merge","Edges are on different geometric entities of the same dimension - Cannot merge",ERROR);
+	return 0;
+      }
+    }
+    else if (gdim2 < gdim1) {
+      MSTK_Report("MEs_Merge","Cannot merge edge on lower dimensional geometric entity to edge on higher dimensional geometric entity",ERROR);
+      return 0;
+    }
   }
   
   v11 = ME_Vertex(e1,0); v12 = ME_Vertex(e1,1);
