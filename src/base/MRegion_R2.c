@@ -122,6 +122,13 @@ extern "C" {
 #endif
   }
 
+  void MR_Rem_Face_R2(MRegion_ptr r, MFace_ptr f) {
+#ifdef DEBUG
+    MSTK_Report("MR_Rem_Face_R2",
+		"Function call not suitable for this representation",WARN);
+#endif
+  }
+
   void MR_Replace_Face_R2(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int dir) {
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Face_R2",
