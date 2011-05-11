@@ -17,11 +17,16 @@ extern "C" {
  */
 
 int MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr gmset) {
-  int *gids, gid, j, num, idx, nent;
+  int idx, idx2, found;
   MType mtype;
   MEntity_ptr lment, gment;
   MSet_ptr lmset;
   char msetname[256];
+  void *loc;
+  MAttrib_ptr g2latt;
+  List_ptr lmentlist;
+
+  g2latt = MESH_AttribByName(mesh,"Global2Local");
 
   MSet_Name(gmset,msetname);
   lmset = MESH_MSetByName(submesh,msetname);
@@ -32,71 +37,20 @@ int MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr gmset) {
     lmset = MSet_New(submesh,msetname,mtype);
   }
 
-  nent = MSet_Num_Entries(gmset);
-  gids = (int *) MSTK_malloc(nent*sizeof(int));
-  j = 0;
   idx = 0;
-  while ((gment = MSet_Next_Entry(gmset,&idx)))
-    gids[j++] = MEnt_GlobalID(gment);
-
-  if (mtype == MALLTYPE) {
-
-    MSTK_Report("MESH_CopySet","Not implemented for MALLTYPE",ERROR);
-
-  }
-  else {
+  while ((gment = MSet_Next_Entry(gmset,&idx))) {
+    MEnt_Get_AttVal(gment,g2latt,0,0,&lmentlist);
     
-    switch (mtype) {
-    case MVERTEX:
-      idx = 0;
-      while ((lment = MESH_Next_Vertex(submesh,&idx))) {
-	gid = MV_GlobalID(lment);
-	for (j = 0; j < nent; j++)
-	  if (gid == gids[j]) {
-	    MSet_Add(lmset,lment);
-	    break;
-	  }
+    idx2 = 0;
+    found = 0;
+    while ((lment = List_Next_Entry(lmentlist,&idx2))) {
+      if (MEnt_Mesh(lment) == submesh) {
+	found = 1;
+	MSet_Add(lmset,lment);
       }
-      
-      break;
-    case MEDGE:
-      idx = 0;
-      while ((lment = MESH_Next_Edge(submesh,&idx))) {
-	gid = MV_GlobalID(lment);
-	for (j = 0; j < nent; j++)
-	  if (gid == gids[j]) {
-	    MSet_Add(lmset,lment);
-	    break;
-	  }
-      }
-      break;
-    case MFACE:
-      idx = 0;
-      while ((lment = MESH_Next_Face(submesh,&idx))) {
-	gid = MV_GlobalID(lment);
-	for (j = 0; j < nent; j++)
-	  if (gid == gids[j]) {
-	    MSet_Add(lmset,lment);
-	    break;
-	  }
-      }
-      break;
-    case MREGION:
-      idx = 0;
-      while ((lment = MESH_Next_Region(submesh,&idx))) {
-	gid = MV_GlobalID(lment);
-	for (j = 0; j < nent; j++)
-	  if (gid == gids[j]) {
-	    MSet_Add(lmset,lment);
-	    break;
-	  }
-      }
-      break;
     }
   }
 
-  MSTK_free(gids);
-  
   return 1;
 }
   
