@@ -66,12 +66,16 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
 
+  DebugWait=0;
+  while (DebugWait);
+
   MSTK_Mesh_Distribute(&mymesh, dim, 1, 1, rank, num, MPI_COMM_WORLD);
 
   /* Can just do this too */
 
+  /*
   MSTK_Mesh_Read_Distribute(&mymesh,filename,2,1,1,rank,num,MPI_COMM_WORLD);
-
+  */
 
 
   /* Simulate a diagonal shock front moving across the mesh */
