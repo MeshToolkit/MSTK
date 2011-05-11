@@ -157,6 +157,12 @@ void MESH_Delete(Mesh_ptr mesh) {
   }
 
 #ifdef MSTK_HAVE_MPI
+  /*
+    FOR NOW IT SEEMS THAT GHOST REGIONS ARE ALSO ENCOUNTERED WHEN
+    GOING THROUGH THE REGULAR MESH AND SO WE DON'T NEED TO DELETE THEM
+    SEPARATELY. NOT SURE THAT IT IS THE BEHAVIOR WE WANT */
+
+  /*
   if (mesh->ghregion) {
     i = 0;
     while ((ghr = List_Next_Entry(mesh->ghregion,&i))) {
@@ -185,6 +191,7 @@ void MESH_Delete(Mesh_ptr mesh) {
     }
     List_Delete(mesh->ghvertex);
   }
+  */
 #endif /* MSTK_HAVE_MPI */
   
   if (mesh->AttribList) {
