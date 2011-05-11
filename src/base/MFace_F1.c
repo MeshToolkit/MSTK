@@ -84,6 +84,11 @@ extern "C" {
     MF_Set_Edges_F1F3(f,n,e,dir);
   }
 
+
+  void MF_Rem_Edge_F1(MFace_ptr f, MEdge_ptr e) {
+    MF_Rem_Edge_F1F3(f,e);
+  }
+
   void MF_Replace_Edges_F1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges) {
     MF_Replace_Edges_F1F3(f,nold,oldedges,nnu,nuedges);
   }
@@ -99,6 +104,13 @@ extern "C" {
   void MF_Replace_Vertex_F1(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",WARN);
+#endif
+  }
+
+  void MF_Rem_Vertex_F1(MFace_ptr f, MVertex_ptr v) {
+#ifdef DEBUG
+    MSTK_Report("MF_Rem_Vertex_F1",
+		"Function call not suitable for this representation",WARN);
 #endif
   }
 

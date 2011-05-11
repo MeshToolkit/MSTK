@@ -55,6 +55,13 @@ extern "C" {
 #endif
   }
 
+  void MF_Rem_Edge_R2(MFace_ptr f, MEdge_ptr e) {
+#ifdef DEBUG
+    MSTK_Report("MF_Rem_Edge_R2",
+		"Function call not suitable for this representation",WARN);
+#endif
+  }
+
   void MF_Replace_Edges_R2(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edges_R2",
