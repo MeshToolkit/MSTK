@@ -24,10 +24,21 @@ extern "C" {
 
   int MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int ring, 
 			  int with_attr) {
-    int i, j, natt, nset;
+    int i, j, natt, nset, idx;
     char attr_name[256];
-    MAttrib_ptr attrib;
+    MAttrib_ptr attrib, g2latt, l2gatt;
     MSet_ptr mset;
+    MVertex_ptr mv;
+    MEdge_ptr me;
+    MFace_ptr mf;
+    MRegion_ptr mr;
+
+
+    /* Create an attribute to keep track of the connections from
+       entities of the global mesh to entities of submeshes */
+
+    g2latt = MAttrib_New(mesh,"Global2Local",POINTER,MALLTYPE);
+
 
     /* Split the mesh into 'num' submeshes */
 
@@ -45,29 +56,111 @@ extern "C" {
 
     }
 
-    if(!with_attr) 
-      return 1;
+    if (with_attr) {
 
-    /* Also transmit attributes to the partitions */
-
-    natt = MESH_Num_Attribs(mesh);
-    for(j = 0; j < natt; j++) {
-      attrib = MESH_Attrib(mesh,j);
-      MAttrib_Get_Name(attrib,attr_name);
-      for(i = 0; i < num; i++)
-	MESH_CopyAttr(mesh,submeshes[i],attr_name);
-    }
-
-    /* Split the sets into subsets and send them to the partitions */
-    nset = MESH_Num_MSets(mesh);
-    for (j = 0; j < nset; j++) {
-      mset = MESH_MSet(mesh,j);
+      /* Also transmit attributes to the partitions */
       
-      for (i = 0; i < num; i++)
-	MESH_CopySet(mesh,submeshes[i],mset);
+      natt = MESH_Num_Attribs(mesh);
+      for(j = 0; j < natt; j++) {
+	attrib = MESH_Attrib(mesh,j);
+	if (attrib == g2latt) continue;
+	
+	MAttrib_Get_Name(attrib,attr_name);
+	for(i = 0; i < num; i++)
+	  MESH_CopyAttr(mesh,submeshes[i],attr_name);
+      }
+      
+      /* Split the sets into subsets and send them to the partitions */
+      nset = MESH_Num_MSets(mesh);
+      for (j = 0; j < nset; j++) {
+	mset = MESH_MSet(mesh,j);
+	
+	for (i = 0; i < num; i++)
+	  MESH_CopySet(mesh,submeshes[i],mset);
+      }
+      
     }
-    
 
+
+    /* Remove the temporary Global2Local and Local2Global attributes */
+
+    /* Remove these attributes from main mesh */
+
+    idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh,&idx)))
+      MEnt_Rem_AllAttVals(mv);
+    
+    idx = 0;
+    while ((me = MESH_Next_Edge(mesh,&idx)))
+      MEnt_Rem_AllAttVals(me);
+    
+    idx = 0;
+    while ((mf = MESH_Next_Face(mesh,&idx)))
+      MEnt_Rem_AllAttVals(mf);
+    
+    idx = 0;
+    while ((mr = MESH_Next_Region(mesh,&idx)))
+      MEnt_Rem_AllAttVals(mr);
+    
+    MAttrib_Delete(g2latt);
+
+
+    /* Remove these attributes from submeshes */
+
+    for (i = 0; i < num; i++) {
+      
+      l2gatt = MESH_AttribByName(submeshes[i],"Local2Global");
+      
+      if (l2gatt) {
+	
+	idx = 0;
+	while ((mv = MESH_Next_Vertex(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(mv,l2gatt);
+	
+	idx = 0;
+	while ((me = MESH_Next_Edge(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(me,l2gatt);
+	
+	idx = 0;
+	while ((mf = MESH_Next_Face(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(mf,l2gatt);
+	
+	idx = 0;
+	while ((mr = MESH_Next_Region(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(mr,l2gatt);
+	
+	MAttrib_Delete(l2gatt);
+	
+      } /* if (l2gatt) */
+
+
+      g2latt = MESH_AttribByName(submeshes[i],"Global2Local");
+      
+      if (g2latt) {
+	
+	idx = 0;
+	while ((mv = MESH_Next_Vertex(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(mv,g2latt);
+	
+	idx = 0;
+	while ((me = MESH_Next_Edge(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(me,g2latt);
+	
+	idx = 0;
+	while ((mf = MESH_Next_Face(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(mf,g2latt);
+	
+	idx = 0;
+	while ((mr = MESH_Next_Region(submeshes[i],&idx)))
+	  MEnt_Rem_AttVal(mr,g2latt);
+	
+	MAttrib_Delete(g2latt);
+	
+      } /* if (g2latt) */
+
+    } /* for (i = 0; i < num; i++) */
+
+    
     printf("global mesh has been partitioned into %d parts\n",num);
     return 1;
   }
@@ -94,6 +187,11 @@ extern "C" {
     for(i = 0; i < natt; i++) {
       attrib = MESH_Attrib(mesh,i);
       MAttrib_Get_Name(attrib,attr_name);
+      /*
+      fprintf(stderr,"Sending attribute %s of type %d of entity dim %d \n",
+	      attr_name, MAttrib_Get_Type(attrib),
+	      MAttrib_Get_EntDim(attrib));
+      */
       MESH_SendAttr(mesh,attr_name,rank,comm);
     }
 
@@ -141,7 +239,7 @@ extern "C" {
     }
 
 
-    /* Receive attributes as well */
+    /* Receive mesh sets as well */
 
     nset = MESH_Num_MSets(mesh);
     for(i = 0; i < nset; i++) {
@@ -197,6 +295,8 @@ extern "C" {
       *mesh = submeshes[0];
       for(i = 1; i < num; i++) {
 	MSTK_SendMesh(submeshes[i],i,with_attr,comm);
+
+	MESH_Delete(submeshes[i]);  
       }
 
     }
