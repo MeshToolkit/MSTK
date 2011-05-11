@@ -1,3 +1,14 @@
+Changes v1.81
+
+Bug fixes / Improvements to parallel functionality
+
+Bug fixes to build system
+
+Added code to Collapse edges in 3D
+
+Added code to merge faces 
+
+
 Changes v1.8
 
 * Parallel Mesh functionality
