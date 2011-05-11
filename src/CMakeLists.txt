@@ -4,8 +4,6 @@ foreach (FILE ${FILES})
   set (basefiles ${basefiles} ${FILE})
 endforeach ()
 
-# for some reason I am not able to get this change to stick
-
 file (GLOB FILES hilev/*.c)
 foreach (FILE ${FILES})
   get_filename_component(RELFILE ${FILE} NAME) 
