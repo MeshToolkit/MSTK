@@ -17,7 +17,11 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
     return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts);
   }
   else if (strncmp(format,"exodusii",8) == 0) {
+#ifdef ENABLE_ExodusII
     return MESH_ExportToExodusII(mesh,filename,natt,attnames,opts);
+#else
+    MSTK_Report("MESH_ExportFromFile","Exodus II file support not built in",ERROR);
+#endif
   } 
   else {
     MSTK_Report("MESH_ExportFromFile","Unsupported export format",ERROR);

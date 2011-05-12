@@ -13,7 +13,11 @@ int MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, const char *format)
     return MESH_ImportFromGMV(mesh,filename);
   }
   else if (strncmp(format,"exo",3) == 0) {
+#ifdef ENABLE_ExodusII
     return MESH_ImportFromExodusII(mesh,filename);
+#else
+    MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",ERROR);
+#endif
   } 
   else {
     MSTK_Report("MESH_ImportFromFile","Unsupported import format",ERROR);
