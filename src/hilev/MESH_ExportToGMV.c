@@ -64,7 +64,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   time_t                ctime;
 
   int			rtmpl[5][8] =   {{0,2,1,3,-1,-1,-1,-1},
-					 {1,2,3,4,0,-1,-1,-1},
+					 {0,3,2,1,4,-1,-1,-1},
 					 {3,4,5,0,1,2,-1,-1},
 					 {-1,-1,-1,-1,-1,-1,-1,-1},
 					 {4,5,6,7,0,1,2,3}};
