@@ -11,8 +11,11 @@ extern "C" {
 
 
   List_ptr MR_Vertices_FNR3R4(MRegion_ptr r) {
-    int i, j, n, nf, mkr, found, diradj0=0, diropp=0, fdir, fdir0, fecheck;
+    int i, j, n, ne, nf, mkr, found, idx;
+    int diradj0=0, diropp=0, fdir, fdir0, fdir1, fecheck;
+    int nquads, ntris, itri0, itri1, iquad0;
     MFace_ptr face=NULL, face0=NULL, fadj0=NULL, fopp=NULL;
+    MFace_ptr quad0=NULL, tri0=NULL, tri1=NULL;
     MEdge_ptr edge, fedge00, upedge;
     MVertex_ptr vert, rv0, rvopp0=NULL;
     List_ptr rvertices, fverts, fedges0, adjfedges;
@@ -27,20 +30,97 @@ extern "C" {
       face0 = List_Entry(adj->rfaces,0); /* first face */
       fdir0 = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
       rvertices = MF_Vertices(face0,!fdir0,0);
-      n = 3;
 
       face = List_Entry(adj->rfaces,1);
       fverts = MF_Vertices(face,1,0);
-      for (i = 0; i < 3 && n < 4; i++) { 
+      for (i = 0; i < 3; i++) { 
 	vert = List_Entry(fverts,i);
 	if (!List_Contains(rvertices,vert)) {
 	  List_Add(rvertices,vert);
-	  n++;
+	  break;
 	}
       }
       List_Delete(fverts);
 
       return rvertices;
+      break;
+    case 5:
+      nquads = 0; ntris = 0;
+      tri0 = NULL; itri0 = -1;
+      tri1 = NULL; itri1 = -1;
+      quad0 = NULL; iquad0 = -1;
+
+      for (i = 0; i < nf; i++) {
+	face = List_Entry(adj->rfaces,i);
+	ne = MF_Num_Edges(face);
+	if (ne == 3) {
+	  ntris++;
+	  if (!tri0) {
+	    tri0 = face;
+	    itri0 = i;
+	  }
+	  else {
+	    tri1 = face;
+	    itri1 = i;
+	  }
+	}
+	else if (ne == 4) {
+	  nquads++;
+	  if (!quad0) {
+	    quad0 = face;
+	    iquad0 = i;
+	  }
+	}
+      }
+      
+      if (nquads == 3 && ntris == 2) {
+
+	fdir0 = adj->fdirs[0] & itri0;    /* Sense in which face is used in region */
+	rvertices = MF_Vertices(tri0,!fdir0,0);
+
+	/* find the vertical edge between vertex 0 of bottom triangle and
+	   top triangle */
+
+	fdir1 = adj->fdirs[0] & itri1;
+	fverts = MF_Vertices(tri1,fdir1,0);
+
+	rv0 = List_Entry(rvertices,0); /* first vtx of region & bottom face */
+
+	for (i = 0; i < 3; i++) {
+	  vert = List_Entry(fverts,i);
+
+	  if (MVs_CommonEdge(rv0,vert)) {
+	    List_Add(rvertices,vert);
+	    List_Add(rvertices,List_Entry(fverts,(i+1)%3));
+	    List_Add(rvertices,List_Entry(fverts,(i+2)%3));
+	  }
+	}
+
+	List_Delete(fverts);
+
+	return rvertices;
+      }
+      else if (nquads == 1 && ntris == 4) {
+
+	fdir0 = adj->fdirs[0] & iquad0;    /* Sense in which face is used in region */
+	rvertices = MF_Vertices(quad0,!fdir0,0);
+
+	fverts = MF_Vertices(tri0,1,0);
+
+	for (i = 0; i < 3; i++) {
+	  vert = List_Entry(fverts,i);
+	  if (!List_Contains(rvertices,vert)) { /* found apex vtx of pyramid */
+	    List_Add(rvertices,vert);
+	    n++;
+	    break;
+	  }
+	}
+
+	List_Delete(fverts);
+	  
+	return rvertices;
+      }
+
       break;
     case 6: /* Hex ? */
 
@@ -74,7 +154,8 @@ extern "C" {
       /* Get the face adjacent to edge 0 of face 0 and also the
 	 opposite face, a face that has no edge common face 0 */
 
-      fopp = NULL; fadj0 = NULL;
+      fopp = NULL; fadj0 = NULL; 
+      found = 0;
       for (i = 1; i < nf; i++) {
 	face = List_Entry(adj->rfaces,i);
 
@@ -143,8 +224,7 @@ extern "C" {
     }
 
 
-    /* Pyramids, Prisms, General Polyhedra */
-    /* We should do separate procedures for pyramids and prisms */
+    /* General Polyhedra */
     mkr = MSTK_GetMarker();
     
     /* Add vertices of first face */
