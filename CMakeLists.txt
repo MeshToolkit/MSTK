@@ -14,7 +14,7 @@ project (MSTK)
 cmake_minimum_required(VERSION 2.8)
 
 set(MSTK_VERSION_MAJOR 1)
-set(MSTK_VERSION_MINOR 8)
+set(MSTK_VERSION_MINOR 82dev)
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
@@ -281,6 +281,14 @@ INSTALL(FILES
 endif ()
 
 # Don't know how to export the include files locations to mstk.cmake
+
+
+
+#############################################################################
+# Utilities
+###############################################################################
+
+add_subdirectory(utils)
 
 
 #############################################################################
