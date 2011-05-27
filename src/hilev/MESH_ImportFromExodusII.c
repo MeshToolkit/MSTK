@@ -549,7 +549,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	solid_elems = 1;
       else if (strncasecmp(elem_type,"NSIDED",6) == 0 ||
 	       strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
-	       strncasecmp(elem_type,"QUAD",4) == 0)
+	       strncasecmp(elem_type,"QUAD",4) == 0 ||
+	       strncasecmp(elem_type,"SHELL",5) == 0)
 	surf_elems = 1;      
     }
 
@@ -838,7 +839,9 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
       }
       else if (strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
-	       strncasecmp(elem_type,"QUAD",4) == 0) {
+	       strncasecmp(elem_type,"QUAD",4) == 0 ||
+	       strncasecmp(elem_type,"SHELL3",6) == 0 ||
+	       strncasecmp(elem_type,"SHELL4",6) == 0) {
 	
 	/* Get the connectivity of all elements in this block */
 	
