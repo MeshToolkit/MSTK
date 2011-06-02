@@ -23,6 +23,9 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
     MSTK_Report("MESH_ExportFromFile","Exodus II file support not built in",ERROR);
 #endif
   } 
+  else if (strncmp(format, "stl", 3) == 0) {
+    return MESH_ExportToSTL(mesh,filename);
+  }
   else {
     MSTK_Report("MESH_ExportFromFile","Unsupported export format",ERROR);
     return 0;
