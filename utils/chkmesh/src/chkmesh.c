@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
 
   MSTK_Init();
 
+  fprintf(stderr,"\n\nChecking mesh %s\n\n",infname);
 
   mesh = MESH_New(UNKNOWN_REP);
   ok = MESH_InitFromFile(mesh,infname);
@@ -58,18 +59,19 @@ int main(int argc, char **argv) {
   }
 
 
+  fprintf(stderr,"Checking topological validity of mesh.....");
   status = MESH_CheckTopo(mesh);
   if (status == 1) 
-    fprintf(stderr,"Mesh topology is valid\n");
+    fprintf(stderr,"OK\n");
   else
-    fprintf(stderr,"Mesh topology is not valid\n");
+    fprintf(stderr,"FAILED\n");
 
 
   if (MESH_Num_Regions(mesh) == 0) {
-    printf("Only checking geometric validity of solid meshes\n");
-    exit(-1);
+    fprintf(stderr,"Geometric validity checks present only for solid meshes\n");
   }
 
+  fprintf(stderr,"Checking geometric validity of elements....");
   valatt = MAttrib_New(mesh,"valatt",INT,MALLTYPE);
 
   idx = 0;
@@ -90,7 +92,8 @@ int main(int argc, char **argv) {
       vol = Tet_Volume(rxyz);
       if (vol <= 0.0) {
 	if (firstwarn) {
-	  fprintf(stderr,"Invalid Element - ID %d\n",rid);
+          fprintf(stderr,"FAILED\n");
+	  fprintf(stderr,"First Invalid Element - ID %d\n",rid);
 	  fprintf(stderr,"Volume = %lf\n",vol);
 	  MR_Print(mr,3);
 	  fprintf(stderr,"\n\n\n Skipping printout of other invalid elements\n\n\n");
@@ -134,7 +137,8 @@ int main(int argc, char **argv) {
 
       if (vol <= 0.0) {
 	if (firstwarn) {
-	  fprintf(stderr,"Invalid element - ID %d\n",rid);
+          fprintf(stderr,"FAILED\n");
+	  fprintf(stderr,"First invalid element - ID %d\n",rid);
 	  fprintf(stderr,"Invalid tet in decomposition of polyhedral element?\n");
 	  fprintf(stderr,"Perhaps a polyhedral face is severely distorted?\n");
 	  MR_Print(mr,3);
@@ -159,7 +163,18 @@ int main(int argc, char **argv) {
   }
 
 
-  if (!status) {
+  if (status)
+     fprintf(stderr,"OK\n");
+
+  if (status) {
+    fprintf(stderr,"\n\n");
+    fprintf(stderr,"***************\n");
+    fprintf(stderr,"Mesh is A-OK!!\n");
+    fprintf(stderr,"***************\n");
+    fprintf(stderr,"\n\n");
+    exit(0);
+  }
+  else {
     if (nbad) {
       fprintf(stderr,"Total number of bad elements %-d\n\n",nbad);
 
@@ -170,15 +185,7 @@ int main(int argc, char **argv) {
       exit(-1);
     }
   }
-  else {
-    fprintf(stderr,"\n\n");
-    fprintf(stderr,"***************\n");
-    fprintf(stderr,"Mesh is A-OK!!\n");
-    fprintf(stderr,"***************\n");
-    fprintf(stderr,"\n\n");
-  }
 
-  exit(0);
 }
 
 
