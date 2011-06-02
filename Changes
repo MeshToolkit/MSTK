@@ -1,3 +1,17 @@
+Changes v1.82
+
+Bug fix in ME_Faces_R1R2
+
+Can read R1 type representation into F1 type mesh
+
+Added utils with meshconvert and chkmesh
+
+Removed use of unistd.h from MESH_ExportToDXBin to enable Windows compile
+
+Fixed GMV export of Prisms and Pyramids
+
+
+
 Changes v1.81
 
 Bug fixes / Improvements to parallel functionality
