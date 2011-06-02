@@ -82,10 +82,12 @@ extern "C" {
 
       vfaces1 = MV_Faces(e->vertex[0]);
 
-      idx = 0;
-      while ((face = List_Next_Entry(vfaces1,&idx))) {
-	if (MF_UsesEntity(face,e->vertex[1],MVERTEX))
-	  List_Add(efaces,face);
+      if (vfaces1) {
+	idx = 0;
+	while ((face = List_Next_Entry(vfaces1,&idx))) {
+	  if (MF_UsesEntity(face,e->vertex[1],MVERTEX))
+	    List_Add(efaces,face);
+	}
       }
       
     }
