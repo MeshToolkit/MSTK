@@ -1976,7 +1976,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  else {
 
-	    MSTK_Report("MESH_InitFromFile","Need to convert edge list to vertex list",FATAL);
+	    MSTK_Report("MESH_InitFromFile","Need to convert edge list to vertex list",ERROR);
+	    fclose(fp);
+	    return 0;
 
 	  }
 	  
@@ -2174,7 +2176,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  else {
 
-	    MSTK_Report("MESH_InitFromFile","Need to convert face list to vertex list", FATAL);
+	    MSTK_Report("MESH_InitFromFile","Need to convert face list to vertex list", ERROR);
+	    fclose(fp);
+	    return 0;
 
 	  }
 	  
