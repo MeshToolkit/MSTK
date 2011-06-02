@@ -109,11 +109,11 @@ int main(int argc, char *argv[]) {
     switch(inmeshformat) {
     case GMV:
       fprintf(stderr,"Importing mesh from GMV file...");
-      ok = MESH_ImportFromGMV(mesh,infname);
+      ok = MESH_ImportFromFile(mesh,infname,"gmv");
       break;
     case EXODUSII:
       fprintf(stderr,"Importing mesh from ExodusII file...");
-      ok = MESH_ImportFromExodusII(mesh,infname);
+      ok = MESH_ImportFromFile(mesh,infname,"exodusii");
       break;
     case CGNS:
       fprintf(stderr,"Cannot import mesh from CGNS format. ");
@@ -166,11 +166,11 @@ int main(int argc, char *argv[]) {
     switch(outmeshformat) {
     case GMV:
       fprintf(stderr,"Exporting mesh to GMV format...");
-      ok = MESH_ExportToGMV(mesh,outfname,-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"gmv"-1,NULL,NULL);
       break;
     case EXODUSII:
       fprintf(stderr,"Exporting mesh to ExodusII format...");
-      ok = MESH_ExportToExodusII(mesh,outfname,-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"exodusii"-1,NULL,NULL);
       break;
     case CGNS:
       fprintf(stderr,"Cannot export to CGNS format. ");
@@ -183,11 +183,11 @@ int main(int argc, char *argv[]) {
       break;
     case X3D:
       fprintf(stderr,"Exporting mesh to FLAG/X3D format...");
-      ok = MESH_ExportToFLAGX3D(mesh,outfname,-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"flag",-1,NULL,NULL);
       break;
     case STL:
       fprintf(stderr,"Exporting mesh to STL format...");
-      ok = MESH_ExportToSTL(mesh, outfname);
+      ok = MESH_ExportToFile(mesh, outfname,"stl",-1,NULL,NULL);
       break;
     case DX:
       fprintf(stderr,"Exporting mesh to DX format...");
