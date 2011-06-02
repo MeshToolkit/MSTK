@@ -166,11 +166,11 @@ int main(int argc, char *argv[]) {
     switch(outmeshformat) {
     case GMV:
       fprintf(stderr,"Exporting mesh to GMV format...");
-      ok = MESH_ExportToFile(mesh,outfname,"gmv"-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"gmv",-1,NULL,NULL);
       break;
     case EXODUSII:
       fprintf(stderr,"Exporting mesh to ExodusII format...");
-      ok = MESH_ExportToFile(mesh,outfname,"exodusii"-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL);
       break;
     case CGNS:
       fprintf(stderr,"Cannot export to CGNS format. ");
