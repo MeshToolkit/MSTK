@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include "MSTK.h"
 
 void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
@@ -431,21 +430,21 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
 
   objnum = 1;
   fprintf(fout,"object %d class array type float rank 1 shape 3 items %d %3s binary\n",objnum++,np,xsb);
-  fprintf(fout,"data file %s/%s,0 \n",getcwd(NULL,128),datfname);
+  fprintf(fout,"data file %s,0 \n",datfname);
   fprintf(fout," attribute \"dep\" string \"positions\" \n\n");
   offset = 3*np*sizeof(float);
 
 
   if (nbtris) {
     fprintf(fout,"object %d class array type int rank 1 shape 3 items %d %3s binary\n",objnum++,nbtris,xsb);
-    fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+    fprintf(fout,"data file %s,%d\n",datfname,offset);
     fprintf(fout,"attribute \"element type\" string \"triangles\"\n");
     fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
     offset += 3*nbtris*sizeof(int);
     
     if (haveModel) {
       fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,nbtris,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"dep\" string \"connections\"\n");
       offset += nbtris*sizeof(float);
     }
@@ -453,14 +452,14 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
   
   if (nbquads) {
     fprintf(fout,"object %d class array type int rank 1 shape 4 items %d %3s binary\n",objnum++,nbquads,xsb);
-    fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+    fprintf(fout,"data file %s,%d\n",datfname,offset);
     fprintf(fout,"attribute \"element type\" string \"quads\"\n");
     fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
     offset += 4*nbquads*sizeof(int);
     
     if (haveModel) {
       fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,nbquads,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"dep\" string \"connections\"\n");
       offset += nbquads*sizeof(float);
     }
@@ -469,23 +468,23 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
   
   if (ngenf) {
     fprintf(fout,"object %d class array type int rank 0 items %d %3s binary\n",objnum++,nedges,xsb);
-    fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+    fprintf(fout,"data file %s,%d\n",datfname,offset);
     fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
     offset += nedges*sizeof(int);
     
     fprintf(fout,"object %d class array type int rank 0 items %d %3s binary\n",objnum++,ngenf,xsb);
-    fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+    fprintf(fout,"data file %s,%d\n",datfname,offset);
     fprintf(fout,"attribute \"ref\" string \"edges\"\n\n");
     offset += ngenf*sizeof(int);
     
     fprintf(fout,"object %d class array type int rank 0 items %d %3s binary\n",objnum++,ngenf,xsb);
-    fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+    fprintf(fout,"data file %s,%d\n",datfname,offset);
     fprintf(fout,"attribute \"ref\" string \"loops\"\n\n");
     offset += ngenf*sizeof(int);
 
     if (haveModel) {
       fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,ngenf,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"dep\" string \"faces\"\n\n");
       offset += ngenf*sizeof(float);
     }
@@ -495,14 +494,14 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
   if (nreg) {
     if (ntets) {
       fprintf(fout,"object %d class array type int rank 1 shape 4 items %d %3s binary\n",objnum++,ntets,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"element type\" string \"tetrahedra\"\n");
       fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
       offset += 4*ntets*sizeof(int);
 
       if (haveModel) {
 	fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,ntets,xsb);
-	fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+	fprintf(fout,"data file %s,%d\n",datfname,offset);
 	fprintf(fout,"attribute \"dep\" string \"connections\"\n");
 	offset += ntets*sizeof(float);
       }
@@ -510,14 +509,14 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
 
     if (npyrs) {
       fprintf(fout,"object %d class array type int rank 1 shape 8 items %d %3s binary\n",objnum++,npyrs,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"element type\" string \"cubes\"\n");
       fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
       offset += 8*npyrs*sizeof(int);
 
       if (npyrs && haveModel) {
 	fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,npyrs,xsb);
-	fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+	fprintf(fout,"data file %s,%d\n",datfname,offset);
 	fprintf(fout,"attribute \"dep\" string \"connections\"\n");
 	offset += npyrs*sizeof(float);
       }
@@ -525,14 +524,14 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
 
     if (nprisms) {
       fprintf(fout,"object %d class array type int rank 1 shape 8 items %d %3s binary\n",objnum++,nprisms,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"element type\" string \"cubes\"\n");
       fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
       offset += 8*nprisms*sizeof(int);
 
       if (nprisms && haveModel) {
 	fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,nprisms,xsb);
-	fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+	fprintf(fout,"data file %s,%d\n",datfname,offset);
 	fprintf(fout,"attribute \"dep\" string \"connections\"\n");
 	offset += nprisms*sizeof(float);
       }
@@ -540,14 +539,14 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
 
     if (nhexes) {
       fprintf(fout,"object %d class array type int rank 1 shape 8 items %d %3s binary\n",objnum++,nhexes,xsb);
-      fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+      fprintf(fout,"data file %s,%d\n",datfname,offset);
       fprintf(fout,"attribute \"element type\" string \"cubes\"\n");
       fprintf(fout,"attribute \"ref\" string \"positions\"\n\n");
       offset += 8*nhexes*sizeof(int);
 
       if (nhexes && haveModel) {
 	fprintf(fout,"object %d class array type float rank 0 items %d %3s binary\n",objnum++,nhexes,xsb);
-	fprintf(fout,"data file %s/%s,%d\n",getcwd(NULL,128),datfname,offset);
+	fprintf(fout,"data file %s,%d\n",datfname,offset);
 	fprintf(fout,"attribute \"dep\" string \"connections\"\n");
 	offset += nhexes*sizeof(float);
       }
