@@ -1560,6 +1560,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   MAttrib_ptr attrib;
   MType attent;
   MAttType atttype;
+  RepType file_reptype;
 
 
   if (!(fp = fopen(filename,"r"))) {
@@ -1591,7 +1592,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   found = 0;
   for (i = 0; i < MSTK_MAXREP; i++) {
     if (strncmp(inp_rtype,MESH_rtype_str[i],2) == 0) {
-      MESH_SetRepTypeIni(mesh, MESH_rtype[i]);
+      file_reptype = MESH_rtype[i];
       found = 1;
       break;
     }
@@ -1607,10 +1608,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   /* For now, the reduced representations only allow region and
      face elements - no edge elements are allowed */
 
-  if (mesh->reptype >= R1 && mesh->reptype <= R4) {
+  if (file_reptype >= R1 && file_reptype <= R4) {
     if (mesh->ne)
       MSTK_Report("Mesh_InitFromFile",
-		  "Representation does not allow edges",WARN);
+		  "Representation does not allow edges to be specified",WARN);
   }
 
 
@@ -1671,6 +1672,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   if (strncmp(temp_str,"adjvertices",11) == 0) {
     adjv_flag = 1;
     if (mesh->reptype == R2 || mesh->reptype == R4) {
+
+      /* Mesh representation supports storing of adjacent vertex info */
+
       for (i = 0; i < NV; i++) {
 	mv = List_Entry(mesh->mvertex, i);
 	status = fscanf(fp,"%d",&nav);
@@ -1704,6 +1708,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
     }
     else {
+
+      /* Mesh representation does not support storing of adjacent
+	 vertex information. Just read and discard */
+
       for (i = 0; i < NV; i++) {
 	status = fscanf(fp,"%d",&nav);
 	if (status == EOF)
@@ -1723,7 +1731,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   else {
     adjv_flag = 0;
-    if (mesh->reptype == R2 || mesh->reptype == R4) {
+    if (file_reptype == R2 || file_reptype == R4) {
       MSTK_Report("MESH_InitFromFile",
 		  "Expected adjacent vertex information",ERROR);
     }
@@ -1753,6 +1761,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     mesh->medge = List_New(NE);
 
     if (mesh->reptype >= F1 && mesh->reptype <= F4) {
+
+      /* Mesh representation supports edges */
+
       for (i = 0; i < NE; i++) {
 	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
 	if (status == EOF)
@@ -1781,6 +1792,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
     }
     else {
+
+      /* Mesh representation does not support edges. Read and discard */
+
       for (i = 0; i < NE; i++) {
 	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
 	if (status == EOF)
@@ -1795,7 +1809,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     processed_edges = 1;
   }
   else {
-    if (mesh->reptype >= F1 && mesh->reptype <= F4) {
+    if (file_reptype >= F1 && file_reptype <= F4) {
       MSTK_Report("MESH_InitFromFile","Expected edge information",ERROR);
       return 0;
     }
@@ -1819,6 +1833,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
   /* FACE DATA */
 
+  /* It is possible for someone to specify faces for a solid mesh specified 
+   in the R1 format - do we have to idiot-proof? */
+
   if (strncmp(temp_str,"face",4) == 0) {
     if (strncmp(temp_str,"faces",5) != 0) 
       MSTK_Report("MESH_InitFromFile","Expected keyword \"faces\"",ERROR);
@@ -1831,8 +1848,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       MSTK_Report("MESH_InitFromFile",
 		  "Premature end of file while reading faces",FATAL);
 
-    if (strncmp(fltype_str,"vertex",6) == 0) {      
-      if (mesh->reptype >= R1 && mesh->reptype <= R4) {
+    if (file_reptype >= R1 && file_reptype <= R4) {
+
+      if (strncmp(fltype_str,"vertex",6) == 0) {      
+
+	/* Mesh representation supports faces for surface meshes */
 
 	fverts = NULL;
 	for (i = 0; i < NF; i++) {
@@ -1899,9 +1919,11 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
         fclose(fp);
 	return 0;
       }
+
     }
-    else if (strncmp(fltype_str,"edge",4) == 0) {
-      if (mesh->reptype >= F1 && mesh->reptype <= F4) { 
+    else if (file_reptype >= F1 && file_reptype <= F4) { 
+
+      if (strncmp(fltype_str,"edge",4) == 0) {
 
 	fedges = NULL;	fedirs = NULL;
 	for (i = 0; i < NF; i++) {
@@ -1947,7 +1969,16 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 #endif
 	  }
 	  
-	  MF_Set_Edges(mf,nfe,fedges,fedirs);
+	  if (mesh->reptype >= F1 && mesh->reptype <= F4) {
+
+	    MF_Set_Edges(mf,nfe,fedges,fedirs);
+
+	  }
+	  else {
+
+	    MSTK_Report("MESH_InitFromFile","Need to convert edge list to vertex list",FATAL);
+
+	  }
 	  
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
@@ -1971,13 +2002,13 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
-		    "Expect face description in terms of vertices",ERROR);
+		    "Expect face description in terms of edges",ERROR);
 	return 0;
       }
     }
   }
   else {
-    if (mesh->reptype >= F1 && mesh->reptype <= F4) {
+    if (file_reptype >= F1 && file_reptype <= F4) {
       MSTK_Report("MESH_InitFromFile","Expected face information",ERROR);
       fclose(fp);
       return 0;
@@ -2019,8 +2050,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       MSTK_Report("MESH_InitFromFile",
 		  "Error in reading region data",FATAL);
 
-    if (strncmp(rltype_str,"vertex",6) == 0) {
-      if (mesh->reptype == R1 || mesh->reptype == R2) {
+    if (file_reptype == R1 || file_reptype == R2) {
+      if (strncmp(rltype_str,"vertex",6) == 0) {
 	rverts = NULL;
 	for (i = 0; i < NR; i++) {
 	  mr = MR_New(mesh);
@@ -2084,13 +2115,13 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
-		    "Expected region description in terms of faces",ERROR);
+		    "Expected region description in terms of faces",FATAL);
         fclose(fp);
 	return 0;
       }
     }
-    else if (strncmp(rltype_str,"face",4) == 0) {
-      if (mesh->reptype != R1 && mesh->reptype != R2) {
+    else {
+      if (strncmp(rltype_str,"face",4) == 0) {
 	rfaces = NULL;
 	rfdirs = NULL;
 	for (i = 0; i < NR; i++) {
@@ -2104,7 +2135,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
 			"Error in reading region data",FATAL);
-
+	  
 	  if (rfaces) {
 	    if (nrf > max_nrf) {
 	      max_nrf = nrf;
@@ -2117,7 +2148,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    rfaces = MSTK_malloc(nrf*sizeof(MFace_ptr));
 	    rfdirs = MSTK_malloc(nrf*sizeof(int));
 	  }
-	
+	  
 	  for (j = 0; j < nrf; j++) {
 	    status = fscanf(fp,"%d",&fid);
 	    if (status == EOF)
@@ -2127,7 +2158,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    else if (status == 0)
 	      MSTK_Report("MESH_InitFromFile",
 			  "Error in reading region data",FATAL);
-
+	    
 	    rfdirs[j] = fid > 0 ? 1 : 0;
 	    rfaces[j] = List_Entry(mesh->mface,abs(fid)-1);
 #ifdef DEBUG
@@ -2135,19 +2166,28 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	      MSTK_Report("MESH_InitFromFile","Mesh face ID mismatch",ERROR);
 #endif
 	  }
-	  
-	  MR_Set_Faces(mr,nrf,rfaces,rfdirs);
+
+	  if (mesh->reptype == R1 || mesh->reptype == R2) {
+
+	    MR_Set_Faces(mr,nrf,rfaces,rfdirs);
+
+	  }
+	  else {
+
+	    MSTK_Report("MESH_InitFromFile","Need to convert face list to vertex list", FATAL);
+
+	  }
 	  
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading faces",FATAL);
+			  "Premature end of file while reading faces",FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
 			"Error in reading region data",FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
-
+	  
 	  MR_Set_GEntID(mr,gid);
 	  
 	  MR_Set_ID(mr,i+1);
@@ -2156,15 +2196,15 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_free(rfaces);
 	  MSTK_free(rfdirs);
 	}
-
+	
 	processed_regions = 1;
       }
-    }
-    else {
-      MSTK_Report("MESH_InitFromFile",
-		  "Expected region description in terms of vertices",ERROR);
-      fclose(fp);
-      return 0;
+      else {
+	MSTK_Report("MESH_InitFromFile",
+		    "Expected region description in terms of vertices",ERROR);
+	fclose(fp);
+	return 0;
+      }
     }
   }
 
