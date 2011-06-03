@@ -205,7 +205,27 @@ void MESH_Delete(Mesh_ptr mesh) {
 }
 
 int MESH_SetRepType(Mesh_ptr mesh, RepType type) {
-  mesh->reptype = type;
+
+  if (mesh->reptype != type) {
+    mesh->reptype = type;
+
+    if (type >= R1 && type <= R4) 
+      mesh->hedge = Hash_New(0, 1);
+    else {
+      if (mesh->hedge)
+	Hash_Delete(mesh->hedge);
+      mesh->hedge = (Hash_ptr) NULL;
+    }
+ 
+    if (type >= R1 && type <= R2) 
+      mesh->hface = Hash_New(0, 1);
+    else {
+      if (mesh->hface)
+	Hash_Delete(mesh->hface);
+      mesh->hface = (Hash_ptr) NULL;
+    }
+  }
+
   return 1;
 }
 
@@ -1596,7 +1616,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       found = 1;
 
       if (mesh->reptype == UNKNOWN_REP)
-	mesh->reptype = file_reptype;
+	MESH_SetRepType(mesh,file_reptype); /* function does additional things
+					       that a simple assignement to
+					       mesh->reptype does not */
       break;
     }
   }
