@@ -1594,6 +1594,9 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (strncmp(inp_rtype,MESH_rtype_str[i],2) == 0) {
       file_reptype = MESH_rtype[i];
       found = 1;
+
+      if (mesh->reptype == UNKNOWN_REP)
+	mesh->reptype = file_reptype;
       break;
     }
   }
