@@ -2172,7 +2172,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 #endif
 	  }
 
-	  if (mesh->reptype == R1 || mesh->reptype == R2) {
+	  if (mesh->reptype != R1 && mesh->reptype != R2) {
 
 	    MR_Set_Faces(mr,nrf,rfaces,rfdirs);
 
