@@ -205,9 +205,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   
     idx = 0;
     while ((region = MESH_Next_Region(mesh,&idx))) {
+
       rverts = MR_Vertices(region);
       nrv = List_Num_Entries(rverts);
-      nrf = MR_Num_Faces(region);
+
+      rfaces = MR_Faces(region);
+      nrf = List_Num_Entries(rfaces);
+
       switch (nrv) {
       case 4:
 	rtype = TET;
@@ -231,8 +235,25 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	break;
       case 8:
 	if (nrf == 6) {
-	  rtype = HEX;
-	  fprintf(fp,"hex 8 ");
+	  /* Really verify that its a hex - all faces must be a quad */
+	  /* It is possible to have a non-hex with 6 faces, 8 vertices
+	     and 12 edges */
+
+	  int allquad = 1;
+	  for (jf = 0; jf < nrf; jf++) {
+	    face = List_Entry(rfaces,jf);
+	    if (MF_Num_Vertices(face) != 4) {
+	      allquad = 0;
+	      break;
+	    }
+	  }
+
+	  if (allquad) {
+	    rtype = HEX;
+	    fprintf(fp,"hex 8 ");
+	  }
+	  else
+	    rtype = POLYHED;
 	}
 	else
 	  rtype = POLYHED;
@@ -248,11 +269,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  fprintf(fp," % 8d",vid);
 	}
 	fprintf(fp,"\n");
-	List_Delete(rverts);
       }
       else {
-	rfaces = MR_Faces(region);
-	nrf = MR_Num_Faces(region);
 	fprintf(fp,"general %d\n",nrf);
 	for (jf = 0; jf < nrf; jf++) {
 	  face = List_Entry(rfaces,jf);
@@ -274,7 +292,6 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  fprintf(fp,"\n");
 	  List_Delete(fverts);
 	}
-	List_Delete(rfaces);
       }
       
       gentid = MR_GEntID(region);
@@ -294,6 +311,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	gentities[ngent] = gentid;
 	ngent++;
       }
+      
+      List_Delete(rfaces);
+      List_Delete(rverts);
     }
   }
   else { /* Write out cells as vface3D and faces as vfaces */
