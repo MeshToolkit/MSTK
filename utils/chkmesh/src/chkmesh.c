@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
       MV_Coords(rv,rxyz[i]);
     }
 
-    if (MR_Num_Faces(mr) == 4) {
+    if (nrv == 4 && MR_Num_Faces(mr) == 4) {
       vol = Tet_Volume(rxyz);
       if (vol <= 0.0) {
 	if (firstwarn) {
