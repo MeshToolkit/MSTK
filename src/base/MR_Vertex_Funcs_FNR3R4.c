@@ -12,7 +12,7 @@ extern "C" {
 
   List_ptr MR_Vertices_FNR3R4(MRegion_ptr r) {
     int i, j, n, ne, nf, mkr, found, idx;
-    int diradj0=0, diropp=0, fdir, fdir0, fdir1, fecheck;
+    int diradj0=0, diropp=0, fdir, fdir0, fdir1, allquad, alltri;
     int nquads, ntris, itri0, itri1, iquad0;
     MFace_ptr face=NULL, face0=NULL, fadj0=NULL, fopp=NULL;
     MFace_ptr quad0=NULL, tri0=NULL, tri1=NULL;
@@ -25,24 +25,37 @@ extern "C" {
 
     nf = List_Num_Entries(adj->rfaces);
     switch (nf) {
-    case 4: /* Tet! */
-      /* Add vertices of first face to list of region vertices */
-      face0 = List_Entry(adj->rfaces,0); /* first face */
-      fdir0 = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
-      rvertices = MF_Vertices(face0,!fdir0,0);
-
-      face = List_Entry(adj->rfaces,1);
-      fverts = MF_Vertices(face,1,0);
-      for (i = 0; i < 3; i++) { 
-	vert = List_Entry(fverts,i);
-	if (!List_Contains(rvertices,vert)) {
-	  List_Add(rvertices,vert);
+    case 4: 
+      /* Make sure all faces have 3 edges each */
+      alltri = 1;
+      idx = 0;
+      while ((face0 = List_Next_Entry(adj->rfaces,&idx))) {
+	if (MF_Num_Vertices(face0) != 3) {
+	  alltri = 0;
 	  break;
 	}
       }
-      List_Delete(fverts);
 
-      return rvertices;
+      if (alltri) { /* Tet */
+	/* Add vertices of first face to list of region vertices */
+	face0 = List_Entry(adj->rfaces,0); /* first face */
+	fdir0 = MR_FaceDir_i(r,0);  /* Sense in which face is used in region */
+	rvertices = MF_Vertices(face0,!fdir0,0);
+	
+	face = List_Entry(adj->rfaces,1);
+	fverts = MF_Vertices(face,1,0);
+	for (i = 0; i < 3; i++) { 
+	  vert = List_Entry(fverts,i);
+	  if (!List_Contains(rvertices,vert)) {
+	    List_Add(rvertices,vert);
+	    break;
+	  }
+	}
+	List_Delete(fverts);
+
+	return rvertices;
+      }
+
       break;
     case 5:
       nquads = 0; ntris = 0;
@@ -75,13 +88,13 @@ extern "C" {
       
       if (nquads == 3 && ntris == 2) {
 
-	fdir0 = adj->fdirs[0] & itri0;    /* Sense in which face is used in region */
+	fdir0 = MR_FaceDir_i(r,itri0); /* Sense in which face is used in region */
 	rvertices = MF_Vertices(tri0,!fdir0,0);
 
 	/* find the vertical edge between vertex 0 of bottom triangle and
 	   top triangle */
 
-	fdir1 = adj->fdirs[0] & itri1;
+	fdir1 = MR_FaceDir_i(r,itri1);
 	fverts = MF_Vertices(tri1,fdir1,0);
 
 	rv0 = List_Entry(rvertices,0); /* first vtx of region & bottom face */
@@ -93,6 +106,7 @@ extern "C" {
 	    List_Add(rvertices,vert);
 	    List_Add(rvertices,List_Entry(fverts,(i+1)%3));
 	    List_Add(rvertices,List_Entry(fverts,(i+2)%3));
+	    break;
 	  }
 	}
 
@@ -102,7 +116,7 @@ extern "C" {
       }
       else if (nquads == 1 && ntris == 4) {
 
-	fdir0 = adj->fdirs[0] & iquad0;    /* Sense in which face is used in region */
+	fdir0 = MR_FaceDir_i(r,iquad0);  /* Sense in which face is used in region */
 	rvertices = MF_Vertices(quad0,!fdir0,0);
 
 	fverts = MF_Vertices(tri0,1,0);
@@ -125,99 +139,101 @@ extern "C" {
     case 6: /* Hex ? */
 
       /* All faces must have 4 edges each */
-      fecheck = 1;
+      allquad = 1;
       for (i = 0; i < nf; i++) {
 	face = List_Entry(adj->rfaces,i);
-	if (MF_Num_Edges(face) != 4)
-	  fecheck = 0;
-      }
-
-      if (!fecheck)
-	break;
-
-      face0 = List_Entry(adj->rfaces,0); /* face 0 */
-      fdir0 = adj->fdirs[0] & 1; /* dir of face w.r.t. region */
-
-      
-      /* Add vertices of first face */
-      rvertices = MF_Vertices(face0,!fdir0,0);
-
-      /* vertex 0 of region and of face 0 */
-      rv0 = List_Entry(rvertices,0);      
-      
-      /* Edges of face 0 */
-      fedges0 = MF_Edges(face0,!fdir0,rv0);
-
-      /* edge 0 of face 0 (wrt face dir pointing into the region) */
-      fedge00 = List_Entry(fedges0,0); 
-
-      /* Get the face adjacent to edge 0 of face 0 and also the
-	 opposite face, a face that has no edge common face 0 */
-
-      fopp = NULL; fadj0 = NULL; 
-      found = 0;
-      for (i = 1; i < nf; i++) {
-	face = List_Entry(adj->rfaces,i);
-
-	/* Check if face uses any edge of face 0 */
-
-	for (j = 0, found = 0; j < 4; j++) {
-	  edge = List_Entry(fedges0,j);
-
-	  if (MF_UsesEntity(face,edge,1)) {
-	    if (edge == fedge00) {
-	      /* face uses edge 0 of face 0 (w.r.t. face dir pointing
-		 into region) */
-	      fadj0 = face;
-	      diradj0 = (adj->fdirs[0])>>i & 1;  
-	    }
-	    found = 1;
-	    break;
-	  }
-	}
-	if (!found) {
-	  fopp = face;
-	  diropp = (adj->fdirs[0])>>i & 1;
-	}
-	if (fopp && fadj0)
+	if (MF_Num_Edges(face) != 4) {
+	  allquad = 0;
 	  break;
+	}
       }
 
-      if (!fopp) {
-	MSTK_Report("MR_Vertices_FNR3R4","Could not find opposite face",ERROR);
-	List_Delete(fedges0);
-	List_Delete(rvertices);
-	return (void *) NULL;
-      }
+      if (allquad) { /* Hex */
 
-      /* edges of face adjacent to edge 0 of face 0 */
-      adjfedges = MF_Edges(fadj0,1,rv0);
-
-      /* edge connecting rv0 and vertex on opposite face */
-      upedge = diradj0 ? List_Entry(adjfedges,3): List_Entry(adjfedges,0);
-
+	face0 = List_Entry(adj->rfaces,0); /* face 0 */
+	fdir0 = MR_FaceDir_i(r,0); /* dir of face w.r.t. region */
+	
+	
+	/* Add vertices of first face */
+	rvertices = MF_Vertices(face0,!fdir0,0);
+	
+	/* vertex 0 of region and of face 0 */
+	rv0 = List_Entry(rvertices,0);      
+	
+	/* Edges of face 0 */
+	fedges0 = MF_Edges(face0,!fdir0,rv0);
+	
+	/* edge 0 of face 0 (wrt face dir pointing into the region) */
+	fedge00 = List_Entry(fedges0,0); 
+	
+	/* Get the face adjacent to edge 0 of face 0 and also the
+	   opposite face, a face that has no edge common face 0 */
+	
+	fopp = NULL; fadj0 = NULL; 
+	found = 0;
+	for (i = 1; i < nf; i++) {
+	  face = List_Entry(adj->rfaces,i);
+	  
+	  /* Check if face uses any edge of face 0 */
+	  
+	  for (j = 0, found = 0; j < 4; j++) {
+	    edge = List_Entry(fedges0,j);
+	    
+	    if (MF_UsesEntity(face,edge,1)) {
+	      if (edge == fedge00) {
+		/* face uses edge 0 of face 0 (w.r.t. face dir pointing
+		   into region) */
+		fadj0 = face;
+		diradj0 = MR_FaceDir_i(r,i);
+	      }
+	      found = 1;
+	      break;
+	    }
+	  }
+	  if (!found) {
+	    fopp = face;
+	    diropp = MR_FaceDir_i(r,i);
+	  }
+	  if (fopp && fadj0)
+	    break;
+	}
+	
+	if (!fopp) {
+	  MSTK_Report("MR_Vertices_FNR3R4","Could not find opposite face",ERROR);
+	  List_Delete(fedges0);
+	  List_Delete(rvertices);
+	  return (void *) NULL;
+	}
+	
+	/* edges of face adjacent to edge 0 of face 0 */
+	adjfedges = MF_Edges(fadj0,1,rv0);
+	
+	/* edge connecting rv0 and vertex on opposite face */
+	upedge = diradj0 ? List_Entry(adjfedges,3): List_Entry(adjfedges,0);
+	
 #ifdef DEBUG
-      if (!ME_UsesEntity(upedge,rv0,0))
-	MSTK_Report("MR_Vertices_FNR3R4","Cannot find correct vertical edge",
-		    ERROR);
+	if (!ME_UsesEntity(upedge,rv0,0))
+	  MSTK_Report("MR_Vertices_FNR3R4","Cannot find correct vertical edge",
+		      ERROR);
 #endif
 	
-      if (ME_Vertex(upedge,0) == rv0)
-	rvopp0 = ME_Vertex(upedge,1);
-      else {
-	rvopp0 = ME_Vertex(upedge,0);
+	if (ME_Vertex(upedge,0) == rv0)
+	  rvopp0 = ME_Vertex(upedge,1);
+	else {
+	  rvopp0 = ME_Vertex(upedge,0);
+	}
+	
+	List_Delete(fedges0);
+	List_Delete(adjfedges);
+	
+	fverts = MF_Vertices(fopp,diropp,rvopp0);
+	
+	for (i = 0; i < 4; i++)
+	  List_Add(rvertices,List_Entry(fverts,i));
+	List_Delete(fverts);
+	
+	return rvertices;
       }
-
-      List_Delete(fedges0);
-      List_Delete(adjfedges);
-
-      fverts = MF_Vertices(fopp,diropp,rvopp0);
-
-      for (i = 0; i < 4; i++)
-	List_Add(rvertices,List_Entry(fverts,i));
-      List_Delete(fverts);
-
-      return rvertices;
       break;
     default: 
       break;
@@ -229,7 +245,7 @@ extern "C" {
     
     /* Add vertices of first face */
     face = List_Entry(adj->rfaces,0); /* first face */
-    fdir = adj->fdirs[0] & 1;    /* Sense in which face is used in region */
+    fdir = MR_FaceDir_i(r,0);    /* Sense in which face is used in region */
     
     rvertices = MF_Vertices(face,!fdir,0); 
     List_Mark(rvertices,mkr);
