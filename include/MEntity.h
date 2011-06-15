@@ -1,12 +1,12 @@
 #ifndef _H_MEntity
 #define _H_MEntity
 
+#include "MSTK_defines.h"
+#include "MSTK_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "MSTK_defines.h"
-#include "MSTK_types.h"
 
 #ifdef _H_MEntity_Private
 

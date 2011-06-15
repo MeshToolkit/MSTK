@@ -1,6 +1,9 @@
 #ifndef _H_MSTK_DEFINES
 #define _H_MSTK_DEFINES
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define MSTK_UNKNOWN -1
 
@@ -18,7 +21,8 @@
 
 #define NMAXATT 10
 
-
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

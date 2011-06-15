@@ -1,12 +1,12 @@
 #ifndef _H_MFace
 #define _H_MFace
 
+#include "MSTK_types.h"
+#include "MSTK_defines.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "MSTK_types.h"
-#include "MSTK_defines.h"
 
 #ifdef _H_MFace_Private
 #define _H_MEntity_Private

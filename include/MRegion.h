@@ -1,12 +1,12 @@
 #ifndef _H_MRegion
 #define _H_MRegion
 
+#include "MSTK_defines.h"
+#include "MSTK_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "MSTK_defines.h"
-#include "MSTK_types.h"
 
 extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 

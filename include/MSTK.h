@@ -2,11 +2,7 @@
 #define _H_MSTK
 
 #include <stdarg.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-  /* #include "gmtk.h" */
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 #include "MSTK_externs.h"
@@ -15,6 +11,10 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
 #include <mpi.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /*******************************************************************/

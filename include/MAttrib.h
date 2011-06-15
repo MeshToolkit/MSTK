@@ -2,13 +2,12 @@
 #define _H_MATTRIB
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef _H_MAttrib_Private
   typedef struct MAttrib { /* Attribute Definition */

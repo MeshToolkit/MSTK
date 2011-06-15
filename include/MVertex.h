@@ -1,12 +1,12 @@
 #ifndef _H_MVertex
 #define _H_MVertex
 
+#include "MSTK_defines.h"
+#include "MSTK_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "MSTK_defines.h"
-#include "MSTK_types.h"
 
 #ifdef _H_MVertex_Private
 #define _H_MEntity_Private

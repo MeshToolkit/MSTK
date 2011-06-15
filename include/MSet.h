@@ -2,13 +2,13 @@
 #define _H_MSet
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef _H_MSet_Private
   typedef struct MSet { /* Set Definition */

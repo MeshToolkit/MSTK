@@ -7,6 +7,10 @@
 
 #include "MSTK_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Templates for TETS, PYRAMIDS, PRISMS and HEXS (move to global file?) */
 
 /* Number of faces for standard regions */
@@ -31,5 +35,9 @@ extern const int MSTK_rfe_template[5][6][5];
 extern const int MSTK_rev_template[5][12][2];
 
 extern MAttrib_ptr plnumatt;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

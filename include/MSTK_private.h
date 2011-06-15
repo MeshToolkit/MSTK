@@ -1,16 +1,15 @@
 #ifndef _H_MSTK_PRIVATE
 #define _H_MSTK_PRIVATE
 
-#ifdef   __cplusplus
-extern "C" {
-#endif
-
-  /* #include "gmtk.h" */
 #include "MSTK_types.h"
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
 #include "MSTK_malloc.h"
 #include "MSTK.h"
+
+#ifdef   __cplusplus
+extern "C" {
+#endif
 
 /* If MSTK_KEEP_DELETED is 1, then entities will only be marked as deleted */
 
