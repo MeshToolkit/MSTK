@@ -2210,7 +2210,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			  "Premature end of file while reading faces",FATAL);
+			  "Premature end of file while reading region",FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
 			"Error in reading region data",FATAL);
