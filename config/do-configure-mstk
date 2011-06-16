@@ -63,7 +63,7 @@ ARCHOS=${ARCH}_${OS}
 
 # Top level directory where the code lives
 
-SOURCE=$HOME/develop/mstk/1.82
+SOURCE=$HOME/develop/mstk/1.83rc1
 
 
 
