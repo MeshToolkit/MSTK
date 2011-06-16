@@ -36,7 +36,7 @@ double Tet_Volume(double (*rxyz)[3]) {
   VDiff3(rxyz[3],rxyz[0],vec03);
   VCross3(vec01,vec02,n0);
   
-  vol = VDot3(n0,vec03);
+  vol = VDot3(n0,vec03)/6.0;
   return vol;
 
 }
@@ -67,23 +67,24 @@ double Tet_Volume(double (*rxyz)[3]) {
 */
 
 double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
-			  int nf) {
+		 int nf, int *star_shaped) {
 
   int i, j, k, ind, inverted = 0;
   int feverts[2], (*everts)[2];
   double vol=0.0, tvol;
   double fcen[3], rcen[3], txyz[4][3];
 
+  *star_shaped = 1;
+
 #ifdef DEBUG
   if (n < 4)
     fprintf(stderr,"PR_Volume: Input is not a polyhedron\n");
 #endif
 
-  switch (n) {
-  case 4:
+  if (n == 4 && nf == 4) {
     vol = Tet_Volume(rxyz);
-    break;
-  default: /* General polyhedron */
+  }
+  else { /* General polyhedron */
 
     /* Geometric center of polyhedron */
 
@@ -122,13 +123,15 @@ double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv,
 	VCopy3(txyz[1],rxyz[ind]);
 	
 	tvol = Tet_Volume(txyz);
-	vol += fabs(tvol);
+	vol += tvol;
 
-	if (tvol < 0.0) inverted = 1;
+	if (tvol < 0.0) {
+	  *star_shaped = 0;
+	  inverted = 1;
+	}
       }
 
     }
-    if (inverted) vol = -vol;
   }
    
   return vol;
