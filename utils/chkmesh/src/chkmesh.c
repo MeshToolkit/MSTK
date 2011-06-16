@@ -6,14 +6,14 @@
 
 double Tet_Volume(double (*rxyz)[3]);
 double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
-		 int nf);
+		 int nf, int *star_shaped);
 
 
 int main(int argc, char **argv) {
-  int len, ok, firstwarn=1;
+  int len, ok, firstwarn1=1,firstwarn2;
   int i, j, idx, dir, nrf, nrv, nfv[MAXPF3];
   int rid, nbad, status, **rfverts=NULL;
-  int first=1;
+  int first=1, star_shaped;
   double vol, rxyz[MAXPV3][3];
   double rcen[3], fcen[3], fxyz[MAXPV2][3], txyz[4][3], tvol;
   int k;
@@ -46,6 +46,10 @@ int main(int argc, char **argv) {
   }
   else
     strcpy(mname,infname);
+
+  strcpy(gmvfname,mname);
+  strcat(gmvfname,"-chk.gmv");
+
 
   MSTK_Init();
 
@@ -91,13 +95,13 @@ int main(int argc, char **argv) {
     if (nrv == 4 && MR_Num_Faces(mr) == 4) {
       vol = Tet_Volume(rxyz);
       if (vol <= 0.0) {
-	if (firstwarn) {
-          fprintf(stderr,"FAILED\n");
-	  fprintf(stderr,"First Invalid Element - ID %d\n",rid);
+	if (firstwarn1) {
+	  fprintf(stderr,"\n\nElement is invalid - ID %d\n",rid);
 	  fprintf(stderr,"Volume = %lf\n",vol);
 	  MR_Print(mr,3);
-	  fprintf(stderr,"\n\n\n Skipping printout of other invalid elements\n\n\n");
-	  firstwarn = 0;
+	  fprintf(stderr,"\n\n\n Select/Color elements by cell field \"valatt\" in %s to see all bad elements\n\n\n",gmvfname);
+
+	  firstwarn1 = 0;
           status = 0;
 	}
 	nbad++;
@@ -133,23 +137,38 @@ int main(int argc, char **argv) {
       
 
       
-      vol = PR_Volume(rxyz, nrv, rfverts, nfv, nrf);
+      vol = PR_Volume(rxyz, nrv, rfverts, nfv, nrf, &star_shaped);
 
       if (vol <= 0.0) {
-	if (firstwarn) {
-          fprintf(stderr,"FAILED\n");
-	  fprintf(stderr,"First invalid element - ID %d\n",rid);
-	  fprintf(stderr,"Invalid tet in decomposition of polyhedral element?\n");
-	  fprintf(stderr,"Perhaps a polyhedral face is severely distorted?\n");
+	if (firstwarn1) {
+	  fprintf(stderr,"\n\nElement is invalid - ID %d\n",rid);
+	  fprintf(stderr,"Volume = %lf\n",vol);	  
 	  MR_Print(mr,3);
-	  fprintf(stderr,"\n\n\n Skipping printout of other invalid elements\n\n\n");
-	  firstwarn = 0;
+	  fprintf(stderr,"\n\n\n Select/Color elements by cell field \"valatt\" in %s to see all bad elements\n\n\n",gmvfname);
+	  firstwarn1 = 0;
 	  status = 0;
 	}
+
 	nbad++;
 	MEnt_Set_AttVal(mr,valatt,-1,0.0,NULL);
       } /* if (vol <= 0.0) */	    
+      else if (!star_shaped) {
+	if (firstwarn2) {
+	  fprintf(stderr,"\n\nElement is valid but is not star shaped - ID %d\n",rid);
+	  fprintf(stderr,"Volume = %lf\n",vol);
 
+	  fprintf(stderr,"Invalid tet in decomposition of polyhedral element.\n");
+	  fprintf(stderr,"Perhaps a polyhedral face is severely distorted?\n");
+	  MR_Print(mr,3);
+	  fprintf(stderr,"\n\n\n Select/Color elements by cell field \"valatt\" in %s to see all bad elements\n\n\n",gmvfname);
+	  firstwarn2 = 0;
+	  status = 0;
+	}
+
+	nbad++;
+	MEnt_Set_AttVal(mr,valatt,1,0.0,NULL);
+      }
+	
     } /* if (MR_NumFaces(mr) == 4) ... else ... */
 
     List_Delete(rverts);
@@ -178,8 +197,6 @@ int main(int argc, char **argv) {
     if (nbad) {
       fprintf(stderr,"Total number of bad elements %-d\n\n",nbad);
 
-      strcpy(gmvfname,mname);
-      strcat(gmvfname,"-chk.gmv");
       fprintf(stderr,"Tagging bad elements in GMV file %s\n\n",gmvfname);
       MESH_ExportToGMV(mesh,gmvfname,0,NULL,NULL);
       exit(-1);
