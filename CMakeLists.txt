@@ -66,6 +66,46 @@ if (ENABLE_ExodusII)
   add_library(netcdf SHARED IMPORTED)
   set_property(TARGET netcdf PROPERTY IMPORTED_LOCATION ${NETCDF_LIBRARY})
 
+
+
+
+
+
+  find_library(HDF5_LIBRARY hdf5
+    HINTS ${HDF5_LIB_DIR}
+    ${HDF5_DIR}/lib
+    /usr/lib
+    /usr/local/lib
+    )
+
+  if(NOT HDF5_LIBRARY)
+    message(FATAL_ERROR "Error: could not find hdf5 library\n"
+      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)"
+      "\nor defining HDF5_LIB_DIR")
+  endif()
+
+  find_path(HDF5_INCLUDES hdf5.h 
+    HINTS ${HDF5_INCLUDE_DIR}
+    ${HDF5_DIR}/include
+    /usr/include
+    /usr/local/include
+    )
+  if(NOT HDF5_INCLUDES)
+    message(FATAL_ERROR "Error: could not find HDF5 includes\n"
+      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)"
+      "\nor defining HDF5_INCLUDE_DIR")
+  endif()
+
+
+  include_directories(${HDF5_INCLUDES})
+
+  #
+  # DID NOT SEEM TO NEED THIS - but left uncommented in checked in version
+  #
+  add_library(hdf5 SHARED IMPORTED)
+  set_property(TARGET hdf5 PROPERTY IMPORTED_LOCATION ${HDF5_LIBRARY})
+
+
   #target_link_libraries(netcdf )   # See note under ExodusII.
   set(NETCDF_LIBS_ALL netcdf hdf5 hdf5_hl z)
 
@@ -232,6 +272,11 @@ endif ()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+
+#############################################################################
+# Now add the subdirectory containing the source
+#############################################################################
+
 add_subdirectory(src)
 
 
@@ -282,7 +327,13 @@ endif ()
 
 # Don't know how to export the include files locations to mstk.cmake
 
+#############################################################################
+# Unittests
+###############################################################################
 
+if (ENABLE_Tests)
+  add_subdirectory(unittests)
+endif ()
 
 #############################################################################
 # Utilities
