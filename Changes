@@ -1,3 +1,17 @@
+Changes v1.83rc1
+
+Fixed CMakeLists.txt so that it can recognize HDF5 hints
+
+Fixed bugs in recognizing tetrahedral and hexahedral elements
+
+Put in code to properly answer queries for prisms and pyramids
+
+Introduced unit tests
+
+Changed chkmesh utility so that it distinguishes between truly inverted elements
+and those that are just not star shaped (some tets in the decomposition of 
+non-simplex elements are inside out but the total volume of the element is positive)
+
 Changes v1.82
 
 Bug fix in ME_Faces_R1R2
