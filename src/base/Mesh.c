@@ -1584,7 +1584,8 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
 
   if (!(fp = fopen(filename,"r"))) {
-    MSTK_Report("MESH_InitFromFile","Cannot open file",ERROR);
+    sprintf(temp_str,"Cannot open file %s",filename);
+    MSTK_Report("MESH_InitFromFile",temp_str,ERROR);
     return 0;
   }
 
