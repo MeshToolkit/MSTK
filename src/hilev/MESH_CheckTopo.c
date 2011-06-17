@@ -207,7 +207,7 @@ extern "C" {
 	}
 	List_Delete(vedges);
 
-	if (geid == 2) {
+	if (gedim == 2) {
 	  MFace_ptr ebf[2], fcur, fnxt;
 	  MRegion_ptr rcur;
 	  int nf, nfr;
