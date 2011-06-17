@@ -23,7 +23,8 @@ set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 # If user wants to read/write ExodusII files, we check if we can locate the
 # ExodusII and NetCDF include files and libraries
 ################################################################################
-
+message("\n-------------------------------------------------------------------")
+message("--- Configuring MSTK with:")
 if (ENABLE_ExodusII)
 
   add_definitions("-DENABLE_ExodusII")
@@ -66,10 +67,15 @@ if (ENABLE_ExodusII)
   add_library(netcdf SHARED IMPORTED)
   set_property(TARGET netcdf PROPERTY IMPORTED_LOCATION ${NETCDF_LIBRARY})
 
+  message("---- NETCDF_LIBRARY : " ${NETCDF_LIBRARY})
+
+  #target_link_libraries(netcdf )   # See note under ExodusII.
+  set(NETCDF_LIBS_ALL netcdf hdf5 hdf5_hl z)
 
 
-
-
+  ##############################################################################
+  # HDF5 - 
+  ##############################################################################
 
   find_library(HDF5_LIBRARY hdf5
     HINTS ${HDF5_LIB_DIR}
@@ -84,6 +90,18 @@ if (ENABLE_ExodusII)
       "\nor defining HDF5_LIB_DIR")
   endif()
 
+  find_library(HDF5_HL_LIBRARY hdf5_hl
+    HINTS ${HDF5_LIB_DIR}
+    ${HDF5_DIR}/lib
+    /usr/lib
+    /usr/local/lib
+    )
+
+  if(NOT HDF5_HL_LIBRARY)
+    message(FATAL_ERROR "Error: could not find hdf5_hl library\n"
+      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)"
+      "\nor defining HDF5_LIB_DIR")
+  endif()
   find_path(HDF5_INCLUDES hdf5.h 
     HINTS ${HDF5_INCLUDE_DIR}
     ${HDF5_DIR}/include
@@ -103,11 +121,15 @@ if (ENABLE_ExodusII)
   # DID NOT SEEM TO NEED THIS - but left uncommented in checked in version
   #
   add_library(hdf5 SHARED IMPORTED)
+  add_library(hdf5_hl SHARED IMPORTED)
   set_property(TARGET hdf5 PROPERTY IMPORTED_LOCATION ${HDF5_LIBRARY})
+  set_property(TARGET hdf5_hl PROPERTY IMPORTED_LOCATION ${HDF5_HL_LIBRARY})
 
+  message("---- HDF5_LIBRARY : " ${HDF5_LIBRARY})
+  message("---- HDF5_HL_LIBRARY : " ${HDF5_HL_LIBRARY})
 
   #target_link_libraries(netcdf )   # See note under ExodusII.
-  set(NETCDF_LIBS_ALL netcdf hdf5 hdf5_hl z)
+  set(HDF5_LIBS_ALL hdf5 hdf5_hl z)
 
 
   ##############################################################################
@@ -144,6 +166,8 @@ if (ENABLE_ExodusII)
   add_library(exodusii STATIC IMPORTED)
   set_property(TARGET exodusii PROPERTY IMPORTED_LOCATION ${EXODUSII_LIBRARY})
   
+  message("---- EXODUSII_LIBRARY : " ${EXODUSII_LIBRARY})
+
   # Can't add link dependencies to imported libraries. See http://www.vtk.org/Bug/view.php?id=10395
   # target_link_libraries(exodusii netcdf)
   
@@ -194,6 +218,8 @@ if (ENABLE_PARALLEL)
   add_library(metis STATIC IMPORTED)
   set_property(TARGET metis PROPERTY IMPORTED_LOCATION ${METIS_LIBRARY})
   
+  message("---- METIS_LIBRARY : " ${METIS_LIBRARY})
+
   set(METIS_LIBS_ALL metis) 
 
 endif (ENABLE_PARALLEL)
@@ -272,11 +298,6 @@ endif ()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-
-#############################################################################
-# Now add the subdirectory containing the source
-#############################################################################
-
 add_subdirectory(src)
 
 
@@ -327,13 +348,7 @@ endif ()
 
 # Don't know how to export the include files locations to mstk.cmake
 
-#############################################################################
-# Unittests
-###############################################################################
 
-if (ENABLE_Tests)
-  add_subdirectory(unittests)
-endif ()
 
 #############################################################################
 # Utilities
