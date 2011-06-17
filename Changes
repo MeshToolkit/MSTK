@@ -1,3 +1,12 @@
+Changes v1.83rc3
+
+Revamped build system so that CMake uses Find*.cmake modules to find packages
+like NetCDF, HDF5 and ExodusII
+
+Changes v1.83rc2
+
+HDF5 hints was still broken in rc1. Fixed 
+
 Changes v1.83rc1
 
 Fixed CMakeLists.txt so that it can recognize HDF5 hints
