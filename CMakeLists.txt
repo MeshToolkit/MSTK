@@ -14,10 +14,11 @@ project (MSTK)
 cmake_minimum_required(VERSION 2.8)
 
 set(MSTK_VERSION_MAJOR 1)
-set(MSTK_VERSION_MINOR 82dev)
+set(MSTK_VERSION_MINOR 83)
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 ################################################################################
 # If user wants to read/write ExodusII files, we check if we can locate the
@@ -32,82 +33,24 @@ if (ENABLE_ExodusII)
   # NetCDF - http://www.unidata.ucar.edu/software/netcdf/
   ##############################################################################
 
-  find_library(NETCDF_LIBRARY netcdf
-    HINTS ${NetCDF_LIB_DIR}
-    ${NetCDF_DIR}/lib
-    /usr/lib
-    /usr/local/lib
-    )
-
-  if(NOT NETCDF_LIBRARY)
+# Could replace with find_package(NetCDF REQUIRED)
+find_package(NetCDF REQUIRED)
+  if(NOT NetCDF_FOUND)
     message(FATAL_ERROR "Error: could not find netcdf library\n"
-      "Try defining NetCDF_DIR: (-D NetCDF_DIR:FILEPATH=<NetCDF_install_prefix>)"
-      "\nor defining NetCDF_LIB_DIR")
-  endif()
-
-  find_path(NETCDF_INCLUDES netcdf.h 
-    HINTS ${NetCDF_INCLUDE_DIR}
-    ${NetCDF_DIR}/include
-    /usr/include
-    /usr/local/include
-    )
-  if(NOT NETCDF_INCLUDES)
-    message(FATAL_ERROR "Error: could not find NetCDF includes\n"
-      "Try defining NetCDF_DIR: (-D NetCDF_DIR:FILEPATH=<NetCDF_install_prefix>)"
-      "\nor defining NetCDF_INCLUDE_DIR")
+      "Try defining NetCDF_DIR: (-D NetCDF_DIR:FILEPATH=<NetCDF_install_prefix>)")
   endif()
 
 
-  include_directories(${NETCDF_INCLUDES})
+  ##############################################################################
+  # HDF5
+  ##############################################################################
 
-  #
-  # DID NOT SEEM TO NEED THIS - but left uncommented in checked in version
-  #
-  add_library(netcdf SHARED IMPORTED)
-  set_property(TARGET netcdf PROPERTY IMPORTED_LOCATION ${NETCDF_LIBRARY})
+ find_package(HDF5 REQUIRED)
 
-
-
-
-
-
-  find_library(HDF5_LIBRARY hdf5
-    HINTS ${HDF5_LIB_DIR}
-    ${HDF5_DIR}/lib
-    /usr/lib
-    /usr/local/lib
-    )
-
-  if(NOT HDF5_LIBRARY)
+ if(NOT HDF5_FOUND)
     message(FATAL_ERROR "Error: could not find hdf5 library\n"
-      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)"
-      "\nor defining HDF5_LIB_DIR")
-  endif()
-
-  find_path(HDF5_INCLUDES hdf5.h 
-    HINTS ${HDF5_INCLUDE_DIR}
-    ${HDF5_DIR}/include
-    /usr/include
-    /usr/local/include
-    )
-  if(NOT HDF5_INCLUDES)
-    message(FATAL_ERROR "Error: could not find HDF5 includes\n"
-      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)"
-      "\nor defining HDF5_INCLUDE_DIR")
-  endif()
-
-
-  include_directories(${HDF5_INCLUDES})
-
-  #
-  # DID NOT SEEM TO NEED THIS - but left uncommented in checked in version
-  #
-  add_library(hdf5 SHARED IMPORTED)
-  set_property(TARGET hdf5 PROPERTY IMPORTED_LOCATION ${HDF5_LIBRARY})
-
-
-  #target_link_libraries(netcdf )   # See note under ExodusII.
-  set(NETCDF_LIBS_ALL netcdf hdf5 hdf5_hl z)
+      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)")
+ endif()
 
 
   ##############################################################################
@@ -115,41 +58,14 @@ if (ENABLE_ExodusII)
   # get it as part of Trilinos - http:://trilinos.sandia.gov
   ##############################################################################
 
-  find_library(EXODUSII_LIBRARY exoIIv2c
-    HINTS ${ExodusII_LIB_DIR}
-    ${ExodusII_DIR}/cbind/src
-    ${ExodusII_DIR}/lib
-    )
-
-  if(NOT EXODUSII_LIBRARY)
+  find_package(ExodusII REQUIRED)
+  if(NOT ExodusII_FOUND)
     message(FATAL_ERROR "Error: could not find ExodusII library\n"
-      "Try defining ExodusII_DIR: (-D ExodusII_DIR:FILEPATH=<ExodusII_install_prefix>)\n"
-      "Or ExodusII_LIB_DIR")
+      "Try defining ExodusII_DIR: (-D ExodusII_DIR:FILEPATH=<ExodusII_install_prefix>)")
   endif()
   
-  find_path(EXODUSII_INCLUDES exodusII.h 
-    HINTS ${ExodusII_INCLUDE_DIR}
-    ${ExodusII_DIR}/cbind/include
-    ${ExodusII_DIR}/include
-    )
-  
-  if(NOT EXODUSII_INCLUDES)
-    message(FATAL_ERROR "Error: could not find ExodusII includes\n"
-      "Try defining ExodusII_DIR: (-D ExodusII_DIR:FILEPATH=<ExodusII_install_prefix>)\n"
-      "Or ExodusII_INCLUDE_DIR")
-  endif()
-
-  include_directories(${EXODUSII_INCLUDES})
+  include_directories(${ExodusII_INCLUDE_DIRS})
  
-  add_library(exodusii STATIC IMPORTED)
-  set_property(TARGET exodusii PROPERTY IMPORTED_LOCATION ${EXODUSII_LIBRARY})
-  
-  # Can't add link dependencies to imported libraries. See http://www.vtk.org/Bug/view.php?id=10395
-  # target_link_libraries(exodusii netcdf)
-  
-  # Instead, we create a list of all the libraries required for ExodusII to link.
-  set(EXODUS_LIBS_ALL exodusii netcdf) 
-
 endif(ENABLE_ExodusII)
 
 
@@ -308,7 +224,7 @@ install(TARGETS ${MSTKLIB}
 # export cmake file other projects can use to find MSTK
 
 export(TARGETS ${MSTKLIB} FILE ${INSTALL_DIR}/mstk.cmake)
-message(STATUS ${MSTKLIB})
+message(STATUS "Building library " ${MSTKLIB})
 
 
 # where to install include files
