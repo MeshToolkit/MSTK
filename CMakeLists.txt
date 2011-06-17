@@ -20,11 +20,14 @@ set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
+
+message("\n-------------------------------------------------------------------")
+message("--- Configuring MSTK with:")
+
 ################################################################################
 # If user wants to read/write ExodusII files, we check if we can locate the
 # ExodusII and NetCDF include files and libraries
 ################################################################################
-
 if (ENABLE_ExodusII)
 
   add_definitions("-DENABLE_ExodusII")
@@ -40,9 +43,10 @@ find_package(NetCDF REQUIRED)
       "Try defining NetCDF_DIR: (-D NetCDF_DIR:FILEPATH=<NetCDF_install_prefix>)")
   endif()
 
+  message("---- NETCDF_LIBRARY : " ${NETCDF_LIBRARY})
 
   ##############################################################################
-  # HDF5
+  # HDF5 - 
   ##############################################################################
 
  find_package(HDF5 REQUIRED)
@@ -52,6 +56,8 @@ find_package(NetCDF REQUIRED)
       "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)")
  endif()
 
+
+  message("---- HDF5_LIBRARY : " ${HDF5_LIBRARY})
 
   ##############################################################################
   # ExodusII - http://sourceforge.net/projects/exodusii/ or 
@@ -66,6 +72,8 @@ find_package(NetCDF REQUIRED)
   
   include_directories(${ExodusII_INCLUDE_DIRS})
  
+  message("---- EXODUSII_LIBRARY : " ${EXODUSII_LIBRARY})
+
 endif(ENABLE_ExodusII)
 
 
@@ -110,6 +118,8 @@ if (ENABLE_PARALLEL)
   add_library(metis STATIC IMPORTED)
   set_property(TARGET metis PROPERTY IMPORTED_LOCATION ${METIS_LIBRARY})
   
+  message("---- METIS_LIBRARY : " ${METIS_LIBRARY})
+
   set(METIS_LIBS_ALL metis) 
 
 endif (ENABLE_PARALLEL)
@@ -263,3 +273,5 @@ add_subdirectory(utils)
 ###############################################################################
 
 add_subdirectory(example)
+
+
