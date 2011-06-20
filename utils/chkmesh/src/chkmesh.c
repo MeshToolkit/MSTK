@@ -10,7 +10,7 @@ double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv,
 
 
 int main(int argc, char **argv) {
-  int len, ok, firstwarn1=1,firstwarn2;
+  int len, ok, firstwarn1=1,firstwarn2=1;
   int i, j, idx, dir, nrf, nrv, nfv[MAXPF3];
   int rid, nbad, status, **rfverts=NULL;
   int first=1, star_shaped;
