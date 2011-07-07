@@ -226,7 +226,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
 
       idx2 = 0;
       while ((reg = List_Next_Entry(fregs,&idx2)))
-	MF_Rem_Region(face,reg);
+	MR_Rem_Face(reg,face);
 
       List_Delete(fregs);
 
