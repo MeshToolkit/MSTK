@@ -79,6 +79,10 @@ extern "C" {
     return MR_FaceDir_i_FNR3R4(r,i);
   }
 
+  void MR_Rem_Face_F1(MRegion_ptr r, MFace_ptr f) {
+    MR_Rem_Face_FNR3R4(r,f);
+  }
+
   void MR_Replace_Face_F1(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf,int nudir){
     MR_Replace_Face_FNR3R4(r,f,nuf,nudir);
   }

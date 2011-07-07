@@ -92,6 +92,10 @@ extern "C" {
     return MR_UsesVertex_FNR3R4(r,v);
   }
 
+  void MR_Rem_Face_R4(MRegion_ptr r, MFace_ptr f) {
+    MR_Rem_Face_FNR3R4(r,f);
+  }
+
   void MR_Replace_Face_R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir) {
     MR_Replace_Face_FNR3R4(r,f,nuf,nudir);
   }
