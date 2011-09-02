@@ -29,7 +29,7 @@ extern "C" {
     int maxiter = 1000;
     List_ptr vedges, vfaces, vregions;
     List_ptr efaces;
-    List_ptr fverts, fedges, fregs;
+    List_ptr fverts, fedges, fregs, fregs1;
     List_ptr rverts, redges, rfaces;
 
 
@@ -296,16 +296,16 @@ extern "C" {
 		break;
 	      }
 	      
-	      fregs = MF_Regions(fcur);
+	      fregs1 = MF_Regions(fcur);
 	      idx3 = 0;
-	      while ((fr = List_Next_Entry(fregs,&idx3))) {
+	      while ((fr = List_Next_Entry(fregs1,&idx3))) {
 		if (fr != rcur) {
 		  rcur = fr;
 		  found = 1;
 		  break;
 		}
 	      }
-	      List_Delete(fregs);
+	      List_Delete(fregs1);
 
 	      if (!found) {
 		sprintf(mesg,"Could not find next region around edge %-d",eid);
