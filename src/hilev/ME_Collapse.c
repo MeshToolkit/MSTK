@@ -140,101 +140,106 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
   /* Delete topologically degenerate regions */
   /* Defined as two faces of the regions having the same vertices */
 
-  idx1 = 0;
-  while ((reg = List_Next_Entry(eregs,&idx1))) {
+  if (eregs) {
+    idx1 = 0;
+    while ((reg = List_Next_Entry(eregs,&idx1))) {
 
-    rfaces = MR_Faces(reg);
-    nrf = List_Num_Entries(rfaces);
+      rfaces = MR_Faces(reg);
+      nrf = List_Num_Entries(rfaces);
 
-    if (nrf == 4) {
+      if (nrf == 4) {
       
-      /* This is a tet - it will become degenerate */
+	/* This is a tet - it will become degenerate */
 
-      MR_Delete(reg,0);
-
-    }
-    else {
-
-      degenerate = 0;
-
-      for (i = 0; i < nrf; i++) {
-
-	rface1 = List_Entry(rfaces,i);
-	
-	fverts1 = MF_Vertices(rface1,1,0);
-	nfv1 = List_Num_Entries(fverts1);
-		
-	for (j = i+1; j < nrf; j++) {
-	  
-	  rface2 = List_Entry(rfaces,j);
-
-	  fverts2 = MF_Vertices(rface2,1,0);
-	  nfv2 = List_Num_Entries(fverts2);
-	  
-	  if (nfv1 != nfv2) {
-	    List_Delete(fverts2);
-	    continue;             /* can't be exactly coincident */
-	  }
-
-	  allfound = 1;
-	  idx2 = 0;
-	  while ((vert = List_Next_Entry(fverts2,&idx2))) {
-	    if (!List_Contains(fverts1,vert)) {
-	      allfound = 0;
-	      break;
-	    }
-	  }
-	  
-	  List_Delete(fverts2);
-	  
-	  if (allfound) {
-	    degenerate = 1;
-	    break;
-	  }
-	  
-	} /* for (j = i+1 ... */
-
-	List_Delete(fverts1);
-
-	if (degenerate) break;
-
-      } /* for (i = 0; i < nrf;.... */
-
-      if (degenerate) 
 	MR_Delete(reg,0);
 
-    } /* if (nrf == 4) .. else ... */
+      }
+      else {
 
-    List_Delete(rfaces);
+	degenerate = 0;
 
-  } /* while ((reg = ...)) */
+	for (i = 0; i < nrf; i++) {
 
+	  rface1 = List_Entry(rfaces,i);
+	
+	  fverts1 = MF_Vertices(rface1,1,0);
+	  nfv1 = List_Num_Entries(fverts1);
+		
+	  for (j = i+1; j < nrf; j++) {
+	  
+	    rface2 = List_Entry(rfaces,j);
+
+	    fverts2 = MF_Vertices(rface2,1,0);
+	    nfv2 = List_Num_Entries(fverts2);
+	  
+	    if (nfv1 != nfv2) {
+	      List_Delete(fverts2);
+	      continue;             /* can't be exactly coincident */
+	    }
+
+	    allfound = 1;
+	    idx2 = 0;
+	    while ((vert = List_Next_Entry(fverts2,&idx2))) {
+	      if (!List_Contains(fverts1,vert)) {
+		allfound = 0;
+		break;
+	      }
+	    }
+	  
+	    List_Delete(fverts2);
+	  
+	    if (allfound) {
+	      degenerate = 1;
+	      break;
+	    }
+	  
+	  } /* for (j = i+1 ... */
+
+	  List_Delete(fverts1);
+
+	  if (degenerate) break;
+
+	} /* for (i = 0; i < nrf;.... */
+
+	if (degenerate) 
+	  MR_Delete(reg,0);
+
+      } /* if (nrf == 4) .. else ... */
+
+      List_Delete(rfaces);
+
+    } /* while ((reg = ...)) */
+    List_Delete(eregs);
+  }
 
 
   /* Delete topologically degenerate faces */
 
-  idx1 = 0;
-  while ((face = List_Next_Entry(efaces,&idx1))) {
+  if (efaces) {
+    idx1 = 0;
+    while ((face = List_Next_Entry(efaces,&idx1))) {
 
-    fedges = MF_Edges(face,1,0);
+      fedges = MF_Edges(face,1,0);
 
-    if (List_Num_Entries(fedges) == 2) {
+      if (List_Num_Entries(fedges) == 2) {
 
-      /* Disconnect the regions from the face before deleting */
+	/* Disconnect the regions from the face before deleting */
 
-      List_ptr fregs = MF_Regions(face);
+	List_ptr fregs = MF_Regions(face);
 
-      idx2 = 0;
-      while ((reg = List_Next_Entry(fregs,&idx2)))
-	MR_Rem_Face(reg,face);
+	idx2 = 0;
+	while ((reg = List_Next_Entry(fregs,&idx2)))
+	  MF_Rem_Region(face,reg);
 
-      List_Delete(fregs);
+	List_Delete(fregs);
 
 
-      MF_Delete(face,0);
+	MF_Delete(face,0);
+      }
+
+      List_Delete(fedges);
     }
-
-    List_Delete(fedges);
+    List_Delete(efaces);
   }
 
 
@@ -274,60 +279,58 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
   /* Merge faces with the same set of edges */
       
   vfaces = MV_Faces(vkeep);
-  
-  idx1 = 0;
-  while ((face = List_Next_Entry(vfaces,&idx1))) {
+
+  if (vfaces) {
+    idx1 = 0;
+    while ((face = List_Next_Entry(vfaces,&idx1))) {
     
-    fedges = MF_Edges(face,1,0);
-    nfe = List_Num_Entries(fedges);
+      fedges = MF_Edges(face,1,0);
+      nfe = List_Num_Entries(fedges);
     
-    idx2 = 0;
-    while ((face2 = List_Next_Entry(vfaces,&idx2))) {
-      List_ptr fedges2;
+      idx2 = 0;
+      while ((face2 = List_Next_Entry(vfaces,&idx2))) {
+	List_ptr fedges2;
 
-      if (face2 == face) continue;
+	if (face2 == face) continue;
 
-      fedges2 = MF_Edges(face2,1,0);
-      nfe2 = List_Num_Entries(fedges2);
+	fedges2 = MF_Edges(face2,1,0);
+	nfe2 = List_Num_Entries(fedges2);
 
-      if (nfe != nfe2) {
+	if (nfe != nfe2) {
+	  List_Delete(fedges2);
+	  continue;
+	}
+
+	allfound = 1;
+
+	for (i = 0; i < nfe2; i++) {
+	  edge = List_Entry(fedges2,i);
+	  if (!List_Contains(fedges,edge)) {
+	    allfound = 0;
+	    break;
+	  }
+	}
 	List_Delete(fedges2);
-	continue;
-      }
 
-      allfound = 1;
-
-      for (i = 0; i < nfe2; i++) {
-	edge = List_Entry(fedges2,i);
-	if (!List_Contains(fedges,edge)) {
-	  allfound = 0;
+	if (allfound) {
+	  MFs_Merge(face,face2);	
+	  List_Rem(vfaces,face2);
 	  break;
 	}
-      }
-      List_Delete(fedges2);
-
-      if (allfound) {
-	MFs_Merge(face,face2);	
-	List_Rem(vfaces,face2);
-	break;
-      }
 	
-    } /* while (face2 = List_Next_Entry(vfaces,... */
+      } /* while (face2 = List_Next_Entry(vfaces,... */
 
-    List_Delete(fedges);
+      List_Delete(fedges);
 
-  } /* while (face = List_Next_Entry(vfaces,... */
-  List_Delete(vfaces);
-
+    } /* while (face = List_Next_Entry(vfaces,... */
+    List_Delete(vfaces);
+  }
 
   /* Now actually delete the collapse edge and the to-be-merged vertex */
 
   ME_Delete(e,0);
   MV_Delete(vdel,0);
 
-
-  List_Delete(efaces);
-  List_Delete(eregs);
 
   return vkeep;
 }
