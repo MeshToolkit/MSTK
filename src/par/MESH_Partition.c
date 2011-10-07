@@ -214,7 +214,7 @@ extern "C" {
 	  idx2 = 0;
 	  while ((lmv = List_Next_Entry(lmvlist,&idx2))) {
 	    if (MV_Mesh(lmv) == submeshes[part_no]) {
-	      found = 0;
+	      found = 1;
 	      break;
 	    }
 	  }
