@@ -108,7 +108,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
   mkfid = MSTK_GetMarker();  
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx))) {
-    MEnt_Set_AttVal(lmf,l2gatt,0,0,&gmf);
+    MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
     MEnt_Mark(gmf,mkfid);
   }
 
