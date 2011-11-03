@@ -229,13 +229,6 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
   idx = 0;
   while ((gmf = List_Next_Entry(gghfaces,&idx))) {
 
-    /* Sanity Check */
-
-    MEnt_Get_AttVal(gmf,g2latt,0,0,&lmf);
-    if (lmf) {
-      MSTK_Report("MESH_Surf_AddGhost_FN","Ghost face already duplicated?",ERROR);
-    }
-
     fverts = MF_Vertices(gmf,1,0);
     nfv = List_Num_Entries(fverts);
 
@@ -547,10 +540,6 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   idx = 0;
   while ((gmr = List_Next_Entry(gghregs,&idx))) {
 
-    /* Sanity Check */
-
-    MEnt_Get_AttVal(gmr,g2latt,0,0,&lmrlist);
-
     rverts = MR_Vertices(gmr);
     nrv = List_Num_Entries(rverts);
 
@@ -702,7 +691,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
     MEnt_Set_AttVal(lmr,l2gatt,0,0,gmr);
     MEnt_Get_AttVal(gmr,g2latt,0,0,&lmrlist);
     if (!lmrlist)
-      MSTK_Report("MESH_AddGhost","No local region list found with global region",FATAL);
+      MSTK_Report("MESH_AddGhost","Local region list not found with global region",FATAL);
     List_Add(lmrlist,lmr);
 
   }
