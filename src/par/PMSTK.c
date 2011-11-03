@@ -160,8 +160,10 @@ extern "C" {
 
     } /* for (i = 0; i < num; i++) */
 
-    
+
+    /*
     printf("global mesh has been partitioned into %d parts\n",num);
+    */
     return 1;
   }
 
