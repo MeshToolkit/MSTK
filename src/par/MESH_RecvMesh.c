@@ -197,7 +197,7 @@ extern "C" {
 	  attrib =  MAttrib_New(mesh, attname, att_type, mtype);
 	else
 	  attrib =  MAttrib_New(mesh, attname, att_type, mtype, ncomp);
-	printf("attr %d with name %s received on rank %d\n",i, attname, rank);
+	/* printf("attr %d with name %s received on rank %d\n",i, attname, rank); */
       }
       MSTK_free(list_attr);    
       MSTK_free(list_attr_names);
