@@ -164,7 +164,7 @@ extern "C" {
       recv_size = local_info[4*recv_index+num_recv_rank+mtype+1];
 
       /* if the current rank is lower, send first and receive */
-      if ( ebit && (rank < i) ) {
+      if (rank < i) {
 	if ( (ebit & 2) && send_size ) {
 	  MPI_Send(list_info_send,send_size,MPI_INT,i,i,comm);
 #ifdef DEBUG_MAX
@@ -177,39 +177,47 @@ extern "C" {
 	    MPI_Send(list_value_double_send,send_size*ncomp,MPI_DOUBLE,i,i,comm);
 	}
 
+
 	if( (ebit & 1) ) {
-	  MPI_Recv(&list_info_recv[recv_pos[recv_index]],recv_size,MPI_INT,i,
-		   rank,comm, &status);
-	  MPI_Get_count(&status,MPI_INT,&count);
+
+	/* Check for recv_size which can be zero if the two processors
+	   do not need to exchange entities of mtype but only lower
+	   order entities */
+
+	  if (recv_size) {
+	    MPI_Recv(&list_info_recv[recv_pos[recv_index]],recv_size,MPI_INT,i,
+		     rank,comm, &status);
+	    MPI_Get_count(&status,MPI_INT,&count);
 #ifdef DEBUG_MAX
-	  fprintf(stderr,"receive %d attr from processor %d on rank %d\n",count,i,rank);
+	    fprintf(stderr,"receive %d attr from processor %d on rank %d\n",count,i,rank);
 #endif
-	  if (att_type == INT) 
-	    MPI_Recv(&list_value_int_recv[recv_pos[recv_index]*ncomp],
-		     count*ncomp,MPI_INT,i,rank,comm,&status);
-	  else
-	    MPI_Recv(&list_value_double_recv[recv_pos[recv_index]*ncomp],
-		     count*ncomp,MPI_DOUBLE,i,rank,comm,&status);
-	  recv_index++;
+	    if (att_type == INT) 
+	      MPI_Recv(&list_value_int_recv[recv_pos[recv_index]*ncomp],
+		       count*ncomp,MPI_INT,i,rank,comm,&status);
+	    else
+	      MPI_Recv(&list_value_double_recv[recv_pos[recv_index]*ncomp],
+		       count*ncomp,MPI_DOUBLE,i,rank,comm,&status);
+	  }
 	}
       }
 
       /* if the current rank is higher, recv first and send */
-      if ( ebit && (rank > i) ) {
+      if ( rank > i ) {
 	if ( (ebit & 1) ) {
-	  MPI_Recv(&list_info_recv[recv_pos[recv_index]],recv_size,MPI_INT,i,
-		   rank,comm, &status);
-	  MPI_Get_count(&status,MPI_INT,&count);
+	  if (recv_size) {
+	    MPI_Recv(&list_info_recv[recv_pos[recv_index]],recv_size,MPI_INT,i,
+		     rank,comm, &status);
+	    MPI_Get_count(&status,MPI_INT,&count);
 #ifdef DEBUG_MAX
-	  fprintf(stderr,"receive %d attr from processor %d on rank %d\n",count,i,rank);
+	    fprintf(stderr,"receive %d attr from processor %d on rank %d\n",count,i,rank);
 #endif
-	  if (att_type == INT) 
-	    MPI_Recv(&list_value_int_recv[recv_pos[recv_index]*ncomp],
-		     count*ncomp,MPI_INT,i,rank,comm,&status);
-	  else
-	    MPI_Recv(&list_value_double_recv[recv_pos[recv_index]*ncomp],
-		     count*ncomp,MPI_DOUBLE,i,rank,comm,&status);
-	  recv_index++;
+	    if (att_type == INT) 
+	      MPI_Recv(&list_value_int_recv[recv_pos[recv_index]*ncomp],
+		       count*ncomp,MPI_INT,i,rank,comm,&status);
+	    else
+	      MPI_Recv(&list_value_double_recv[recv_pos[recv_index]*ncomp],
+		       count*ncomp,MPI_DOUBLE,i,rank,comm,&status);
+	  }
 	}
 	if ( (ebit & 2) && send_size ) {
 	  MPI_Send(list_info_send,send_size,MPI_INT,i,i,comm);
@@ -222,6 +230,8 @@ extern "C" {
 	    MPI_Send(list_value_double_send,send_size*ncomp,MPI_DOUBLE,i,i,comm);
 	}
       }
+
+      if (i != rank) recv_index++;
     }
 
     /* assign ghost data */
