@@ -67,8 +67,11 @@ extern "C" {
 	MESH_Add_OverlapVertex(mesh,mv);
       }
     }
-    printf("Mesh 0x%x num of vertex %d , ghost vertex %d, ov vertex %d\n",
+    
+#ifdef DEBUG_MAX
+      printf("Mesh 0x%x num of vertex %d , ghost vertex %d, ov vertex %d\n",
 	   (unsigned int) mesh, nv, count_ghost, count_ov);  
+#endif
     
     /* build ghost edges (if the representation supports it) */
     
