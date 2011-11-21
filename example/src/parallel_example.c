@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
   DebugWait=0;
   while (DebugWait);
 
-  MSTK_Mesh_Distribute(&mymesh, dim, 1, 1, rank, num, MPI_COMM_WORLD);
+  MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, rank, num, MPI_COMM_WORLD);
 
   /* Can just do this too */
 
