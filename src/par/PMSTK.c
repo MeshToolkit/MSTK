@@ -258,7 +258,7 @@ extern "C" {
 
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
 				    const char* global_mesh_name, 
-				    int dim, int ring, int with_attr, 
+				    int *dim, int ring, int with_attr, 
 				    int rank, int num, 
 				    MPI_Comm comm) {
     int i, ok;
@@ -272,6 +272,8 @@ extern "C" {
       }
       fprintf(stdout,"mstk mesh %s read in successfully\n",global_mesh_name);
 
+      *dim = MESH_Num_Regions(mesh) ? 3 : 2;
+
       *recv_mesh = mesh;
     }
 
@@ -283,19 +285,32 @@ extern "C" {
 
   /* Partition a given mesh and distribute it to 'num' processors */
 
-  int MSTK_Mesh_Distribute(Mesh_ptr *mesh, int dim, 
+  int MSTK_Mesh_Distribute(Mesh_ptr *mesh, int *dim, 
 			   int ring, int with_attr, 
 			   int rank, int num, 
 			   MPI_Comm comm) {
-    int i;
+    int i, root=0, recv_dim;
+    int *send_dim;
+
+    send_dim = (int *) malloc(num*sizeof(int));
+    for (i = 0; i < num; i++) send_dim[i] = *dim;
+
+    MPI_Scatter(send_dim, 1, MPI_INT, &recv_dim, 1, MPI_INT, root, comm);
+
+    if (rank != root)
+      *dim = recv_dim;
 
     if(rank == 0) {    
+
       /* Partition the mesh*/
+
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
       MSTK_Mesh_Partition(*mesh, submeshes, num, ring, with_attr);
 
+      
       *mesh = submeshes[0];
       for(i = 1; i < num; i++) {
+
 	MSTK_SendMesh(submeshes[i],i,with_attr,comm);
 
 	MESH_Delete(submeshes[i]);  
@@ -304,7 +319,7 @@ extern "C" {
     }
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
-      MSTK_RecvMesh(*mesh,dim,0,rank,with_attr,comm);
+      MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
     }
     return 1;
   }
