@@ -121,13 +121,13 @@ void MSTK_Init(void);
 
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
 				const char* global_mesh_name, 
-				int dim, int ring, int with_attr, 
+				int *dim, int ring, int with_attr, 
 				int rank, int num, MPI_Comm comm);
 
   /* Partition an existing mesh and distribute it to 'num' processors */
 
   int MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
-			   int dim, int ring, int with_attr, 
+			   int *dim, int ring, int with_attr, 
 			   int rank, int num, MPI_Comm comm);
 
   /* Parallel update attribute values for ghost entities */
@@ -290,8 +290,12 @@ void MSTK_Init(void);
   List_ptr MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr mvert);
   List_ptr MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
   List_ptr MF_AdjFaces(MFace_ptr mface);
+
+  /* Returns 1 or 0 */
   int MF_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
   int MF_EdgeDir_i(MFace_ptr mface, int i);
+
+
   int MF_UsesEntity(MFace_ptr mface, MEntity_ptr mentity, int type);
   List_ptr MF_Regions(MFace_ptr mface);
   MRegion_ptr MF_Region(MFace_ptr mface, int side);
@@ -365,8 +369,11 @@ void MSTK_Init(void);
   List_ptr MR_Edges(MRegion_ptr mregion);
   List_ptr MR_Faces(MRegion_ptr mregion);
   List_ptr MR_AdjRegions(MRegion_ptr mregion);
+
+  /* Returns 1 or 0 */
   int MR_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int MR_FaceDir_i(MRegion_ptr mregion, int i);
+
   int MR_UsesEntity(MRegion_ptr mregion, MEntity_ptr ment, int type);
 
 
