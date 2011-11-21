@@ -24,7 +24,7 @@
 
 \begin{document}
 
-\title{MSTK: Mesh Toolkit, v 1.8} 
+\title{MSTK: Mesh Toolkit, v 1.83} 
 
 
 \author{Rao V. Garimella \\
@@ -1979,7 +1979,7 @@ The following are the highest level of parallel mesh management functions.
 \begin{description}
 
 \item[] {\bf {\em int} MSTK\_Mesh\_Read\_Distribute({\em Mesh\_ptr
-      *}recv\_mesh, {\em const char*} global\_mesh\_name, {\em int} dim,
+      *}recv\_mesh, {\em const char*} global\_mesh\_name, {\em int} *dim,
     {\em int} ring, {\em int} with\_attr, {\em int} rank, {\em int}
     num, {\em MPI\_Comm} comm)}: Routine reads a mesh of dimension
   'dim' from file 'global\_mesh\_name' on processor 'rank' and
@@ -1993,11 +1993,16 @@ The following are the highest level of parallel mesh management functions.
   necessary to synchronize attribute data across processors. This routine must be called from only one processor.
 
 \item[] {\bf {\em int} MSTK\_Mesh\_Distribute({\em Mesh\_ptr
-      *}recv\_mesh, {\em int} ring, {\em int} with\_attr, {\em int}
-    rank, {\em int} num, {\em MPI\_Comm} comm)}: Similar to the above
-  Read\_Distribute routine except that it does do any read. On the
-  processor, that is doing the distributing, recv\_mesh holds the
-  input and out meshes.
+      *}recv\_mesh, {\em int} *dim, {\em int} ring, {\em int}
+    with\_attr, {\em int} rank, {\em int} num, {\em MPI\_Comm} comm)}:
+  Similar to the above Read\_Distribute routine except that it does
+  not do any read. On the root processor, 'recv\_mesh' is an
+  input-output parameter - the application uses it to send in the full
+  mesh to be distributed and the mesh partition belonging to the root
+  processor is returned in it. On other processors, this is an output
+  parameter only. Also, 'dim', indicating the topological dimension of
+  the input mesh, is an input parameter on the root processor while it
+  is an output parameter on the other processors.
 
 
 \item[] {\bf {\em int} MSTK\_UpdateAttr({\em Mesh\_ptr} mesh, {\em
