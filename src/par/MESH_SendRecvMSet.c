@@ -29,7 +29,7 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
 
   mset = MESH_MSetByName(mesh,mset_name);
   if(!mset) {
-    MSTK_Report("MESH_SendMSet","Mesh has no such entity set",ERROR);
+    MSTK_Report("MESH_SendMSet","Mesh has no such entity set",MSTK_ERROR);
     return 0;
   }
 
@@ -95,7 +95,7 @@ int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int send_rank, int rank,
   mset = MESH_MSetByName(mesh,mset_name);
 
   if (!mset) {
-    MSTK_Report("MESH_RecvMSet","Mesh contains no such set",ERROR);
+    MSTK_Report("MESH_RecvMSet","Mesh contains no such set",MSTK_ERROR);
     return 0;
   }
 
@@ -165,12 +165,12 @@ int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int send_rank, int rank,
       }
       break;
     default:
-      MSTK_Report("MESH_RecvMSet","Unrecognized entity type",ERROR);
+      MSTK_Report("MESH_RecvMSet","Unrecognized entity type",MSTK_ERROR);
       break;
     }
 
     if (!ment) {
-      MSTK_Report("MESH_RecvMSet","Cannot find entity with this global ID",ERROR);
+      MSTK_Report("MESH_RecvMSet","Cannot find entity with this global ID",MSTK_ERROR);
       continue;
     }
 

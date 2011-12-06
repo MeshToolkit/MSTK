@@ -496,7 +496,7 @@ extern "C" {
 	  }
 	  else
 	    MSTK_Report("MESH_ExportToEXODUSII",
-			"Element type unsupported by EXODUS II format",FATAL);
+			"Element type unsupported by EXODUS II format",MSTK_FATAL);
 	  
 	  
 	  connect = (int *) MSTK_malloc(nelnodes*nelem*sizeof(int));
@@ -526,7 +526,7 @@ extern "C" {
 	  }
 	  else
 	    MSTK_Report("MESH_ExportToEXODUSII",
-			"Element type unsupported by EXODUS II format",FATAL);
+			"Element type unsupported by EXODUS II format",MSTK_FATAL);
 
 	  connect = (int *) MSTK_malloc(nelnodes*nelem*sizeof(int));
 
@@ -597,7 +597,7 @@ extern "C" {
 	  if (!fregs || List_Num_Entries(fregs) == 0)
 	    MSTK_Report("MESH_ExportToEXODUSII",
 			"Standalone face with no regions in side set",
-			FATAL);
+			MSTK_FATAL);
 	  mr = List_Entry(fregs,0);
 
 	  /* Since elements will be read back from the Exodus II file
@@ -676,7 +676,7 @@ extern "C" {
 	  if (!efaces || List_Num_Entries(efaces) == 0)
 	    MSTK_Report("MESH_ExportToEXODUSII",
 			"Standalone edge with no faces in side set",
-			FATAL);
+			MSTK_FATAL);
 	  mf = List_Entry(efaces,0);
 
 	  /* Since elements will be read back from the Exodus II file

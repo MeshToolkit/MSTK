@@ -65,7 +65,7 @@ extern "C" {
 #ifdef DEBUG
     if (MEnt_Dim((MEntity_ptr) e) != MDELETED) {
       MSTK_Report("ME_Restore",
-		  "Trying to restore edge that is not deleted",WARN);
+		  "Trying to restore edge that is not deleted",MSTK_WARN);
       return;
     }
 #endif
@@ -129,7 +129,7 @@ extern "C" {
       MV_Rem_Edge(oldv,e);
     }
     else
-      MSTK_Report("ME_Replace_Vertex","Cannot find vertex in edge",ERROR);
+      MSTK_Report("ME_Replace_Vertex","Cannot find vertex in edge",MSTK_ERROR);
   }
 
   int ME_Set_GInfo_Auto(MEdge_ptr e) {
@@ -322,7 +322,7 @@ extern "C" {
     case 2: case 3:
       return 0;
     default:
-      MSTK_Report("ME_UsesEntity","Invalid entity type",ERROR);
+      MSTK_Report("ME_UsesEntity","Invalid entity type",MSTK_ERROR);
     }
     return 0;
   }

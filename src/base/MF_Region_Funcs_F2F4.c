@@ -55,7 +55,7 @@ extern "C" {
     MFace_Adj_F2F4 *adj;
     
 #ifdef DEBUG
-    MSTK_Report("MF_Region_F4","More efficient to use MF_Regions",MESG);
+    MSTK_Report("MF_Region_F4","More efficient to use MF_Regions",MSTK_MESG);
 #endif
 
     dir = (ir) ? 0 : 1;
@@ -88,7 +88,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Add_Region",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
   }
 
@@ -96,7 +96,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_Region",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
   }
 

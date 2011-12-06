@@ -49,7 +49,7 @@ int MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   else if(nf) 
     (*MESH_Surf_SendMesh_jmp[rtype])(mesh,rank,comm);
   else {
-    MSTK_Report("MESH_SendMesh()","only send volume or surface mesh",ERROR);
+    MSTK_Report("MESH_SendMesh()","only send volume or surface mesh",MSTK_ERROR);
     exit(-1);
   }
   return 1;
@@ -427,17 +427,17 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 
 
 int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int rank, MPI_Comm comm) {
-  MSTK_Report("MESH_Surf_SendMesh_R1R2R4","Not implemented",FATAL);
+  MSTK_Report("MESH_Surf_SendMesh_R1R2R4","Not implemented",MSTK_FATAL);
 }
 
 
 int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int rank, MPI_Comm comm) {
-  MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",FATAL);
+  MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
 }
 
 
 int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int rank, MPI_Comm comm) {
-  MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",FATAL);
+  MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
 }
 
 

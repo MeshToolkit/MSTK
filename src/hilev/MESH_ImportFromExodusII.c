@@ -63,14 +63,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   
   if (exoid < 0) {
     sprintf(mesg,"Cannot open/read Exodus II file %s\n",filename);
-    MSTK_Report(funcname,mesg,FATAL);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
   
   
   status = ex_get_init_ext(exoid, &exopar);
   if (status < 0) {
     sprintf(mesg,"Error while reading Exodus II file %s\n",filename);
-    MSTK_Report(funcname,mesg,FATAL);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
   
   
@@ -109,7 +109,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   status = ex_get_coord(exoid, xvals, yvals, zvals);
   if (status < 0) {
     sprintf(mesg,"Error while reading vertex info in Exodus II file %s\n",filename);
-    MSTK_Report(funcname,mesg,FATAL);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
 
 
@@ -134,7 +134,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   status = ex_get_node_num_map(exoid, node_map);
   if (status < 0) {
     sprintf(mesg,"Error while reading node map in Exodus II file %s\n",filename);
-    MSTK_Report(funcname,mesg,FATAL);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
   
   if (status == 0) {
@@ -159,7 +159,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       sprintf(mesg,
 	      "Error while reading nodeset IDs in Exodus II file %s\n",
 	      filename);
-      MSTK_Report(funcname,mesg,FATAL);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
     }
     
     
@@ -180,7 +180,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       if (status < 0) {
 	sprintf(mesg,
 		"Error while reading nodes in nodeset %-d in Exodus II file %s\n",nodeset_ids[i],filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
       
       
@@ -217,7 +217,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     status = ex_get_ids(exoid, EX_FACE_BLOCK, face_blk_ids);
     if (status < 0) {
       sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
-      MSTK_Report(funcname,mesg,FATAL);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
     for (i = 0; i < nface_blk; i++) {
 
@@ -228,7 +228,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading face block info in Exodus II file %s\n",
 		filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
       connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
@@ -240,7 +240,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading face block info in Exodus II file %s\n",
 		filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
       
@@ -252,7 +252,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading face block info in Exodus II file %s\n",
 		filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
       int max = 0;
@@ -295,7 +295,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   status = ex_get_ids(exoid, EX_ELEM_BLOCK, elem_blk_ids);
   if (status < 0) {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
-    MSTK_Report(funcname,mesg,FATAL);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
   
   elem_blknames = (char **) malloc(nelblock*sizeof(char *));
@@ -304,14 +304,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   status = ex_get_names(exoid, EX_ELEM_BLOCK, elem_blknames);
   if (status < 0) {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
-    MSTK_Report(funcname,mesg,FATAL);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
   
   
 
   if (ndim == 1) {
     
-    MSTK_Report("MESH_ImportFromExodusII","Not implemented",FATAL);
+    MSTK_Report("MESH_ImportFromExodusII","Not implemented",MSTK_FATAL);
     
   }
   else if (ndim == 2) {
@@ -330,7 +330,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading element block %s in Exodus II file %s\n",
 		elem_blknames[i],filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
       sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
@@ -353,7 +353,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  sprintf(mesg,
 		  "Error while reading face block info in Exodus II file %s\n",
 		  filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 
       
@@ -365,7 +365,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  sprintf(mesg,
 		  "Error while reading face block info in Exodus II file %s\n",
 		  filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 
 	int max = 0;
@@ -403,7 +403,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
 	  sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 	
 
@@ -444,7 +444,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading sideset IDs %s in Exodus II file %s\n",
 		elem_blknames[i],filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
       
       
@@ -465,7 +465,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	if (status < 0) {
 	  sprintf(mesg,
 		  "Error while reading elements in sideset %-d in Exodus II file %s\n",sideset_ids[i],filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 	
 	
@@ -506,7 +506,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     status = ex_get_elem_num_map(exoid, elem_map);
     if (status < 0) {
       sprintf(mesg,"Error while reading element map in Exodus II file %s\n",filename);
-      MSTK_Report(funcname,mesg,FATAL);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
     }
     
     if (status == 0) {
@@ -539,7 +539,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading element block %s in Exodus II file %s\n",
 		elem_blknames[i],filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
       if (strncasecmp(elem_type,"NFACED",6) == 0 ||
@@ -561,7 +561,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     else if (surf_elems && solid_elems)
       mesh_type = 3;
     else {
-      MSTK_Report(funcname,"Mesh has neither surface nor solid elements?",FATAL);
+      MSTK_Report(funcname,"Mesh has neither surface nor solid elements?",MSTK_FATAL);
     }
     
     if (mesh_type == 1) 
@@ -581,7 +581,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading element block %s in Exodus II file %s\n",
 		elem_blknames[i],filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
       
       sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
@@ -610,7 +610,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  sprintf(mesg,
 		  "Error while reading elem block info in Exodus II file %s\n",
 		  filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 
       
@@ -622,7 +622,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  sprintf(mesg,
 		  "Error while reading elem block info in Exodus II file %s\n",
 		  filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 
 	int max = 0;
@@ -669,7 +669,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
 	  sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 	
 	
@@ -681,7 +681,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  eltype = 0;
 	  nrf = 4;
 	  if (nelnodes > 4) {
-	    MSTK_Report(funcname,"Higher order tets not supported",WARN);
+	    MSTK_Report(funcname,"Higher order tets not supported",MSTK_WARN);
 	    continue;
 	  }
 	}
@@ -689,7 +689,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  eltype = 1;
 	  nrf = 5;
 	  if (nelnodes > 6) {
-	    MSTK_Report(funcname,"Higher order prisms/wedges not supported",WARN);
+	    MSTK_Report(funcname,"Higher order prisms/wedges not supported",MSTK_WARN);
 	    continue;
 	  }
 	}
@@ -697,14 +697,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  eltype = 2;
 	  nrf = 6;
 	  if (nelnodes > 8) {
-	    MSTK_Report(funcname,"Higher order hexes not supported",WARN);
+	    MSTK_Report(funcname,"Higher order hexes not supported",MSTK_WARN);
 	    continue;
 	  }
 	}
 	else {
 	  sprintf(mesg,"Unrecognized or unsupported solid element type: %s",
 		  elem_type);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  continue;
 	}
 	
@@ -752,7 +752,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 		}
 		else if (List_Num_Entries(fregs) == 2) {
 		  MSTK_Report("MESH_ImportFromExodusII",
-			      "Face already connected two faces",FATAL);
+			      "Face already connected two faces",MSTK_FATAL);
 		}
 	      }
 	    }
@@ -793,7 +793,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  sprintf(mesg,
 		  "Error while reading face block info in Exodus II file %s\n",
 		  filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 
       
@@ -805,7 +805,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  sprintf(mesg,
 		  "Error while reading face block info in Exodus II file %s\n",
 		  filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 
 	int max = 0;
@@ -850,7 +850,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
 	  sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 	
 	
@@ -897,7 +897,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	sprintf(mesg,
 		"Error while reading sideset IDs %s in Exodus II file %s\n",
 		elem_blknames[i],filename);
-	MSTK_Report(funcname,mesg,FATAL);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
       
       
@@ -919,7 +919,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	if (status < 0) {
 	  sprintf(mesg,
 		  "Error while reading elements in sideset %-d in Exodus II file %s\n",sideset_ids[i],filename);
-	  MSTK_Report(funcname,mesg,FATAL);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
 	
 	
@@ -955,14 +955,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    mf = List_Entry(rfaces,lfnum);
 	  }
 	  if (!mf)
-	    MSTK_Report(funcname,"Could not find sideset face",FATAL);
+	    MSTK_Report(funcname,"Could not find sideset face",MSTK_FATAL);
 	  else {
 	    List_ptr fregs;
 	    fregs = MF_Regions(mf);
 	    if (List_Num_Entries(fregs) == 2) {
 	      MSTK_Report("MESH_ImportFromExodusII",
 			  "Interior face identified as being on the boundary",
-			  ERROR);
+			  MSTK_ERROR);
 	    }
 	    if (fregs) List_Delete(fregs);
 	  }
@@ -1000,7 +1000,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     status = ex_get_elem_num_map(exoid, elem_map);
     if (status < 0) {
       sprintf(mesg,"Error while reading element map in Exodus II file %s\n",filename);
-      MSTK_Report(funcname,mesg,FATAL);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
     }
     
     if (status == 0) {
@@ -1024,7 +1024,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       else {
 	MSTK_Report("MESH_ImportFromExodusII",
 	       "Element maps not supported for mixed surface-solid meshes",
-		    WARN);
+		    MSTK_WARN);
       }
       
     }

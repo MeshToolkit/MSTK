@@ -35,14 +35,14 @@ int MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3], int nf,
   if (nf && nr) {
     
     MSTK_Report("MESH_InitFromGenDesc",
-		"Cannot specify 'faces' and 'regions' for now",WARN);
+		"Cannot specify 'faces' and 'regions' for now",MSTK_WARN);
     return 0;
   }
 
   if (!nf && !nr) {
     
     MSTK_Report("MESH_InitFromGenDesc",
-		"Mesh has only vertices? No faces or regions?",WARN);
+		"Mesh has only vertices? No faces or regions?",MSTK_WARN);
 
     return 0;
   }
@@ -73,7 +73,7 @@ int MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3], int nf,
 
   if (nr && rfvtemplate)
     MSTK_Report("MESH_InitFromGenDesc",
-		"General mesh import has not been tested yet",WARN);
+		"General mesh import has not been tested yet",MSTK_WARN);
 
   max_nrv = 0;
   for (i = 0; i < nr; i++)
@@ -102,7 +102,7 @@ int MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3], int nf,
       }
       else {
 	MSTK_Report("MESH_InitFromGenDesc",
-		    "No standard mesh shape for regions with more than 8 vertices",WARN);
+		    "No standard mesh shape for regions with more than 8 vertices",MSTK_WARN);
 	
 	return 0;
 	

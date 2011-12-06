@@ -15,11 +15,11 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   gdim = MF_GEntDim(f1);
 
   if (mesh != MF_Mesh(f2)) {
-    MSTK_Report("MFs_Join","Faces not from same mesh",ERROR);
+    MSTK_Report("MFs_Join","Faces not from same mesh",MSTK_ERROR);
     return 0;
   }
   else if (gid != MF_GEntID(f1) || gdim != MF_GEntDim(f1)) {
-    MSTK_Report("MFs_Join","Faces not from same geometric entity",ERROR);
+    MSTK_Report("MFs_Join","Faces not from same geometric entity",MSTK_ERROR);
     return 0;
   }
 
@@ -52,7 +52,7 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   List_Delete(fedges);
 
   if (k1 == -1 || k2 == -1) {
-    MSTK_Report("MFs_Join","Cannot find edge in face",ERROR);
+    MSTK_Report("MFs_Join","Cannot find edge in face",MSTK_ERROR);
     return 0;
   }
 

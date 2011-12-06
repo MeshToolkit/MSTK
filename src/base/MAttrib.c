@@ -22,7 +22,7 @@ extern "C" {
       for (i = 0; i < natt; i++) {
 	attrib = MESH_Attrib(mesh,i);
 	if (strcmp(att_name,attrib->name) == 0) {
-	  MSTK_Report("MAttrib_New","Attribute with given name exists",WARN);
+	  MSTK_Report("MAttrib_New","Attribute with given name exists",MSTK_WARN);
 	  return attrib;
 	}
       }      
@@ -38,7 +38,7 @@ extern "C" {
 #ifdef DEBUG
     if (att_type != INT && att_type != DOUBLE && 
 	att_type != VECTOR && att_type != TENSOR && att_type != POINTER) {
-      MSTK_Report("MAttDef_New","Unsupported attribute type",ERROR);
+      MSTK_Report("MAttDef_New","Unsupported attribute type",MSTK_ERROR);
       return NULL;
     }
 #endif
@@ -52,7 +52,7 @@ extern "C" {
 
 #ifdef DEBUG
       if (ncomponents == 0)      
-	MSTK_Report("MAttrib_New","Number of components for attribute type VECTOR or TENSOR should be non-zero",FATAL);
+	MSTK_Report("MAttrib_New","Number of components for attribute type VECTOR or TENSOR should be non-zero",MSTK_FATAL);
 #endif
       va_end(ap);
     }

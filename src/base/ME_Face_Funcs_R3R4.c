@@ -16,7 +16,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("ME_Num_Faces",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
 
     efaces = ME_Faces(e);

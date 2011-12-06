@@ -53,28 +53,28 @@ extern "C" {
   void ME_Add_Face_R1(MEdge_ptr e, MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("ME_Add_Face",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
   
   void ME_Rem_Face_R1(MEdge_ptr e, MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("ME_Rem_Face",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void ME_Add_Region_R1(MEdge_ptr e, MRegion_ptr r) {
 #ifdef DEBUG
     MSTK_Report("ME_Add_Region",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void ME_Rem_Region_R1(MEdge_ptr e, MRegion_ptr r) {
 #ifdef DEBUG
     MSTK_Report("ME_Rem_Region",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

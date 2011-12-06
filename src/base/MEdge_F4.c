@@ -60,7 +60,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("ME_Num_Faces",
        	"May be inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     
     efaces = ME_Faces_F4(e);
@@ -209,14 +209,14 @@ extern "C" {
 
   MEdge_ptr ME_NextInHash_F4(MEdge_ptr e) {
 #ifdef DEBUG
-    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
     return NULL;
   }
 
   void ME_Set_NextInHash_F4(MEdge_ptr e, MEdge_ptr next) {
 #ifdef DEBUG
-    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
   }
 

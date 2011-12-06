@@ -359,7 +359,7 @@ void MESH_FillHash_Edges(Mesh_ptr mesh) {
   /* Force AutoLocking */
   MESH_Set_AutoLock(mesh, 1);
 #ifdef DEBUG
-  MSTK_Report("Mesh_FillHash_Edges","Inefficient to call routines like MESH_Num_Edges, MESH_Edge, MESH_Next_Edge with this representation\n",WARN);
+  MSTK_Report("Mesh_FillHash_Edges","Inefficient to call routines like MESH_Num_Edges, MESH_Edge, MESH_Next_Edge with this representation\n",MSTK_WARN);
 #endif
   i = 0;
   while ((region = MESH_Next_Region(mesh, &i))) {
@@ -386,7 +386,7 @@ void MESH_FillHash_Faces(Mesh_ptr mesh) {
   /* Force AutoLocking */
   MESH_Set_AutoLock(mesh, 1);
 #ifdef DEBUG
-  MSTK_Report("Mesh_FillHash_Edges","Inefficient to call routines like MESH_Num_Faces, MESH_Face, MESH_Next_Face with this representation\n",WARN);
+  MSTK_Report("Mesh_FillHash_Edges","Inefficient to call routines like MESH_Num_Faces, MESH_Face, MESH_Next_Face with this representation\n",MSTK_WARN);
 #endif
   i = 0;
   while ((region = MESH_Next_Region(mesh, &i))) {
@@ -446,7 +446,7 @@ int        MESH_Num_Elements(Mesh_ptr mesh) {
 MVertex_ptr MESH_Vertex(Mesh_ptr mesh, int i) {
   if (i >= mesh->nv) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Vertex","Non-existent vertex requested\n",ERROR);
+    MSTK_Report("Mesh_Vertex","Non-existent vertex requested\n",MSTK_ERROR);
 #endif
     return (MVertex_ptr) NULL;
   }
@@ -465,7 +465,7 @@ MEdge_ptr MESH_Edge(Mesh_ptr mesh, int i) {
   }
   if (i >= mesh->ne) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Edge","Non-existent edge requested\n",ERROR);
+    MSTK_Report("Mesh_Edge","Non-existent edge requested\n",MSTK_ERROR);
 #endif
     return (MEdge_ptr) NULL;
   }
@@ -486,7 +486,7 @@ MFace_ptr MESH_Face(Mesh_ptr mesh, int i) {
   }
   if (i >= mesh->nf) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Face","Non-existent face requested\n",ERROR);
+    MSTK_Report("Mesh_Face","Non-existent face requested\n",MSTK_ERROR);
 #endif
     return (MFace_ptr) NULL;
   }
@@ -498,7 +498,7 @@ MRegion_ptr MESH_Region(Mesh_ptr mesh, int i) {
 
   if (i >= mesh->nr) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Region","Non-existent region requested\n",ERROR);
+    MSTK_Report("Mesh_Region","Non-existent region requested\n",MSTK_ERROR);
 #endif
     return (MRegion_ptr) NULL;
   }
@@ -705,7 +705,7 @@ MEntity_ptr MESH_EntityFromID(Mesh_ptr mesh, int mtype, int id) {
   case 3:
     return MESH_RegionFromID(mesh,id);
   default:
-    MSTK_Report("MESH_EntityFromID","Unrecognized entity type",ERROR);
+    MSTK_Report("MESH_EntityFromID","Unrecognized entity type",MSTK_ERROR);
     return NULL;
   }
 
@@ -748,7 +748,7 @@ void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
 
   if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
 #ifdef DEBUG
-    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",ERROR);
+    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",MSTK_ERROR);
 #endif
     return;
   }
@@ -783,7 +783,7 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
 
   if (mesh->mvertex == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", ERROR);
+    MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", MSTK_ERROR);
 #endif
     return;
   }
@@ -804,7 +804,7 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
     fnd = List_RemSorted(mesh->mvertex,v,&(MV_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Vertex","Vertex not found in list",FATAL);
+    MSTK_Report("MESH_Rem_Vertex","Vertex not found in list",MSTK_FATAL);
 
   mesh->nv = List_Num_Entries(mesh->mvertex);
 
@@ -816,7 +816,7 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
 
   if (mesh->medge == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",ERROR);
+    MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",MSTK_ERROR);
 #endif
     return;
   }
@@ -837,7 +837,7 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
     fnd = List_RemSorted(mesh->medge,e,&(ME_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Edge","Edge not found in list",FATAL);
+    MSTK_Report("MESH_Rem_Edge","Edge not found in list",MSTK_FATAL);
 
   mesh->ne = List_Num_Entries(mesh->medge);
 
@@ -849,7 +849,7 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
 
   if (mesh->mface == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Face","No Faces in mesh to remove",ERROR);
+    MSTK_Report("Mesh_Rem_Face","No Faces in mesh to remove",MSTK_ERROR);
 #endif
     return;
   }
@@ -870,7 +870,7 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
     fnd = List_RemSorted(mesh->mface,f,&(MF_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Face","Face not found in list",FATAL);
+    MSTK_Report("MESH_Rem_Face","Face not found in list",MSTK_FATAL);
 
   mesh->nf = List_Num_Entries(mesh->mface);
 
@@ -881,7 +881,7 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
   int fnd=0, i, id;
 
   if (mesh->mregion == (List_ptr) NULL) {
-    MSTK_Report("Mesh_Rem_Region","No regions in mesh to remove",ERROR);
+    MSTK_Report("Mesh_Rem_Region","No regions in mesh to remove",MSTK_ERROR);
     return;
   }
 
@@ -902,7 +902,7 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
     fnd = List_RemSorted(mesh->mregion,r,&(MR_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Region","Region not found in list",FATAL);
+    MSTK_Report("MESH_Rem_Region","Region not found in list",MSTK_FATAL);
 
   mesh->nr = List_Num_Entries(mesh->mregion);
 }    
@@ -973,7 +973,7 @@ int MESH_Num_GhostEdges(Mesh_ptr mesh) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_Num_GhostEdges",
-		"No ghost edges in reduced representations",WARN);
+		"No ghost edges in reduced representations",MSTK_WARN);
     return 0;
   }
   if (mesh->ghedge)
@@ -987,7 +987,7 @@ int MESH_Num_OverlapEdges(Mesh_ptr mesh) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_Num_OverlapEdges",
-		"No ghost edges in reduced representations",WARN);
+		"No ghost edges in reduced representations",MSTK_WARN);
     return 0;
   }
   if (mesh->ovedge)
@@ -1000,7 +1000,7 @@ int MESH_Num_InteriorEdges(Mesh_ptr mesh) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_Num_InteriorEdges",
-		"No interior edges in reduced representations",WARN);
+		"No interior edges in reduced representations",MSTK_WARN);
     return 0;
   }
   else 
@@ -1018,7 +1018,7 @@ int MESH_Num_GhostFaces(Mesh_ptr mesh) {
       return List_Num_Entries(mesh->ghface);   
     else {
       MSTK_Report("MESH_Num_GhostFaces",
-		  "No ghost faces in reduced representation",WARN);
+		  "No ghost faces in reduced representation",MSTK_WARN);
       return 0;
     }
   }
@@ -1036,7 +1036,7 @@ int MESH_Num_OverlapFaces(Mesh_ptr mesh) {
       return List_Num_Entries(mesh->ovface);   
     else {
       MSTK_Report("MESH_Num_OverlapFaces",
-		  "No ghost faces in reduced representation",WARN);
+		  "No ghost faces in reduced representation",MSTK_WARN);
       return 0;
     }
   }
@@ -1057,7 +1057,7 @@ int MESH_Num_InteriorFaces(Mesh_ptr mesh) {
 	-List_Num_Entries(mesh->ghface);   
     else {
       MSTK_Report("MESH_Num_InteriorFaces",
-		  "No interior faces in reduced representation",WARN);
+		  "No interior faces in reduced representation",MSTK_WARN);
       return 0;
     }
   }
@@ -1103,7 +1103,7 @@ MEdge_ptr MESH_GhostEdge(Mesh_ptr mesh, int i) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_GhostEdge",
-		"No ghost edges in reduced representation",FATAL);
+		"No ghost edges in reduced representation",MSTK_FATAL);
   }
   return (MEdge_ptr) List_Entry(mesh->ghedge, i);
 }
@@ -1114,7 +1114,7 @@ MEdge_ptr MESH_OverlapEdge(Mesh_ptr mesh, int i) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_OverlapEdge",
-		"No ghost edges in reduced representation",FATAL);
+		"No ghost edges in reduced representation",MSTK_FATAL);
   }
   return (MEdge_ptr) List_Entry(mesh->ovedge, i);
 }
@@ -1126,7 +1126,7 @@ MFace_ptr MESH_GhostFace(Mesh_ptr mesh, int i) {
   if ((rtype >= R1) && (rtype <= R2)) {
     if (mesh->nr) {
       MSTK_Report("MESH_GhostFace",
-		  "No ghost faces in reduced representation",FATAL);
+		  "No ghost faces in reduced representation",MSTK_FATAL);
     }
   }
 
@@ -1140,7 +1140,7 @@ MFace_ptr MESH_OverlapFace(Mesh_ptr mesh, int i) {
   if ((rtype >= R1) && (rtype <= R2)) {
     if (mesh->nr) {
       MSTK_Report("MESH_OverlapFace",
-		  "No ghost faces in reduced representation",FATAL);
+		  "No ghost faces in reduced representation",MSTK_FATAL);
     }
   }
 
@@ -1187,7 +1187,7 @@ MEdge_ptr MESH_Next_GhostEdge(Mesh_ptr mesh, int *index) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_Next_GhostEdge",
-		"No ghost edges in reduced representation",WARN);
+		"No ghost edges in reduced representation",MSTK_WARN);
     return NULL;
   }
   if (mesh->ghedge)
@@ -1201,7 +1201,7 @@ MEdge_ptr MESH_Next_OverlapEdge(Mesh_ptr mesh, int *index) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_Next_OverlapEdge",
-		"No ghost edges in reduced representation",WARN);
+		"No ghost edges in reduced representation",MSTK_WARN);
     return NULL;
   }
   if (mesh->ovedge)
@@ -1216,7 +1216,7 @@ MEdge_ptr MESH_Next_InteriorEdge(Mesh_ptr mesh, int *index) {
   rtype = MESH_RepType(mesh);
   if ((rtype >= R1) && (rtype <= R4)) {
     MSTK_Report("MESH_Next_InteriorEdge",
-		"No interior edges in reduced representation",WARN);
+		"No interior edges in reduced representation",MSTK_WARN);
     return NULL;
   }
   if (mesh->medge) {
@@ -1236,7 +1236,7 @@ MFace_ptr MESH_Next_GhostFace(Mesh_ptr mesh, int *index) {
   if ((rtype >= R1) && (rtype <= R2)) {
     if (mesh->nr) {
       MSTK_Report("MESH_Next_GhostFace",
-		  "No ghost faces in reduced representation",WARN);
+		  "No ghost faces in reduced representation",MSTK_WARN);
       return NULL;
     }
   }
@@ -1252,7 +1252,7 @@ MFace_ptr MESH_Next_OverlapFace(Mesh_ptr mesh, int *index) {
   if ((rtype >= R1) && (rtype <= R2)) {
     if (mesh->nr) {
       MSTK_Report("MESH_Next_OverlapFace",
-		  "No ghost faces in reduced representation",WARN);
+		  "No ghost faces in reduced representation",MSTK_WARN);
       return NULL;
     }
   }
@@ -1269,7 +1269,7 @@ MFace_ptr MESH_Next_InteriorFace(Mesh_ptr mesh, int *index) {
   if ((rtype >= R1) && (rtype <= R2)) {
     if (mesh->nr) {
       MSTK_Report("MESH_Next_InteriorFace",
-		  "No interior faces in reduced representation",WARN);
+		  "No interior faces in reduced representation",MSTK_WARN);
       return NULL;
     }
   }
@@ -1358,7 +1358,7 @@ void MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f){
 
   if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
 #ifdef DEBUG
-    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",ERROR);
+    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",MSTK_ERROR);
 #endif
     return;
   }
@@ -1381,7 +1381,7 @@ void MESH_Add_OverlapFace(Mesh_ptr mesh, MFace_ptr f){
 
   if ((mesh->reptype == R4) && (MF_Region(f,0) || MF_Region(f,1))) {
 #ifdef DEBUG
-    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",ERROR);
+    MSTK_Report("MESH_Add_Face","Can add disconnected faces only",MSTK_ERROR);
 #endif
     return;
   }
@@ -1415,7 +1415,7 @@ void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
 
   if (mesh->ghvertex == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", ERROR);
+    MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", MSTK_ERROR);
 #endif
     return;
   }
@@ -1436,7 +1436,7 @@ void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
     fnd = List_RemSorted(mesh->ghvertex,v,&(MV_GlobalID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in list",FATAL);
+    MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in list",MSTK_FATAL);
 
   return;
 }    
@@ -1446,7 +1446,7 @@ void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
 
   if (mesh->ghedge == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",ERROR);
+    MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",MSTK_ERROR);
 #endif
     return;
   }
@@ -1467,7 +1467,7 @@ void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
     fnd = List_RemSorted(mesh->ghedge,e,&(ME_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_GhostEdge","Edge not found in list",FATAL);
+    MSTK_Report("MESH_Rem_GhostEdge","Edge not found in list",MSTK_FATAL);
 
   return;
 }    
@@ -1477,7 +1477,7 @@ void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
 
   if (mesh->ghface == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_GhostFace","No Faces in mesh to remove",ERROR);
+    MSTK_Report("Mesh_Rem_GhostFace","No Faces in mesh to remove",MSTK_ERROR);
 #endif
     return;
   }
@@ -1498,7 +1498,7 @@ void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
     fnd = List_RemSorted(mesh->ghface,f,&(MF_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Face","Face not found in list",FATAL);
+    MSTK_Report("MESH_Rem_Face","Face not found in list",MSTK_FATAL);
 
   return;
 }    
@@ -1507,7 +1507,7 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
   int fnd=0, i, id;
 
   if (mesh->ghregion == (List_ptr) NULL) {
-    MSTK_Report("Mesh_Rem_GhostRegion","No regions in mesh to remove",ERROR);
+    MSTK_Report("Mesh_Rem_GhostRegion","No regions in mesh to remove",MSTK_ERROR);
     return;
   }
 
@@ -1528,7 +1528,7 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
     fnd = List_RemSorted(mesh->ghregion,r,&(MR_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_GhostRegion","Region not found in list",FATAL);
+    MSTK_Report("MESH_Rem_GhostRegion","Region not found in list",MSTK_FATAL);
 
   return;
 }    
@@ -1585,29 +1585,29 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
   if (!(fp = fopen(filename,"r"))) {
     sprintf(temp_str,"Cannot open file %s",filename);
-    MSTK_Report("MESH_InitFromFile",temp_str,ERROR);
+    MSTK_Report("MESH_InitFromFile",temp_str,MSTK_ERROR);
     return 0;
   }
 
   status = fscanf(fp,"%s %lf",temp_str,&ver);
   if (strcmp(temp_str,"MSTK") != 0) {
-    MSTK_Report("MESH_InitFromFile","Not a MSTK file",ERROR);
+    MSTK_Report("MESH_InitFromFile","Not a MSTK file",MSTK_ERROR);
     fclose(fp);
     return 0;
   }
   if (status == EOF)
     MSTK_Report("MESH_InitFromFile",
-		"Premature end of file before any mesh data is read",FATAL);
+		"Premature end of file before any mesh data is read",MSTK_FATAL);
 
   if (ver != MSTK_VER) {
-    MSTK_Report("MESH_InitFromFile","Version mismatch",WARN);
+    MSTK_Report("MESH_InitFromFile","Version mismatch",MSTK_WARN);
   }
 
   status = fscanf(fp,"%s %d %d %d %d\n",inp_rtype,
 		  &(mesh->nv),&(mesh->ne),&(mesh->nf),&(mesh->nr));
   if (status == EOF)
     MSTK_Report("MESH_InitFromFile",
-		"Premature end of file before any mesh data is read",FATAL);
+		"Premature end of file before any mesh data is read",MSTK_FATAL);
 
 
   found = 0;
@@ -1625,7 +1625,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
 
   if (!found) {
-    MSTK_Report("MESH_InitFromFile","Unrecognized representation type",ERROR);
+    MSTK_Report("MESH_InitFromFile","Unrecognized representation type",MSTK_ERROR);
     fclose(fp);
     return 0;
   }
@@ -1637,17 +1637,17 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   if (file_reptype >= R1 && file_reptype <= R4) {
     if (mesh->ne)
       MSTK_Report("Mesh_InitFromFile",
-		  "Representation does not allow edges to be specified",WARN);
+		  "Representation does not allow edges to be specified",MSTK_WARN);
   }
 
 
   status = fscanf(fp,"%s",temp_str);
   if (status == EOF)
     MSTK_Report("MESH_InitFromFile",
-		"Premature end of file while looking for vertex data",FATAL);
+		"Premature end of file while looking for vertex data",MSTK_FATAL);
   else if (status == 0)
     MSTK_Report("MESH_InitFromFile",
-		"Error in reading vertex data",FATAL);
+		"Error in reading vertex data",MSTK_FATAL);
 
   if (strncmp(temp_str,"vertices",8) == 0) {
 
@@ -1658,10 +1658,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       status = fscanf(fp,"%lf %lf %lf %d %d",&xyz[0],&xyz[1],&xyz[2],&gdim,&gid);
       if (status == EOF)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file while reading vertices",FATAL);
+		    "Premature end of file while reading vertices",MSTK_FATAL);
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Error in reading vertex data",FATAL);
+		    "Error in reading vertex data",MSTK_FATAL);
 
       mv = MV_New(mesh);
       MV_Set_Coords(mv,xyz);
@@ -1676,7 +1676,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   else {
     MSTK_Report("MESH_InitFromFile",
-		"Vertex information should be listed first",ERROR);
+		"Vertex information should be listed first",MSTK_ERROR);
     fclose(fp);
     return 0;
   }
@@ -1686,7 +1686,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   if (status == EOF) {
     if (mesh->ne || mesh->nf || mesh->nr)
       MSTK_Report("MESH_InitFromFile",
-		  "Premature end of file after vertex data",FATAL);
+		  "Premature end of file after vertex data",MSTK_FATAL);
     else
       return 0;
   }
@@ -1707,26 +1707,26 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent vertices",
-		      FATAL);
+		      MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading adjacent vertex data",FATAL);
+		      "Error in reading adjacent vertex data",MSTK_FATAL);
 
 	for (j = 0; j < nav; j++) {
 	  status = fscanf(fp,"%d",&adjvid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading adjacent vertices"
-			,FATAL);
+			,MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading adjacent vertex data",FATAL);
+			"Error in reading adjacent vertex data",MSTK_FATAL);
 
 	  adjv = List_Entry(mesh->mvertex,adjvid-1);
 #ifdef DEBUG
 	  if (MV_ID(adjv) != adjvid)
 	    MSTK_Report("MESH_InitFromFile","Adjacent vertex ID mismatch",
-			ERROR);
+			MSTK_ERROR);
 #endif
 	  
 	  MV_Add_AdjVertex(mv,adjv);
@@ -1743,10 +1743,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent vertices",
-		      FATAL);
+		      MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading adjacent vertex data",FATAL);
+		      "Error in reading adjacent vertex data",MSTK_FATAL);
 	
 	for (j = 0; j < nav; j++)
 	  fscanf(fp,"%d",&adjvid);
@@ -1759,7 +1759,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     adjv_flag = 0;
     if (file_reptype == R2 || file_reptype == R4) {
       MSTK_Report("MESH_InitFromFile",
-		  "Expected adjacent vertex information",ERROR);
+		  "Expected adjacent vertex information",MSTK_ERROR);
     }
   }
     
@@ -1769,7 +1769,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF) {
       if (mesh->ne || mesh->nf || mesh->nr)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file after adjacent vertex data",FATAL);
+		    "Premature end of file after adjacent vertex data",MSTK_FATAL);
       else {
         fclose(fp);
 	return 1;
@@ -1794,16 +1794,16 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Premature end of file while reading edges",FATAL);
+		      "Premature end of file while reading edges",MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading edge data",FATAL);
+		      "Error in reading edge data",MSTK_FATAL);
 
 	ev1 = List_Entry(mesh->mvertex,vid1-1);
 	ev2 = List_Entry(mesh->mvertex,vid2-1);
 #ifdef DEBUG
 	if (MV_ID(ev1) != vid1 || MV_ID(ev2) != vid2)
-	  MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",ERROR);
+	  MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",MSTK_ERROR);
 #endif
 
 	me = ME_New(mesh);
@@ -1825,10 +1825,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	status = fscanf(fp,"%d %d %d %d",&vid1,&vid2,&gdim,&gid);
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Premature end of file while reading edges",FATAL);
+		      "Premature end of file while reading edges",MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading edge data",FATAL);
+		      "Error in reading edge data",MSTK_FATAL);
       }
     }
 
@@ -1836,7 +1836,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   }
   else {
     if (file_reptype >= F1 && file_reptype <= F4) {
-      MSTK_Report("MESH_InitFromFile","Expected edge information",ERROR);
+      MSTK_Report("MESH_InitFromFile","Expected edge information",MSTK_ERROR);
       return 0;
     }
   }
@@ -1846,7 +1846,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF) {
       if (mesh->nf || mesh->nr) {
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file after edge data",FATAL);
+		    "Premature end of file after edge data",MSTK_FATAL);
       }
       else {
         fclose(fp);
@@ -1864,7 +1864,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
   if (strncmp(temp_str,"face",4) == 0) {
     if (strncmp(temp_str,"faces",5) != 0) 
-      MSTK_Report("MESH_InitFromFile","Expected keyword \"faces\"",ERROR);
+      MSTK_Report("MESH_InitFromFile","Expected keyword \"faces\"",MSTK_ERROR);
     
     NF = mesh->nf;
     mesh->mface = List_New(NF);
@@ -1872,7 +1872,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     status = fscanf(fp,"%s",fltype_str);
     if (status == EOF)
       MSTK_Report("MESH_InitFromFile",
-		  "Premature end of file while reading faces",FATAL);
+		  "Premature end of file while reading faces",MSTK_FATAL);
 
     if (file_reptype >= R1 && file_reptype <= R4) {
 
@@ -1887,10 +1887,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d",&nfv);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading faces",FATAL);
+			"Premature end of file while reading faces",MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading face data",FATAL);
+			"Error in reading face data",MSTK_FATAL);
 
 	  if (fverts) {
 	    if (nfv > max_nfv) {
@@ -1908,15 +1908,15 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
 			  "Premature end of file while reading face data",
-			  FATAL);
+			  MSTK_FATAL);
 	    else if (status == 0)
 	      MSTK_Report("MESH_InitFromFile",
-			  "Error in reading edge data",FATAL);
+			  "Error in reading edge data",MSTK_FATAL);
 
 	    fverts[j] = List_Entry(mesh->mvertex,vid1-1);
 #ifdef DEBUG
 	    if (MV_ID(fverts[j]) != vid1)
-	      MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",ERROR);
+	      MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",MSTK_ERROR);
 #endif
 	  }
 	  MF_Set_Vertices(mf,nfv,fverts);  
@@ -1924,10 +1924,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading face data",FATAL);
+			"Premature end of file while reading face data",MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading face data",FATAL);
+			"Error in reading face data",MSTK_FATAL);
 	  
 	  MF_Set_GEntID(mf,gid);
 	  MF_Set_GEntDim(mf,gdim);
@@ -1941,7 +1941,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
-		    "Expected face description in terms of vertices",ERROR);
+		    "Expected face description in terms of vertices",MSTK_ERROR);
         fclose(fp);
 	return 0;
       }
@@ -1959,10 +1959,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading face edge data",
-			FATAL);
+			MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading face data",FATAL);
+			"Error in reading face data",MSTK_FATAL);
 
 	  if (fedges) {
 	    if (nfe > max_nfe) {
@@ -1982,16 +1982,16 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
 			  "Premature end of file while reading face edge data",
-			  FATAL);
+			  MSTK_FATAL);
 	    else if (status == 0)
 	      MSTK_Report("MESH_InitFromFile",
-			  "Error in reading face data",FATAL);
+			  "Error in reading face data",MSTK_FATAL);
 
 	    fedirs[j] = eid > 0 ? 1 : 0;
 	    fedges[j] = List_Entry(mesh->medge,abs(eid)-1);
 #ifdef DEBUG
 	    if (ME_ID(fedges[j]) != abs(eid))
-	      MSTK_Report("MESH_InitFromFile","Mesh edge ID mismatch",ERROR);
+	      MSTK_Report("MESH_InitFromFile","Mesh edge ID mismatch",MSTK_ERROR);
 #endif
 	  }
 	  
@@ -2002,7 +2002,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  else {
 
-	    MSTK_Report("MESH_InitFromFile","Need to convert edge list to vertex list",ERROR);
+	    MSTK_Report("MESH_InitFromFile","Need to convert edge list to vertex list",MSTK_ERROR);
 	    fclose(fp);
 	    return 0;
 
@@ -2011,10 +2011,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading faces",FATAL);
+			"Premature end of file while reading faces",MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading face data",FATAL);
+			"Error in reading face data",MSTK_FATAL);
 	  
 	  MF_Set_GEntDim(mf,gdim);
 	  MF_Set_GEntID(mf,gid);
@@ -2030,14 +2030,14 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
-		    "Expect face description in terms of edges",ERROR);
+		    "Expect face description in terms of edges",MSTK_ERROR);
 	return 0;
       }
     }
   }
   else {
     if (file_reptype >= F1 && file_reptype <= F4) {
-      MSTK_Report("MESH_InitFromFile","Expected face information",ERROR);
+      MSTK_Report("MESH_InitFromFile","Expected face information",MSTK_ERROR);
       fclose(fp);
       return 0;
     }
@@ -2049,7 +2049,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF) {
       if (mesh->nr != 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file after face data",FATAL);
+		    "Premature end of file after face data",MSTK_FATAL);
       else {
         fclose(fp);
 	return 1;
@@ -2057,7 +2057,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     }
     else if (status == 0)
       MSTK_Report("MESH_InitFromFile",
-		  "Error in reading region data",FATAL);
+		  "Error in reading region data",MSTK_FATAL);
   }
 
 
@@ -2065,7 +2065,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 
   if (strncmp(temp_str,"region",6) == 0) {
     if (strncmp(temp_str,"regions",7) != 0) 
-      MSTK_Report("MESH_InitFromFile","Expected keyword \"regions\"",ERROR);
+      MSTK_Report("MESH_InitFromFile","Expected keyword \"regions\"",MSTK_ERROR);
 
     NR = mesh->nr;
     mesh->mregion = List_New(NR);
@@ -2073,10 +2073,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     status = fscanf(fp,"%s",rltype_str);
     if (status == EOF)
       MSTK_Report("MESH_InitFromFile",
-		  "Premature end of file while reading regions",FATAL);
+		  "Premature end of file while reading regions",MSTK_FATAL);
     else if (status == 0)
       MSTK_Report("MESH_InitFromFile",
-		  "Error in reading region data",FATAL);
+		  "Error in reading region data",MSTK_FATAL);
 
     if (file_reptype == R1 || file_reptype == R2) {
       if (strncmp(rltype_str,"vertex",6) == 0) {
@@ -2088,10 +2088,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading region data"
-			,FATAL);
+			,MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading region data",FATAL);
+			"Error in reading region data",MSTK_FATAL);
 
 	  if (rverts) {
 	    if (nrv > max_nrv) {
@@ -2109,15 +2109,15 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading region data",
-			  FATAL);
+			  MSTK_FATAL);
 	    else if (status == 0)
 	      MSTK_Report("MESH_InitFromFile",
-			  "Error in reading region data",FATAL);
+			  "Error in reading region data",MSTK_FATAL);
 
 	    rverts[j] = List_Entry(mesh->mvertex,vid1-1);
 #ifdef DEBUG
 	    if (MV_ID(rverts[j]) != vid1)
-	      MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",ERROR);
+	      MSTK_Report("MESH_InitFromFile","Mesh vertex ID mismatch",MSTK_ERROR);
 #endif
 	  }
 	  MR_Set_Vertices(mr,nrv,rverts,0,NULL);  
@@ -2125,10 +2125,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			"Premature end of file while reading regions",FATAL);
+			"Premature end of file while reading regions",MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading region data",FATAL);
+			"Error in reading region data",MSTK_FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
 
@@ -2143,7 +2143,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
-		    "Expected region description in terms of faces",FATAL);
+		    "Expected region description in terms of faces",MSTK_FATAL);
         fclose(fp);
 	return 0;
       }
@@ -2159,10 +2159,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading region data",
-			FATAL);
+			MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading region data",FATAL);
+			"Error in reading region data",MSTK_FATAL);
 	  
 	  if (rfaces) {
 	    if (nrf > max_nrf) {
@@ -2182,16 +2182,16 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    if (status == EOF)
 	      MSTK_Report("MESH_InitFromFile",
 			  "Premature end of file while reading region data",
-			  FATAL);
+			  MSTK_FATAL);
 	    else if (status == 0)
 	      MSTK_Report("MESH_InitFromFile",
-			  "Error in reading region data",FATAL);
+			  "Error in reading region data",MSTK_FATAL);
 	    
 	    rfdirs[j] = fid > 0 ? 1 : 0;
 	    rfaces[j] = List_Entry(mesh->mface,abs(fid)-1);
 #ifdef DEBUG
 	    if (MF_ID(rfaces[j]) != abs(fid))
-	      MSTK_Report("MESH_InitFromFile","Mesh face ID mismatch",ERROR);
+	      MSTK_Report("MESH_InitFromFile","Mesh face ID mismatch",MSTK_ERROR);
 #endif
 	  }
 
@@ -2202,7 +2202,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  }
 	  else {
 
-	    MSTK_Report("MESH_InitFromFile","Need to convert face list to vertex list", ERROR);
+	    MSTK_Report("MESH_InitFromFile","Need to convert face list to vertex list", MSTK_ERROR);
 	    fclose(fp);
 	    return 0;
 
@@ -2211,10 +2211,10 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  status = fscanf(fp,"%d %d",&gdim,&gid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
-			  "Premature end of file while reading region",FATAL);
+			  "Premature end of file while reading region",MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading region data",FATAL);
+			"Error in reading region data",MSTK_FATAL);
 	  
 	  MR_Set_GEntDim(mr,gdim);
 	  
@@ -2231,7 +2231,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else {
 	MSTK_Report("MESH_InitFromFile",
-		    "Expected region description in terms of vertices",ERROR);
+		    "Expected region description in terms of vertices",MSTK_ERROR);
 	fclose(fp);
 	return 0;
       }
@@ -2243,7 +2243,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF) {
       if (mesh->reptype == R2)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file after reading regions",FATAL);
+		    "Premature end of file after reading regions",MSTK_FATAL);
       else {
         fclose(fp);
 	return 1;
@@ -2263,20 +2263,20 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent regions",
-		      FATAL);
+		      MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading adjacent region data",FATAL);
+		      "Error in reading adjacent region data",MSTK_FATAL);
 
 	for (j = 0; j < nar; j++) {
 	  status = fscanf(fp,"%d",&adjrid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading ajdacent regions",
-			FATAL);
+			MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading adjacent region data",FATAL);
+			"Error in reading adjacent region data",MSTK_FATAL);
 	  
 	  if (adjrid == 0)
 	    continue;
@@ -2284,7 +2284,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 #ifdef DEBUG
 	  if (MR_ID(adjr) != adjrid)
 	    MSTK_Report("MESH_InitFromFile",
-			"Adjacent region ID mismatch",ERROR);
+			"Adjacent region ID mismatch",MSTK_ERROR);
 #endif
 
 	  MR_Add_AdjRegion(mr,j,adjr);
@@ -2299,20 +2299,20 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading adjacent regions",
-		      FATAL);
+		      MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading adjacent region data",FATAL);
+		      "Error in reading adjacent region data",MSTK_FATAL);
 	
 	for (j = 0; j < nar; j++) {
 	  fscanf(fp,"%d",&rid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading adjacent regions",
-			FATAL);
+			MSTK_FATAL);
 	  else if (status == 0)
 	    MSTK_Report("MESH_InitFromFile",
-			"Error in reading adjacent region data",FATAL);
+			"Error in reading adjacent region data",MSTK_FATAL);
 	}
       }
 
@@ -2325,7 +2325,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
     if (status == EOF) {
       if (mesh->reptype == R2)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file after reading regions",FATAL);
+		    "Premature end of file after reading regions",MSTK_FATAL);
       else {
         fclose(fp);
 	return 1;
@@ -2346,15 +2346,15 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       }
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Error in reading attribute data",FATAL);
+		    "Error in reading attribute data",MSTK_FATAL);
 
       status = fscanf(fp,"%s",atttype_str);
       if (status == EOF)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file while reading attributes",FATAL);
+		    "Premature end of file while reading attributes",MSTK_FATAL);
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Error in reading attribute data",FATAL);
+		    "Error in reading attribute data",MSTK_FATAL);
 
       if (strncmp(atttype_str,"INT",3) == 0)
 	atttype = INT;
@@ -2362,38 +2362,38 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	atttype = DOUBLE;
       else if (strncmp(atttype_str,"POINTER",7) == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Cannot specify POINTER attributes in file",FATAL);
+		    "Cannot specify POINTER attributes in file",MSTK_FATAL);
       else if (strncmp(atttype_str,"VECTOR",6) == 0)
 	atttype = VECTOR;
       else if (strncmp(atttype_str,"TENSOR",6) == 0)
 	atttype = TENSOR;
       else {
 	sprintf(temp_str,"%-s not a recognized attribute type",atttype_str);
-	MSTK_Report("MESH_InitFromFile",temp_str,FATAL);
+	MSTK_Report("MESH_InitFromFile",temp_str,MSTK_FATAL);
       }
 
       status = fscanf(fp,"%d",&ncomp);
       if (status == EOF)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file while reading attributes",FATAL);
+		    "Premature end of file while reading attributes",MSTK_FATAL);
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Error in reading attribute data",FATAL);
+		    "Error in reading attribute data",MSTK_FATAL);
 
       if ((atttype == INT || atttype == DOUBLE) && (ncomp != 1)) 
-	MSTK_Report("MESH_InitFromFile","Number of components should be 1 for attributes of type INT or DOUBLE",WARN);
+	MSTK_Report("MESH_InitFromFile","Number of components should be 1 for attributes of type INT or DOUBLE",MSTK_WARN);
       else if ((atttype == VECTOR || atttype == TENSOR) && (ncomp == 0))
-	MSTK_Report("MESH_InitFromFile","Number of components should be non-zero for attributes of type VECTOR or TENSOR",FATAL);
+	MSTK_Report("MESH_InitFromFile","Number of components should be non-zero for attributes of type VECTOR or TENSOR",MSTK_FATAL);
 
 
 
       status = fscanf(fp,"%s",attent_str);
       if (status == EOF)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file while reading attributes",FATAL);
+		    "Premature end of file while reading attributes",MSTK_FATAL);
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Error in reading attribute data",FATAL);
+		    "Error in reading attribute data",MSTK_FATAL);
       if (strncmp(attent_str,"MVERTEX",7) == 0) 
 	attent = MVERTEX;
       else if (strncmp(attent_str,"MEDGE",5) == 0)
@@ -2407,20 +2407,20 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
       else {
 	sprintf(temp_str,"%s not a recognized entity type for attributes",
 		attent_str);
-	MSTK_Report("MESH_InitFromFile",temp_str,FATAL);
+	MSTK_Report("MESH_InitFromFile",temp_str,MSTK_FATAL);
       }
 
       status = fscanf(fp,"%d",&nent);
       if (status == EOF)
 	MSTK_Report("MESH_InitFromFile",
-		    "Premature end of file while reading attributes",FATAL);
+		    "Premature end of file while reading attributes",MSTK_FATAL);
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
-		    "Error in reading attribute data",FATAL);
+		    "Error in reading attribute data",MSTK_FATAL);
 
       if (nent < 1) 
 	MSTK_Report("MESH_InitFromFile",
-		    "Attribute applied on no entities?",FATAL);
+		    "Attribute applied on no entities?",MSTK_FATAL);
 
       if (atttype == INT || atttype == DOUBLE || atttype == POINTER)
 	attrib = MAttrib_New(mesh,attname,atttype,attent);
@@ -2431,14 +2431,14 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	fscanf(fp,"%d %d",&dim,&id);
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Premature end of file while reading attributes",FATAL);
+		      "Premature end of file while reading attributes",MSTK_FATAL);
 	else if (status == 0)
 	  MSTK_Report("MESH_InitFromFile",
-		      "Error in reading attribute data",FATAL);
+		      "Error in reading attribute data",MSTK_FATAL);
 	
 	if (attent != dim && attent != MALLTYPE) {
 	  MSTK_Report("MESH_InitFromFile",
-		      "Attribute not applicable to this type of entity",WARN);
+		      "Attribute not applicable to this type of entity",MSTK_WARN);
 	  if (atttype == INT)
 	    fscanf(fp,"%d",&ival);
 	  else
@@ -2474,7 +2474,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	    break;
 	  default:
 	    ent = NULL;
-	    MSTK_Report("MESH_InitFromFile","Invalid entity type",FATAL);
+	    MSTK_Report("MESH_InitFromFile","Invalid entity type",MSTK_FATAL);
 	  }
 	  
 	  MEnt_Set_AttVal(ent,attrib,ival,rval,(void *)rval_arr);
@@ -2516,7 +2516,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
 
   if (!(fp = fopen(filename,"w"))) {
     sprintf(mesg,"Cannot open file %-s for writing",filename);
-    MSTK_Report("MESH_WriteToFile",mesg,ERROR);
+    MSTK_Report("MESH_WriteToFile",mesg,MSTK_ERROR);
     return 0;
   }
 
@@ -2855,7 +2855,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
 	break;
       default:
 	MSTK_Report("MESH_WriteToFile",
-		    "Unrecognizable or unprintable attribute type\n",WARN);
+		    "Unrecognizable or unprintable attribute type\n",MSTK_WARN);
 	continue;	
       }
 
@@ -2878,7 +2878,7 @@ int MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype) {
 	fprintf(fp,"MALLTYPE\n");
 	break;
       default:
-	MSTK_Report("Mesh_WriteToFile","Unrecognized entity type",WARN);
+	MSTK_Report("Mesh_WriteToFile","Unrecognized entity type",MSTK_WARN);
 	break;
       }
 

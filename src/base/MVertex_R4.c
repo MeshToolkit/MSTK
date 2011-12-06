@@ -93,7 +93,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_Regions_R4",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     vregions = MV_Regions_R4(v);
     nr = List_Num_Entries(vregions);
@@ -115,7 +115,7 @@ extern "C" {
     List_ptr vedges;
     MVertex_Adj_R4 *adj;
 
-    MSTK_Report("MV_Edges_R4","Incomplete implementation",ERROR);
+    MSTK_Report("MV_Edges_R4","Incomplete implementation",MSTK_ERROR);
 
     adj = (MVertex_Adj_R4 *) v->adj;
     nvadj = List_Num_Entries(adj->adjverts);
@@ -190,13 +190,13 @@ extern "C" {
   void MV_Add_Edge_R4(MVertex_ptr v, MEdge_ptr medge) {
 #ifdef DEBUG
     /* This function is explicitly called from ME_Set_Vertex */
-    /*MSTK_Report("MV_Add_Edge","Function call not suitable for this representation",WARN);*/
+    /*MSTK_Report("MV_Add_Edge","Function call not suitable for this representation",MSTK_WARN);*/
 #endif
   }
 
   void MV_Rem_Edge_R4(MVertex_ptr v, MEdge_ptr medge) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_Edge","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_Edge","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -217,13 +217,13 @@ extern "C" {
 
   void MV_Add_Region_R4(MVertex_ptr v, MRegion_ptr mregion) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_Region","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Add_Region","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MV_Rem_Region_R4(MVertex_ptr v, MRegion_ptr mregion) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_Region","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_Region","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

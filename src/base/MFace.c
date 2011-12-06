@@ -64,7 +64,7 @@ extern "C" {
 #ifdef DEBUG
     if (MEnt_Dim((MEntity_ptr) f) != MDELETED) {
       MSTK_Report("MF_Restore",
-		  "Trying to restore face that is not deleted",WARN);
+		  "Trying to restore face that is not deleted",MSTK_WARN);
       return;
     }
 #endif
@@ -209,7 +209,7 @@ extern "C" {
     case 0:
       return (*MF_UsesVertex_jmp[RTYPE])(f,(MVertex_ptr)e);
     default:
-      MSTK_Report("MF_UsesEntity","Invalid entity type",ERROR);
+      MSTK_Report("MF_UsesEntity","Invalid entity type",MSTK_ERROR);
     }
     return 0;
   }

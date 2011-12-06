@@ -60,13 +60,13 @@ extern "C" {
       }
 
 #ifdef DEBUG
-      MSTK_Report("MSTK_GetMarker","Out of Markers",ERROR);
+      MSTK_Report("MSTK_GetMarker","Out of Markers",MSTK_ERROR);
 #endif
       return -1;
     }
 
 #ifdef DEBUG
-    MSTK_Report("MSTK_GetMarker","Cannot allocate Marker",ERROR);
+    MSTK_Report("MSTK_GetMarker","Cannot allocate Marker",MSTK_ERROR);
 #endif
     return -1;
   }
@@ -75,7 +75,7 @@ extern "C" {
 
 #ifdef DEBUG
     if (mkr < 1 || mkr > MSTK_MAXBITS)
-      MSTK_Report("MSTK_FreeMarker","Invalid Marker",ERROR);
+      MSTK_Report("MSTK_FreeMarker","Invalid Marker",MSTK_ERROR);
 #endif
 
     MSTK_marker = MSTK_marker & ~(1<<(mkr-1));

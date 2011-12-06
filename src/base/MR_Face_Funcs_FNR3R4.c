@@ -62,7 +62,7 @@ extern "C" {
     MRegion_Adj_FN *adj;
 
     if (nf > MAXPF3)
-      MSTK_Report("MR_Set_Faces","Region has too many faces",ERROR);
+      MSTK_Report("MR_Set_Faces","Region has too many faces",MSTK_ERROR);
 
     adj = (MRegion_Adj_FN *) r->adj;
     k = 1 + ((int) nf/(8*sizeof(unsigned int)));
@@ -74,7 +74,7 @@ extern "C" {
 #ifdef DEBUG
       if (MR_Mesh(r) != MF_Mesh(rfaces[i]))
 	MSTK_Report("MR_Set_Faces_FNR3R4",
-		    "Region and face belong to different meshes",FATAL);
+		    "Region and face belong to different meshes",MSTK_FATAL);
 #endif
 
       j = (int) i/(8*sizeof(unsigned int));
@@ -109,7 +109,7 @@ extern "C" {
 #ifdef DEBUG
       if (MR_Mesh(r) != MV_Mesh(mvertices[i]))
 	MSTK_Report("MR_Set_Vertices_FNR3R4",
-		    "Region and Vertex belong to different meshes",FATAL);
+		    "Region and Vertex belong to different meshes",MSTK_FATAL);
 #endif
     }
 
@@ -142,7 +142,7 @@ extern "C" {
 	    /* Cannot determine unique classification for face */
 	    MSTK_Report("MR_Set_Vertices",
 			"Cannot determine unique classification for face",
-			WARN);
+			MSTK_WARN);
 	    MF_Set_GEntDim(rfaces[i],4);
 	    MF_Set_GEntID(rfaces[i],0);
 	  }
@@ -162,7 +162,7 @@ extern "C" {
 #ifdef DEBUG
 	    if (List_Num_Entries(fregs) > 1)
 	      MSTK_Report("MR_Set_Vertices",
-			  "Face already connected on both sides",FATAL);
+			  "Face already connected on both sides",MSTK_FATAL);
 #endif
 	    oregion = List_Entry(fregs,0);
 	    odir = MR_FaceDir(oregion,rfaces[i]);
@@ -197,7 +197,7 @@ extern "C" {
       default:
 	MSTK_Report("MR_Set_Vertices",
 		    "Polyhedron: Need number of faces and vertex template",
-		    FATAL);
+		    MSTK_FATAL);
 	regtype = RUNKNOWN;
 	break;
       }
@@ -244,7 +244,7 @@ extern "C" {
 	    if (evgdim[0] == 0) {
 	      MSTK_Report("MR_Set_Vertices_FNR3R4",
 			  "Cannot determine edge classification. Guessing...",
-			  WARN);
+			  MSTK_WARN);
 	      egdim[i] = 1;
 	      egid[i] = 0;
 	    }
@@ -261,7 +261,7 @@ extern "C" {
 		   faces or regions */
 		MSTK_Report("MR_Set_Vertices_FNR3R4",
 			    "Cannot determine edge classification. Guessing..",
-			    WARN);
+			    MSTK_WARN);
 		egdim[i] = evgdim[0]+1;
 		egid[i] = 0;
 	      }
@@ -313,7 +313,7 @@ extern "C" {
 	    /* Cannot determine unique classification for face */
 	    MSTK_Report("MR_Set_Vertices",
 			"Cannot determine face classification. Guessing...",
-			WARN);
+			MSTK_WARN);
 	    MF_Set_GEntDim(rfaces[i],(fgdim+1));
 	    MF_Set_GEntID(rfaces[i],0);
 	  }
@@ -338,7 +338,7 @@ extern "C" {
 #ifdef DEBUG
 	    if (List_Num_Entries(fregs) > 1)
 	      MSTK_Report("MR_Set_Vertices",
-			  "Face already connected on both sides",FATAL);
+			  "Face already connected on both sides",MSTK_FATAL);
 #endif
 	    oregion = List_Entry(fregs,0);
 	    odir = MR_FaceDir(oregion,rfaces[i]);
@@ -423,7 +423,7 @@ extern "C" {
     adj = (MRegion_Adj_FN *) r->adj;
 
     if (i >= MAXPF3)
-      MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
+      MSTK_Report("MR_FaceDir_i","Not that many faces in region",MSTK_ERROR);
     
     j = (int) i/(8*sizeof(unsigned int));
     k = i%(8*sizeof(unsigned int));
@@ -460,7 +460,7 @@ extern "C" {
     adj = (MRegion_Adj_FN *) r->adj;
 
     if (i >= MAXPF3)
-      MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
+      MSTK_Report("MR_FaceDir_i","Not that many faces in region",MSTK_ERROR);
     
     j = (int) i/(8*sizeof(unsigned int));
     k = i%(8*sizeof(unsigned int));
@@ -482,7 +482,7 @@ extern "C" {
 
     if (nf == 0)
       MSTK_Report("MR_Remove_Faces_FNR3R4","No initial set of faces for region",
-		  ERROR);
+		  MSTK_ERROR);
 
     for (j = 0, found = 0; j < nf; j++)
       if (List_Entry(adj->rfaces,j) == remface) {
@@ -491,7 +491,7 @@ extern "C" {
 	break;
       }
     if (!found) {
-      MSTK_Report("MR_Rem_Face_FNR3R4","Face not found in region",ERROR);
+      MSTK_Report("MR_Rem_Face_FNR3R4","Face not found in region",MSTK_ERROR);
       return;
     }
 
@@ -542,7 +542,7 @@ extern "C" {
 #ifdef DEBUG
     if (MR_Mesh(r) != MF_Mesh(nuf))
       MSTK_Report("MR_Replace_Face_FNR3R4",
-		  "Region and Face belong to different meshes",FATAL);
+		  "Region and Face belong to different meshes",MSTK_FATAL);
 #endif
 
     adj = (MRegion_Adj_FN *) r->adj;
@@ -571,12 +571,12 @@ extern "C" {
     MFace_ptr f;
 
     if (i >= MAXPF3)
-      MSTK_Report("MR_FaceDir_i","Not that many faces in region",ERROR);
+      MSTK_Report("MR_FaceDir_i","Not that many faces in region",MSTK_ERROR);
 
 #ifdef DEBUG
     if (MR_Mesh(r) != MF_Mesh(nuf))
       MSTK_Report("MR_Replace_Face_FNR3R4",
-		  "Region and Face belong to different meshes",FATAL);
+		  "Region and Face belong to different meshes",MSTK_FATAL);
 #endif
 
     adj = (MRegion_Adj_FN *) r->adj;

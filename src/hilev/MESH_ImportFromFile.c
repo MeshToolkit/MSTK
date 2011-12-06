@@ -16,11 +16,11 @@ int MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, const char *format)
 #ifdef ENABLE_ExodusII
     return MESH_ImportFromExodusII(mesh,filename);
 #else
-    MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",ERROR);
+    MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",MSTK_ERROR);
 #endif
   } 
   else {
-    MSTK_Report("MESH_ImportFromFile","Unsupported import format",ERROR);
+    MSTK_Report("MESH_ImportFromFile","Unsupported import format",MSTK_ERROR);
     return 0;
   }
 

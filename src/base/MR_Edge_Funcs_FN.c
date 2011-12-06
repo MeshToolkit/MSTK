@@ -69,7 +69,7 @@ extern "C" {
 	List_Delete(fverts);
 	
 	if (vapex == NULL) {
-	  MSTK_Report("MR_Edges_FN","Could not find fourth vertex of tet",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find fourth vertex of tet",MSTK_ERROR);
 	  return redges;
 	}
 	
@@ -84,7 +84,7 @@ extern "C" {
 	  if (latedge)
 	    List_Add(redges,latedge);
 	  else {
-	    MSTK_Report("MR_Edges_FN","Could not find edge between bottom face and apex vertex of tet",ERROR);
+	    MSTK_Report("MR_Edges_FN","Could not find edge between bottom face and apex vertex of tet",MSTK_ERROR);
 	    continue;
 	  }
 	}
@@ -149,7 +149,7 @@ extern "C" {
 	}
 
 	if (!found) {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",MSTK_ERROR);
 	  return redges;
 	}
 
@@ -169,7 +169,7 @@ extern "C" {
 	if (latedge)
 	  List_Add(redges,latedge);
 	else {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",MSTK_ERROR);
 	  return redges;
 	}
 
@@ -182,7 +182,7 @@ extern "C" {
 	if (latedge)
 	  List_Add(redges,latedge);
 	else {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",MSTK_ERROR);
 	  return redges;
 	}
 
@@ -214,7 +214,7 @@ extern "C" {
 	  if (latedge)
 	    List_Add(redges,latedge);
 	  else {
-	    MSTK_Report("MR_Edges_FN","Could not find edge between bottom face and apex vertex for pyramid",ERROR);
+	    MSTK_Report("MR_Edges_FN","Could not find edge between bottom face and apex vertex for pyramid",MSTK_ERROR);
 	    return redges;
 	  }
 	}
@@ -269,7 +269,7 @@ extern "C" {
 	}
 
 	if (!topface) {
-	  MSTK_Report("MR_Edges_FN","Cannot find top face for hex",ERROR);
+	  MSTK_Report("MR_Edges_FN","Cannot find top face for hex",MSTK_ERROR);
 	  return redges;
 	}
 	
@@ -293,7 +293,7 @@ extern "C" {
 	}
 
 	if (!found) {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of hex",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of hex",MSTK_ERROR);
 	  return redges;
 	}
 
@@ -313,7 +313,7 @@ extern "C" {
 	if (latedge)
 	  List_Add(redges,latedge);
 	else {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of hex",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of hex",MSTK_ERROR);
 	  return redges;
 	}
 
@@ -326,7 +326,7 @@ extern "C" {
 	if (latedge)
 	  List_Add(redges,latedge);
 	else {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",MSTK_ERROR);
 	  return redges;
 	}
 
@@ -340,7 +340,7 @@ extern "C" {
 	if (latedge)
 	  List_Add(redges,latedge);
 	else {
-	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",ERROR);
+	  MSTK_Report("MR_Edges_FN","Could not find edge connecting bottom and top faces of prism",MSTK_ERROR);
 	  return redges;
 	}
 

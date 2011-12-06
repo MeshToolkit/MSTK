@@ -48,7 +48,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_AdjVertices",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     return MV_Num_Edges_R1(v);
   }
@@ -60,7 +60,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_Edges",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     
     vedges = MV_Edges_R1(v);
@@ -77,7 +77,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_Faces_R1",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     vfaces = MV_Faces_R1(v);
     nf = List_Num_Entries(vfaces);
@@ -354,7 +354,7 @@ extern "C" {
     if (MF_Region(mface,0) || MF_Region(mface,1)) {
       MSTK_Report("MV_Add_Face_R1",
 		 "Can only add faces with no regions in this representation",
-		 ERROR);
+		 MSTK_ERROR);
       return;
     }
 
@@ -368,7 +368,7 @@ extern "C" {
     if (MF_Region(mface,0) || MF_Region(mface,1)) {
       MSTK_Report("MV_Rem_Face_R1",
       "Set should contain only faces with no regions in this representation",
-		 ERROR);
+		 MSTK_ERROR);
       return;
     }
 
@@ -379,14 +379,14 @@ extern "C" {
   void MV_Add_AdjVertex_R1(MVertex_ptr v, MVertex_ptr av) {
 #ifdef DEBUG
     MSTK_Report("MV_Add_AdjVertex",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MV_Rem_AdjVertex_R1(MVertex_ptr v, MVertex_ptr av) {
 #ifdef DEBUG
     MSTK_Report("MV_Rem_AdjVertex",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -394,14 +394,14 @@ extern "C" {
 #ifdef DEBUG
     /* This function is explicitly called from ME_Set_Vertex */
 /*    MSTK_Report("MV_Add_Edge",
-		"Function call not suitable for this representation",WARN);*/
+		"Function call not suitable for this representation",MSTK_WARN);*/
 #endif
   }
 
   void MV_Rem_Edge_R1(MVertex_ptr v, MEdge_ptr e) {
 #ifdef DEBUG
     MSTK_Report("MV_Rem_Edge",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

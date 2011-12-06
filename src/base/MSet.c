@@ -20,7 +20,7 @@ extern "C" {
     for (i = 0; i < nset; i++) {
       set = MESH_MSet(mesh,i);
       if (strcmp(set_name,set->name) == 0) {
-	MSTK_Report("MSet_New","Set with given name exists",WARN);
+	MSTK_Report("MSet_New","Set with given name exists",MSTK_WARN);
 	return set;
       }
     }
@@ -129,7 +129,7 @@ extern "C" {
   MSet_ptr    MSets_Cat(MSet_ptr dest, MSet_ptr src) {    
     if (MSet_Mesh(dest) != MSet_Mesh(src) ||
 	MSet_EntDim(dest) != MSet_EntDim(dest)) {
-      MSTK_Report("MSets_Cat","MSets must belong to same mesh and have same type of entities",FATAL);
+      MSTK_Report("MSets_Cat","MSets must belong to same mesh and have same type of entities",MSTK_FATAL);
     }
 
     dest->entlist = List_Cat(dest->entlist, src->entlist);
@@ -150,7 +150,7 @@ extern "C" {
     if (MSet_Mesh(s1) != MSet_Mesh(s2)) {
 
 #ifdef DEBUG
-      MSTK_Report("MSets_Union","MSets must belong to same mesh",WARN); 
+      MSTK_Report("MSets_Union","MSets must belong to same mesh",MSTK_WARN); 
 #endif
 
       return NULL;
@@ -210,7 +210,7 @@ extern "C" {
     if (MSet_Mesh(s1) != MSet_Mesh(s2)) {
 
 #ifdef DEBUG
-      MSTK_Report("MSets_Intersect","MSets must belong to same mesh",WARN); 
+      MSTK_Report("MSets_Intersect","MSets must belong to same mesh",MSTK_WARN); 
 #endif
 
       return NULL;
@@ -285,7 +285,7 @@ extern "C" {
     if (MSet_Mesh(s1) != MSet_Mesh(s2)) {
 
 #ifdef DEBUG
-      MSTK_Report("MSets_Intersect","MSets must belong to same mesh",WARN); 
+      MSTK_Report("MSets_Intersect","MSets must belong to same mesh",MSTK_WARN); 
 #endif
 
       return NULL;

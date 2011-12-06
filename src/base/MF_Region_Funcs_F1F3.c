@@ -58,7 +58,7 @@ extern "C" {
     else if (adj->fregions[1] == r)
       adj->fregions[1] = NULL;
     else
-      MSTK_Report("MF_Rem_Region_F1F3","Region not connected to face",ERROR);
+      MSTK_Report("MF_Rem_Region_F1F3","Region not connected to face",MSTK_ERROR);
   }
 
 

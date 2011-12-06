@@ -5,7 +5,7 @@
 extern "C" {
 #endif 
 
-  typedef enum ErrType {MESG=0, WARN, ERROR, FATAL} ErrType;
+  typedef enum ErrType {MSTK_MESG=0, MSTK_WARN, MSTK_ERROR, MSTK_FATAL} ErrType;
   
   void MSTK_Report(const char *, const char *, ErrType);
   

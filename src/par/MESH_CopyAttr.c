@@ -31,7 +31,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
   local_attrib = MESH_AttribByName(submesh,attr_name);
   /* if there is no such attribute */
   if(!global_attrib || !local_attrib) {
-    MSTK_Report("MESH_CopyAttr","There is no such attribute",WARN);
+    MSTK_Report("MESH_CopyAttr","There is no such attribute",MSTK_WARN);
     return 0;
   }
 
@@ -56,7 +56,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
     break;
   default:
     num = 0;
-    MSTK_Report("MESH_CopyAttr()","Invalid entity type",FATAL);
+    MSTK_Report("MESH_CopyAttr()","Invalid entity type",MSTK_FATAL);
   }
   
   /* collect data */
@@ -75,7 +75,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
       local_ment = MESH_Region(submesh,j);
       break;
     default:
-      MSTK_Report("MESH_CopyAttr()","Invalid entity type",FATAL);
+      MSTK_Report("MESH_CopyAttr()","Invalid entity type",MSTK_FATAL);
     }
     
     MEnt_Get_AttVal(local_ment,l2gatt,0,0,&global_ment);

@@ -60,7 +60,7 @@ extern "C" {
 
 #ifdef DEBUG
     if (p > 26) 
-      MSTK_Report("Hash_Add","Maximum hash size exceeded",FATAL);
+      MSTK_Report("Hash_Add","Maximum hash size exceeded",MSTK_FATAL);
 #endif
 
     h->nentdat = ((nent << 6) | (t << 5) | p);
@@ -129,7 +129,7 @@ extern "C" {
 	nent--;
       }
     }
-    if (nent!=0) MSTK_Report("Hash_Delete", "Number of entities in hash was incorrect", WARN);
+    if (nent!=0) MSTK_Report("Hash_Delete", "Number of entities in hash was incorrect", MSTK_WARN);
 
     MSTK_free(h->entry);
     MSTK_free(h);
@@ -214,7 +214,7 @@ extern "C" {
 	hash = pvtHash_Function(enp, ep);
 	if (i != (hash & mask)) {
 	  if (i + nold != (hash & mask)) {
-	    MSTK_Report("Hash_Enlarge","New hash differs",FATAL);
+	    MSTK_Report("Hash_Enlarge","New hash differs",MSTK_FATAL);
 	  }
 	  next = MEnt_NextInHash(ent);
 	  MEnt_Set_NextInHash(ent, h->entry[i+nold]);
@@ -336,7 +336,7 @@ extern "C" {
 
   int Hash_Rem(Hash_ptr h, void *entry, unsigned int np, void* *p) {
     (void) h, (void) entry, (void) np, (void) p;
-    MSTK_Report("Hash_Rem","Not implemented",FATAL);
+    MSTK_Report("Hash_Rem","Not implemented",MSTK_FATAL);
 
     return 0;
   }
@@ -413,7 +413,7 @@ extern "C" {
     if (lock < 0x0f) {
       if (lock > 0x00) lock--;
       else {
-	MSTK_Report("Hash_UnLock","Trying to unlock unlocked entity",WARN);
+	MSTK_Report("Hash_UnLock","Trying to unlock unlocked entity",MSTK_WARN);
       }
     }
     *plock = (*plock & ~0x0f) | lock;

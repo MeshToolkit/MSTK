@@ -38,7 +38,7 @@ extern "C" {
       i = 1; j = 1;
     }
     else {
-      MSTK_Report("MEs_Angle","Edges do not share common vertex",ERROR);
+      MSTK_Report("MEs_Angle","Edges do not share common vertex",MSTK_ERROR);
       return 0.0;
     }
 

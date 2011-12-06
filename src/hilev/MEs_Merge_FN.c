@@ -19,18 +19,18 @@ MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2) {
   gdim2 = ME_GEntDim(e2);
 
   if (mesh != MF_Mesh(e2)) {
-    MSTK_Report("MEs_Merge","Edges not from same mesh - Cannot merge",ERROR);
+    MSTK_Report("MEs_Merge","Edges not from same mesh - Cannot merge",MSTK_ERROR);
     return 0;
   }
   else {
     if (gdim1 == gdim2) {
       if (gid1 != gid2) {
-	MSTK_Report("MEs_Merge","Edges are on different geometric entities of the same dimension - Cannot merge",ERROR);
+	MSTK_Report("MEs_Merge","Edges are on different geometric entities of the same dimension - Cannot merge",MSTK_ERROR);
 	return 0;
       }
     }
     else if (gdim2 < gdim1) {
-      MSTK_Report("MEs_Merge","Cannot merge edge on lower dimensional geometric entity to edge on higher dimensional geometric entity",ERROR);
+      MSTK_Report("MEs_Merge","Cannot merge edge on lower dimensional geometric entity to edge on higher dimensional geometric entity",MSTK_ERROR);
       return 0;
     }
   }
@@ -40,7 +40,7 @@ MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2) {
 
   if ((v11 != v21 && v11 != v22) ||
       (v12 != v21 && v12 != v22)) {
-    MSTK_Report("MEs_Merge","Vertices of edges must be merged before attempting to merge edges",ERROR);
+    MSTK_Report("MEs_Merge","Vertices of edges must be merged before attempting to merge edges",MSTK_ERROR);
     return 0;
   }
 

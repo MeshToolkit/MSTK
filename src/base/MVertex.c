@@ -65,7 +65,7 @@ extern "C" {
 #ifdef DEBUG
     if (MEnt_Dim((MEntity_ptr) v) != MDELETED) {
       MSTK_Report("MV_Restore",
-		  "Trying to restore vertex that is not deleted",WARN);
+		  "Trying to restore vertex that is not deleted",MSTK_WARN);
       return;
     }
 #endif

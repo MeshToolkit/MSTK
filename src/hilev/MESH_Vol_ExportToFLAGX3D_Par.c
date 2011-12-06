@@ -309,7 +309,7 @@ int MESH_Vol_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
       MEnt_ProcIDs(mr,&nrp,mrprocs);
 
       if (nrp != 1)
-	MSTK_Report("MESH_Vol_ExportToFlagX3D","Cell of surface mesh must be on one processor only",FATAL);
+	MSTK_Report("MESH_Vol_ExportToFlagX3D","Cell of surface mesh must be on one processor only",MSTK_FATAL);
        
       if (mrprocs[0] == ip) {
 	List_Add(localcells,mr);
@@ -668,7 +668,7 @@ int MESH_Vol_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
 #ifdef DEBUG
 	  if (!oppfid)
 	    MSTK_Report("MESH_Vol_ExportToFLAGX3D",
-			"Internal face has no duplicate face info?",ERROR);
+			"Internal face has no duplicate face info?",MSTK_ERROR);
 #endif
 
 	  /* ID of the processor owning this face */

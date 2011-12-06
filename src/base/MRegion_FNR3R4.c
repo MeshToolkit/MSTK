@@ -84,7 +84,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MR_Num_AdjRegions",
 		"Inefficient to call this routine with this representation",
-		WARN);
+		MSTK_WARN);
 #endif
 
     adjr = MR_AdjRegions(r);
@@ -101,14 +101,14 @@ extern "C" {
   void MR_Add_AdjRegion_FNR3R4(MRegion_ptr r, int facenum, MRegion_ptr aregion) {
 #ifdef DEBUG
     MSTK_Report("MR_Add_AdjRegion",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MR_Rem_AdjRegion_FNR3R4(MRegion_ptr r, MRegion_ptr aregion) {
 #ifdef DEBUG
     MSTK_Report("MR_Rem_AdjRegion",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

@@ -33,13 +33,13 @@ extern "C" {
       MEnt_Set_DelFlag((MEntity_ptr) f);
     }
     if (keep) 
-      MSTK_Report("MF_Delete_R1","Deletion of faces is permanent in this representation",ERROR);
+      MSTK_Report("MF_Delete_R1","Deletion of faces is permanent in this representation",MSTK_ERROR);
   }
 
   void MF_Restore_R1(MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("MF_Restore_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -57,28 +57,28 @@ extern "C" {
   void MF_Set_Edges_R1(MFace_ptr f, int n, MEdge_ptr *e, int *dir) {
 #ifdef DEBUG
     MSTK_Report("MF_Set_Edges_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Replace_Edges_R1(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edges_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Rem_Edge_R1(MFace_ptr f, MEdge_ptr e) {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_Edge_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Replace_Edges_i_R1(MFace_ptr f, int nold, int i, int nnu, MEdge_ptr *nuedges) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Edges_i_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -86,41 +86,41 @@ extern "C" {
   void MF_Add_Region_R1(MFace_ptr f, MRegion_ptr r, int side) {
 #ifdef DEBUG
     MSTK_Report("MF_Add_Region_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Rem_Region_R1(MFace_ptr f, MRegion_ptr r) {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_Region_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
 
   int MF_Num_AdjFaces_R1(MFace_ptr f) {
     MSTK_Report("MF_Num_AdjFaces_R1",
-		"Not yet implemented for this representation",WARN);
+		"Not yet implemented for this representation",MSTK_WARN);
     return 0;
   }
 
   List_ptr MF_AdjFaces_R1(MFace_ptr f) {
     MSTK_Report("MF_AdjFaces_R1",
-		"Not yet implemented for this representation",WARN);
+		"Not yet implemented for this representation",MSTK_WARN);
     return 0;
   }
 
   void MF_Add_AdjFace_R1(MFace_ptr f, int side, MFace_ptr af) {
 #ifdef DEBUG
     MSTK_Report("MF_Add_AdjFace_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Rem_AdjFace_R1(MFace_ptr f, int side, MFace_ptr af) {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_AdjFace_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

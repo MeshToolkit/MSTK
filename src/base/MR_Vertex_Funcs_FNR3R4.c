@@ -199,7 +199,7 @@ extern "C" {
 	}
 	
 	if (!fopp) {
-	  MSTK_Report("MR_Vertices_FNR3R4","Could not find opposite face",ERROR);
+	  MSTK_Report("MR_Vertices_FNR3R4","Could not find opposite face",MSTK_ERROR);
 	  List_Delete(fedges0);
 	  List_Delete(rvertices);
 	  return (void *) NULL;
@@ -214,7 +214,7 @@ extern "C" {
 #ifdef DEBUG
 	if (!ME_UsesEntity(upedge,rv0,0))
 	  MSTK_Report("MR_Vertices_FNR3R4","Cannot find correct vertical edge",
-		      ERROR);
+		      MSTK_ERROR);
 #endif
 	
 	if (ME_Vertex(upedge,0) == rv0)
@@ -272,14 +272,14 @@ extern "C" {
   void MR_Replace_Vertex_FNR3R4(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv){
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Vertex",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MR_Replace_Vertex_i_FNR3R4(MRegion_ptr r, int i, MVertex_ptr nuv) {
 #ifdef DEBUG
     MSTK_Report("MF_Replace_Vertex_i",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

@@ -68,7 +68,7 @@ extern "C" {
 #ifdef DEBUG
       if (MR_Mesh(r) != MV_Mesh(rvertices[i]))
 	MSTK_Report("MR_Set_Vertices_R2",
-		    "Region and vertex belong to different meshes",FATAL);
+		    "Region and vertex belong to different meshes",MSTK_FATAL);
 #endif
 
       List_Add(adj->rvertices,rvertices[i]);
@@ -113,7 +113,7 @@ extern "C" {
     if (MR_Mesh(r) != MV_Mesh(nuv))
       MSTK_Report("MR_Replace_Vertex_R2",
 		  "Region and vertex belong to different meshes",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     adj = (MRegion_Adj_R2 *) r->adj;
@@ -132,7 +132,7 @@ extern "C" {
     if (MR_Mesh(r) != MV_Mesh(nuv))
       MSTK_Report("MR_Replace_Vertex_R2",
 		  "Region and vertex belong to different meshes",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     adj = (MRegion_Adj_R2 *) r->adj;

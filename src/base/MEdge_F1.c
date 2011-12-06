@@ -64,7 +64,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("ME_Num_Regions",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     
     eregs = ME_Regions_F1(e);
@@ -139,26 +139,26 @@ extern "C" {
 
   void ME_Add_Region_F1(MEdge_ptr e, MRegion_ptr r) {
 #ifdef DEBUG
-    MSTK_Report("ME_Add_Region","Function call not suitable for this representation",WARN);
+    MSTK_Report("ME_Add_Region","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void ME_Rem_Region_F1(MEdge_ptr e, MRegion_ptr r) {
 #ifdef DEBUG
-    MSTK_Report("ME_Rem_Region","Function call not suitable for this representation",WARN);
+    MSTK_Report("ME_Rem_Region","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   MEdge_ptr ME_NextInHash_F1(MEdge_ptr e) {
 #ifdef DEBUG
-    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
     return NULL;
   }
 
   void ME_Set_NextInHash_F1(MEdge_ptr e, MEdge_ptr next) {
 #ifdef DEBUG
-    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("ME_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
   }
 

@@ -62,7 +62,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_Faces",
 		"Ineficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     
     vfaces = MV_Faces_F4(v);
@@ -78,7 +78,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_Regions",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
 	
     vregions = MV_Regions_F4(v);
@@ -241,13 +241,13 @@ extern "C" {
 
   void MV_Add_AdjVertex_F4(MVertex_ptr v, MVertex_ptr av) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_AdjVertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Add_AdjVertex","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MV_Rem_AdjVertex_F4(MVertex_ptr v, MVertex_ptr av) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_AdjVertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_AdjVertex","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -273,25 +273,25 @@ extern "C" {
 
   void MV_Add_Face_F4(MVertex_ptr v, MFace_ptr f) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_Face","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Add_Face","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MV_Rem_Face_F4(MVertex_ptr v, MFace_ptr f) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_Face","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_Face","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MV_Add_Region_F4(MVertex_ptr v, MRegion_ptr f) {
 #ifdef DEBUG
-    MSTK_Report("MV_Add_Region","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Add_Region","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MV_Rem_Region_F4(MVertex_ptr v, MRegion_ptr f) {
 #ifdef DEBUG
-    MSTK_Report("MV_Rem_Region","Function call not suitable for this representation",WARN);
+    MSTK_Report("MV_Rem_Region","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

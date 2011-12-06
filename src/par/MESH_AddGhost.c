@@ -69,7 +69,7 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   else if(nf) 
     (*MESH_Surf_AddGhost_jmp[rtype])(mesh,submesh,part_no,ring);
   else {
-    MSTK_Report("MESH_AddGhost()","This is not a valid mstk file",ERROR);
+    MSTK_Report("MESH_AddGhost()","This is not a valid mstk file",MSTK_ERROR);
     exit(-1);
   }
 
@@ -153,7 +153,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
   /* Get a 'N' rings of elements around submesh from global mesh */
   if (ring > 1) {
-    MSTK_Report("MESH_AddGhost","Code above is not setup for more than one layer of ghost elements",FATAL);
+    MSTK_Report("MESH_AddGhost","Code above is not setup for more than one layer of ghost elements",MSTK_FATAL);
   }
 
   /* Simultaneously make a list of global vertices on partition boundary */
@@ -237,7 +237,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
       MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
 
       if (!lmvlist)
-	MSTK_Report("MESH_AddGhost","No local vertex list found with global vertex",FATAL);
+	MSTK_Report("MESH_AddGhost","No local vertex list found with global vertex",MSTK_FATAL);
 
       idx2 = 0;
       found = 0;
@@ -272,7 +272,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
       MEnt_Get_AttVal(gme,g2latt,0,0,&lmelist);
 
       if (!lmelist)
-	MSTK_Report("MESH_AddGhost","No local edge list found with gloval edge list",FATAL);
+	MSTK_Report("MESH_AddGhost","No local edge list found with gloval edge list",MSTK_FATAL);
 
       idx2 = 0;
       found = 0;
@@ -302,7 +302,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 	  }
 
 	  if (!lmv)
-	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",ERROR);
+	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",MSTK_ERROR);
 
 	  ME_Set_Vertex(lme,j,lmv);
 	}
@@ -329,7 +329,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
     MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
     MEnt_Get_AttVal(gmf,g2latt,0,0,&lmflist);
     if (!lmflist)
-      MSTK_Report("MESH_AddGhost","Local face list not found with global face",FATAL);
+      MSTK_Report("MESH_AddGhost","Local face list not found with global face",MSTK_FATAL);
     List_Add(lmflist,lmf);
   }
   List_Delete(gghfaces);
@@ -548,7 +548,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
 
       if (!lmvlist)
-	MSTK_Report("MESH_AddGhost","No local vertex list with global vertexx",FATAL);
+	MSTK_Report("MESH_AddGhost","No local vertex list with global vertexx",MSTK_FATAL);
 
       idx2 = 0;
       found = 0;
@@ -582,7 +582,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       MEnt_Get_AttVal(gme,g2latt,0,0,&lmelist);
       
       if (!lmelist)
-	MSTK_Report("MESH_AddGhost","No local edge list found with global edge",FATAL);
+	MSTK_Report("MESH_AddGhost","No local edge list found with global edge",MSTK_FATAL);
 
       idx2 = 0;
       found = 0;
@@ -612,7 +612,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 	  }
 
 	  if (!lmv)
-	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",ERROR);
+	    MSTK_Report("MESH_Surf_AddGhost_FN","Missing ghost vertex",MSTK_ERROR);
 
 	  ME_Set_Vertex(lme,j,lmv);
 	}
@@ -632,7 +632,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       MEnt_Get_AttVal(gmf,g2latt,0,0,&lmflist);
       
       if (!lmflist)
-	MSTK_Report("MESH_AddGhost","No local face list found with global face",FATAL);
+	MSTK_Report("MESH_AddGhost","No local face list found with global face",MSTK_FATAL);
 
       idx2 = 0;
       found = 0;
@@ -664,7 +664,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 	  }
 
 	  if (!lme) 
-	    MSTK_Report("MESH_Surf_AddGhost_FN","Cannot find local edge of global edge",FATAL);
+	    MSTK_Report("MESH_Surf_AddGhost_FN","Cannot find local edge of global edge",MSTK_FATAL);
 	  
 	  lfedges[j] = lme;
 	  lfedirs[j] = MF_EdgeDir_i(gmf,j);
@@ -691,7 +691,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
     MEnt_Set_AttVal(lmr,l2gatt,0,0,gmr);
     MEnt_Get_AttVal(gmr,g2latt,0,0,&lmrlist);
     if (!lmrlist)
-      MSTK_Report("MESH_AddGhost","Local region list not found with global region",FATAL);
+      MSTK_Report("MESH_AddGhost","Local region list not found with global region",MSTK_FATAL);
     List_Add(lmrlist,lmr);
 
   }
@@ -765,15 +765,15 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
 
 int MESH_Surf_AddGhost_R1R2R4(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
-  MSTK_Report("MESH_Surf_AddGhost_R1R2R4","Not Implemented",FATAL);
+  MSTK_Report("MESH_Surf_AddGhost_R1R2R4","Not Implemented",MSTK_FATAL);
 }
 
 int MESH_Vol_AddGhost_R1R2(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
-  MSTK_Report("MESH_Vol_AddGhost_R1R2","Not Implemented",FATAL);
+  MSTK_Report("MESH_Vol_AddGhost_R1R2","Not Implemented",MSTK_FATAL);
 }
   
 int MESH_Vol_AddGhost_R4(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
-  MSTK_Report("MESH_Vol_AddGhost_R4","Not Implemented",FATAL);
+  MSTK_Report("MESH_Vol_AddGhost_R4","Not Implemented",MSTK_FATAL);
 }
   
 #ifdef __cplusplus

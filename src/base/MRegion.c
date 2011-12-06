@@ -67,7 +67,7 @@ extern "C" {
 #ifdef DEBUG
     if (MEnt_Dim((MEntity_ptr) r) != MDELETED) {
       MSTK_Report("MR_Restore",
-		  "Trying to restore region that is not deleted",WARN);
+		  "Trying to restore region that is not deleted",MSTK_WARN);
       return;
     }
 #endif
@@ -204,7 +204,7 @@ extern "C" {
       if (RTYPE != R1 || RTYPE != R2)
 	MSTK_Report("MR_Num_Vertices",
 		    "Inefficient to use this routine for this representation",
-		    WARN);
+		    MSTK_WARN);
     }
 #endif
 
@@ -225,7 +225,7 @@ extern "C" {
       if (RTYPE != R1 || RTYPE != R2)
 	MSTK_Report("MR_Num_Vertices",
 		    "Inefficient to use this routine for this representation",
-		    WARN);
+		    MSTK_WARN);
     }
 #endif
 
@@ -331,7 +331,7 @@ extern "C" {
     case 0:
       return (*MR_UsesVertex_jmp[RTYPE])(r,(MVertex_ptr)e);
     default:
-      MSTK_Report("MR_UsesEntity","Invalid entity type",ERROR);
+      MSTK_Report("MR_UsesEntity","Invalid entity type",MSTK_ERROR);
     }
     return 0;
   }

@@ -22,7 +22,7 @@ extern "C" {
       if (MF_Mesh(f) != MV_Mesh(v[i]))
 	MSTK_Report("MF_Set_Vertices_F1F3",
 		    "Face and Vertex belong to different meshes",
-		    FATAL);
+		    MSTK_FATAL);
 #endif
     }
 
@@ -55,7 +55,7 @@ extern "C" {
 	       say on what entity, the edge should be classified */
 	    MSTK_Report("MF_Set_Vertices_F1F3",
 			"Cannot determine edge classification. Guessing...",
-			WARN);
+			MSTK_WARN);
 	    egdim = 1;
 	    egid = 0;
 	  }
@@ -107,7 +107,7 @@ extern "C" {
       }
 
       if (!fnd)
-        MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",FATAL);
+        MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",MSTK_FATAL);
 
       for (i = 0; i < ne; i++) {
 	e = dir ? List_Entry(adj->fedges,(k+i)%ne) :

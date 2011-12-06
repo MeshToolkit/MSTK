@@ -82,28 +82,28 @@ extern "C" {
   void MR_Set_Faces_R1(MRegion_ptr r, int nf, MFace_ptr *mfaces, int *dirs) {
 #ifdef DEBUG
     MSTK_Report("MR_Set_Faces_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MR_Rem_Face_R1(MRegion_ptr r, MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("MR_Rem_Face_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MR_Replace_Face_R1(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int dir) {
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Face_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MR_Replace_Face_i_R1(MRegion_ptr r, int i, MFace_ptr nuf, int dir) {
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Face_i_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -115,7 +115,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MR_Num_AdjRegions",
 		"Inefficient to call this routine with this representation",
-		WARN);
+		MSTK_WARN);
 #endif
 
     adjr = MR_AdjRegions_R1(r);
@@ -131,7 +131,7 @@ extern "C" {
 
   List_ptr MR_AdjRegions_R1(MRegion_ptr r) {
     MSTK_Report("MR_AdjRegions",
-		"Not yet implemented for this representation",WARN);
+		"Not yet implemented for this representation",MSTK_WARN);
     return NULL;
   }
 
@@ -139,14 +139,14 @@ extern "C" {
   void MR_Add_AdjRegion_R1(MRegion_ptr r, int facenum, MRegion_ptr ar) {
 #ifdef DEBUG
     MSTK_Report("MR_Add_AdjRegion_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MR_Rem_AdjRegion_R1(MRegion_ptr r, MRegion_ptr ar) {
 #ifdef DEBUG
     MSTK_Report("MR_Rem_AdjRegion_R1",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 

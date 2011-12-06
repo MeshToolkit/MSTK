@@ -24,18 +24,18 @@ MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2) {
   gdim2 = MF_GEntDim(f2);
 
   if (mesh != MF_Mesh(f2)) {
-    MSTK_Report("MFs_Merge","Faces not from same mesh - Cannot merge",ERROR);
+    MSTK_Report("MFs_Merge","Faces not from same mesh - Cannot merge",MSTK_ERROR);
     return 0;
   }
   else {
     if (gdim1 == gdim2) {
       if (gid1 != gid2) {
-	MSTK_Report("MFs_Merge","Faces are on different geometric entities of the same dimension - Cannot merge",ERROR);
+	MSTK_Report("MFs_Merge","Faces are on different geometric entities of the same dimension - Cannot merge",MSTK_ERROR);
 	return 0;
       }
     }
     else if (gdim2 < gdim1) {
-      MSTK_Report("MFs_Merge","Cannot merge face on lower dimensional geometric entity to face on higher dimensional geometric entity",ERROR);
+      MSTK_Report("MFs_Merge","Cannot merge face on lower dimensional geometric entity to face on higher dimensional geometric entity",MSTK_ERROR);
       return 0;
     }
   }
@@ -54,7 +54,7 @@ MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2) {
   if (nfe1 != nfe2) {
     MSTK_Report("MFs_Merge",
 		"To-be-merged faces have different number of edges",
-		ERROR);
+		MSTK_ERROR);
     return 0;
   }
   
@@ -70,7 +70,7 @@ MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2) {
       if (List_Entry(fedges1,i) != List_Entry(fedges2,i)) {
 	MSTK_Report("MFs_Merge",
 		    "Edges of faces must be merged before merging faces",
-		    ERROR);
+		    MSTK_ERROR);
 	return 0;
       }
     }
@@ -88,7 +88,7 @@ MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2) {
       if (List_Entry(fedges1,i) != List_Entry(fedges2,nfe1-i-1)) {
 	MSTK_Report("MFs_Merge",
 		    "Edges of faces must be merged before merging faces",
-		    ERROR);
+		    MSTK_ERROR);
 	return 0;
       }
     }
@@ -99,7 +99,7 @@ MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2) {
   else {
     MSTK_Report("MFs_Merge",
 		"Edges of faces must be merged before merging faces",
-		ERROR);
+		MSTK_ERROR);
     return 0;
   }
 

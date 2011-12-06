@@ -12,7 +12,7 @@ int ME_Swap2D(MEdge_ptr eswp, MEdge_ptr *enew, MFace_ptr fnew[2]) {
   List_ptr fedges, efaces;
 
   if (ME_GEntDim(eswp) != 2) {
-    MSTK_Report("ME_Swap2D","Can swap edges on model faces only",ERROR);
+    MSTK_Report("ME_Swap2D","Can swap edges on model faces only",MSTK_ERROR);
     return 0;
   } 
   /*  gid = ME_GEntID(eswp); */
@@ -28,7 +28,7 @@ int ME_Swap2D(MEdge_ptr eswp, MEdge_ptr *enew, MFace_ptr fnew[2]) {
   nf = List_Num_Entries(efaces);
 
   if (nf != 2) {
-    MSTK_Report("ME_Swap2D","Edge must be connected to exactly two faces for 2D swap",ERROR);
+    MSTK_Report("ME_Swap2D","Edge must be connected to exactly two faces for 2D swap",MSTK_ERROR);
     List_Delete(efaces);
     return 0;
   }
@@ -43,7 +43,7 @@ int ME_Swap2D(MEdge_ptr eswp, MEdge_ptr *enew, MFace_ptr fnew[2]) {
 
   fedges = MF_Edges(f[0],1,v[0]);
   if (List_Num_Entries(fedges) != 3) {
-    MSTK_Report("ME_Swap2D","Cannot swap edge for non-triangular meshes",ERROR);
+    MSTK_Report("ME_Swap2D","Cannot swap edge for non-triangular meshes",MSTK_ERROR);
     List_Delete(efaces);
     List_Delete(fedges);
     return 0;
@@ -59,7 +59,7 @@ int ME_Swap2D(MEdge_ptr eswp, MEdge_ptr *enew, MFace_ptr fnew[2]) {
   f[1] = List_Entry(efaces,!k);
   fedges = MF_Edges(f[1],1,v[1]);
   if (List_Num_Entries(fedges) != 3) {
-    MSTK_Report("ME_Swap2D","Cannot swap edge for non-triangular meshes",ERROR);
+    MSTK_Report("ME_Swap2D","Cannot swap edge for non-triangular meshes",MSTK_ERROR);
     List_Delete(efaces);
     List_Delete(fedges);
     return 0;

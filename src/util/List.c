@@ -71,7 +71,7 @@ extern "C" {
 
 #ifdef DEBUG
       if (p > 27) 
-	MSTK_Report("List_Add","Maximum list length exceeded",FATAL);
+	MSTK_Report("List_Add","Maximum list length exceeded",MSTK_FATAL);
 #endif
 
     l->nentdat = ((nent<<5) | p);
@@ -199,7 +199,7 @@ extern "C" {
       }
     }
     if (ic != i) { 
-      MSTK_Report("List_Entry","Could not find the i'th entry in set",ERROR);
+      MSTK_Report("List_Entry","Could not find the i'th entry in set",MSTK_ERROR);
       return 0;
     }
 
@@ -429,7 +429,7 @@ extern "C" {
 	}
       }
       if (ic != i) { 
-	MSTK_Report("List_Remi","Could not find the i'th entry in set",ERROR);
+	MSTK_Report("List_Remi","Could not find the i'th entry in set",MSTK_ERROR);
 	return 0;
       }
       
@@ -483,7 +483,7 @@ extern "C" {
       }
 
       if (ip == ntot) {
-	MSTK_Report("List_Insert","Could not find 'b4entry'",WARN);
+	MSTK_Report("List_Insert","Could not find 'b4entry'",MSTK_WARN);
 	return l;
       }
       
@@ -582,7 +582,7 @@ extern "C" {
 
     if (i >= nent) {
 #ifdef DEBUG
-      MSTK_Report("List_Remi","Not that many entries in set",ERROR);
+      MSTK_Report("List_Remi","Not that many entries in set",MSTK_ERROR);
 #endif
       return 0;
     }
@@ -614,7 +614,7 @@ extern "C" {
       }
     }
     if (ic != i) { 
-      MSTK_Report("List_Remi","Could not find the i'th entry in list",ERROR);
+      MSTK_Report("List_Remi","Could not find the i'th entry in list",MSTK_ERROR);
       return 0;
     }
 
@@ -647,7 +647,7 @@ extern "C" {
 
     if (i >= ntot) {
 #ifdef DEBUG
-      MSTK_Report("List_Remi_Raw","Not that many raw entries in list",ERROR);
+      MSTK_Report("List_Remi_Raw","Not that many raw entries in list",MSTK_ERROR);
 #endif
       return 0;
     }
@@ -695,7 +695,7 @@ extern "C" {
       while (!fnd1 && imin <= imax)
 	if (l->entry[++imin]) fnd1 = 1;
       if (!fnd1) 
-	MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+	MSTK_Report("List_RemSorted","Cannot find valid entry",MSTK_WARN);
 
     }
 
@@ -706,7 +706,7 @@ extern "C" {
       while (!fnd1 && imax >= imin)
 	if (l->entry[--imin]) fnd1 = 1;
       if (!fnd1)
-	MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+	MSTK_Report("List_RemSorted","Cannot find valid entry",MSTK_WARN);
 
     }
       
@@ -727,7 +727,7 @@ extern "C" {
 	while (!fnd1 && imid1 <= imax)
 	  if (l->entry[++imid1]) fnd1 = 1;
 	if (!fnd1)
-	  MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+	  MSTK_Report("List_RemSorted","Cannot find valid entry",MSTK_WARN);
 	else
 	  imid = imid1;
       
@@ -740,7 +740,7 @@ extern "C" {
 	  while (!fnd1 && imid1 >= imin)
 	    if (l->entry[--imid1]) fnd1 = 1;
 	  if (!fnd1)
-	    MSTK_Report("List_RemSorted","Cannot find valid entry",WARN);
+	    MSTK_Report("List_RemSorted","Cannot find valid entry",MSTK_WARN);
 	  else
 	    imid = imid1;
 	}
@@ -825,7 +825,7 @@ extern "C" {
       }
     }
     if (ic != i) { 
-      MSTK_Report("List_Remi","Could not find the i'th entry in set",ERROR);
+      MSTK_Report("List_Remi","Could not find the i'th entry in set",MSTK_ERROR);
       return 0;
     }
 

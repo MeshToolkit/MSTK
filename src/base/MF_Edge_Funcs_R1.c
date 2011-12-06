@@ -31,7 +31,7 @@ extern "C" {
       }
 
       if (!fnd) {
-	MSTK_Report("MF_Edges_R1","Cannot find vertex in face",ERROR);
+	MSTK_Report("MF_Edges_R1","Cannot find vertex in face",MSTK_ERROR);
 	return NULL;
       }
     }

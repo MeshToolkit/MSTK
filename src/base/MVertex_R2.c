@@ -90,7 +90,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MV_Num_Faces_R2",
 		"Inefficient to call this routine with this representation",
-		MESG);
+		MSTK_MESG);
 #endif
     vfaces = MV_Faces_R2(v);
     nf = List_Num_Entries(vfaces);
@@ -270,14 +270,14 @@ extern "C" {
 #ifdef DEBUG
     /* This function is explicitly called from ME_Set_Vertex */
     /*MSTK_Report("MV_Add_Edge",
-		"Function call not suitable for this representation",WARN);*/
+		"Function call not suitable for this representation",MSTK_WARN);*/
 #endif
   }
 
   void MV_Rem_Edge_R2(MVertex_ptr v, MEdge_ptr e) {
 #ifdef DEBUG
     MSTK_Report("MV_Rem_Edge",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -287,7 +287,7 @@ extern "C" {
     if (MF_Region(mface,0) || MF_Region(mface,1)) {
       MSTK_Report("MV_Add_Face_R2",
 		 "Can only add faces with no regions in this representation",
-		 ERROR);
+		 MSTK_ERROR);
       return;
     }
 
@@ -301,7 +301,7 @@ extern "C" {
     if (MF_Region(mface,0) || MF_Region(mface,1)) {
       MSTK_Report("MV_Rem_Face_R2",
       "Set should contain only faces with no regions in this representation",
-		 ERROR);
+		 MSTK_ERROR);
       return;
     }
 

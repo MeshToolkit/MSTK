@@ -59,7 +59,7 @@ extern "C" {
 	     
 	if (ME_Vertex(ve,0) != mv && ME_Vertex(ve,1) != mv) {
 	  sprintf(mesg,"Vertex %-d connected to edge %-d but edge does not use vertex",vid,eid);
-	  MSTK_Report(funcname,mesg,ERROR);
+	  MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  valid = 0;
 	}
 
@@ -82,7 +82,7 @@ extern "C" {
 	  
 	if (ne != 2) {
 	  sprintf(mesg,"Vertex %-d classified on model edge %-d but it is not \n connected to two edges classified on this model edge",vid,gvid);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	}
       }
 
@@ -111,7 +111,7 @@ extern "C" {
 
 	if (!found) {
 	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find connected face classified on this model face",vid,gvid);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
 
@@ -141,7 +141,7 @@ extern "C" {
 
 	  if (!found) {
 	    sprintf(mesg,"Could not find next boundary face connected to vertex %-d",vid);
-	    MSTK_Report(funcname,mesg,WARN);
+	    MSTK_Report(funcname,mesg,MSTK_WARN);
 	    valid = 0;
 	    break;
 	  }
@@ -160,7 +160,7 @@ extern "C" {
 
 	if (!done) {
 	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find ring of faces classified on this model face",vid,gvid);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	}
       }
 
@@ -190,19 +190,19 @@ extern "C" {
 
 	if (gedim < gvdim) {
 	  sprintf(mesg,"Edge %-d classified on lower dimensional entity than\n connected vertex %-d",eid,vid);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
 	else if (gedim == gvdim && geid != gvid) {
 	  sprintf(mesg,"Edge %-d and its vertex %-d classified on different\n entities of the same dimension",eid,vid);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
 
 	vedges = MV_Edges(ev);
 	if (!List_Contains(vedges,me)) {
 	  sprintf(mesg,"Edge %-d sees vertex %-d but not vice versa",eid,vid);
-	  MSTK_Report(funcname,mesg,ERROR);
+	  MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  valid = 0;
 	}
 	List_Delete(vedges);
@@ -228,7 +228,7 @@ extern "C" {
 	      nf++;
 	      if (gedim == 2 && MF_GEntID(ef) != geid) {
 		sprintf(mesg,"Face %-d connected to edge %-d classified on different model face",fid,eid);
-		MSTK_Report(funcname,mesg,WARN);
+		MSTK_Report(funcname,mesg,MSTK_WARN);
 		valid = 0;
 	      }
 
@@ -242,7 +242,7 @@ extern "C" {
 
 	  if (nf != 2) {
 	    sprintf(mesg,"Boundary edge %-d is not connected to exactly two\n  faces classified on the boundary",eid);
-	    MSTK_Report(funcname,mesg,ERROR);
+	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
 	  }
 
@@ -260,7 +260,7 @@ extern "C" {
 	  if (!fregs) {
 	    fid = MF_ID(fcur);
 	    sprintf(mesg,"Edge %-d connected to regions but face %-d is not",eid,fid);
-	    MSTK_Report(funcname,mesg,ERROR);
+	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
 	  }
 
@@ -309,7 +309,7 @@ extern "C" {
 
 	      if (!found) {
 		sprintf(mesg,"Could not find next region around edge %-d",eid);
-		MSTK_Report(funcname,mesg,ERROR);
+		MSTK_Report(funcname,mesg,MSTK_ERROR);
 		valid = 0;
 		break;
 	      }
@@ -338,7 +338,7 @@ extern "C" {
 
 	    if (!done) {
 	      sprintf(mesg,"Could not traverse around edge %-d from face %-d to face %-d",eid,MF_ID(ebf[0]),MF_ID(ebf[1]));
-	      MSTK_Report(funcname,mesg,ERROR);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	      valid = 0;
 	    }
 	  } /* for (i = 0; i < nfr; i++) */
@@ -371,18 +371,18 @@ extern "C" {
 
 	if (gfdim < gedim) {
 	  sprintf(mesg,"Face %-d classified on lower order entity than edge %-d",fid,ME_ID(fe));
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
 	else if (gedim == gfdim && geid != gfid) {
 	  sprintf(mesg,"Face %-d and edge %-d classified on different\n entities of the same dimension",fid,eid);
-	  MSTK_Report(funcname,mesg,WARN);
+	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	}
 
 	efaces = ME_Faces(fe);
 	if (!List_Contains(efaces,mf)) {
 	  sprintf(mesg,"Face %-d refers to edge %-d but not vice versa",fid,ME_ID(fe));
-	  MSTK_Report(funcname,mesg,ERROR);
+	  MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  valid = 0;
 	}
 	List_Delete(efaces);
@@ -395,7 +395,7 @@ extern "C" {
       if (gfdim == 3) {
 	if (!fregs || List_Num_Entries(fregs) != 2) {
 	  sprintf(mesg,"Interior face %-d does not have two connected regions",fid);
-	  MSTK_Report(funcname,mesg,ERROR);
+	  MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  valid = 0;
 	}
       }
@@ -405,7 +405,7 @@ extern "C" {
 	if (List_Num_Entries(fregs) == 2) {
 	  if (MR_FaceDir(List_Entry(fregs,0),mf) == MR_FaceDir(List_Entry(fregs,1),mf)) {
 	    sprintf(mesg,"Both regions using face %-d in the same sense",fid);
-	    MSTK_Report(funcname,mesg,ERROR);
+	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
 	  }
 	}
@@ -435,7 +435,7 @@ extern "C" {
 	dir = MR_FaceDir(mr,rf);
 	if (mr != MF_Region(rf,!dir)) {
 	  sprintf(mesg,"Region %-d to face %-d dir inconsistent with \n face to region dir",rid,MF_ID(rf));
-	  MSTK_Report(funcname,mesg,ERROR);
+	  MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  valid = 0;
 	}
       }

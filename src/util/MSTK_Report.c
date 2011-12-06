@@ -20,17 +20,17 @@ extern "C" {
     last_message[len] = '\0';
 
     switch (type) {
-    case MESG:
+    case MSTK_MESG:
       fprintf(stdout, "%s: %s\n",funcname,message);
       break;
-    case WARN:
+    case MSTK_WARN:
       fprintf(stderr, "Warning!! in %s: %s\n",funcname,message);
       break;
-    case ERROR:
-      fprintf(stderr, "ERROR!! in %s: %s\n",funcname,message);
+    case MSTK_ERROR:
+      fprintf(stderr, "MSTK_ERROR!! in %s: %s\n",funcname,message);
       break;
-    case FATAL:
-      fprintf(stderr, "FATAL ERROR!! in %s: %s\n",funcname,message);
+    case MSTK_FATAL:
+      fprintf(stderr, "MSTK_FATAL MSTK_ERROR!! in %s: %s\n",funcname,message);
       exit(-1);
     }
   }

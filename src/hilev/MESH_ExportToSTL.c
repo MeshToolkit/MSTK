@@ -23,22 +23,22 @@ int MESH_ExportToSTL(Mesh_ptr mesh, const char *filename) {
   
   if (!(fp = fopen(filename,"w"))) {
     sprintf(mesg,"Couldn't open output file %s\n",filename);
-    MSTK_Report("MESH_ExportToSTL",mesg,ERROR);
+    MSTK_Report("MESH_ExportToSTL",mesg,MSTK_ERROR);
     return 0;
   }
 
   if (MESH_Num_Regions(mesh)) {
-    MSTK_Report("MESH_ExportToSTL","Cannot export solid meshes\n",ERROR);
+    MSTK_Report("MESH_ExportToSTL","Cannot export solid meshes\n",MSTK_ERROR);
     return 0;
   }
 
   idx = 0;
   while ((face = MESH_Next_Face(mesh,&idx))) {
     if (MF_Num_Edges(face) != 3) {
-      MSTK_Report("MESH_ExportToSTL","Can only export triangular meshes to STL\n",ERROR);
-      MSTK_Report("MESH_ExportToSTL","If you need polygonal meshes to be exported\n",MESG);
-      MSTK_Report("MESH_ExportToSTL","as a triangulated surface mesh to STL, \n",MESG);
-      MSTK_Report("MESH_ExportToSTL","please send a mail to rao@lanl.gov\n",MESG);
+      MSTK_Report("MESH_ExportToSTL","Can only export triangular meshes to STL\n",MSTK_ERROR);
+      MSTK_Report("MESH_ExportToSTL","If you need polygonal meshes to be exported\n",MSTK_MESG);
+      MSTK_Report("MESH_ExportToSTL","as a triangulated surface mesh to STL, \n",MSTK_MESG);
+      MSTK_Report("MESH_ExportToSTL","please send a mail to rao@lanl.gov\n",MSTK_MESG);
       return 0;
     }
   }

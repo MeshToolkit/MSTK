@@ -104,7 +104,7 @@ extern "C" {
     dim = (data>>2) & 7;
 
     if (!del_flag)
-      MSTK_Report("MEnt_OrigDim","This is not a deleted entity",WARN);    
+      MSTK_Report("MEnt_OrigDim","This is not a deleted entity",MSTK_WARN);    
 
     if (dim <= 3)
       return dim;
@@ -120,7 +120,7 @@ extern "C" {
     unsigned int data = ent->entdat.dim_id;
 
     if (id > 134217727 )
-      MSTK_Report("MEnt_SetID","ID too large",WARN);
+      MSTK_Report("MEnt_SetID","ID too large",MSTK_WARN);
 
     /* Zero out all but the first 5 bits by bitwise AND with 0..11111 (31) */
     data = (data & 31);
@@ -332,7 +332,7 @@ extern "C" {
 #ifdef DEBUG
     int dim = MEnt_Dim(ent);
     if (dim < MVERTEX && dim > MREGION)
-      MSTK_Report("MEnt_Unmark","Not a valid topological entity",ERROR);
+      MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
     ent->entdat.marker = ent->entdat.marker | 1<<(markerID-1);
@@ -342,7 +342,7 @@ extern "C" {
 #ifdef DEBUG
     int dim = MEnt_Dim(ent);
     if (dim < MVERTEX && dim > MREGION)
-      MSTK_Report("MEnt_Unmark","Not a valid topological entity",ERROR);
+      MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
     ent->entdat.marker = ent->entdat.marker & ~(1<<(markerID-1));
@@ -392,7 +392,7 @@ extern "C" {
     }
     else
       MSTK_Report("MEnt_Set_AttVal",
-		  "Attribute not suitable for this entity type",ERROR);
+		  "Attribute not suitable for this entity type",MSTK_ERROR);
   }
 
   /* Clear value of attribute */
@@ -575,7 +575,7 @@ extern "C" {
     plnumdat = (int *) pval;
 
     if (!plnumdat) {
-      MSTK_Report("MEnt_LocalID","No processor specific data. Call MEnt_Set_Num{Procs first",WARN);
+      MSTK_Report("MEnt_LocalID","No processor specific data. Call MEnt_Set_Num{Procs first",MSTK_WARN);
       return 0;
     }
 
@@ -609,7 +609,7 @@ extern "C" {
     if (!plnumdat) {
       MSTK_Report("MEnt_Set_LocalID",
 		  "No processor specific data. Call MEnt_Set_ProcIDs first",
-		  WARN);
+		  MSTK_WARN);
       return;
     }
 
@@ -630,7 +630,7 @@ extern "C" {
 
     /* This processor ID is not found */
 
-    MSTK_Report("MEnt_Set_LocalID","Processor not connected to entity",WARN);
+    MSTK_Report("MEnt_Set_LocalID","Processor not connected to entity",MSTK_WARN);
   }
 
 
@@ -651,7 +651,7 @@ extern "C" {
     if (!plnumdat) {
       MSTK_Report("MEnt_LocalID",
 		  "No processor specific data. Call MEnt_Set_ProcIDs first",
-		  WARN);
+		  MSTK_WARN);
       return MEnt_ID(ent);
     }
 
@@ -672,7 +672,7 @@ extern "C" {
 
     /* Processor ID was not found */
 
-    MSTK_Report("MEnt_LocalID","Processor not connected to entity",WARN);
+    MSTK_Report("MEnt_LocalID","Processor not connected to entity",MSTK_WARN);
     return -1;
   }
 
@@ -683,7 +683,7 @@ extern "C" {
   MEntity_ptr MEnt_NextInHash(MEntity_ptr ent) {
     switch ( MEnt_Dim(ent) ) {
     case MVERTEX:
-      MSTK_Report("MEnt_NextInHash", "Entity is vertex", WARN);
+      MSTK_Report("MEnt_NextInHash", "Entity is vertex", MSTK_WARN);
       break;
     case MEDGE:
       return ME_NextInHash(ent);
@@ -692,10 +692,10 @@ extern "C" {
       return MF_NextInHash(ent);
       break;
     case MREGION:
-      MSTK_Report("MEnt_NextInHash", "Entity is region", WARN);
+      MSTK_Report("MEnt_NextInHash", "Entity is region", MSTK_WARN);
       break;
     default:
-      MSTK_Report("MEnt_NextInHash", "Unknown entity type", WARN);
+      MSTK_Report("MEnt_NextInHash", "Unknown entity type", MSTK_WARN);
       break;
     }
     return NULL;
@@ -704,7 +704,7 @@ extern "C" {
   void MEnt_Set_NextInHash(MEntity_ptr ent, MEntity_ptr next) {
     switch ( MEnt_Dim(ent) ) {
     case MVERTEX:
-      MSTK_Report("MEnt_Set_NextInHash", "Entity is vertex", WARN);
+      MSTK_Report("MEnt_Set_NextInHash", "Entity is vertex", MSTK_WARN);
       break;
     case MEDGE:
       ME_Set_NextInHash(ent, next);
@@ -713,17 +713,17 @@ extern "C" {
       MF_Set_NextInHash(ent, next);
       break;
     case MREGION:
-      MSTK_Report("MEnt_Set_NextInHash", "Entity is region", WARN);
+      MSTK_Report("MEnt_Set_NextInHash", "Entity is region", MSTK_WARN);
       break;
     default:
-      MSTK_Report("MEnt_Set_NextInHash", "Unknown entity type", WARN);
+      MSTK_Report("MEnt_Set_NextInHash", "Unknown entity type", MSTK_WARN);
       break;
     }
   }
   void MEnt_HashKey(MEntity_ptr ent, unsigned int *pn, void* **pp) {
     switch ( MEnt_Dim(ent) ) {
     case MVERTEX:
-      MSTK_Report("MEnt_HashKey", "Entity is vertex", WARN);
+      MSTK_Report("MEnt_HashKey", "Entity is vertex", MSTK_WARN);
       break;
     case MEDGE:
       ME_HashKey(ent, pn, pp);
@@ -732,10 +732,10 @@ extern "C" {
       MF_HashKey(ent, pn, pp);
       break;
     case MREGION:
-      MSTK_Report("MEnt_HashKey", "Entity is region", WARN);
+      MSTK_Report("MEnt_HashKey", "Entity is region", MSTK_WARN);
       break;
     default:
-      MSTK_Report("MEnt_HashKey", "Unknown entity type", WARN);
+      MSTK_Report("MEnt_HashKey", "Unknown entity type", MSTK_WARN);
       break;
     }
   }
@@ -751,7 +751,7 @@ extern "C" {
       return 0;
     default:
 #ifdef DEBUG
-      MSTK_Report("MEnt_HashKey", "Unknown entity type", WARN);
+      MSTK_Report("MEnt_HashKey", "Unknown entity type", MSTK_WARN);
 #endif
       return 0;
     }

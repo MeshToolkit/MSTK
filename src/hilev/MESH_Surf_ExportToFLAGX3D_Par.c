@@ -171,10 +171,10 @@ int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
       MEnt_ProcIDs(mf,&nfp,mfprocs);
 
       if (nfp > 1) {
-	MSTK_Report("MESH_Surf_ExportToFlagX3D","Cell of surface mesh is on more than two processors",FATAL);
+	MSTK_Report("MESH_Surf_ExportToFlagX3D","Cell of surface mesh is on more than two processors",MSTK_FATAL);
       }
       else if (nfp == 0) {
-	MSTK_Report("MESH_Surf_ExportToFlagX3D","Cell of surface mesh is not on any processors",FATAL);
+	MSTK_Report("MESH_Surf_ExportToFlagX3D","Cell of surface mesh is not on any processors",MSTK_FATAL);
       }
 
       pnum = mfprocs[0];             
@@ -315,7 +315,7 @@ int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
       MEnt_ProcIDs(mf,&nfp,mfprocs);
 
       if (nfp != 1)
-	MSTK_Report("MESH_Surf_ExportToFlagX3D","Cell of surface mesh must be on one processor only",FATAL);
+	MSTK_Report("MESH_Surf_ExportToFlagX3D","Cell of surface mesh must be on one processor only",MSTK_FATAL);
        
       if (mfprocs[0] == ip) {
 	List_Add(localcells,mf);
@@ -659,7 +659,7 @@ int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
 #ifdef DEBUG
 	  if (!oppeid)
 	    MSTK_Report("MESH_Surf_ExportToFLAGX3D",
-			"Internal edge has no duplicate edge info?",ERROR);
+			"Internal edge has no duplicate edge info?",MSTK_ERROR);
 #endif
 
 	  /* ID of the processor owning this edge */
@@ -718,7 +718,7 @@ int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
 	  if (nep > 2)
 	    MSTK_Report("MESH_Surf_ExportToFlagX3D",
 			"Non-manifold edges not supported in X3D format",
-			ERROR);
+			MSTK_ERROR);
 #endif	  
 	
 	  if (meprocs[0] != ip) {

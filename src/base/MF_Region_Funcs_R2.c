@@ -65,7 +65,7 @@ extern "C" {
 
 #ifdef DEBUG
     MSTK_Report("MF_Region_R2",
-		"May be more efficient to call MF_Regions",WARN);
+		"May be more efficient to call MF_Regions",MSTK_WARN);
 #endif
 
     fregs = MF_Regions_R2(f);

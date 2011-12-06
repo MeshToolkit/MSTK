@@ -50,7 +50,7 @@ extern "C" {
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */
     if (!attrib) {
-      MSTK_Report("MESH_UpdateAttr()","There is no such attribute",ERROR);
+      MSTK_Report("MESH_UpdateAttr()","There is no such attribute",MSTK_ERROR);
       return 0;
     }
 
@@ -64,7 +64,7 @@ extern "C" {
       MAttrib_Get_Name(attrib,attname);
 #ifdef DEBUG
       sprintf(mesg,"Meaningless to update pointer attributes across processors (attribute: %s", attname);
-      MSTK_Report("MESH_UpdateAttr()",mesg,WARN);
+      MSTK_Report("MESH_UpdateAttr()",mesg,MSTK_WARN);
 #endif
       return 0;
     }
@@ -89,11 +89,11 @@ extern "C" {
       num_ov = MESH_Num_OverlapRegions(mesh);
       break;
     case MALLTYPE:
-      MSTK_Report("MESH_UpdateAttr","Not implemented for MALLTYPE",WARN);
+      MSTK_Report("MESH_UpdateAttr","Not implemented for MALLTYPE",MSTK_WARN);
       return 0;
       break;
     default:
-      MSTK_Report("MESH_UpdateAttr()","Invalid entity type",FATAL);
+      MSTK_Report("MESH_UpdateAttr()","Invalid entity type",MSTK_FATAL);
     }
   
     /* this stores the global to local processor id map */
@@ -134,7 +134,7 @@ extern "C" {
 	ment = MESH_OverlapRegion(mesh,j);
 	break;
       default:
-	MSTK_Report("MESH_SendAttr()","Invalid entity type",FATAL);
+	MSTK_Report("MESH_SendAttr()","Invalid entity type",MSTK_FATAL);
       }
       MEnt_Get_AttVal(ment,attrib,&ival,&rval,&pval);
       list_info_send[j] = MEnt_GlobalID(ment);
@@ -250,7 +250,7 @@ extern "C" {
 	ment = MESH_GhostRegion(mesh,j);
 	break;
       default:
-	MSTK_Report("MESH_UpdateAttr()","Invalid entity type",FATAL);
+	MSTK_Report("MESH_UpdateAttr()","Invalid entity type",MSTK_FATAL);
       }
     
       global_id = MEnt_GlobalID(ment);

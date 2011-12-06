@@ -111,7 +111,7 @@ extern "C" {
       if (MF_Mesh(f) != MV_Mesh(v[i]))
 	MSTK_Report("MF_Set_Vertices_R4",
 		    "Face and Vertex are not from the same mesh",
-		    FATAL);
+		    MSTK_FATAL);
 #endif
 
       List_Add(adj->fvertices,v[i]);
@@ -125,13 +125,13 @@ extern "C" {
     adj = (MFace_Adj_R4 *) f->adj;
     if (adj->fvertices == NULL)
       MSTK_Report("MF_Rem_Vertex_R4",
-		  "No initial set of vertices for face",ERROR);
+		  "No initial set of vertices for face",MSTK_ERROR);
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(v))
       MSTK_Report("MF_Rem_Vertex_R4",
 		  "Face and Vertex are not from the same mesh",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     List_Rem(adj->fvertices,v);
@@ -144,13 +144,13 @@ extern "C" {
     adj = (MFace_Adj_R4 *) f->adj;
     if (adj->fvertices == NULL)
       MSTK_Report("MF_Replace_Vertex_R4",
-		  "No initial set of vertices for face",ERROR);
+		  "No initial set of vertices for face",MSTK_ERROR);
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(v))
       MSTK_Report("MF_Set_Vertices_R4",
 		  "Face and Vertex are not from the same mesh",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     List_Replacei(adj->fvertices,i,v);
@@ -162,13 +162,13 @@ extern "C" {
     adj = (MFace_Adj_R4 *) f->adj;
     if (adj->fvertices == NULL)
       MSTK_Report("MF_Replace_Vertex_R4",
-		  "No initial set of vertices for face",ERROR);
+		  "No initial set of vertices for face",MSTK_ERROR);
 
 #ifdef DEBUG
     if (MF_Mesh(f) != MV_Mesh(v))
       MSTK_Report("MF_Set_Vertices_R4",
 		  "Face and Vertex are not from the same mesh",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     List_Replace(adj->fvertices,v,nuv);
@@ -185,7 +185,7 @@ extern "C" {
     if (MF_Mesh(f) != MV_Mesh(nuv))
       MSTK_Report("MF_Set_Vertices_R4",
 		  "Face and Vertex are not from the same mesh",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     List_Insert(adj->fvertices,nuv,b4v);
@@ -202,7 +202,7 @@ extern "C" {
     if (MF_Mesh(f) != MV_Mesh(nuv))
       MSTK_Report("MF_Set_Vertices_R4",
 		  "Face and Vertex are not from the same mesh",
-		  FATAL);
+		  MSTK_FATAL);
 #endif
 
     List_Inserti(adj->fvertices,nuv,i);
@@ -242,7 +242,7 @@ extern "C" {
       }
 
       if (!fnd) {
-	MSTK_Report("MF_Num_Vertices_R4","Cannot find starting vertex",ERROR);
+	MSTK_Report("MF_Num_Vertices_R4","Cannot find starting vertex",MSTK_ERROR);
 	return 0;
       }
 

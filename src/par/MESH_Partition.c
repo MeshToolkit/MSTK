@@ -68,7 +68,7 @@ extern "C" {
 
     if (!nr && !nf) {
       MSTK_Report("MESH_Partition",
-		  "This is not a valid mstk file for partition",ERROR);
+		  "This is not a valid mstk file for partition",MSTK_ERROR);
       exit(-1);
     }
 
@@ -102,7 +102,7 @@ extern "C" {
     }
     else {
       MSTK_Report("MESH_Partition",
-		  "This is not a valid mstk file for partition",ERROR);
+		  "This is not a valid mstk file for partition",MSTK_ERROR);
       exit(-1);
     }
 
@@ -276,7 +276,7 @@ extern "C" {
 
 	      MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
 	      if (!lmvlist)
-		MSTK_Report("MESH_Surf_AddGhost_FN","Missing local vertex list",FATAL);
+		MSTK_Report("MESH_Surf_AddGhost_FN","Missing local vertex list",MSTK_FATAL);
 
 	      idx2 = 0;
 	      found = 0;
@@ -288,7 +288,7 @@ extern "C" {
 	      }
 
 	      if (!lmv)
-		MSTK_Report("MESH_Surf_AddGhost_FN","Missing local vertex",FATAL);
+		MSTK_Report("MESH_Surf_AddGhost_FN","Missing local vertex",MSTK_FATAL);
 	      ME_Set_Vertex(lme,j,lmv);	      
 	    }	    
 	    MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
@@ -447,7 +447,7 @@ extern "C" {
 
 	      MEnt_Get_AttVal(gmv,g2latt,0,0,&lmvlist);
 	      if (!lmvlist)
-		MSTK_Report("MESH_Vol_AddGhost_FN","Missing local vertex list",FATAL);
+		MSTK_Report("MESH_Vol_AddGhost_FN","Missing local vertex list",MSTK_FATAL);
 
 	      idx2 = 0;
 	      found = 0;
@@ -459,7 +459,7 @@ extern "C" {
 	      }
 
 	      if (!lmv)
-		MSTK_Report("MESH_Vol_AddGhost_FN","Missing submesh vertex",FATAL);
+		MSTK_Report("MESH_Vol_AddGhost_FN","Missing submesh vertex",MSTK_FATAL);
 	      ME_Set_Vertex(lme,j,lmv);
 	    }
 	    MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
@@ -509,7 +509,7 @@ extern "C" {
 
 	      MEnt_Get_AttVal(gme,g2latt,0,0,&lmelist);
 	      if (!lmelist)
-		MSTK_Report("MESH_Vol_Partition_FN","Missing local edge list",FATAL);
+		MSTK_Report("MESH_Vol_Partition_FN","Missing local edge list",MSTK_FATAL);
 
 	      idx2 = 0;
 	      found = 0;
@@ -521,7 +521,7 @@ extern "C" {
 	      }
 
 	      if (!lme)
-		MSTK_Report("MESH_Vol_Partition_FN","Missing local edge",FATAL);
+		MSTK_Report("MESH_Vol_Partition_FN","Missing local edge",MSTK_FATAL);
 
 	      lfedges[j] = lme;
 	      lfedirs[j] = MF_EdgeDir_i(gmf,j);
@@ -579,17 +579,17 @@ extern "C" {
 
 
   int MESH_Surf_Partition_R1R2R4(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
-    MSTK_Report("MESH_Surf_Partition_R1R2R4","Not implemented",FATAL);
+    MSTK_Report("MESH_Surf_Partition_R1R2R4","Not implemented",MSTK_FATAL);
   }
 
     
   int MESH_Vol_Partition_R1R2(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
-    MSTK_Report("MESH_Vol_Partition_R1R2","Not implemented",FATAL);
+    MSTK_Report("MESH_Vol_Partition_R1R2","Not implemented",MSTK_FATAL);
   }
 
 
   int MESH_Vol_Partition_R4(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
-    MSTK_Report("MESH_Vol_Partition_R4","Not implemented",FATAL);
+    MSTK_Report("MESH_Vol_Partition_R4","Not implemented",MSTK_FATAL);
   }
 
 

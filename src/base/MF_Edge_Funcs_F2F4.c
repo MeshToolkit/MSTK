@@ -107,7 +107,7 @@ extern "C" {
 
 #ifdef DEBUG
     if (n > 32)
-      MSTK_Report("MF_Set_Edges_F2F4","Currently, only 32 edges supported per face",ERROR);
+      MSTK_Report("MF_Set_Edges_F2F4","Currently, only 32 edges supported per face",MSTK_ERROR);
 #endif
 
     adj = (MFace_Adj_F2F4 *) f->adj;
@@ -120,7 +120,7 @@ extern "C" {
 #ifdef DEBUG
       if (MF_Mesh(f) != ME_Mesh(e[i]))
 	MSTK_Report("MF_Set_Edges_F2F4",
-		    "Face and edge belong to different meshes",FATAL);
+		    "Face and edge belong to different meshes",MSTK_FATAL);
 #endif
 
       adj->edirs = adj->edirs | (dir[i] << i);
@@ -142,7 +142,7 @@ extern "C" {
 
     if (ne == 0)
       MSTK_Report("MF_Remove_Edges_F1F3","No initial set of edges for face",
-		  ERROR);
+		  MSTK_ERROR);
 
     /* Order the old edges in the direction of the face */
 
@@ -153,7 +153,7 @@ extern "C" {
 	break;
       }
     if (!found) {
-      MSTK_Report("MF_Remove_Edge_F1F3","Edge not found in face",ERROR);
+      MSTK_Report("MF_Remove_Edge_F1F3","Edge not found in face",MSTK_ERROR);
       return;
     }
 
@@ -200,7 +200,7 @@ extern "C" {
 
     if (ne == 0)
       MSTK_Report("MF_Replace_Edge_i","No initial set of edges for face",
-		  ERROR);
+		  MSTK_ERROR);
 
     oldedges = (MEdge_ptr *) MSTK_malloc(nold*sizeof(MEdge_ptr));
     olddirs  = (int *) MSTK_malloc(nold*sizeof(int));
@@ -222,7 +222,7 @@ extern "C" {
     else if (ME_UsesEntity(nuedges[0],vold_1,MVERTEX) && ME_UsesEntity(nuedges[nnu-1],vold_0,MVERTEX))
       rev = 1;
     else
-      MSTK_Report("MF_Replace_Edge_i","Mismatched set of edges",ERROR);
+      MSTK_Report("MF_Replace_Edge_i","Mismatched set of edges",MSTK_ERROR);
 
 
     newedges = (MEdge_ptr *) MSTK_malloc(nnu*sizeof(MEdge_ptr));
@@ -237,7 +237,7 @@ extern "C" {
 #ifdef DEBUG
       if (MF_Mesh(f) != ME_Mesh(nuedges[k]))
 	  MSTK_Report("MF_Replace_Edges_i_F2F4",
-		      "Face and edge belong to different meshes",FATAL);
+		      "Face and edge belong to different meshes",MSTK_FATAL);
 #endif
     }
 
@@ -343,7 +343,7 @@ extern "C" {
 
     if (ne == 0)
       MSTK_Report("MF_Replace_Edge_F1","No initial set of edges for face",
-		  ERROR);
+		  MSTK_ERROR);
 
     /* Order the old edges in the direction of the face */
 
@@ -357,7 +357,7 @@ extern "C" {
 	  break;
 	}
       if (!found) {
-	MSTK_Report("MF_Replace_Edge","Edge not found in face",ERROR);
+	MSTK_Report("MF_Replace_Edge","Edge not found in face",MSTK_ERROR);
 	MSTK_free(eindex);
 	return;
       }
@@ -467,7 +467,7 @@ extern "C" {
       }
 
       if (!fnd)
-	MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",FATAL);
+	MSTK_Report("MF_Edges_F1","Cannot find vertex in face!!",MSTK_FATAL);
 	
       fedges = List_New(n);
       for (i = 0; i < n; i++) {
@@ -492,7 +492,7 @@ extern "C" {
 	return ((adj->edirs)>>i) & 1;
     }
 
-    MSTK_Report("MF_Edges_F2F4","Cannot find edge in face!!",FATAL);
+    MSTK_Report("MF_Edges_F2F4","Cannot find edge in face!!",MSTK_FATAL);
 
     return 0;
   }
@@ -502,7 +502,7 @@ extern "C" {
 
 #ifdef DEBUG
     if (i > 31)
-      MSTK_Report("MF_Set_Edges_F2F4","Currently, only 32 edges supported per face",ERROR);
+      MSTK_Report("MF_Set_Edges_F2F4","Currently, only 32 edges supported per face",MSTK_ERROR);
 #endif
 
     adj = (MFace_Adj_F2F4 *) f->adj;

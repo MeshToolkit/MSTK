@@ -92,7 +92,7 @@ extern "C" {
     while( (ptr_f = MESH_Next_Face(tetmesh, &idf)) ) {
       MF_Coords(ptr_f, &n, xyz_lst);
       if( n != 3 ) {
-	MSTK_Report("MESH_Tet2Hex","Input mesh is not a tetrahedral mesh",WARN);
+	MSTK_Report("MESH_Tet2Hex","Input mesh is not a tetrahedral mesh",MSTK_WARN);
 	return 0;
       }
 

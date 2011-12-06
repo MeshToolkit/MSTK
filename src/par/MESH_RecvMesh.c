@@ -57,7 +57,7 @@ extern "C" {
     else if(dim == 2) 
       (*MESH_Surf_RecvMesh_jmp[rtype])(mesh,mesh_info,send_rank,rank,comm);
     else {
-      MSTK_Report("MESH_RecvMesh()","only receive volume or surface mesh",ERROR);
+      MSTK_Report("MESH_RecvMesh()","only receive volume or surface mesh",MSTK_ERROR);
       exit(-1);
     }
     return 1;
@@ -444,17 +444,17 @@ extern "C" {
 
 
   int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
-    MSTK_Report("MESH_Surf_RecvMesh_R1R2R4","Not implemented",FATAL);
+    MSTK_Report("MESH_Surf_RecvMesh_R1R2R4","Not implemented",MSTK_FATAL);
   }
 
   int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
-    MSTK_Report("MESH_Vol_RecvMesh_R1R2","Not implemented",FATAL);
+    MSTK_Report("MESH_Vol_RecvMesh_R1R2","Not implemented",MSTK_FATAL);
   }
 
 
   int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
 
-    MSTK_Report("MESH_Vol_RecvMesh_R4","Not implemented",FATAL);
+    MSTK_Report("MESH_Vol_RecvMesh_R4","Not implemented",MSTK_FATAL);
   }
 
 

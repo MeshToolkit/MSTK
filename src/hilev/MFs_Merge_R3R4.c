@@ -19,11 +19,11 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
   gdim = MF_GEntDim(f1);
 
   if (mesh != MF_Mesh(f2)) {
-    MSTK_Report("MFs_Merge","Faces not from same mesh - Cannot merge",ERROR);
+    MSTK_Report("MFs_Merge","Faces not from same mesh - Cannot merge",MSTK_ERROR);
     return 0;
   }
   else if (gid != MF_GEntID(f2) || gdim != MF_GEntDim(f2)) {
-    MSTK_Report("MFs_Merge","Faces not from same geometric entity - Cannot merge",ERROR);
+    MSTK_Report("MFs_Merge","Faces not from same geometric entity - Cannot merge",MSTK_ERROR);
     return 0;
   }
   
@@ -41,7 +41,7 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
     if (List_Num_Entries(f1) != List_Num_Entries(f2)) {
       MSTK_Report("MFs_Merge",
 		  "To-be-merged faces have different number of edges",
-		  ERROR);
+		  MSTK_ERROR);
       return 0;
     }
 
@@ -50,7 +50,7 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
       if (!List_Contains(fverts2,fv2)) {
 	MSTK_Report("MFs_Merge",
 		    "Vertices of faces must be merged before merging faces",
-		    ERROR);
+		    MSTK_ERROR);
 	return 0;
       }
     }

@@ -73,31 +73,31 @@ extern "C" {
   void MF_Rem_Vertex_F4(MFace_ptr f, MVertex_ptr v) {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_Vertex_F4",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Replace_Vertex_i_F4(MFace_ptr f, int i, MVertex_ptr v) {
 #ifdef DEBUG
-    MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Replace_Vertex_F4(MFace_ptr f, MVertex_ptr v, MVertex_ptr nuv) {
 #ifdef DEBUG
-    MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MF_Replace_Vertex","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Insert_Vertex_F4(MFace_ptr f, MVertex_ptr nuv, MVertex_ptr b4v) {
 #ifdef DEBUG
-    MSTK_Report("MF_Insert_Vertex","Function call not suitable for this representation",WARN);
+    MSTK_Report("MF_Insert_Vertex","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
   void MF_Insert_Vertex_i_F4(MFace_ptr f, MVertex_ptr nuv, int i) {
 #ifdef DEBUG
-    MSTK_Report("MF_Insert_Vertex_i","Function call not suitable for this representation",WARN);
+    MSTK_Report("MF_Insert_Vertex_i","Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
@@ -126,7 +126,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Num_AdjFaces",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
     
     return 0;
@@ -160,7 +160,7 @@ extern "C" {
   List_ptr MF_AdjFaces_F4(MFace_ptr f) {
 #ifdef DEBUG
     MSTK_Report("MF_AdjFaces",
-		"Function call not suitable for this representation",WARN);
+		"Function call not suitable for this representation",MSTK_WARN);
 #endif
     return NULL;
   }
@@ -211,7 +211,7 @@ extern "C" {
     MFace_Adj_F2F4 *adj;
     
 #ifdef DEBUG
-    MSTK_Report("MF_Region_F4","More efficient to use MF_Regions",MESG);
+    MSTK_Report("MF_Region_F4","More efficient to use MF_Regions",MSTK_MESG);
 #endif
     
     adj = (MFace_Adj_F2F4 *) f->adj;
@@ -242,7 +242,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Add_AdjFace",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
   }
 
@@ -250,7 +250,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_AdjFace",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
   }
 
@@ -258,7 +258,7 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Add_Region",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
   }
 
@@ -266,26 +266,26 @@ extern "C" {
 #ifdef DEBUG
     MSTK_Report("MF_Rem_Region",
 		"Function call unsuitable for this representation",
-		WARN);
+		MSTK_WARN);
 #endif
   }
 
   MFace_ptr MF_NextInHash_F4(MFace_ptr f) {
 #ifdef DEBUG
-    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
     return NULL;
   }
 
   void MF_Set_NextInHash_F4(MFace_ptr f, MFace_ptr next) {
 #ifdef DEBUG
-    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
   }
 
   void MF_HashKey_F4(MFace_ptr f, unsigned int *pn, void* **pp) {
 #ifdef DEBUG
-    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", WARN);
+    MSTK_Report("MF_NextInHash", "Function call not suitable for this representation", MSTK_WARN);
 #endif
   }
 

@@ -35,7 +35,7 @@ int MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh ) {
   else if(nf) 
     MESH_Surf_BuildPBoundary(mesh, submesh);
   else {
-    MSTK_Report("MESH_BuildPBoundary()","This is not a valid mstk file",ERROR);
+    MSTK_Report("MESH_BuildPBoundary()","This is not a valid mstk file",MSTK_ERROR);
     exit(-1);
   }
   return 1;
@@ -61,7 +61,7 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   while((lme = MESH_Next_Edge(submesh,&idx))) {
     MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
     if (!gme)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",ERROR);
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",MSTK_ERROR);
       
 
     lmefaces = ME_Faces(lme);
@@ -84,7 +84,7 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
     MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
     if (!gmv)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",ERROR);
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",MSTK_ERROR);
 
     lmvfaces = MV_Faces(lmv);
     gmvfaces = MV_Faces(gmv);
@@ -127,7 +127,7 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   while((lmf = MESH_Next_Face(submesh,&idx))) {
     MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
     if (!gmf)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",ERROR);
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",MSTK_ERROR);
 
     lmfregs = MF_Regions(lmf);
     gmfregs = MF_Regions(gmf);
@@ -146,7 +146,7 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   while((lme = MESH_Next_Edge(submesh,&idx))) {
     MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
     if (!gme)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",ERROR);
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",MSTK_ERROR);
 
     lmeregs = ME_Regions(lme);
     gmeregs = ME_Regions(gme);
@@ -166,7 +166,7 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
     MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
     if (!gmv)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",ERROR);
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",MSTK_ERROR);
 
     lmvregs = MV_Regions(lmv);
     gmvregs = MV_Regions(gmv);

@@ -39,7 +39,7 @@ extern "C" {
       List_Delete(fedges2);
 
       if (!fnd) {
-	MSTK_Report("MFs_DihedralAngle","Faces do not share common edge",ERROR);
+	MSTK_Report("MFs_DihedralAngle","Faces do not share common edge",MSTK_ERROR);
 	return 0.0;
       }
     }
