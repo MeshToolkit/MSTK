@@ -37,7 +37,7 @@ extern "C" {
     double rval;
     void *pval;
     double *rval_arr=NULL;
-    int *list_info_send, *list_info_recv, recv_index, num_recv_rank;
+    int *list_info_send, *list_info_recv, recv_index, num_recv_procs;
     int global_id, par_id;
     MType mtype;
     MAttType att_type;
@@ -98,25 +98,25 @@ extern "C" {
   
     /* this stores the global to local processor id map */
     int *rank_g2l = (int*) MSTK_malloc((num+1)*sizeof(int));
-    num_recv_rank = local_info[0];
-    int *recv_pos = (int*) MSTK_malloc((num_recv_rank+1)*sizeof(int));
+    num_recv_procs = local_info[0];
+    int *recv_pos = (int*) MSTK_malloc((num_recv_procs+1)*sizeof(int));
     recv_pos[0] = 0;
-    for (i = 0; i < num_recv_rank; i++) {
+    for (i = 0; i < num_recv_procs; i++) {
       rank_g2l[local_info[i+1]] = i;
-      recv_pos[i+1] = recv_pos[i]+local_info[4*i+num_recv_rank+mtype+1];
+      recv_pos[i+1] = recv_pos[i]+local_info[4*i+num_recv_procs+mtype+1];
     }
 
 
     /* attribute index and global id */ 
     list_info_send = (int *)MSTK_malloc(num_ov*sizeof(int));
-    list_info_recv = (int *)MSTK_malloc(recv_pos[num_recv_rank]*sizeof(int));
+    list_info_recv = (int *)MSTK_malloc(recv_pos[num_recv_procs]*sizeof(int));
   
     /* attribute values */
     int *list_value_int_send = (int *)MSTK_malloc(num_ov*ncomp*sizeof(int));
     double *list_value_double_send = (double *)MSTK_malloc(num_ov*ncomp*sizeof(double));
   
-    int *list_value_int_recv = (int *)MSTK_malloc(recv_pos[num_recv_rank]*ncomp*sizeof(int));
-    double *list_value_double_recv = (double *)MSTK_malloc(recv_pos[num_recv_rank]*ncomp*sizeof(double));
+    int *list_value_int_recv = (int *)MSTK_malloc(recv_pos[num_recv_procs]*ncomp*sizeof(int));
+    double *list_value_double_recv = (double *)MSTK_malloc(recv_pos[num_recv_procs]*ncomp*sizeof(double));
   
     /* collect ov data */
     for (j = 0; j < num_ov; j++) {
@@ -153,15 +153,24 @@ extern "C" {
     }
 
     /* check whether need to send or recv info */
-    recv_index = 0;
     for (i = 0; i < num; i++) {
 
       /* shift to proper bit based on the type of entity attribute lives on */
       ebit = global_info[i] >> 2*mtype;
 
-      /* send and recv size */
+      /* How many entries will we send to processor 'i' ? */
       send_size = num_ov;
-      recv_size = local_info[4*recv_index+num_recv_rank+mtype+1];
+
+      /* search for the index of the processor in local_info */
+
+      for (k = 0; k < num_recv_procs; k++) {
+	if (local_info[1+k] == i) { 	  /* found the processor */
+	  recv_index = k;
+	  break;
+	}
+      }
+
+      recv_size = local_info[1+num_recv_procs+4*recv_index+mtype];
 
       /* if the current rank is lower, send first and receive */
       if (rank < i) {
@@ -231,7 +240,6 @@ extern "C" {
 	}
       }
 
-      if (i != rank) recv_index++;
     }
 
     /* assign ghost data */
@@ -259,7 +267,7 @@ extern "C" {
       /* since the ov list is already sorted, use binary search */
       loc = (int *)bsearch(&global_id,
 			   &list_info_recv[recv_pos[rank_g2l[par_id]]],
-			   local_info[4*rank_g2l[par_id]+num_recv_rank+mtype+1],
+			   local_info[1+num_recv_procs+4*rank_g2l[par_id]+mtype],
 			   sizeof(int),
 			   ov_compare);
       /* get the index */
