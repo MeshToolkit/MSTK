@@ -9,6 +9,7 @@ TEST(Partition2D) {
   int nf, nv, ngf, nof, ngv, nov;
   int nproc, rank, status, dim;
   int *faceids, *gfaceids, *ofaceids;
+  int *vertexids, *gvertexids, *overtexids;
   Mesh_ptr mesh, mymesh;
   MFace_ptr mf;
   MVertex_ptr mv;
@@ -38,6 +39,13 @@ TEST(Partition2D) {
 
 
   int expnv[4] = {14,10,10,8};
+
+  int expvertexids[4][14]={
+    {18,19,26,25,33,32,40,39,27,34,41,28,35,42},
+    {4,5,12,11,6,13,20,7,14,21,0,0,0,0},
+    {22,23,30,29,37,36,24,31,38,17,0,0,0,0},
+    {1,2,9,8,16,15,3,10,0,0,0,0,0,0}};
+
 
   MSTK_Init();
 
@@ -89,17 +97,18 @@ TEST(Partition2D) {
 
   CHECK_EQUAL(expnv[rank],nv);
 
-  /*
   vertexids = (int *) malloc(nv*sizeof(int));
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_Vertex(mymesh,&idx)))
-    vertexids[i++] = MEnt_GlobalID(mv);
+    if (MV_PType(mv) != PGHOST)
+      vertexids[i++] = MEnt_GlobalID(mv);
+
+  CHECK_ARRAY_EQUAL(expvertexids[rank],vertexids,nv);
 
   free(vertexids);
 
-  CHECK_ARRAY_EQUAL(expvertexids[rank],vertexids,nv);
-  */
+
 
   ngf = MESH_Num_GhostFaces(mymesh);
   CHECK_EQUAL(expngf[rank],ngf);
