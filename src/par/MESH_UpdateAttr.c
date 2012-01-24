@@ -154,6 +154,7 @@ extern "C" {
 
     /* check whether need to send or recv info */
     for (i = 0; i < num; i++) {
+      int found;
 
       /* shift to proper bit based on the type of entity attribute lives on */
       ebit = global_info[i] >> 2*mtype;
@@ -162,15 +163,16 @@ extern "C" {
       send_size = num_ov;
 
       /* search for the index of the processor in local_info */
-
+      found = 0;
       for (k = 0; k < num_recv_procs; k++) {
 	if (local_info[1+k] == i) { 	  /* found the processor */
 	  recv_index = k;
+	  found = 1;
 	  break;
 	}
       }
 
-      recv_size = local_info[1+num_recv_procs+4*recv_index+mtype];
+      recv_size = found ? local_info[1+num_recv_procs+4*recv_index+mtype] : 0;
 
       /* if the current rank is lower, send first and receive */
       if (rank < i) {
