@@ -45,7 +45,9 @@ extern "C" {
 
 
      local_info stores the number of overlap entities for allocating
-     recv buffer local_info[0]: number of processors that have overlap
+     recv buffer 
+
+     local_info[0]: number of processors that have overlap
      with mesh on a particular processor
 
      local_info[1]-local_info[num_recv_rank+1]: processor ids that
