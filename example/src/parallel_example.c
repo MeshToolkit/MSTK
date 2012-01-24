@@ -11,7 +11,7 @@
 int main(int argc, char *argv[]) {
   Mesh_ptr refmesh, mesh, mymesh;
   int num, rank;
-  char filename[256], basename[256], gmvfilename[256];
+  char filename[256], basename[256], gmvfilename[256], sname[256];
   int i, j, k, idx, idx1, idx2, nfv, nsteps, dim;
   int converged, mkid, mkid2, ival;
   void *pval;
@@ -22,11 +22,8 @@ int main(int argc, char *argv[]) {
   List_ptr fverts, vfaces, ffaces;
   MAttrib_ptr rhoatt;
   int DebugWait=1;
-  FILE *fp[2];
+  FILE *fp;
   
-  fp[0] = fopen("out0","w");
-  fp[1] = fopen("out1","w");
-
   
   if(argc == 1) {
     printf("Pseudo-advection of shock front in parallel\n");
@@ -50,20 +47,23 @@ int main(int argc, char *argv[]) {
   basename[strlen(basename)-5] = '\0';
 
 
-  mesh = MESH_New(UNKNOWN_REP);
 
+  if (rank == 0) {
 
-  if (rank == 0) mymesh = mesh;
-  MESH_InitFromFile(mesh, filename);
+    mesh = MESH_New(UNKNOWN_REP);
+    mymesh = mesh;
 
-  if (MESH_Num_Regions(mesh) > 0) {
-    fprintf(stderr,"Code is for surface meshes only. Exiting...\n");
-  }
-  else if (MESH_Num_Faces(mesh) > 0)
-    dim = 2;
-  else {
-    fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
-    exit(-1);
+    MESH_InitFromFile(mesh, filename);
+    
+    if (MESH_Num_Regions(mesh) > 0) {
+      fprintf(stderr,"Code is for surface meshes only. Exiting...\n");
+    }
+    else if (MESH_Num_Faces(mesh) > 0)
+      dim = 2;
+    else {
+      fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
+      exit(-1);
+    }
   }
 
   DebugWait=0;
@@ -120,6 +120,9 @@ int main(int argc, char *argv[]) {
   MSTK_UpdateAttr(mymesh, rank, num, MPI_COMM_WORLD);
   fprintf(stderr,"done\n");
 
+
+  sprintf(sname,"out%-3d",rank);
+  fp = fopen(sname,"w");
   
   /* Propagate the density value through the mesh */
 
@@ -127,7 +130,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < nsteps; i++) {
 
     if (rank == 0) fprintf(stderr,"Step %-d\n",i+1);
-    fprintf(fp[rank],"i = %-d\n",i+1);
+    fprintf(fp,"i = %-d\n",i+1);
 
     idx = 0; 
     while ((mf = MESH_Next_Face(mymesh,&idx))) {
@@ -163,16 +166,16 @@ int main(int argc, char *argv[]) {
       }
 
 
-      fprintf(fp[rank],"MF %-d ffaces: ",MF_ID(mf));
+      fprintf(fp,"MF %-d ffaces: ",MF_ID(mf));
       idx1 = 0;
       while ((ff = List_Next_Entry(ffaces,&idx1))) {
-	fprintf(fp[rank]," %-d",MF_ID(ff));
+	fprintf(fp," %-d",MF_ID(ff));
 	if (MEnt_PType(ff) == PGHOST)
-	  fprintf(fp[rank],"G");
+	  fprintf(fp,"G");
 	MEnt_Get_AttVal(ff,rhoatt,&ival,&rval,&pval);
-	fprintf(fp[rank]," (%-2.0lf)",rval);
+	fprintf(fp," (%-2.0lf)",rval);
       }
-      fprintf(fp[rank],"\n");
+      fprintf(fp,"\n");
 
 
       if (maxrho > 0.0)
@@ -200,7 +203,7 @@ int main(int argc, char *argv[]) {
     MSTK_UpdateAttr(mymesh, rank, num, MPI_COMM_WORLD);
     fprintf(stderr,"done\n");
 
-    fprintf(fp[rank],"\n\n");
+    fprintf(fp,"\n\n");
 
   } /* for (i = 0; i < nsteps; i++) */
 
