@@ -931,7 +931,108 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	  
     MSTK_free(outattribs);
   }
+
+
+#ifdef MSTK_HAVE_MPI
+
+  /* Write out global ID and Master Processor Rank for each node and
+     for each element */
+
+  fprintf(fp,"Node_GlobalID 1\n");
+  idx = 0; k = 0;
+  while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+    fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)vertex));
+    if ((k+1)%5 == 0) fprintf(fp,"\n");
+    k++;
+  }
+  if (k%5 != 0) fprintf(fp,"\n");
+
+  fprintf(fp,"Node_MasterPID 1\n");
+  idx = 0; k = 0;
+  while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+    fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)vertex));
+    if ((k+1)%10 == 0) fprintf(fp,"\n");
+    k++;
+  }
+  if (k%10 != 0) fprintf(fp,"\n");
+
+
+
+  fprintf(fp,"Cell_GlobalID 0\n");
+  idx = 0; k = 0;
+  while ((region = MESH_Next_Region(mesh,&idx))) {
+    fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)region));
+    if ((k+1)%5 == 0) fprintf(fp,"\n");
+    k++;
+  }
   
+  if (ncells2) {
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx))) {
+      if (!MEnt_IsMarked(face,cellmk))
+        continue;
+      else {
+        fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)face));
+        if ((k+1)%5 == 0) fprintf(fp,"\n");
+        k++;
+      }
+    }
+  }
+
+  if (ncells1) {
+    idx = 0;
+    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+      if (!MEnt_IsMarked(edge,cellmk))
+        continue;
+      else {
+        fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)edge));
+        if ((k+1)%5 == 0) fprintf(fp,"\n");
+        k++;
+      }
+    }
+  }
+  if (k%5 != 0) fprintf(fp,"\n");
+
+
+
+  fprintf(fp,"Cell_MasterPID 0\n");
+  idx = 0; k = 0;
+  while ((region = MESH_Next_Region(mesh,&idx))) {
+    fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)region));
+    if ((k+1)%10 == 0) fprintf(fp,"\n");
+    k++;
+  }
+  
+  if (ncells2) {    
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx))) {
+      if (!MEnt_IsMarked(face,cellmk))
+        continue;
+      else {
+        fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)face));
+        if ((k+1)%10 == 0) fprintf(fp,"\n");
+        k++;
+      }
+    }
+  }
+
+  if (ncells1) {
+    idx = 0;
+    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+      if (!MEnt_IsMarked(edge,cellmk))
+        continue;
+      else {
+        fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)edge));
+        if ((k+1)%10 == 0) fprintf(fp,"\n");
+        k++;
+      }
+    }
+  }
+  if (k%10 != 0) fprintf(fp,"\n");
+
+
+#endif
+
   fprintf(fp,"endvars \n");
   
   
