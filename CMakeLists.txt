@@ -140,7 +140,8 @@ if (ENABLE_Tests)
   else()
     find_library(UNITTEST_LIBRARY 
       NAMES UnitTest++ unittest++
-      HINTS ${UnitTest_LIB_DIR}
+      HINTS ${UnitTest_DIR}
+      ${UnitTest_LIB_DIR}
       ${UnitTest_DIR}/lib
       )
     if (NOT UNITTEST_LIBRARY)
@@ -149,6 +150,7 @@ if (ENABLE_Tests)
   
     find_path(UNITTEST_INCLUDES "UnitTest++.h" 
       HINTS ${UnitTest_INCLUDE_DIR}
+      ${UnitTest_DIR}
       ${UnitTest_DIR}/include
       ${UnitTest_DIR}/src 
       ${UnitTest_DIR}/include/unittest++
