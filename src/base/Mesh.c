@@ -86,6 +86,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   MFace_ptr mf, ghf;
   MRegion_ptr mr, ghr;
   MAttrib_ptr attrib;
+  MSet_ptr mset;
 
 #ifdef DEBUGHIGH
   if (mesh->hedge) {
@@ -199,6 +200,13 @@ void MESH_Delete(Mesh_ptr mesh) {
     while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
       MAttrib_Delete(attrib);
     List_Delete(mesh->AttribList);
+  }
+
+  if (mesh->MSetList) {
+    i = 0;
+    while ((mset = List_Next_Entry(mesh->MSetList,&i)))
+      MSet_Delete(mset);
+    List_Delete(mesh->MSetList);
   }
 
   MSTK_free(mesh);
