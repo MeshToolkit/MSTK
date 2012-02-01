@@ -99,12 +99,12 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   
   /* read the vertex information */
   
-  xvals = (double *) malloc(nnodes*sizeof(double));
-  yvals = (double *) malloc(nnodes*sizeof(double));  
+  xvals = (double *) MSTK_malloc(nnodes*sizeof(double));
+  yvals = (double *) MSTK_malloc(nnodes*sizeof(double));  
   if (ndim == 2)
-    zvals = (double *) calloc(nnodes,sizeof(double));
+    zvals = (double *) MSTK_calloc(nnodes,sizeof(double));
   else
-    zvals = (double *) malloc(nnodes*sizeof(double));
+    zvals = (double *) MSTK_malloc(nnodes*sizeof(double));
   
   status = ex_get_coord(exoid, xvals, yvals, zvals);
   if (status < 0) {
@@ -129,7 +129,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   /* read node number map - store it as an attribute to spit out later
      if necessary */
   
-  node_map = (int *) malloc(nnodes*sizeof(int));
+  node_map = (int *) MSTK_malloc(nnodes*sizeof(int));
   
   status = ex_get_node_num_map(exoid, node_map);
   if (status < 0) {
@@ -147,12 +147,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     }
     
   }
+
+  MSTK_free(node_map);
   
 
   /* Read node sets */
 
   if (nnodesets) {
-    nodeset_ids = (int *) malloc(nnodesets*sizeof(int));
+    nodeset_ids = (int *) MSTK_malloc(nnodesets*sizeof(int));
 
     status = ex_get_node_set_ids(exoid,nodeset_ids);
     if (status < 0) {
@@ -174,7 +176,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       status = ex_get_node_set_param(exoid,nodeset_ids[i],&num_nodes_in_set,
 				     &num_df_in_set);
       
-      ns_node_list = (int *) malloc(num_nodes_in_set*sizeof(int));
+      ns_node_list = (int *) MSTK_malloc(num_nodes_in_set*sizeof(int));
       
       status = ex_get_node_set(exoid,nodeset_ids[i],ns_node_list);
       if (status < 0) {
@@ -196,10 +198,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	MSet_Add(nodeset,mv);
       }
       
-      free(ns_node_list);
+      MSTK_free(ns_node_list);
     }
     
-    free(nodeset_ids);
+    MSTK_free(nodeset_ids);
       
   }
 
@@ -283,6 +285,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       MSTK_free(nnpe);
     }
 
+    MSTK_free(face_blk_ids);
+
   }
 
 
@@ -291,16 +295,16 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   /* Get element block IDs and names */
   
   
-  elem_blk_ids = (int *) malloc(nelblock*sizeof(int));
+  elem_blk_ids = (int *) MSTK_malloc(nelblock*sizeof(int));
   status = ex_get_ids(exoid, EX_ELEM_BLOCK, elem_blk_ids);
   if (status < 0) {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
   
-  elem_blknames = (char **) malloc(nelblock*sizeof(char *));
+  elem_blknames = (char **) MSTK_malloc(nelblock*sizeof(char *));
   for (i = 0; i < nelblock; i++)
-    elem_blknames[i] = (char *) malloc(256*sizeof(char));
+    elem_blknames[i] = (char *) MSTK_malloc(256*sizeof(char));
   status = ex_get_names(exoid, EX_ELEM_BLOCK, elem_blknames);
   if (status < 0) {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
@@ -398,7 +402,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	/* Get the connectivity of all elements in this block */
 
-	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
+	connect = (int *) MSTK_calloc(nelnodes*nelem_i,sizeof(int));
 	
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
@@ -409,7 +413,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 	/* Create the MSTK faces */
 	
-	fverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
+	fverts = (MVertex_ptr *) MSTK_calloc(nelnodes,sizeof(MVertex_ptr));
 	
 	for (j = 0; j < nelem_i; j++) {
 	  
@@ -425,8 +429,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 	}
 	
-	free(fverts);
-
+	MSTK_free(fverts);
+        MSTK_free(connect);
 	
       } /* if (strcmp(elem_type,"NSIDED") ... else */
       
@@ -437,7 +441,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
     if (nsidesets) {
 
-      sideset_ids = (int *) malloc(nsidesets*sizeof(int));
+      sideset_ids = (int *) MSTK_malloc(nsidesets*sizeof(int));
       
       status = ex_get_side_set_ids(exoid,sideset_ids);
       if (status < 0) {
@@ -458,8 +462,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
 				       &num_df_in_set);
 	
-	ss_elem_list = (int *) malloc(num_sides_in_set*sizeof(int));
-	ss_side_list = (int *) malloc(num_sides_in_set*sizeof(int));
+	ss_elem_list = (int *) MSTK_malloc(num_sides_in_set*sizeof(int));
+	ss_side_list = (int *) MSTK_malloc(num_sides_in_set*sizeof(int));
 	
 	status = ex_get_side_set(exoid,sideset_ids[i],ss_elem_list,ss_side_list);
 	if (status < 0) {
@@ -490,18 +494,19 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  ME_Set_GEntID(me,sideset_ids[i]);
 	}
 	
-	free(ss_elem_list);
-	free(ss_side_list);
+	MSTK_free(ss_elem_list);
+	MSTK_free(ss_side_list);
 	
       }
 
+      MSTK_free(sideset_ids);
     }
     
     
     /* read element number map - store it as an attribute to spit out
        later if necessary */
     
-    elem_map = (int *) malloc(nelems*sizeof(int));
+    elem_map = (int *) MSTK_malloc(nelems*sizeof(int));
     
     status = ex_get_elem_num_map(exoid, elem_map);
     if (status < 0) {
@@ -519,6 +524,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       }
       
     }
+
+    MSTK_free(elem_map);
     
   }
   else if (ndim == 3) {
@@ -652,6 +659,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	}
 	
 	MSTK_free(rfarr);
+        MSTK_free(rfdirs);
 	MSTK_free(connect);
 	MSTK_free(nnpe);
 
@@ -675,7 +683,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	/* Create the MSTK regions */
 	
-	rverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
+	rverts = (MVertex_ptr *) MSTK_calloc(nelnodes,sizeof(MVertex_ptr));
 	
 	if (strncasecmp(elem_type,"TETRA",5) == 0) {
 	  eltype = 0;
@@ -772,9 +780,11 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  MSet_Add(matset,mr);
 	}
 	
-	free(rverts);
-
-	free(connect);
+	MSTK_free(rverts);
+        MSTK_free(rfarr);
+        MSTK_free(rfdirs);
+	MSTK_free(connect);
+        MSTK_free(fverts);
 	
       } 
       else if (strncasecmp(elem_type,"NSIDED",6) == 0) {
@@ -845,7 +855,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	/* Get the connectivity of all elements in this block */
 	
-	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
+	connect = (int *) MSTK_calloc(nelnodes*nelem_i,sizeof(int));
 	
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
@@ -856,7 +866,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	
 	/* Create the MSTK faces */
 	
-	fverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
+	fverts = (MVertex_ptr *) MSTK_calloc(nelnodes,sizeof(MVertex_ptr));
 	
 	for (j = 0; j < nelem_i; j++) {
 	  
@@ -876,8 +886,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 	}
 	
-	free(fverts);
-
+	MSTK_free(fverts);
+        MSTK_free(connect);
 	
       } /* if (strcmp(elem_type,"NFACED") ... else */
       
@@ -890,7 +900,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
     if (nsidesets) {
 
-      sideset_ids = (int *) malloc(nsidesets*sizeof(int));
+      sideset_ids = (int *) MSTK_malloc(nsidesets*sizeof(int));
 
       status = ex_get_side_set_ids(exoid,sideset_ids);
       if (status < 0) {
@@ -912,8 +922,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
 				       &num_df_in_set);
 	
-	ss_elem_list = (int *) malloc(num_sides_in_set*sizeof(int));
-	ss_side_list = (int *) malloc(num_sides_in_set*sizeof(int));
+	ss_elem_list = (int *) MSTK_malloc(num_sides_in_set*sizeof(int));
+	ss_side_list = (int *) MSTK_malloc(num_sides_in_set*sizeof(int));
 
 	status = ex_get_side_set(exoid,sideset_ids[i],ss_elem_list,ss_side_list);
 	if (status < 0) {
@@ -982,11 +992,12 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  MF_Set_GEntID(mf,sideset_ids[i]);
 	}
 	
-	free(ss_elem_list);
-	free(ss_side_list);
+	MSTK_free(ss_elem_list);
+        MSTK_free(ss_side_list);
 	
       }
 
+      MSTK_free(sideset_ids);
     }
 
 
@@ -995,7 +1006,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     /* read element number map - store it as an attribute to spit out
        later if necessary */
     
-    elem_map = (int *) malloc(nelems*sizeof(int));
+    elem_map = (int *) MSTK_malloc(nelems*sizeof(int));
     
     status = ex_get_elem_num_map(exoid, elem_map);
     if (status < 0) {
@@ -1029,11 +1040,13 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       
     }
 
-    free(elem_map);
+    MSTK_free(elem_map);
   }
 
-  free(elem_blk_ids);
-  free(elem_blknames);
+  MSTK_free(elem_blk_ids);
+  for (i = 0; i < nelblock; i++)
+    MSTK_free(elem_blknames[i]);
+  MSTK_free(elem_blknames);
 
 
   ex_close(exoid);
