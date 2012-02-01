@@ -763,6 +763,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 			      "Face already connected two faces",MSTK_FATAL);
 		}
 	      }
+              if (fregs) List_Delete(fregs);
 	    }
 	    else {
 	      face = MF_New(mesh);
@@ -977,6 +978,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	    if (fregs) List_Delete(fregs);
 	  }
 	  List_Delete(rfaces);
+          List_Delete(rverts);
 	  
 	  /* Set attribute value for this face */
 	  
