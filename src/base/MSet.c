@@ -327,6 +327,7 @@ extern "C" {
       newset = NULL;
     }
 
+    MSTK_free(newname);
     return newset;
 
   }
