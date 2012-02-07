@@ -27,11 +27,10 @@
 #
 # -D ENABLE_ExodusII=yes|no (default is yes)
 #
-# Must define path to ExodusII, NetCDF and HDF5 packages
+# Must define path to ExodusII and NetCDF packages
 # 
 # -D ExodusII_DIR:FILEPATH="/usr/packages/exodusii/"
 # -D NetCDF_DIR:FILEPATH="/usr/packages/netcdf-4.0/"
-# -D HDF5_DIR:FILEPATH="/usr/packages/hdf5/"
 #
 #
 # -D ENABLE_Tests=yes|no (default is yes)
@@ -64,7 +63,7 @@ ARCHOS=${ARCH}_${OS}
 
 # Top level directory where the code lives
 
-SOURCE=$HOME/develop/mstk/1.83rc3
+SOURCE=PATH_TO_MSTK_SOURCE
 
 
 
@@ -77,19 +76,16 @@ rm -f CMakeCache.txt
 # installation directories below
 
 /usr/bin/cmake \
-  -D CMAKE_BUILD_TYPE:STRING=Debug \
+  -D CMAKE_BUILD_TYPE:STRING=Release \
   -D CMAKE_C_COMPILER:FILEPATH="mpicc" \
   -D CMAKE_CXX_COMPILER:FILEPATH="mpiCC" \
-  -D CMAKE_C_FLAGS_DEBUG:STRING="-g -pg" \
   -D ENABLE_PARALLEL=yes \
   -D ENABLE_ExodusII=yes \
-  -D NetCDF_DIR:FILEPATH=$HOME/packages/netcdf-4.0.1 \
-  -D HDF5_DIR:FILEPATH=/usr \
-  -D ExodusII_DIR:FILEPATH=$HOME/packages/ACCESS/libraries/exodusii \
-  -D Metis_DIR:FILEPATH=$HOME/packages/metis-4.0 \
+  -D NetCDF_DIR:FILEPATH=$HOME/packages/${ARCHOS}/netcdf-3.6.3 \
+  -D ExodusII_DIR:FILEPATH=$HOME/packages/${ARCHOS}/ACCESS/libraries/exodusii \
+  -D Metis_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0 \
   -D ENABLE_Tests=yes \
-  -D UnitTest_DIR:FILEPATH=$HOME/packages/UnitTest++ \
-  -D UnitTest_LIB_DIR:FILEPATH=$HOME/packages/UnitTest++ \
+  -D UnitTest_DIR:FILEPATH=$HOME/packages/${ARCHOS}/UnitTest++ \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
   -D INSTALL_ADD_VERSION=no \
   ${SOURCE} 
