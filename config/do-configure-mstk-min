@@ -63,7 +63,7 @@ ARCHOS=${ARCH}_${OS}
 
 # Top level directory where the code lives
 
-SOURCE=$HOME/develop/mstk/1.83rc1
+SOURCE=PATH_TO_MSTK_SOURCE
 
 
 
@@ -76,7 +76,7 @@ rm -f CMakeCache.txt
 # installation directories below
 
 /usr/bin/cmake \
-  -D CMAKE_BUILD_TYPE:STRING=Debug \
+  -D CMAKE_BUILD_TYPE:STRING=Release \
   -D CMAKE_C_COMPILER:FILEPATH="gcc" \
   -D CMAKE_CXX_COMPILER:FILEPATH="g++" \
   -D ENABLE_PARALLEL=no \
