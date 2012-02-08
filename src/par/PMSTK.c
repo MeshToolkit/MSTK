@@ -333,7 +333,7 @@ extern "C" {
     char attr_name[256];
     MAttrib_ptr attrib;
 
-    MESH_UpdateGlobalInfo(mesh, rank, num,  MPI_COMM_WORLD);
+    MESH_UpdateGlobalInfo(mesh, rank, num,  comm);
 
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {
