@@ -226,14 +226,14 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* functions to update ghost info and attributes */
-  /* Must be preceded by MESH_UpdateGlobalInfo - Not recommended for users */
+  /* Must be preceded by MESH_Update_ProcessorRel - Not recommended for users */
   int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int rank, 
 			     int num,  MPI_Comm comm);
-  int        MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  
+  int        MESH_Update_ProcessorRel(Mesh_ptr mesh, int rank, int num,  
 				   MPI_Comm comm);
-  int*       MESH_GlobalInfo(Mesh_ptr mesh);
+  int*       MESH_ProcessorRel(Mesh_ptr mesh);
   int*       MESH_LocalInfo(Mesh_ptr mesh);
-  void       MESH_Set_GlobalInfo(Mesh_ptr mesh, int *global_info);
+  void       MESH_Set_ProcessorRel(Mesh_ptr mesh, int *proc_mesh_rel);
   void       MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info);
 
 

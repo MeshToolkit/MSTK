@@ -13,7 +13,7 @@ extern "C" {
   /* 
      this function sends ov attributes and update ghost attributes
      
-     must call MESH_UpdateGlobalInfo() first
+     must call MESH_Update_ProcessorRel() first
      called by every process
      
      attr_name: the attribute name
@@ -46,7 +46,7 @@ extern "C" {
     MPI_Status status;
 
     int *local_info = MESH_LocalInfo(mesh);
-    int *global_info = MESH_GlobalInfo(mesh);
+    int *proc_mesh_rel = MESH_ProcessorRel(mesh);
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */
     if (!attrib) {
@@ -157,7 +157,7 @@ extern "C" {
       int found;
 
       /* shift to proper bit based on the type of entity attribute lives on */
-      ebit = global_info[i] >> 2*mtype;
+      ebit = proc_mesh_rel[i] >> 2*mtype;
 
       /* How many entries will we send to processor 'i' ? */
       send_size = num_ov;

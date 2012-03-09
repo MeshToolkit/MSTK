@@ -37,7 +37,7 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->ovedge = (List_ptr) NULL;
   newmesh->ovface = (List_ptr) NULL;
   newmesh->ovregion = (List_ptr) NULL;
-  newmesh->global_info = NULL;
+  newmesh->proc_mesh_rel = NULL;
   newmesh->local_info = NULL;
 #endif
 
@@ -62,16 +62,16 @@ Mesh_ptr MESH_New(RepType type) {
 }
 
 #ifdef MSTK_HAVE_MPI
-int* MESH_GlobalInfo(Mesh_ptr mesh) {
-  return mesh->global_info;
+int* MESH_ProcessorRel(Mesh_ptr mesh) {
+  return mesh->proc_mesh_rel;
 }
 
 int* MESH_LocalInfo(Mesh_ptr mesh) {
   return mesh->local_info;
 }
 
-void MESH_Set_GlobalInfo(Mesh_ptr mesh, int *global_info) {
-  mesh->global_info = global_info;
+void MESH_Set_ProcessorRel(Mesh_ptr mesh, int *proc_mesh_rel) {
+  mesh->proc_mesh_rel = proc_mesh_rel;
 }
 
 void MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info) {

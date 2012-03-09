@@ -11,17 +11,18 @@ extern "C" {
 #endif
 
   /* 
-     this function updates (or intialize) global info associated with mesh
-     this is a collective operation called by every process
+     this function updates (or intializes) inter-processor
+     relationships of the mesh
+
 
      for applications that do not involve topology change,
      this routine can be called only once during initialization
 
-     global_info is an integer array of size num
-     global_info[i] on a processor j indicates the relationship of the mesh 
+     proc_mesh_rel is an integer array of size num
+     proc_mesh_rel[i] on a processor j indicates the relationship of the mesh 
      on processor j with the mesh on processor i.
 
-     1 and 2 bit(from left - ERRRR, SHOULD THAT BE FROM THE RIGHT?? - RVG) 
+     1 and 2 bit(from right) 
      indicate relation on vertex
      0(00) no relation,
      1(01) has ghost entities related to processor j,
@@ -31,16 +32,10 @@ extern "C" {
      5 and 6 bit indicate relation on face
      7 and 8 bit indicate relation on region
 
-     for example: global_info[3] = 51 (00110011) means mesh on this
+     for example: proc_mesh_rel[3] = 51 (00110011) means mesh on this
      processor has ghost vertices and ghost faces whose master
      processor is 3 and has overlap vertices and overlap faces which
      are ghost entities on processor 3.
-
-     PERHAPS GLOBAL INFO SHOULD BE CALLED MY_MESH_CON OR MESH_PROC_CON
-     BECAUSE IT IS DESCRIBING HOW THE MESH ON THIS PROCESSOR IS
-     CONNECTED TO THE MESH ON OTHER PROCESSORS. USING THE PHRASE
-     GLOBAL_INFO LEADS US TO BELIEVE THAT THIS INFO IS UNIFORM ACROSS
-     ALL PROCESSORS BUT THAT IS UNTRUE.
 
 
 
@@ -65,21 +60,21 @@ extern "C" {
   */
 
 
-int MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
+int MESH_Update_ProcessorRel(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   int i,idx,nv,ne,nf,nr,local_ov_num[4];
   int ebit, ov_index, ov_index2;
   MVertex_ptr mv;
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
-  int *local_info, *global_info;
+  int *local_info, *proc_mesh_rel;
 
 
   int *global_ov_num = (int *) MSTK_malloc(4*num*sizeof(int));
   int *global_ranks = (int *) MSTK_malloc(num*num*sizeof(int));
 
   
-  global_info = (int *) MSTK_malloc(num*sizeof(int));
+  proc_mesh_rel = (int *) MSTK_malloc(num*sizeof(int));
   
   /* local ov num */
   local_ov_num[0] = MESH_Num_OverlapVertices(mesh);
@@ -125,7 +120,7 @@ int MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
 
   /* check which processor has ghost entity on rank processor */
   for(i = 0; i < num; i++) 
-    global_info[i] = local_ranks[i] | (global_ranks[i*num+rank] << 1);
+    proc_mesh_rel[i] = local_ranks[i] | (global_ranks[i*num+rank] << 1);
   
 
 
@@ -162,7 +157,7 @@ int MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   }
 
 
-  MESH_Set_GlobalInfo(mesh,global_info);
+  MESH_Set_ProcessorRel(mesh,proc_mesh_rel);
   MESH_Set_LocalInfo(mesh,local_info);
 
   MSTK_free(local_ranks);
