@@ -84,47 +84,53 @@ endif(ENABLE_ExodusII)
 
 if (ENABLE_PARALLEL)
 
+  if ((NOT ENABLE_METIS) AND (NOT ENABLE_ZOLTAN))
+    message(FATAL_ERROR "Error: Must enable METIS or ZOLTAN as a partitioner")
+  endif() 
+
   ##############################################################################
   # Metis
   ##############################################################################
 
-  find_library(METIS_LIBRARY metis
-    HINTS ${METIS_LIB_DIR}
-    ${Metis_DIR}
-    ${Metis_DIR}/Lib
-    )
+  if (ENABLE_METIS) 
 
-  if(NOT METIS_LIBRARY)
-    message(FATAL_ERROR "Error: could not find Metis library\n"
-      "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n"
-      "Or METIS_LIB_DIR")
-  endif()
+    find_package(METIS REQUIRED)
+    if (NOT METIS_FOUND)
+       message(FATAL_ERROR "Error: could not find Metis library\n"
+	  "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n")
+
+    endif (NOT METIS_FOUND)
+
+    include_directories(${METIS_INCLUDE_DIRS})
   
-  find_path(METIS_INCLUDES metis.h 
-    HINTS ${METIS_INCLUDE_DIR}
-    ${Metis_DIR}
-    ${Metis_DIR}/include
-    ${Metis_DIR}/Lib
-    )
+    message("---- METIS_LIBRARY :" ${METIS_LIBRARY})
+
+  endif (ENABLE_METIS)
+
+  ##############################################################################
+  # Zoltan
+  ##############################################################################
+
+  if (ENABLE_ZOLTAN) 
+
+    find_package(ZOLTAN REQUIRED)
+    if (NOT ZOLTAN_FOUND)
+       message(FATAL_ERROR "Error: could not find Zoltan library\n"
+	  "Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
+     endif (NOT ZOLTAN_FOUND)
   
-  if(NOT METIS_INCLUDES)
-    message(FATAL_ERROR "Error: could not find Metis includes\n"
-      "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n"
-      "Or Metis_INCLUDE_DIR")
-  endif()
-
-  include_directories(${METIS_INCLUDES})
+     include_directories(${ZOLTAN_INCLUDE_DIRS})
   
-  add_library(metis STATIC IMPORTED)
-  set_property(TARGET metis PROPERTY IMPORTED_LOCATION ${METIS_LIBRARY})
-  
-  message("---- METIS_LIBRARY : " ${METIS_LIBRARY})
+     message("---- ZOLTAN_LIBRARY :" ${ZOLTAN_LIBRARY})
 
-  set(METIS_LIBS_ALL metis) 
+  endif (ENABLE_ZOLTAN)
 
-endif (ENABLE_PARALLEL)
+endif (ENABLE_PARALLEL) 
 
 
+##############################################################################
+# TESTS 
+##############################################################################
 
 if (ENABLE_Tests) 
 
