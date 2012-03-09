@@ -37,8 +37,8 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->ovedge = (List_ptr) NULL;
   newmesh->ovface = (List_ptr) NULL;
   newmesh->ovregion = (List_ptr) NULL;
-  newmesh->proc_mesh_rel = NULL;
-  newmesh->local_info = NULL;
+  newmesh->mesh_par_adj_flags = NULL;
+  newmesh->mesh_par_adj_info = NULL;
 #endif
 
   newmesh->geom = (GModel_ptr) NULL;
@@ -62,20 +62,20 @@ Mesh_ptr MESH_New(RepType type) {
 }
 
 #ifdef MSTK_HAVE_MPI
-int* MESH_ProcessorRel(Mesh_ptr mesh) {
-  return mesh->proc_mesh_rel;
+int* MESH_ParallelAdjFlags(Mesh_ptr mesh) {
+  return mesh->mesh_par_adj_flags;
 }
 
-int* MESH_LocalInfo(Mesh_ptr mesh) {
-  return mesh->local_info;
+int* MESH_ParallelAdjInfo(Mesh_ptr mesh) {
+  return mesh->mesh_par_adj_info;
 }
 
-void MESH_Set_ProcessorRel(Mesh_ptr mesh, int *proc_mesh_rel) {
-  mesh->proc_mesh_rel = proc_mesh_rel;
+void MESH_Set_ParallelAdjFlags(Mesh_ptr mesh, int *paradjflag) {
+  mesh->mesh_par_adj_flags = paradjflag;
 }
 
-void MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info) {
-  mesh->local_info = local_info;
+void MESH_Set_ParalellelAdj(Mesh_ptr mesh, int *mesh_par_adj_info) {
+  mesh->mesh_par_adj_info = mesh_par_adj_info;
 }
 #endif
 

@@ -333,7 +333,7 @@ extern "C" {
     char attr_name[256];
     MAttrib_ptr attrib;
 
-    MESH_Update_ProcessorRel(mesh, rank, num,  comm);
+    MESH_Update_ParallelAdj(mesh, rank, num,  comm);
 
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {

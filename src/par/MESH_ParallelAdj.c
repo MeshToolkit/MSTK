@@ -18,8 +18,8 @@ extern "C" {
      for applications that do not involve topology change,
      this routine can be called only once during initialization
 
-     proc_mesh_rel is an integer array of size num
-     proc_mesh_rel[i] on a processor j indicates the relationship of the mesh 
+     mesh_par_adj_flags is an integer array of size num
+     mesh_par_adj_flags[i] on a processor j indicates the relationship of the mesh 
      on processor j with the mesh on processor i.
 
      1 and 2 bit(from right) 
@@ -32,20 +32,20 @@ extern "C" {
      5 and 6 bit indicate relation on face
      7 and 8 bit indicate relation on region
 
-     for example: proc_mesh_rel[3] = 51 (00110011) means mesh on this
+     for example: mesh_par_adj_flags[3] = 51 (00110011) means mesh on this
      processor has ghost vertices and ghost faces whose master
      processor is 3 and has overlap vertices and overlap faces which
      are ghost entities on processor 3.
 
 
 
-     local_info stores the number of overlap entities for allocating
+     mesh_par_adj_info stores the number of overlap entities for allocating
      recv buffer 
 
-     local_info[0]: number of processors that have overlap
+     mesh_par_adj_info[0]: number of processors that have overlap
      with mesh on a particular processor
 
-     local_info[1]-local_info[num_recv_rank+1]: processor ids that
+     mesh_par_adj_info[1]-mesh_par_adj_info[num_recv_rank+1]: processor ids that
      have overlap with mesh on particular processor (What is num_recv_rank?)
 
      Then num_recv_rank*4 array stores the number of overlap
@@ -53,28 +53,26 @@ extern "C" {
      THE NUMBER OF OVERLAP ENTITIES OF EACH TYPE FOR EACH OF THE
      RELEVANT PROCESSORS?)
 
-     THIS IS ALSO SOME SORT OF CONNECTIVITY INFO - WHAT SHOULD WE RENAME IT?
-
      Author(s): Duo Wang, Rao Garimella
 
   */
 
 
-int MESH_Update_ProcessorRel(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
+int MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   int i,idx,nv,ne,nf,nr,local_ov_num[4];
   int ebit, ov_index, ov_index2;
   MVertex_ptr mv;
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
-  int *local_info, *proc_mesh_rel;
+  int *mesh_par_adj_info, *mesh_par_adj_flags;
 
 
   int *global_ov_num = (int *) MSTK_malloc(4*num*sizeof(int));
   int *global_ranks = (int *) MSTK_malloc(num*num*sizeof(int));
 
   
-  proc_mesh_rel = (int *) MSTK_malloc(num*sizeof(int));
+  mesh_par_adj_flags = (int *) MSTK_malloc(num*sizeof(int));
   
   /* local ov num */
   local_ov_num[0] = MESH_Num_OverlapVertices(mesh);
@@ -120,7 +118,7 @@ int MESH_Update_ProcessorRel(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
 
   /* check which processor has ghost entity on rank processor */
   for(i = 0; i < num; i++) 
-    proc_mesh_rel[i] = local_ranks[i] | (global_ranks[i*num+rank] << 1);
+    mesh_par_adj_flags[i] = local_ranks[i] | (global_ranks[i*num+rank] << 1);
   
 
 
@@ -130,35 +128,35 @@ int MESH_Update_ProcessorRel(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
     if(local_ranks[i])
       ov_index++;
   /*
-    local_info:
-    local_info[0]: number of master partitions of ghost
+    mesh_par_adj_info:
+    mesh_par_adj_info[0]: number of master partitions of ghost
     then is the partition id;
     then is the number of ov vertices, edges, faces and regions
   */
-  local_info = (int *) MSTK_malloc((5*(ov_index)+1)*sizeof(int));      
+  mesh_par_adj_info = (int *) MSTK_malloc((5*(ov_index)+1)*sizeof(int));      
   for(i = 0; i < 5*(ov_index)+1; i++)
-    local_info[i] = 0;
-  local_info[0] = ov_index;
+    mesh_par_adj_info[i] = 0;
+  mesh_par_adj_info[0] = ov_index;
   ov_index2 = 0;
   for(i = 0; i < num; i++) {
     ebit = local_ranks[i];
     if(ebit) {
-      local_info[ov_index2+1] = i;
+      mesh_par_adj_info[ov_index2+1] = i;
       if(ebit & 1)
-	local_info[ov_index+ov_index2*4+1] = global_ov_num[4*i];
+	mesh_par_adj_info[ov_index+ov_index2*4+1] = global_ov_num[4*i];
       if( (ebit>>2) & 1)
-	local_info[ov_index+ov_index2*4+2] = global_ov_num[4*i+1];
+	mesh_par_adj_info[ov_index+ov_index2*4+2] = global_ov_num[4*i+1];
       if( (ebit>>4) & 1)
-	local_info[ov_index+ov_index2*4+3] = global_ov_num[4*i+2];
+	mesh_par_adj_info[ov_index+ov_index2*4+3] = global_ov_num[4*i+2];
       if( (ebit>>6) & 1)
-	local_info[ov_index+ov_index2*4+4] = global_ov_num[4*i+3];
+	mesh_par_adj_info[ov_index+ov_index2*4+4] = global_ov_num[4*i+3];
       ov_index2++;
     }
   }
 
 
-  MESH_Set_ProcessorRel(mesh,proc_mesh_rel);
-  MESH_Set_LocalInfo(mesh,local_info);
+  MESH_Set_ParallelAdjFlags(mesh,mesh_par_adj_flags);
+  MESH_Set_ParallelAdjInfo(mesh,mesh_par_adj_info);
 
   MSTK_free(local_ranks);
   MSTK_free(global_ranks);

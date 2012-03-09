@@ -45,8 +45,8 @@ extern "C" {
     MAttrib_ptr attrib;
     MPI_Status status;
 
-    int *local_info = MESH_LocalInfo(mesh);
-    int *proc_mesh_rel = MESH_ProcessorRel(mesh);
+    int *mesh_par_adj_info = MESH_ParallelAdjInfo(mesh);
+    int *mesh_par_adj_flags = MESH_ParallelAdjFlags(mesh);
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */
     if (!attrib) {
@@ -98,12 +98,12 @@ extern "C" {
   
     /* this stores the global to local processor id map */
     int *rank_g2l = (int*) MSTK_malloc((num+1)*sizeof(int));
-    num_recv_procs = local_info[0];
+    num_recv_procs = mesh_par_adj_info[0];
     int *recv_pos = (int*) MSTK_malloc((num_recv_procs+1)*sizeof(int));
     recv_pos[0] = 0;
     for (i = 0; i < num_recv_procs; i++) {
-      rank_g2l[local_info[i+1]] = i;
-      recv_pos[i+1] = recv_pos[i]+local_info[4*i+num_recv_procs+mtype+1];
+      rank_g2l[mesh_par_adj_info[i+1]] = i;
+      recv_pos[i+1] = recv_pos[i]+mesh_par_adj_info[4*i+num_recv_procs+mtype+1];
     }
 
 
@@ -157,22 +157,22 @@ extern "C" {
       int found;
 
       /* shift to proper bit based on the type of entity attribute lives on */
-      ebit = proc_mesh_rel[i] >> 2*mtype;
+      ebit = mesh_par_adj_flags[i] >> 2*mtype;
 
       /* How many entries will we send to processor 'i' ? */
       send_size = num_ov;
 
-      /* search for the index of the processor in local_info */
+      /* search for the index of the processor in mesh_par_adj_info */
       found = 0;
       for (k = 0; k < num_recv_procs; k++) {
-	if (local_info[1+k] == i) { 	  /* found the processor */
+	if (mesh_par_adj_info[1+k] == i) { 	  /* found the processor */
 	  recv_index = k;
 	  found = 1;
 	  break;
 	}
       }
 
-      recv_size = found ? local_info[1+num_recv_procs+4*recv_index+mtype] : 0;
+      recv_size = found ? mesh_par_adj_info[1+num_recv_procs+4*recv_index+mtype] : 0;
 
       /* if the current rank is lower, send first and receive */
       if (rank < i) {
@@ -269,7 +269,7 @@ extern "C" {
       /* since the ov list is already sorted, use binary search */
       loc = (int *)bsearch(&global_id,
 			   &list_info_recv[recv_pos[rank_g2l[par_id]]],
-			   local_info[1+num_recv_procs+4*rank_g2l[par_id]+mtype],
+			   mesh_par_adj_info[1+num_recv_procs+4*rank_g2l[par_id]+mtype],
 			   sizeof(int),
 			   ov_compare);
       /* get the index */

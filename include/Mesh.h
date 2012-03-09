@@ -25,8 +25,8 @@ extern "C" {
     List_ptr ghvertex, ghedge, ghface, ghregion;
     int max_ghvid, max_gheid, max_ghfid, max_ghrid;
     List_ptr ovvertex, ovedge, ovface, ovregion;
-    int *global_info;
-    int *local_info;
+    int *mesh_par_adj_flags;
+    int *mesh_par_adj_info;
     /* end for mpi */
 #endif
   } Mesh, *Mesh_ptr;
