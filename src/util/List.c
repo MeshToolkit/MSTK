@@ -77,7 +77,7 @@ extern "C" {
     l->nentdat = ((nent<<5) | p);
     if (nrem) {
       if (!l->remdat)
-	l->remdat = (unsigned int *) MSTK_malloc(2*sizeof(void *));
+	l->remdat = (unsigned int *) MSTK_malloc(2*sizeof(unsigned int));
       l->remdat[0] = nrem;
       l->remdat[1] = rem1;
     }
