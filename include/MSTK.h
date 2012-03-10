@@ -122,13 +122,13 @@ void MSTK_Init(void);
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
 				const char* global_mesh_name, 
 				int *dim, int ring, int with_attr, 
-				int rank, int num, MPI_Comm comm);
+				int method, int rank, int num, MPI_Comm comm);
 
   /* Partition an existing mesh and distribute it to 'num' processors */
 
   int MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
 			   int *dim, int ring, int with_attr, 
-			   int rank, int num, MPI_Comm comm);
+			   int method, int rank, int num, MPI_Comm comm);
 
   /* Parallel update attribute values for ghost entities */
 
@@ -566,9 +566,11 @@ void MSTK_Init(void);
   /* Mesh Partition Routines*/
 
   int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
+  int MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm);
+  int MESH_Get_Partition(Mesh_ptr mesh, int num, int **part, int method, int rank, MPI_Comm comm);
   int        MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, 
-				 int ring, int with_attr);
-  int        MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num);
+				 int *part, int ring, int with_attr);
+  int        MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int *part);
   int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
 
   /* build processor boundary */

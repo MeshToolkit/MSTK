@@ -47,12 +47,9 @@ int main(int argc, char *argv[]) {
   basename[strlen(basename)-5] = '\0';
 
 
-
+  mesh = MESH_New(UNKNOWN_REP);
+  mymesh = mesh;
   if (rank == 0) {
-
-    mesh = MESH_New(UNKNOWN_REP);
-    mymesh = mesh;
-
     MESH_InitFromFile(mesh, filename);
     
     if (MESH_Num_Regions(mesh) > 0) {
@@ -68,8 +65,8 @@ int main(int argc, char *argv[]) {
 
   DebugWait=0;
   while (DebugWait);
-
-  MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, rank, num, MPI_COMM_WORLD);
+  
+  MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, 0, rank, num, MPI_COMM_WORLD);
 
   /* Can just do this too */
 

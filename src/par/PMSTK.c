@@ -22,7 +22,7 @@ extern "C" {
      1, attributes from the mesh are copied onto the submeshes. This
      routine does not send the meshes to other partitions */
 
-  int MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int ring, 
+  int MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int *part,  int ring, 
 			  int with_attr) {
     int i, j, natt, nset, idx;
     char attr_name[256];
@@ -42,7 +42,7 @@ extern "C" {
 
     /* Split the mesh into 'num' submeshes */
 
-    MESH_Partition(mesh, submeshes, num);
+    MESH_Partition(mesh, submeshes, num, part);
 
     for(i = 0; i < num; i++) {
 
@@ -257,10 +257,10 @@ extern "C" {
   /* Read a mesh in, partition it and distribute it to 'num' processors */
 
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
-				    const char* global_mesh_name, 
-				    int *dim, int ring, int with_attr, 
-				    int rank, int num, 
-				    MPI_Comm comm) {
+				const char* global_mesh_name, 
+				int *dim, int ring, int with_attr, 
+				int method, int rank, int num, 
+				MPI_Comm comm) {
     int i, ok;
 
     if(rank == 0) {
@@ -277,7 +277,7 @@ extern "C" {
       *recv_mesh = mesh;
     }
 
-    MSTK_Mesh_Distribute(recv_mesh, dim, ring, with_attr, rank, num, comm);
+    MSTK_Mesh_Distribute(recv_mesh, dim, ring, with_attr, method, rank, num, comm);
 
     return 1;
   }
@@ -287,10 +287,10 @@ extern "C" {
 
   int MSTK_Mesh_Distribute(Mesh_ptr *mesh, int *dim, 
 			   int ring, int with_attr, 
-			   int rank, int num, 
+			   int method, int rank, int num, 
 			   MPI_Comm comm) {
     int i, root=0, recv_dim;
-    int *send_dim;
+    int *send_dim, *part;
 
     send_dim = (int *) malloc(num*sizeof(int));
     for (i = 0; i < num; i++) send_dim[i] = *dim;
@@ -300,13 +300,13 @@ extern "C" {
     if (rank != root)
       *dim = recv_dim;
 
+    MESH_Get_Partition(mesh, num, part, method, rank, comm);
+
     if(rank == 0) {    
 
       /* Partition the mesh*/
-
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
-      MSTK_Mesh_Partition(*mesh, submeshes, num, ring, with_attr);
-
+      MSTK_Mesh_Partition(mesh, submeshes, num, part, ring, with_attr);
       
       *mesh = submeshes[0];
       for(i = 1; i < num; i++) {

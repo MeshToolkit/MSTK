@@ -50,9 +50,30 @@ extern "C" {
   {MESH_Vol_Partition_FN, MESH_Vol_Partition_FN, MESH_Vol_Partition_R1R2,
    MESH_Vol_Partition_R1R2, MESH_Vol_Partition_R4};
 
+  int MESH_Get_Partition(Mesh_ptr mesh, int num, int **part, int method, int rank, MPI_Comm comm) {
+    int ok, nf, nr, ncells;
+    /* basic mesh information */
+    if ( rank == 0 ) {
+      nf = MESH_Num_Faces(mesh);
+      nr = MESH_Num_Regions(mesh);
 
-  int MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num) {
-    int i, j, ok, nf, nr, idx, idx2, found, natt, ncomp, *part;
+      ncells = (nr) ? nr:nf; 
+      if (ncells == 0) {
+	MSTK_Report("MESH_Get_Partition_Serial",
+		    "This is not a valid mstk file for partition",MSTK_ERROR);
+	exit(-1);
+      }
+      *part = (int *) MSTK_malloc(ncells*sizeof(int));
+      if ( method == 0)
+	ok = MESH_PartitionWithMetis(mesh, num, part);
+    }
+    if ( method == 1 )
+      ok = MESH_PartitionWithZoltan(mesh, num, part,rank,comm);
+    return ok;
+  }
+    
+  int MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int *part) {
+    int i, j, ok, nf, nr, idx, idx2, found, natt, ncomp;
     MVertex_ptr gmv;
     MEdge_ptr gme;
     MFace_ptr gmf;
@@ -91,14 +112,10 @@ extern "C" {
       MR_Set_GlobalID(gmr,MR_ID(gmr));
     
     if (nr) {
-      part = (int *) MSTK_malloc(nr*sizeof(int));
-      ok = MESH_PartitionWithMetis(mesh, num, &part);
-      ok &= MESH_Vol_Partition(mesh,num,part,submeshes);
+      ok = MESH_Vol_Partition(mesh,num,part,submeshes);
     }
     else if (nf) {
-      part = (int *) MSTK_malloc(nf*sizeof(int));
-      ok = MESH_PartitionWithMetis(mesh, num, &part);
-      ok &= MESH_Surf_Partition(mesh,num,part,submeshes);
+      ok = MESH_Surf_Partition(mesh,num,part,submeshes);
     }
     else {
       MSTK_Report("MESH_Partition",
