@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
 
   mesh = MESH_New(UNKNOWN_REP);
-  mymesh = mesh;
+
   if (rank == 0) {
     MESH_InitFromFile(mesh, filename);
     
@@ -61,12 +61,13 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
       exit(-1);
     }
+    mymesh = mesh;
   }
 
   DebugWait=0;
   while (DebugWait);
-  
-  MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, 0, rank, num, MPI_COMM_WORLD);
+
+  MSTK_Mesh_Distribute(&mymesh, &dim, 0, 0, 0, rank, num, MPI_COMM_WORLD);
 
   /* Can just do this too */
 

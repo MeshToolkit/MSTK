@@ -299,14 +299,13 @@ extern "C" {
 
     if (rank != root)
       *dim = recv_dim;
-
-    MESH_Get_Partition(mesh, num, part, method, rank, comm);
+    MESH_Get_Partition(*mesh, num, &part, method, rank, comm);
 
     if(rank == 0) {    
 
       /* Partition the mesh*/
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
-      MSTK_Mesh_Partition(mesh, submeshes, num, part, ring, with_attr);
+      MSTK_Mesh_Partition(*mesh, submeshes, num, part, ring, with_attr);
       
       *mesh = submeshes[0];
       for(i = 1; i < num; i++) {

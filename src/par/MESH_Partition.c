@@ -51,15 +51,15 @@ extern "C" {
    MESH_Vol_Partition_R1R2, MESH_Vol_Partition_R4};
 
   int MESH_Get_Partition(Mesh_ptr mesh, int num, int **part, int method, int rank, MPI_Comm comm) {
-    int ok, nf, nr, ncells;
+    int ok = 1, nf, nr, ncells;
     /* basic mesh information */
     if ( rank == 0 ) {
       nf = MESH_Num_Faces(mesh);
       nr = MESH_Num_Regions(mesh);
-
-      ncells = (nr) ? nr:nf; 
+      printf("rank %d, num of faces %d regions %d\n", rank,nf,nr);
+      ncells = (nr) ? nr : nf; 
       if (ncells == 0) {
-	MSTK_Report("MESH_Get_Partition_Serial",
+	MSTK_Report("MESH_Get_Partition",
 		    "This is not a valid mstk file for partition",MSTK_ERROR);
 	exit(-1);
       }
