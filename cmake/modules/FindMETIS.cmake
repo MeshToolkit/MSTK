@@ -73,7 +73,9 @@ else(METIS_LIBRARIES AND METIS_INCLUDE_DIRS)
 
    else() 
 
-        set(metis_inc_suffixes "include")
+# Metis sometimes puts the include files in a subdir called Lib
+
+        set(metis_inc_suffixes "include" "Lib")
         if(METIS_DIR)
 
             if (EXISTS "${METIS_DIR}" )
