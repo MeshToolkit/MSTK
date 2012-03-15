@@ -52,14 +52,9 @@ int main(int argc, char *argv[]) {
 
   Mesh_ptr *submeshes = (Mesh_ptr*) MSTK_malloc(num*sizeof(Mesh_ptr));
 
-  /*
-    int *part;
-    MESH_PartitionWithMetis(mesh, num, &part);
-    MAttrib_ptr g2latt = MAttrib_New(mesh,"Global2Local",POINTER,MALLTYPE);
-  */
   int *part;
-  MESH_Get_Partition(mesh, num, &part, 0, 0, NULL);
-  MSTK_Mesh_Partition(mesh, submeshes, num, part, 0, 0);
+  MESH_Get_Partition(mesh, num, 0, 0, NULL, &part);
+  MSTK_Mesh_Partition(mesh, num, part, 0, 0, submeshes);
   
   idx = 0;
   if(MESH_Num_Regions(mesh)) {

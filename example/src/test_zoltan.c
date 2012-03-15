@@ -67,10 +67,10 @@ int main(int argc, char *argv[]) {
   while (DebugWait);
   Mesh_ptr *submeshes = (Mesh_ptr*) MSTK_malloc(num*sizeof(Mesh_ptr));
   int *part;
-  MESH_Get_Partition(mesh, num, &part, 1, rank, MPI_COMM_WORLD);
+  MESH_Get_Partition(mesh, num, 1, rank, MPI_COMM_WORLD, &part);
 
   if(rank == 0) {
-    MSTK_Mesh_Partition(mesh, submeshes, num, part, 0, 0);
+    MSTK_Mesh_Partition(mesh, num, part, 0, 0, submeshes);
     MAttrib_ptr g2latt = MAttrib_New(mesh,"Global2Local",POINTER,MALLTYPE);
     idx = 0;
     if(MESH_Num_Regions(mesh)) {
