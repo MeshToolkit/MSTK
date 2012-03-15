@@ -154,10 +154,9 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
     }
   }
 
-  /*
   MESH_Set_ParallelAdjFlags(mesh,mesh_par_adj_flags);
   MESH_Set_ParallelAdjInfo(mesh,mesh_par_adj_info);
-  */
+
   MSTK_free(local_ranks);
   MSTK_free(global_ranks);
   MSTK_free(global_ov_num);
