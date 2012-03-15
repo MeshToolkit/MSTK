@@ -18,7 +18,7 @@ if (BUILD_TESTS)
   if (ENABLE_PARALLEL) 
     file (GLOB FILES parallel/4proc/*.cc)
     add_executable(mstk_parallel_4proc_unit_tests ${FILES})
-    target_link_libraries(mstk_parallel_4proc_unit_tests ${MSTKLIB} ${METIS_LIBRARY} ${UNITTEST_LIBRARY})
+    target_link_libraries(mstk_parallel_4proc_unit_tests ${MSTKLIB} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} ${UNITTEST_LIBRARY})
   add_test(NAME parallel_unittests COMMAND mpirun -n 4 mstk_parallel_4proc_unit_tests)
   endif ()
 
