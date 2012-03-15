@@ -74,7 +74,7 @@ void MESH_Set_ParallelAdjFlags(Mesh_ptr mesh, int *paradjflag) {
   mesh->mesh_par_adj_flags = paradjflag;
 }
 
-void MESH_Set_ParalellelAdj(Mesh_ptr mesh, int *mesh_par_adj_info) {
+void MESH_Set_ParallelAdjInfo(Mesh_ptr mesh, int *mesh_par_adj_info) {
   mesh->mesh_par_adj_info = mesh_par_adj_info;
 }
 #endif
