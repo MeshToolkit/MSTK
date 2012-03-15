@@ -50,29 +50,8 @@ extern "C" {
   {MESH_Vol_Partition_FN, MESH_Vol_Partition_FN, MESH_Vol_Partition_R1R2,
    MESH_Vol_Partition_R1R2, MESH_Vol_Partition_R4};
 
-  int MESH_Get_Partition(Mesh_ptr mesh, int num, int **part, int method, int rank, MPI_Comm comm) {
-    int ok = 1, nf, nr, ncells;
-    /* basic mesh information */
-    if ( rank == 0 ) {
-      nf = MESH_Num_Faces(mesh);
-      nr = MESH_Num_Regions(mesh);
-      printf("rank %d, num of faces %d regions %d\n", rank,nf,nr);
-      ncells = (nr) ? nr : nf; 
-      if (ncells == 0) {
-	MSTK_Report("MESH_Get_Partition",
-		    "This is not a valid mstk file for partition",MSTK_ERROR);
-	exit(-1);
-      }
-      *part = (int *) MSTK_malloc(ncells*sizeof(int));
-      if ( method == 0)
-	ok = MESH_PartitionWithMetis(mesh, num, part);
-    }
-    if ( method == 1 )
-      ok = MESH_PartitionWithZoltan(mesh, num, part,rank,comm);
-    return ok;
-  }
     
-  int MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int *part) {
+  int MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     int i, j, ok, nf, nr, idx, idx2, found, natt, ncomp;
     MVertex_ptr gmv;
     MEdge_ptr gme;
