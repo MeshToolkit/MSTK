@@ -22,8 +22,8 @@ extern "C" {
      1, attributes from the mesh are copied onto the submeshes. This
      routine does not send the meshes to other partitions */
 
-  int MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int *part,  int ring, 
-			  int with_attr) {
+  int MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
+			  int with_attr, Mesh_ptr *submeshes) {
     int i, j, natt, nset, idx;
     char attr_name[256];
     MAttrib_ptr attrib, g2latt, l2gatt;
@@ -42,7 +42,7 @@ extern "C" {
 
     /* Split the mesh into 'num' submeshes */
 
-    MESH_Partition(mesh, submeshes, num, part);
+    MESH_Partition(mesh, num, part, submeshes);
 
     for(i = 0; i < num; i++) {
 
@@ -299,13 +299,13 @@ extern "C" {
 
     if (rank != root)
       *dim = recv_dim;
-    MESH_Get_Partition(*mesh, num, &part, method, rank, comm);
+    MESH_Get_Partition(*mesh, num, method, rank, comm, &part);
 
     if(rank == 0) {    
 
       /* Partition the mesh*/
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
-      MSTK_Mesh_Partition(*mesh, submeshes, num, part, ring, with_attr);
+      MSTK_Mesh_Partition(*mesh, num, part, ring, with_attr, submeshes);
       
       *mesh = submeshes[0];
       for(i = 1; i < num; i++) {
