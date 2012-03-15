@@ -105,6 +105,8 @@ if (ENABLE_PARALLEL)
   
     message("---- METIS_LIBRARY :" ${METIS_LIBRARY})
 
+    add_definitions("-D_MSTK_WITH_METIS")
+
   endif (ENABLE_METIS)
 
   ##############################################################################
@@ -122,6 +124,8 @@ if (ENABLE_PARALLEL)
      include_directories(${ZOLTAN_INCLUDE_DIRS})
   
      message("---- ZOLTAN_LIBRARY :" ${ZOLTAN_LIBRARY})
+
+     add_definitions("-D_MSTK_WITH_ZOLTAN")
 
   endif (ENABLE_ZOLTAN)
 
