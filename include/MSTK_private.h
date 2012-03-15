@@ -232,9 +232,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int        MESH_Update_ProcessorRel(Mesh_ptr mesh, int rank, int num,  
 				   MPI_Comm comm);
   int*       MESH_ProcessorRel(Mesh_ptr mesh);
-  int*       MESH_LocalInfo(Mesh_ptr mesh);
+  int*       MESH_ParallelAdjFlags(Mesh_ptr mesh);
+  int*       MESH_ParallelAdjInfo(Mesh_ptr mesh);
   void       MESH_Set_ProcessorRel(Mesh_ptr mesh, int *proc_mesh_rel);
-  void       MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info);
+  void       MESH_Set_ParallelAdjFlags(Mesh_ptr mesh, int *paradjflags);
+  void       MESH_Set_ParallelAdjInfo(Mesh_ptr mesh, int *paradjinfo);
 
 
   /* Functions for entity sets */

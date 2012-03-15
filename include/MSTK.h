@@ -563,14 +563,14 @@ void MSTK_Init(void);
 		    int with_attr, MPI_Comm comm);
 
 
-  /* Mesh Partition Routines*/
+  /* Mesh Partitioning Routines*/
 
-  int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
-  int MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm);
-  int MESH_Get_Partition(Mesh_ptr mesh, int num, int **part, int method, int rank, MPI_Comm comm);
-  int        MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, 
-				 int *part, int ring, int with_attr);
-  int        MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int *part);
+  int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
+  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm);
+  int        MESH_Get_Partition(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm comm, int **part);
+  int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, 
+				 int *part, int ring, int with_attr, Mesh_ptr *submeshes);
+  int        MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes);
   int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
 
   /* build processor boundary */
