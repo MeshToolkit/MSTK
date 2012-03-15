@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "MSTK.h"
 #include "zoltan.h"
 
+#include "MSTK.h"
 
-/* Parition a MSTK mesh usng Zoltan. Also, write out the map between 
-   the serial and parallel mesh cell numbers */
+/* Get partitioning of mesh using Zoltan. Doesn't actually do anything 
+   the mesh */
 
 
 #ifdef __cplusplus
@@ -37,7 +37,7 @@ typedef struct{
 			    int *num_edges,                                                                                                                           
 			    ZOLTAN_ID_PTR nborGID, int *nborProc,                                                                                                     
 			    int wgt_dim, float *ewgts, int *ierr);     
-                   
+
   
   int MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm) { 
 
@@ -366,6 +366,7 @@ typedef struct{
       }
     }
     return;
+
   }
 
 

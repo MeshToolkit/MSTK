@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "MSTK.h"
+
 #include "metis.h"
 
+#include "MSTK.h"
 
-/* Parition a MSTK mesh, and write out a parallel X3D file. Also,
-   write out the map between the serial and parallel mesh cell
-   numbers */
-
+/* Get the partitioning of mesh using Metis - Doesn't actually do 
+   anything to the mesh */
 
 #ifdef __cplusplus
 extern "C" {
@@ -155,6 +154,7 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
 			&nparts,metisopts,&nedgecut,*part);
   
   return 1;
+
 }
 
 #ifdef __cplusplus
