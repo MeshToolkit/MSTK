@@ -71,7 +71,8 @@ TEST(Partition2D) {
     
   }
     
-  status = MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, rank, nproc, MPI_COMM_WORLD);
+  int method = 0; /* with Metis */
+  status = MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, method, rank, nproc, MPI_COMM_WORLD);
 
   CHECK(status);
 
