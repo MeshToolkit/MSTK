@@ -31,7 +31,7 @@ extern "C" {
   }
 
 
-  int MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int rank, int num,  MPI_Comm comm) {
+  int MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int myrank, int numprocs,  MPI_Comm comm) {
     int i, j, k, *loc, ebit, count;
     int num_ghost=0, num_ov=0, ncomp, ival,send_size,recv_size;
     double rval;
@@ -45,8 +45,7 @@ extern "C" {
     MAttrib_ptr attrib;
     MPI_Status status;
 
-    int *mesh_par_adj_info = MESH_ParallelAdjInfo(mesh);
-    int *mesh_par_adj_flags = MESH_ParallelAdjFlags(mesh);
+
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */
     if (!attrib) {
@@ -97,13 +96,18 @@ extern "C" {
     }
   
     /* this stores the global to local processor id map */
-    int *rank_g2l = (int*) MSTK_malloc((num+1)*sizeof(int));
-    num_recv_procs = mesh_par_adj_info[0];
+    int *rank_g2l = (int*) MSTK_malloc((numprocs+1)*sizeof(int));
+
+    num_recv_procs = MESH_Num_GhostProcs(mesh);
+
+    recv_procs = (unsigned int *) MSTK_malloc(num_recv_procs*sizeof(unsigned int));
+    MESH_GhostProcs(mesh,recv_procs);
+    
     int *recv_pos = (int*) MSTK_malloc((num_recv_procs+1)*sizeof(int));
     recv_pos[0] = 0;
     for (i = 0; i < num_recv_procs; i++) {
-      rank_g2l[mesh_par_adj_info[i+1]] = i;
-      recv_pos[i+1] = recv_pos[i]+mesh_par_adj_info[4*i+num_recv_procs+mtype+1];
+      rank_g2l[recv_procs[i]] = i;
+      recv_pos[i+1] = recv_pos[i] + MESH_Num_GhostEnts_From_Proc(mesh,mtype,recv_procs[i]);
     }
 
 
@@ -155,28 +159,33 @@ extern "C" {
     /* check whether need to send or recv info */
     for (i = 0; i < num; i++) {
       int found;
+      int has_ghosts, has_overlaps;
 
       /* shift to proper bit based on the type of entity attribute lives on */
-      ebit = mesh_par_adj_flags[i] >> 2*mtype;
+      /* ebit = mesh_par_adj_flags[i] >> 2*mtype; */
+
+      has_ghosts = MESH_Has_GhostEnts_From_Proc(mesh,mtype,i);
+      has_overlaps = MESH_Has_OverlapEnts_On_Proc(mesh,mtype,i);
 
       /* How many entries will we send to processor 'i' ? */
       send_size = num_ov;
 
-      /* search for the index of the processor in mesh_par_adj_info */
+      /* search for the index of the processor in recv_procs list */
       found = 0;
       for (k = 0; k < num_recv_procs; k++) {
-	if (mesh_par_adj_info[1+k] == i) { 	  /* found the processor */
+	if (recv_procs[k] == i) { 	  /* found the processor */
 	  recv_index = k;
 	  found = 1;
 	  break;
 	}
       }
 
-      recv_size = found ? mesh_par_adj_info[1+num_recv_procs+4*recv_index+mtype] : 0;
+      recv_size = found ? MESH_Num_GhostEnts_From_Proc(mesh,mtype,recv_procs[recv_index]) : 0;
 
       /* if the current rank is lower, send first and receive */
       if (rank < i) {
-	if ( (ebit & 2) && send_size ) {
+
+	if ( has_overlaps && send_size ) {
 	  MPI_Send(list_info_send,send_size,MPI_INT,i,i,comm);
 #ifdef DEBUG_MAX
 	  fprintf(stderr,"send %d attr to processor %d on rank %d\n",send_size,i,rank);
@@ -189,7 +198,7 @@ extern "C" {
 	}
 
 
-	if( (ebit & 1) ) {
+	if( (has_ghosts) ) {
 
 	/* Check for recv_size which can be zero if the two processors
 	   do not need to exchange entities of mtype but only lower
@@ -214,7 +223,7 @@ extern "C" {
 
       /* if the current rank is higher, recv first and send */
       if ( rank > i ) {
-	if ( (ebit & 1) ) {
+	if ( (has_ghosts) ) {
 	  if (recv_size) {
 	    MPI_Recv(&list_info_recv[recv_pos[recv_index]],recv_size,MPI_INT,i,
 		     rank,comm, &status);
@@ -230,7 +239,7 @@ extern "C" {
 		       count*ncomp,MPI_DOUBLE,i,rank,comm,&status);
 	  }
 	}
-	if ( (ebit & 2) && send_size ) {
+	if ( (has_overlaps && send_size ) {
 	  MPI_Send(list_info_send,send_size,MPI_INT,i,i,comm);
 #ifdef DEBUG_MAX
 	  fprintf(stderr,"send %d attr to processor %d on rank %d\n",send_size,i,rank);
@@ -244,7 +253,7 @@ extern "C" {
 
     }
 
-    /* assign ghost data */
+    /* Data has been received. Assign it to ghosts */
     for(j = 0; j < num_ghost; j++) {
       switch (mtype) {
       case MVERTEX:

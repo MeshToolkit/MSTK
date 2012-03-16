@@ -72,8 +72,32 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   int *global_ranks = (int *) MSTK_malloc(num*num*sizeof(int));
 
   
-  mesh_par_adj_flags = (int *) MSTK_malloc(num*sizeof(int));
-  
+  int *local_ranks = (int *)MSTK_malloc(num*sizeof(int));
+  for(i = 0; i < num; i++)
+    local_ranks[i] = 0;
+
+  /* set ghost adjacencies */
+
+  idx = 0;
+  while(mv = MESH_Next_GhostVertex(mesh,&idx))
+    MESH_Flag_Has_GhostEnts_From_Proc(mesh,MVERTEX,MV_MasterParID(mv));
+  idx = 0;
+  while(me = MESH_Next_GhostEdge(mesh,&idx))
+    MESH_Flag_Has_GhostEnts_From_Proc(mesh,MVERTEX,ME_MasterParID(me));
+  idx = 0;
+  while(mf = MESH_Next_GhostFace(mesh,&idx))
+    MESH_Flag_Has_GhostEnts_From_Proc(mesh,MFACE,MF_MasterParID(mf));
+  idx = 0;
+  while(mr = MESH_Next_GhostRegion(mesh,&idx))
+    MESH_Flag_Has_GhostEnts_From_Proc(mesh,MREGION,MR_MasterParID(mr));
+
+  /* derive which processors this processor has overlaps with */
+
+  MESH_Update_OverlapAdj(mesh, rank, num, comm);
+
+
+
+
   /* local ov num */
   local_ov_num[0] = MESH_Num_OverlapVertices(mesh);
   local_ov_num[1] = MESH_Num_OverlapEdges(mesh);
@@ -83,87 +107,85 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   /* allgather ov num info */
   MPI_Allgather(local_ov_num,4,MPI_INT,global_ov_num,4,MPI_INT,comm);
 
-  nv = MESH_Num_GhostVertices(mesh);
-  ne = MESH_Num_GhostEdges(mesh);
-  nf = MESH_Num_GhostFaces(mesh);
-  nr = MESH_Num_GhostRegions(mesh);
-  int *local_ranks = (int *)MSTK_malloc(num*sizeof(int));
-  for(i = 0; i < num; i++)
-    local_ranks[i] = 0;
-
-  /* set bit to 1 */
-  if(nv) {
-    idx = 0;
-    while(mv = MESH_Next_GhostVertex(mesh,&idx))
-      local_ranks[MV_MasterParID(mv)] |= 1;
-  }
-  if(ne) {
-    idx = 0;
-    while(me = MESH_Next_GhostEdge(mesh,&idx))
-      local_ranks[ME_MasterParID(me)] |= (1<<2);
-  }
-  if(nf) {
-    idx = 0;
-    while(mf = MESH_Next_GhostFace(mesh,&idx))
-      local_ranks[MF_MasterParID(mf)] |= (1<<4);
-  }
-  if(nr) {
-    idx = 0;
-    while(mr = MESH_Next_GhostRegion(mesh,&idx))
-      local_ranks[MR_MasterParID(mr)] |= (1<<6);
-  }
-
-  /* allgather info */
-  MPI_Allgather(local_ranks,num,MPI_INT,global_ranks,num,MPI_INT,comm);
-
-  /* check which processor has ghost entity on rank processor */
-  for(i = 0; i < num; i++) 
-    mesh_par_adj_flags[i] = local_ranks[i] | (global_ranks[i*num+rank] << 1);
-  
-
-
-  /* get ov info */
-  ov_index = 0;
-  for(i = 0; i < num; i++)
-    if(local_ranks[i])
-      ov_index++;
-  /*
-    mesh_par_adj_info:
-    mesh_par_adj_info[0]: number of master partitions of ghost
-    then is the partition id;
-    then is the number of ov vertices, edges, faces and regions
-  */
-  mesh_par_adj_info = (int *) MSTK_malloc((5*(ov_index)+1)*sizeof(int));      
-  for(i = 0; i < 5*(ov_index)+1; i++)
-    mesh_par_adj_info[i] = 0;
-  mesh_par_adj_info[0] = ov_index;
-  ov_index2 = 0;
   for(i = 0; i < num; i++) {
-    ebit = local_ranks[i];
-    if(ebit) {
-      mesh_par_adj_info[ov_index2+1] = i;
-      if(ebit & 1)
-	mesh_par_adj_info[ov_index+ov_index2*4+1] = global_ov_num[4*i];
-      if( (ebit>>2) & 1)
-	mesh_par_adj_info[ov_index+ov_index2*4+2] = global_ov_num[4*i+1];
-      if( (ebit>>4) & 1)
-	mesh_par_adj_info[ov_index+ov_index2*4+3] = global_ov_num[4*i+2];
-      if( (ebit>>6) & 1)
-	mesh_par_adj_info[ov_index+ov_index2*4+4] = global_ov_num[4*i+3];
-      ov_index2++;
+    if (MESH_Has_OverlapEnts_On_Proc(mesh,MANYTYPE,i)) {
+      for (mtype = MVERTEX; mtype < MREGION; mtype++) 
+        MESH_Set_Num_OverlapEnts_On_Proc(mesh,mtype,i,global_ov_num[4*i+mtype]);
     }
   }
 
-  MESH_Set_ParallelAdjFlags(mesh,mesh_par_adj_flags);
-  MESH_Set_ParallelAdjInfo(mesh,mesh_par_adj_info);
-
-  MSTK_free(local_ranks);
-  MSTK_free(global_ranks);
   MSTK_free(global_ov_num);
 
 
  return 1;
 }
+
+
+
+void MESH_Update_OverlapAdj(Mesh_ptr mesh, unsigned int myrank, unsigned int numprocs, MPI_Comm comm) {
+
+  int *local_par_adj = (int *) MSTK_malloc(numprocs*sizeof(int));
+  int *global_par_adj = (int *) MSTK_malloc(numprocs*numprocs*sizeof(int));
+
+  /* NOTE: While we can build a direct accessor to mesh_par_adj_flags
+     variable of the mesh object, we avoid doing that in order to
+     preserve the encapsulation of the mesh object data (More object
+     oriented). For now we will duplicate the packing strategy of the
+     mesh object to store/exchange the parallel ghost adjacency info,
+     but the data separation will mean that we can change the internal
+     representation of the mesh but still keep this routine as
+     is. Since this operation will not be done too often, we do not
+     expect a penalty */
+
+  for (i = 0; i < numprocs; i++) {
+    local_par_adj[i] = 0;
+
+    for (mtype = MVERTEX; mtype < MREGION; mtype++) {
+
+      j = MESH_Has_GhostEnts_From_Proc(mesh,mtype,i);
+
+      local_par_adj[i] |= j<<(2*mtype);
+
+    }
+  }
+     
+  /* At this point, it is assumed that this processor ('rank') has
+     knowledge of all the processors that it has ghost entities from
+     and what type of entities they are. We do an MPI_Allgather so
+     that the processor can find out the reverse info, i.e., which
+     processors are expecting ghost entities from this processor and
+     what type of entities. This info then goes in as the overlap
+     entity info for this processor */
+
+  MPI_Allgather(local_par_adj,MPI_INT,global_par_adj,numprocs,MPI_INT,comm);
+
+  /* Now set overlap adjacency flags */
+
+  ovnum = 0;
+  procnums = (unsigned int *) malloc(numprocs*sizeof(unsigned int));
+  for (i = 0; i < numprocs; i++) {
+    for (mtype = MVERTEX; mtype < MREGION; mtype++) {
+
+      j = global_par_adj[i*numprocs + myrank] & 1<<(2*mtype);
+
+      if (j) {
+        MESH_Flag_Has_OverlapEnts_On_Proc(mesh,mtype,i);
+
+        if (ovnum == 0 || 
+            (ovnum > 0 && procnums[ovnum-1] != i)) {
+          procnums[ovnum] = i;
+          ovnum++;
+        }
+      } /* if my proc (rank) has ghosts from proc i */
+    }
+  }
+
+  /* Set the number of processors with which this processor has overlap */
+
+  MESH_Set_OverlapProcs(mesh,ovnum,procnums);
+
+}
+
   
 #ifdef __cplusplus
 }

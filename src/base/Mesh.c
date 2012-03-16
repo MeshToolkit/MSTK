@@ -29,6 +29,7 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->mregion = (List_ptr) NULL;
 
 #ifdef MSTK_HAVE_MPI
+  newmesh->myproc  = 0;
   newmesh->ghvertex = (List_ptr) NULL;
   newmesh->ghedge = (List_ptr) NULL;
   newmesh->ghface = (List_ptr) NULL;
@@ -930,6 +931,124 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
 
 #ifdef MSTK_HAVE_MPI
+
+  /* Even though some of these routine names are uncharacteristically
+     long, they describe exactly what they do, so use them */
+
+
+  void MESH_Set_PartitionNum(Mesh_ptr mesh, unsigned int partnnum) {
+    mesh->mypartn = partnnum;
+  }
+
+  unsigned int MESH_PartitionNum(Mesh_ptr mesh) {
+    return mesh->mypartn;
+  }
+
+  void MESH_Flag_Has_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
+    mesh_par_adj_flags[rank] |= 1<<(2*mtype);
+  }
+  
+  unsigned int MESH_Has_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
+    return (mesh_par_adj_flags[rank] & 1<<(2*mtype));
+  }
+  
+  void MESH_Flag_Has_OverlapEnts_On_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
+    if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
+      return;
+    else if (mtype == MALLTYPE) {
+      mesh_par_adj_flags[rank] |= 1;
+      mesh_par_adj_flags[rank] |= 1<<2;
+      mesh_par_adj_flags[rank] |= 1<<4;
+      mesh_par_adj_flags[rank] |= 1<<6;
+    }
+    else
+      mesh_par_adj_flags[rank] |= 1<<(2*mtype);
+  }
+  
+  unsigned int MESH_Has_OverlapEnts_On_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
+    if (mtype == MUNKNOWNTYPE) return 0;
+    if (mtype == MANYTYPE)
+      return (mesh_par_adj_flags[rank] & 1 ||
+              mesh_par_adj_flags[rank] & 1<<2 ||
+              mesh_par_adj_flags[rank] & 1<<4 ||
+              mesh_par_adj_flags[rank] & 1<<6);
+    else if (mtype == MALLTYPE)
+      
+    else
+      return (mesh_par_adj_flags[rank] & 1<<(2*mtype));
+  }
+
+  void MESH_Set_GhostProcs(Mesh_ptr mesh, unsigned int ghnum, unsigned int *pnums) {
+    if (mesh_par_adj_info) MSTK_free(mesh_par_adj_info);
+    mesh_par_adj_info = (unsigned int *) MSTK_calloc((5*ghnum+1),sizeof(unsigned int));
+    mesh_par_adj_info[0] = ghnum;
+    memcpy(pnums,mesh_par_adj_info+1,ghnum*sizeof(unsigned int));
+  }
+
+
+  unsigned int MESH_Num_GhostProcs(Mesh_ptr mesh) {
+    return (unsigned int) mesh_par_adj_info[0];
+  }
+
+
+  void MESH_GhostProcs(Mesh_ptr mesh, unsigned int *pnums) {
+    unsigned int ghnum = mesh_par_adj_info[0];
+    memcpy(mesh_par_adj_info+1,pnums,ghnum*sizeof(unsigned int));
+  }
+
+
+  void MESH_Set_Num_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned intprocnum, unsigned int numghosts) {
+    int found, i, ghnum;
+ 
+   if (mtype < MVERTEX || mtype > MREGION) {
+      MSTK_Report("MESH_Set_Num_OverlapEnts_On_Partn","Invalid entity type",ERROR);
+      return;
+    }
+
+    found = 0;
+    ghnum = mesh_par_adj_info[0]; /* Number of ghost procs */
+    for (i = 0; i < ghnum; i++) 
+      if (mesh_par_adj_info[1+i] == procnum) {
+        found = 0;
+        break;
+      }
+
+    if (!found) {
+      char mesg[256];
+      sprintf(mesg,"This processor (%-d) does not have ghost entities from processor %-d",mesh->myproc,procnum);
+      MSTK_Report("MESH_Set_Num_GhostEnts_On_Proc",mesg,ERROR);
+      return;
+    }
+
+    mesh_par_adj_info[1+ghnum+4*i+mtype] = numov;
+  }
+
+  unsigned int MESH_Num_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned int procnum) {
+    int found, i, ghnum;
+    
+    if (mtype < MVERTEX || mtype > MREGION) {
+      MSTK_Report("MESH_Num_GhostEnts_From_Proc","Invalid entity type",ERROR);
+      return;
+    }
+
+    found = 0;
+    ghnum = mesh_par_adj_info[0]; /* Number of ghost procs */
+    for (i = 0; i < ghnum; i++) 
+      if (mesh_par_adj_info[1+i] == procnum) {
+        found = 0;
+        break;
+      }
+
+    if (!found) {
+      char mesg[256];
+      sprintf(mesg,"This processor (%-d) does not have ghost entities from processor %-d",mesh->myproc,procnum);
+      MSTK_Report("MESH_Set_Num_GhostEnts_On_Proc",mesg,ERROR);
+      return;
+    }
+
+    return mesh_par_adj_info[1+ghnum+4*i+mtype];
+  }
+                  
 
   int MESH_Sort_GhostLists(Mesh_ptr mesh, 
 	       int (*compfunc)(MEntity_ptr, MEntity_ptr)) {

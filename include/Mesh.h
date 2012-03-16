@@ -22,11 +22,12 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
     /* for mpi */
+    unsigned int mypart;
+    unsigned int *mesh_par_adj_flags;
+    unsigned int *mesh_par_adj_info;
     List_ptr ghvertex, ghedge, ghface, ghregion;
     int max_ghvid, max_gheid, max_ghfid, max_ghrid;
     List_ptr ovvertex, ovedge, ovface, ovregion;
-    int *mesh_par_adj_flags;
-    int *mesh_par_adj_info;
     /* end for mpi */
 #endif
   } Mesh, *Mesh_ptr;
