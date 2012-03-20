@@ -299,7 +299,7 @@ extern "C" {
 
     if (rank != root)
       *dim = recv_dim;
-    MESH_Get_Partition(*mesh, num, method, rank, comm, &part);
+    MESH_Get_Partitioning(*mesh, num, method, rank, comm, &part);
 
     if(rank == 0) {    
 
