@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 
   Mesh_ptr *submeshes = (Mesh_ptr*) MSTK_malloc(num_parts*sizeof(Mesh_ptr));
   int *part;
-  MESH_Get_Partition(mesh, num_parts, imethod, rank, MPI_COMM_WORLD, &part);
+  MESH_Get_Partitioning(mesh, num_parts, imethod, rank, MPI_COMM_WORLD, &part);
 
   if(rank == 0) {
 
