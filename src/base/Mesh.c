@@ -29,7 +29,8 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->mregion = (List_ptr) NULL;
 
 #ifdef MSTK_HAVE_MPI
-  newmesh->myproc  = 0;
+  newmesh->mypartn  = 0;
+  newmesh->numpartns = 0;
   newmesh->ghvertex = (List_ptr) NULL;
   newmesh->ghedge = (List_ptr) NULL;
   newmesh->ghface = (List_ptr) NULL;
@@ -38,8 +39,8 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->ovedge = (List_ptr) NULL;
   newmesh->ovface = (List_ptr) NULL;
   newmesh->ovregion = (List_ptr) NULL;
-  newmesh->mesh_par_adj_flags = NULL;
-  newmesh->mesh_par_adj_info = NULL;
+  newmesh->par_adj_flags = NULL;
+  newmesh->par_recv_info = NULL;
 #endif
 
   newmesh->geom = (GModel_ptr) NULL;
@@ -61,24 +62,6 @@ Mesh_ptr MESH_New(RepType type) {
 
   return newmesh;
 }
-
-#ifdef MSTK_HAVE_MPI
-int* MESH_ParallelAdjFlags(Mesh_ptr mesh) {
-  return mesh->mesh_par_adj_flags;
-}
-
-int* MESH_ParallelAdjInfo(Mesh_ptr mesh) {
-  return mesh->mesh_par_adj_info;
-}
-
-void MESH_Set_ParallelAdjFlags(Mesh_ptr mesh, int *paradjflag) {
-  mesh->mesh_par_adj_flags = paradjflag;
-}
-
-void MESH_Set_ParallelAdjInfo(Mesh_ptr mesh, int *mesh_par_adj_info) {
-  mesh->mesh_par_adj_info = mesh_par_adj_info;
-}
-#endif
 
 void MESH_Delete(Mesh_ptr mesh) {
   int i, nv, ne, nf, nr;
@@ -107,6 +90,10 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->ovface);
   if(mesh->ovregion)
     List_Delete(mesh->ovregion);
+  if (mesh->par_adj_flags)
+    MSTK_free(mesh->par_adj_flags);
+  if (mesh->par_recv_info)
+    MSTK_free(mesh->par_recv_info);
 #endif
 
   if (mesh->mregion) {
@@ -935,118 +922,151 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   /* Even though some of these routine names are uncharacteristically
      long, they describe exactly what they do, so use them */
 
+  void MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, unsigned int numpartitions) {
+    mesh->mypartn = partition;
+    mesh->numpartns = numpartitions;
 
-  void MESH_Set_PartitionNum(Mesh_ptr mesh, unsigned int partnnum) {
-    mesh->mypartn = partnnum;
+    if (!mesh->par_adj_flags)
+      mesh->par_adj_flags = (unsigned int *)
+        MSTK_malloc(numpartitions*sizeof(unsigned int));
   }
 
-  unsigned int MESH_PartitionNum(Mesh_ptr mesh) {
+  unsigned int MESH_Prtn(Mesh_ptr mesh) {
     return mesh->mypartn;
   }
 
-  void MESH_Flag_Has_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
-    mesh_par_adj_flags[rank] |= 1<<(2*mtype);
-  }
-  
-  unsigned int MESH_Has_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
-    return (mesh_par_adj_flags[rank] & 1<<(2*mtype));
-  }
-  
-  void MESH_Flag_Has_OverlapEnts_On_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
+  void MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+
     if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
       return;
     else if (mtype == MALLTYPE) {
-      mesh_par_adj_flags[rank] |= 1;
-      mesh_par_adj_flags[rank] |= 1<<2;
-      mesh_par_adj_flags[rank] |= 1<<4;
-      mesh_par_adj_flags[rank] |= 1<<6;
+      mesh->par_adj_flags[prtn] |= 1;
+      mesh->par_adj_flags[prtn] |= 1<<2;
+      mesh->par_adj_flags[prtn] |= 1<<4;
+      mesh->par_adj_flags[prtn] |= 1<<6;
     }
     else
-      mesh_par_adj_flags[rank] |= 1<<(2*mtype);
+      mesh->par_adj_flags[prtn] |= 1<<(2*mtype);
   }
   
-  unsigned int MESH_Has_OverlapEnts_On_Proc(Mesh_ptr mesh, MType mtype, unsigned int rank) {
+  unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+    return (mesh->par_adj_flags[prtn] & 1<<(2*mtype));
+  }
+  
+  void MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+    if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
+      return;
+    else if (mtype == MALLTYPE) {
+      mesh->par_adj_flags[prtn] |= 1<<1;
+      mesh->par_adj_flags[prtn] |= 1<<3;
+      mesh->par_adj_flags[prtn] |= 1<<5;
+      mesh->par_adj_flags[prtn] |= 1<<7;
+    }
+    else
+      mesh->par_adj_flags[prtn] |= 1<<(2*mtype+1);
+  }
+  
+  unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
     if (mtype == MUNKNOWNTYPE) return 0;
     if (mtype == MANYTYPE)
-      return (mesh_par_adj_flags[rank] & 1 ||
-              mesh_par_adj_flags[rank] & 1<<2 ||
-              mesh_par_adj_flags[rank] & 1<<4 ||
-              mesh_par_adj_flags[rank] & 1<<6);
+      return (mesh->par_adj_flags[prtn] & 1<<1 ||
+              mesh->par_adj_flags[prtn] & 1<<3 ||
+              mesh->par_adj_flags[prtn] & 1<<5 ||
+              mesh->par_adj_flags[prtn] & 1<<7);
     else if (mtype == MALLTYPE)
-      
+      return 0;
     else
-      return (mesh_par_adj_flags[rank] & 1<<(2*mtype));
-  }
-
-  void MESH_Set_GhostProcs(Mesh_ptr mesh, unsigned int ghnum, unsigned int *pnums) {
-    if (mesh_par_adj_info) MSTK_free(mesh_par_adj_info);
-    mesh_par_adj_info = (unsigned int *) MSTK_calloc((5*ghnum+1),sizeof(unsigned int));
-    mesh_par_adj_info[0] = ghnum;
-    memcpy(pnums,mesh_par_adj_info+1,ghnum*sizeof(unsigned int));
+      return (mesh->par_adj_flags[prtn] & 1<<(2*mtype+1));
   }
 
 
-  unsigned int MESH_Num_GhostProcs(Mesh_ptr mesh) {
-    return (unsigned int) mesh_par_adj_info[0];
+  unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh) {
+    return (unsigned int) mesh->par_recv_info[0];
   }
 
 
-  void MESH_GhostProcs(Mesh_ptr mesh, unsigned int *pnums) {
-    unsigned int ghnum = mesh_par_adj_info[0];
-    memcpy(mesh_par_adj_info+1,pnums,ghnum*sizeof(unsigned int));
+  void MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums) {
+    unsigned int ghnum = mesh->par_recv_info[0];
+    memcpy(mesh->par_recv_info+1,pnums,ghnum*sizeof(unsigned int));
   }
 
-
-  void MESH_Set_Num_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned intprocnum, unsigned int numghosts) {
+  
+  void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
     int found, i, ghnum;
+
+    if (!mesh->par_recv_info) { /* first time */
+      int ngp = 0;
+      
+      /* count the number of ghost processor on this processor */
+      
+      for (i = 0; i < mesh->numpartns; i++)
+        if (MESH_Has_Ghosts_From_Prtn(mesh, MANYTYPE, i))
+          ngp++;
+      
+      mesh->par_recv_info = (unsigned int *) MSTK_malloc((1+5*ngp)*sizeof(unsigned int));
+      
+      mesh->par_recv_info[0] = ngp;
+      
+      ngp = 0;
+      for (i = 0; i < mesh->numpartns; i++)
+        if (MESH_Has_Ghosts_From_Prtn(mesh, MANYTYPE, i)) {
+          mesh->par_recv_info[1+ngp] = i;
+          ngp++;
+        }
+    }
+
  
-   if (mtype < MVERTEX || mtype > MREGION) {
-      MSTK_Report("MESH_Set_Num_OverlapEnts_On_Partn","Invalid entity type",ERROR);
+    if (mtype < MVERTEX || mtype > MREGION) {
+      MSTK_Report("MESH_Set_Num_RecvEnts_On_Prtn","Invalid entity type",MSTK_ERROR);
       return;
     }
 
     found = 0;
-    ghnum = mesh_par_adj_info[0]; /* Number of ghost procs */
+    ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
     for (i = 0; i < ghnum; i++) 
-      if (mesh_par_adj_info[1+i] == procnum) {
+      if (mesh->par_recv_info[1+i] == prtn) {
         found = 0;
         break;
       }
 
     if (!found) {
       char mesg[256];
-      sprintf(mesg,"This processor (%-d) does not have ghost entities from processor %-d",mesh->myproc,procnum);
-      MSTK_Report("MESH_Set_Num_GhostEnts_On_Proc",mesg,ERROR);
+      sprintf(mesg,"This partition (%-d) does not have ghost entities from partition %-d",mesh->mypartn,prtn);
+      MSTK_Report("MESH_Set_Num_Recv_From_Prtn",mesg,MSTK_ERROR);
       return;
     }
 
-    mesh_par_adj_info[1+ghnum+4*i+mtype] = numov;
+    mesh->par_recv_info[1+ghnum+4*i+mtype] = numrecv;
   }
 
-  unsigned int MESH_Num_GhostEnts_From_Proc(Mesh_ptr mesh, MType mtype, unsigned int procnum) {
+  unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
     int found, i, ghnum;
     
     if (mtype < MVERTEX || mtype > MREGION) {
-      MSTK_Report("MESH_Num_GhostEnts_From_Proc","Invalid entity type",ERROR);
-      return;
+      MSTK_Report("MESH_Num_Recv_From_Prtn","Invalid entity type",MSTK_ERROR);
+      return 0;
+    }
+
+    if (!mesh->par_recv_info) {
+      MSTK_Report("MESH_Num_Recv_From_Prtn","Coding error. Data not initialized",MSTK_FATAL);
     }
 
     found = 0;
-    ghnum = mesh_par_adj_info[0]; /* Number of ghost procs */
+    ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
     for (i = 0; i < ghnum; i++) 
-      if (mesh_par_adj_info[1+i] == procnum) {
+      if (mesh->par_recv_info[1+i] == prtn) {
         found = 0;
         break;
       }
 
     if (!found) {
       char mesg[256];
-      sprintf(mesg,"This processor (%-d) does not have ghost entities from processor %-d",mesh->myproc,procnum);
-      MSTK_Report("MESH_Set_Num_GhostEnts_On_Proc",mesg,ERROR);
+      sprintf(mesg,"This partition (%-d) does not have ghost entities from partition %-d",mesh->mypartn,prtn);
+      MSTK_Report("MESH_Num_Recv_From_Prtn",mesg,MSTK_ERROR);
       return;
     }
 
-    return mesh_par_adj_info[1+ghnum+4*i+mtype];
+    return mesh->par_recv_info[1+ghnum+4*i+mtype];
   }
                   
 
@@ -3294,19 +3314,6 @@ Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
 
   */
 
-
-  /* Time for this function to go */
-
-
-  int MESH_Init_ParAtts(Mesh_ptr mesh) {
-    
-    plnumatt = MAttrib_New(mesh,"paratts",POINTER,MALLTYPE);
-
-    if (plnumatt)
-      return 1;
-    else
-      return 0;
-  }
 
   /* Extra functionality for hash-tables */
 
