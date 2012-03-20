@@ -21,14 +21,12 @@ extern "C" {
     int autolock;
 
 #ifdef MSTK_HAVE_MPI
-    /* for mpi */
-    unsigned int mypart;
-    unsigned int *mesh_par_adj_flags;
-    unsigned int *mesh_par_adj_info;
+    unsigned int mypartn, numpartns;
+    unsigned int *par_adj_flags;
+    unsigned int *par_recv_info;
     List_ptr ghvertex, ghedge, ghface, ghregion;
     int max_ghvid, max_gheid, max_ghfid, max_ghrid;
     List_ptr ovvertex, ovedge, ovface, ovregion;
-    /* end for mpi */
 #endif
   } Mesh, *Mesh_ptr;
 #else
@@ -87,6 +85,28 @@ extern "C" {
   void       MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r);
 
 #ifdef HAVE_MPI
+  void         MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, 
+                             unsigned int numpartitions);
+  unsigned int MESH_Prtn(Mesh_ptr mesh);
+
+  void         MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn,
+                                              MType mtype);  
+  unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                         MType mtype);
+  void         MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                              MType mtype);
+  unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                         MType mtype);
+
+  unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh);
+  void         MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums);
+
+  
+  void         MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                           MType mtype, unsigned int numrecv);
+  unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                       MType mtype);
+
   int        MESH_Num_GhostVertices(Mesh_ptr mesh);
   int        MESH_Num_GhostEdges(Mesh_ptr mesh);
   int        MESH_Num_GhostFaces(Mesh_ptr mesh);
@@ -139,8 +159,6 @@ extern "C" {
   
   void       MESH_Renumber(Mesh_ptr mesh);
 
-  int        MESH_Init_ParAtts(Mesh_ptr mesh);
-  
   int MESH_AutoLock(Mesh_ptr mesh);
   void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);
   
