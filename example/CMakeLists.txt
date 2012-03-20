@@ -11,17 +11,4 @@ if (ENABLE_PARALLEL)
   add_executable(parallel_example src/parallel_example.c)
   target_link_libraries(parallel_example ${MSTKLIB} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} m)
   install(TARGETS parallel_example DESTINATION ${PROJECT_SOURCE_DIR}/example)
-
-  if (ENABLE_METIS)
-    add_executable(test_metis src/test_metis.c)
-    target_link_libraries(test_metis ${MSTKLIB} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} m)
-    install(TARGETS test_metis DESTINATION ${PROJECT_SOURCE_DIR}/example)
-  endif()
-
-  if (ENABLE_ZOLTAN)
-    add_executable(test_zoltan src/test_zoltan.c)
-    target_link_libraries(test_zoltan ${MSTKLIB} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} m)
-    install(TARGETS test_zoltan DESTINATION ${PROJECT_SOURCE_DIR}/example)
-  endif()
-
 endif ()
