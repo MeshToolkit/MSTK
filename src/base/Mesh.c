@@ -922,13 +922,17 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   /* Even though some of these routine names are uncharacteristically
      long, they describe exactly what they do, so use them */
 
+
+  /* Also, for an explanation of the fields of par_adj_flags and
+     par_adj_info see the note at the in Mesh.h file */
+
   void MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, unsigned int numpartitions) {
     mesh->mypartn = partition;
     mesh->numpartns = numpartitions;
 
     if (!mesh->par_adj_flags)
       mesh->par_adj_flags = (unsigned int *)
-        MSTK_malloc(numpartitions*sizeof(unsigned int));
+        MSTK_calloc(numpartitions,sizeof(unsigned int));
   }
 
   unsigned int MESH_Prtn(Mesh_ptr mesh) {
@@ -936,6 +940,8 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   }
 
   void MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+
+    if (prtn == mesh->mypartn) return;
 
     if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
       return;
@@ -950,7 +956,21 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   }
   
   unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
-    return (mesh->par_adj_flags[prtn] & 1<<(2*mtype));
+    if (mtype == MUNKNOWNTYPE)
+      return 0;
+    else if (mtype == MANYTYPE)
+      return ((mesh->par_adj_flags[prtn] & 1) |
+              (mesh->par_adj_flags[prtn]>>2 & 1) |
+              (mesh->par_adj_flags[prtn]>>4 & 1) |
+              (mesh->par_adj_flags[prtn]>>6 & 1));
+
+    else if (mtype == MALLTYPE)
+      return ((mesh->par_adj_flags[prtn] & 1) &
+              (mesh->par_adj_flags[prtn]>>2 & 1) &
+              (mesh->par_adj_flags[prtn]>>4 & 1) &
+              (mesh->par_adj_flags[prtn]>>6 & 1));
+    else      
+      return ((mesh->par_adj_flags[prtn])>>(2*mtype) & 1);
   }
   
   void MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
@@ -967,32 +987,38 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   }
   
   unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
-    if (mtype == MUNKNOWNTYPE) return 0;
-    if (mtype == MANYTYPE)
-      return (mesh->par_adj_flags[prtn] & 1<<1 ||
-              mesh->par_adj_flags[prtn] & 1<<3 ||
-              mesh->par_adj_flags[prtn] & 1<<5 ||
-              mesh->par_adj_flags[prtn] & 1<<7);
-    else if (mtype == MALLTYPE)
+    if (mtype == MUNKNOWNTYPE) 
       return 0;
-    else
-      return (mesh->par_adj_flags[prtn] & 1<<(2*mtype+1));
+    else if (mtype == MANYTYPE)
+      return ((mesh->par_adj_flags[prtn]>>1 & 1) |
+              (mesh->par_adj_flags[prtn]>>3 & 1) |
+              (mesh->par_adj_flags[prtn]>>5 & 1) |
+              (mesh->par_adj_flags[prtn]>>7 & 1));
+
+    else if (mtype == MALLTYPE)
+      return ((mesh->par_adj_flags[prtn]>>1 & 1) &
+              (mesh->par_adj_flags[prtn]>>3 & 1) &
+              (mesh->par_adj_flags[prtn]>>5 & 1) &
+              (mesh->par_adj_flags[prtn]>>7 & 1));
+    else      
+      return ((mesh->par_adj_flags[prtn])>>(2*mtype) & 1);
   }
 
 
   unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh) {
+    if (!mesh->par_recv_info) MESH_Init_Par_Recv_Info(mesh);
     return (unsigned int) mesh->par_recv_info[0];
   }
 
 
   void MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums) {
     unsigned int ghnum = mesh->par_recv_info[0];
-    memcpy(mesh->par_recv_info+1,pnums,ghnum*sizeof(unsigned int));
+    memcpy(pnums,mesh->par_recv_info+1,ghnum*sizeof(unsigned int));
   }
 
-  
-  void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
-    int found, i, ghnum;
+
+  void MESH_Init_Par_Recv_Info(Mesh_ptr mesh) {
+    int i;
 
     if (!mesh->par_recv_info) { /* first time */
       int ngp = 0;
@@ -1000,7 +1026,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
       /* count the number of ghost processor on this processor */
       
       for (i = 0; i < mesh->numpartns; i++)
-        if (MESH_Has_Ghosts_From_Prtn(mesh, MANYTYPE, i))
+        if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE))
           ngp++;
       
       mesh->par_recv_info = (unsigned int *) MSTK_malloc((1+5*ngp)*sizeof(unsigned int));
@@ -1009,12 +1035,17 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
       
       ngp = 0;
       for (i = 0; i < mesh->numpartns; i++)
-        if (MESH_Has_Ghosts_From_Prtn(mesh, MANYTYPE, i)) {
+        if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE)) {
           mesh->par_recv_info[1+ngp] = i;
           ngp++;
         }
     }
+  }
+  
+  void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
+    int found, i, ghnum;
 
+    if (!mesh->par_recv_info) MESH_Init_Par_Recv_Info(mesh);
  
     if (mtype < MVERTEX || mtype > MREGION) {
       MSTK_Report("MESH_Set_Num_RecvEnts_On_Prtn","Invalid entity type",MSTK_ERROR);
@@ -1025,7 +1056,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
     ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
     for (i = 0; i < ghnum; i++) 
       if (mesh->par_recv_info[1+i] == prtn) {
-        found = 0;
+        found = 1;
         break;
       }
 
@@ -1041,7 +1072,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
   unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
     int found, i, ghnum;
-    
+
     if (mtype < MVERTEX || mtype > MREGION) {
       MSTK_Report("MESH_Num_Recv_From_Prtn","Invalid entity type",MSTK_ERROR);
       return 0;
@@ -1051,11 +1082,14 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
       MSTK_Report("MESH_Num_Recv_From_Prtn","Coding error. Data not initialized",MSTK_FATAL);
     }
 
+    if (prtn == mesh->mypartn) return 0;
+    
+
     found = 0;
     ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
     for (i = 0; i < ghnum; i++) 
       if (mesh->par_recv_info[1+i] == prtn) {
-        found = 0;
+        found = 1;
         break;
       }
 

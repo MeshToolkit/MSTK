@@ -130,7 +130,10 @@ extern "C" {
     RepType rtype = MESH_RepType(mesh);
     int i;
 
-    for (i = 0; i < num; i++) submeshes[i] = MESH_New(rtype);
+    for (i = 0; i < num; i++) {
+      submeshes[i] = MESH_New(rtype);
+      MESH_Set_Prtn(submeshes[i],i,num);
+    }
 
     (*MESH_Surf_Partition_jmp[rtype])(mesh, num, part, submeshes);
   }
@@ -139,7 +142,10 @@ extern "C" {
     RepType rtype = MESH_RepType(mesh);
     int i;
 
-    for (i = 0; i < num; i++) submeshes[i] = MESH_New(rtype);
+    for (i = 0; i < num; i++) {
+      submeshes[i] = MESH_New(rtype);
+      MESH_Set_Prtn(submeshes[i],i,num);
+    }
 
     (*MESH_Vol_Partition_jmp[rtype])(mesh, num, part, submeshes);
   }

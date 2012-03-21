@@ -247,6 +247,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh);
   void         MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums);
 
+  void         MESH_Init_Par_Recv_Info(Mesh_ptr mesh);
+  void         MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                           MType mtype, unsigned int numrecv);
+  unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn,
+                                       MType mtype);
 
 
   /* Mesh Partitioning Routines*/

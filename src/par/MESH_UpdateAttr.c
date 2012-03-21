@@ -159,7 +159,7 @@ extern "C" {
     recv_pos[0] = 0;
     for (i = 0; i < num_recv_procs; i++) {
       rank_g2l[recv_procs[i]] = i;
-      recv_pos[i+1] = recv_pos[i] + MESH_Num_Recv_From_Prtn(mesh,mtype,recv_procs[i]);
+      recv_pos[i+1] = recv_pos[i] + MESH_Num_Recv_From_Prtn(mesh,recv_procs[i],mtype);
     }
 
     /* Allocate storage for receiving attribute info */
@@ -178,8 +178,8 @@ extern "C" {
       /* shift to proper bit based on the type of entity attribute lives on */
       /* ebit = mesh_par_adj_flags[i] >> 2*mtype; */
 
-      has_ghosts = MESH_Has_Ghosts_From_Prtn(mesh,mtype,i);
-      has_overlaps = MESH_Has_Overlaps_On_Prtn(mesh,mtype,i);
+      has_ghosts = MESH_Has_Ghosts_From_Prtn(mesh,i,mtype);
+      has_overlaps = MESH_Has_Overlaps_On_Prtn(mesh,i,mtype);
 
       /* How many entries will we send to processor 'i' ? */
       send_size = num_ov;
@@ -194,7 +194,7 @@ extern "C" {
 	}
       }
 
-      recv_size = found ? MESH_Num_Recv_From_Prtn(mesh,mtype,recv_procs[recv_index]) : 0;
+      recv_size = found ? MESH_Num_Recv_From_Prtn(mesh,recv_procs[recv_index],mtype) : 0;
 
       /* if the current rank is lower, send first and receive */
       if (myrank < i) {
@@ -292,7 +292,7 @@ extern "C" {
     
       par_id = MEnt_MasterParID(ment);
 
-      nent = MESH_Num_Recv_From_Prtn(mesh, mtype, par_id);
+      nent = MESH_Num_Recv_From_Prtn(mesh, par_id, mtype);
 
       /* since the ov list is already sorted, use binary search */
       loc = (int *)bsearch(&global_id,

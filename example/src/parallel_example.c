@@ -67,7 +67,11 @@ int main(int argc, char *argv[]) {
   DebugWait=0;
   while (DebugWait);
 
-  MSTK_Mesh_Distribute(&mymesh, &dim, 0, 0, 0, rank, num, MPI_COMM_WORLD);
+  int ring = 1; /* One ring ghosts */
+  int with_attr = 1; /* Do allow exchange of attributes */
+  int method = 0; /* Use Metis as the partitioner */
+  MSTK_Mesh_Distribute(&mymesh, &dim, ring, with_attr, method, 
+                       rank, num, MPI_COMM_WORLD);
 
   /* Can just do this too */
 

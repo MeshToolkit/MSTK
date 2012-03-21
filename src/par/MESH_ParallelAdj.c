@@ -36,7 +36,7 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,MV_MasterParID(mv),MVERTEX);
   idx = 0;
   while(me = MESH_Next_GhostEdge(mesh,&idx))
-    MESH_Flag_Has_Ghosts_From_Prtn(mesh,ME_MasterParID(me),MVERTEX);
+    MESH_Flag_Has_Ghosts_From_Prtn(mesh,ME_MasterParID(me),MEDGE);
   idx = 0;
   while(mf = MESH_Next_GhostFace(mesh,&idx))
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,MF_MasterParID(mf),MFACE);
@@ -112,9 +112,9 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
      another partititon whether it is used on this partition or not */
 
   for(i = 0; i < numprtns; i++) {
-    if (MESH_Has_Ghosts_From_Prtn(mesh,MANYTYPE,i)) {
+    if (MESH_Has_Ghosts_From_Prtn(mesh,i,MANYTYPE)) {
       for (mtype = MVERTEX; mtype < MREGION; mtype++) 
-        MESH_Set_Num_Recv_From_Prtn(mesh,mtype,i,global_ov_num[4*i+mtype]);
+        MESH_Set_Num_Recv_From_Prtn(mesh,i,mtype,global_ov_num[4*i+mtype]);
     }
   }
 
