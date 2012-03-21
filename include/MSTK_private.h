@@ -326,6 +326,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Rem_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r);
 
   int compareGlobalID(MEntity_ptr *a, MEntity_ptr *b);
+  int compareVertexCoor(MVertex_ptr *a, MVertex_ptr *b);
 #endif
 
 
