@@ -1,0 +1,443 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "MSTK.h"
+#include "MSTK_private.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+  /* 
+     This function is a collective call
+     It assigns each submesh the global IDs of vertices and elements
+     
+     Author(s): Duo Wang, Rao Garimella
+  */
+
+
+  int MESH_Vol_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Vol_AssignGlobalIDs_R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Vol_AssignGlobalIDs_R1R2(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Surf_AssignGlobalIDs_R1R2R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+
+  static int (*MESH_Vol_AssignGlobalIDs_jmp[MSTK_MAXREP])(Mesh_ptr submesh, int rank, int num, 
+						   MPI_Comm comm) = 
+  {MESH_Vol_AssignGlobalIDs_FN, MESH_Vol_AssignGlobalIDs_FN, MESH_Vol_AssignGlobalIDs_R1R2, 
+   MESH_Vol_AssignGlobalIDs_R1R2, MESH_Vol_AssignGlobalIDs_R4};
+  static int (*MESH_Surf_AssignGlobalIDs_jmp[MSTK_MAXREP])(Mesh_ptr submesh, int rank, int num, 
+						    MPI_Comm comm) = 
+  {MESH_Surf_AssignGlobalIDs_FN, MESH_Surf_AssignGlobalIDs_FN, MESH_Surf_AssignGlobalIDs_R1R2R4, 
+   MESH_Surf_AssignGlobalIDs_R1R2R4, MESH_Surf_AssignGlobalIDs_R1R2R4};
+
+
+int PMESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
+  int nf, nr;
+  RepType rtype;
+
+  /* basic mesh information */
+  rtype = MESH_RepType(submesh);
+  nf = MESH_Num_Faces(submesh);
+  nr = MESH_Num_Regions(submesh);
+  /* build geometric entity dimension, mark boundary vertices */
+  MESH_BuildVertexClassfn(submesh);
+  if (nr)
+    (*MESH_Vol_AssignGlobalIDs_jmp[rtype])(submesh, rank, num, comm);
+  else if(nf) 
+    (*MESH_Surf_AssignGlobalIDs_jmp[rtype])(submesh, rank, num, comm);
+  else {
+    MSTK_Report("MESH_AssignGlobalIDs()","only send volume or surface mesh",MSTK_ERROR);
+    exit(-1);
+  }
+  return 1;
+}
+
+
+
+static int vertex_on_boundary(MVertex_ptr mv) {
+  int i, nve, ok = 0;
+  MEdge_ptr me;
+  List_ptr vedges = MV_Edges(mv);
+  nve = List_Num_Entries(vedges);
+  for(i = 0; i < nve; i++) {
+    me = List_Entry(vedges,i);
+    if(List_Num_Entries(ME_Faces(me)) <= 1)
+      ok = 1;
+  }
+  List_Delete(vedges);
+  return ok;
+}
+  
+  int coor_compare(const void * a, const void * b) {
+    double tol = 1e-8;
+    int i;
+    double *coor1 = (double *)a;
+    double *coor2 = (double *)b;
+    for(i = 0; i < 3; i++) {
+      if ( (coor1[i] - coor2[i]) > tol )
+	return 1;
+      if ( (coor2[i] - coor1[i]) > tol )
+	return -1;
+    }
+    return 0;
+  }
+  /* 
+     First build boundary list of vertices and broadcast them
+  */
+     
+
+int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  int i, j, nv, nbv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
+  int nfe;
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  List_ptr boundary_verts, fverts, mfedges;
+  RepType rtype;
+  char attname[256], msetname[256];
+  MType mtype;
+  MAttType att_type;
+  MAttrib_ptr attrib;
+  MSet_ptr mset;
+  int *list_attr, *list_mset;
+  char *list_attr_names, *list_mset_names;
+  double coor[3], *loc;
+  int iloc, num_ghost_verts;
+  for (i = 0; i < 10; i++) mesh_info[i] = 0;
+
+  /* mesh_info store the mesh reptype, nv, ne, nf, nbv */
+  rtype = MESH_RepType(submesh);
+  nv = MESH_Num_Vertices(submesh);
+  ne = MESH_Num_Edges(submesh);
+  nf = MESH_Num_Faces(submesh);
+
+  mesh_info[0] = rtype;
+  mesh_info[1] = nv;
+  mesh_info[2] = ne;
+  mesh_info[3] = nf;
+
+  /* calculate number of boundary vertices */ 
+  nbv = 0;
+  boundary_verts = List_New(10);
+  for(i = 0; i < nv; i++) {
+    mv = MESH_Vertex(submesh,i);
+    if (vertex_on_boundary(mv)) {
+      List_Add(boundary_verts,mv);
+      nbv++;
+    }
+  }
+  mesh_info[4] = nbv;
+  
+  /* sort boundary vertices based on coordinate value, for binary search */
+  List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
+  for(i = 0; i < nbv; i++) {
+    mv = List_Entry(boundary_verts,i);
+    MV_Coords(mv,coor);
+    printf("after sort, rank %d, boundary vertex %d, coors (%lf %lf %lf)\n", rank,MV_ID(mv), \
+	   coor[0],coor[1],coor[2]); 
+  }
+
+
+  /* 
+     gather submeshes information
+     right now we only need nv and nbv, but we gather all mesh_info
+  */
+  int *global_mesh_info = (int *)MSTK_malloc(5*num*sizeof(int));
+  MPI_Allgather(mesh_info,5,MPI_INT,global_mesh_info,5,MPI_INT,comm);
+
+  /* get largest number of boundary vertices of all the processors */
+  int max_nbv = 0;
+  for(i = 0; i < num; i++)
+    if(max_nbv < global_mesh_info[5*i+4])
+      max_nbv = global_mesh_info[5*i+4];
+
+  int *list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
+  double *list_boundary_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
+
+  int *recv_list_vertex = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
+  double *recv_list_coor = (double *)MSTK_malloc(3*num*max_nbv*sizeof(double));
+
+  /* only local id and coordinate values are sent */
+  int index_nbv = 0;
+  for(i = 0; i < nbv; i++) {
+    mv = List_Entry(boundary_verts,i);
+    list_boundary_vertex[index_nbv] = MV_ID(mv);
+    MV_Coords(mv,coor);
+    list_boundary_coor[index_nbv*3] = coor[0];
+    list_boundary_coor[index_nbv*3+1] = coor[1];
+    list_boundary_coor[index_nbv*3+2] = coor[2];
+    index_nbv++;
+  }
+
+  /* gather boundary vertices */
+  MPI_Allgather(list_boundary_vertex,max_nbv,MPI_INT,recv_list_vertex,max_nbv,MPI_INT,comm);
+  MPI_Allgather(list_boundary_coor,3*max_nbv,MPI_DOUBLE,recv_list_coor,3*max_nbv,MPI_DOUBLE,comm);
+
+  num_ghost_verts = 0;
+  if(rank > 0) {
+    for(i = 0; i < nbv; i++) {
+      mv = List_Entry(boundary_verts,i);
+      MV_Coords(mv,coor);
+      for(j = 0; j < rank; j++) {
+	/* since each processor has sorted the boundary vertices, use binary search */
+	loc = (int *)bsearch(&coor,
+			     &recv_list_coor[3*max_nbv*j],
+			     global_mesh_info[5*j+4],
+			     3*sizeof(double),
+			     coor_compare);
+	/* if found the vertex on previous processors */
+	if(loc) {
+	  /* here the location iloc is relative to the beginning of the jth processor */
+	  iloc = (int)(loc - &recv_list_coor[3*max_nbv*j])/3;
+	  /* add to ghost list, set PType and master partition ID */
+	  MESH_Add_GhostVertex(submesh, mv);
+	  MV_Set_PType(mv,PGHOST);
+	  MV_Set_MasterParID(mv,j);
+	  printf("rank %d,boundary vertex %d, found on processor %d, loc %d\n",rank, i, j, iloc);
+	  num_ghost_verts++;
+	  /* if found on processor j, no need to test for j+1,j+2...*/
+	  break;
+	}
+	/*
+	else
+	  printf("rank %d,boundary vertex %d, not found on processor %d, \n",rank, i, j);
+	*/
+      }
+    }
+  }
+  /*
+  if(rank == 0) {
+    for(i = 0; i < num; i++)
+      for(j = 0; j < global_mesh_info[5*i+4]; j++)
+	printf("recv rank %d  i %d j %d, vertex %d, coors (%lf %lf %lf)\n", rank,i,j,recv_list_vertex[max_nbv*i+j], \
+	       recv_list_coor[3*max_nbv*i+3*j],recv_list_coor[3*max_nbv*i+3*j+1],recv_list_coor[3*max_nbv*i+3*j+2]); 
+  }
+  */
+  List_Delete(boundary_verts);
+  MSTK_free(list_boundary_vertex);
+  MSTK_free(list_boundary_coor);
+  MSTK_free(recv_list_vertex);
+  MSTK_free(recv_list_coor);
+  return 1;
+}
+
+
+int MESH_Vol_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  int i, j, nv, ne, nf, nr, mesh_info[10];
+  int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+  List_ptr mfedges, mrfaces, mrverts;
+  RepType rtype;
+  char attname[256], msetname[256];
+  MType mtype;
+  MAttType att_type;
+  MAttrib_ptr attrib;
+  MSet_ptr mset;
+  int *list_attr, *list_mset;
+  char *list_attr_names, *list_mset_names;
+  double coor[3];
+
+  for (i = 0; i < 10; i++) mesh_info[i] = 0;
+
+  /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
+  rtype = MESH_RepType(submesh);
+  nv = MESH_Num_Vertices(submesh);
+  ne = MESH_Num_Edges(submesh);
+  nf = MESH_Num_Faces(submesh);
+  nr = MESH_Num_Regions(submesh);
+  mesh_info[0] = rtype;
+  mesh_info[1] = nv;
+  mesh_info[2] = ne;
+  mesh_info[3] = nf;
+  mesh_info[4] = nr;
+  /* collect data */
+  int *list_vertex = (int *)MSTK_malloc(3*nv*sizeof(int));
+  double *list_coor = (double *)MSTK_malloc(3*nv*sizeof(double));
+  for(i = 0; i < nv; i++) {
+    mv = MESH_Vertex(submesh,i);
+    list_vertex[3*i] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));
+    list_vertex[3*i+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
+    list_vertex[3*i+2] = MV_GlobalID(mv);
+    MV_Coords(mv,coor);
+    list_coor[i*3] = coor[0];
+    list_coor[i*3+1] = coor[1];
+    list_coor[i*3+2] = coor[2];
+  }
+
+
+ int *list_edge = (int *)MSTK_malloc(5*ne*sizeof(int));
+
+  nevs = 0;
+  /* Store the vertex ids, then the 3 auxilliary data fields */
+  for(i = 0; i < ne; i++) {
+    me = MESH_Edge(submesh,i);
+    list_edge[nevs]   = MV_ID(ME_Vertex(me,0));
+    list_edge[nevs+1] = MV_ID(ME_Vertex(me,1));
+    list_edge[nevs+2] = (ME_GEntID(me)<<3) | (ME_GEntDim(me));
+    list_edge[nevs+3] = (ME_MasterParID(me) <<2) | (ME_PType(me));
+    list_edge[nevs+4] = ME_GlobalID(me);
+    nevs += 5;
+  }
+  mesh_info[5] = nevs;
+
+
+  int *list_face = (int *)MSTK_malloc((MAXPV2+4)*nf*sizeof(int));
+
+  nfes = 0;
+  /* first int store nfe, then the edge ids, then the 3 auxilliary data fields */
+  for(i = 0; i < nf; i++) {
+    mf = MESH_Face(submesh,i);
+    mfedges = MF_Edges(mf,1,0);
+    nfe = List_Num_Entries(mfedges);
+    list_face[nfes] = nfe;
+    for(j = 0; j < nfe; j++) {
+      dir = MF_EdgeDir_i(mf,j) ? 1 : -1;
+      list_face[nfes+j+1] = dir*ME_ID(List_Entry(mfedges,j));
+    }
+    list_face[nfes+nfe+1] = (MF_GEntID(mf)<<3) | (MF_GEntDim(mf));
+    list_face[nfes+nfe+2] = (MF_MasterParID(mf) <<2) | (MF_PType(mf));
+    list_face[nfes+nfe+3] = MF_GlobalID(mf);
+    nfes += (nfe + 4);
+    List_Delete(mfedges);
+  }
+  mesh_info[6] = nfes;
+
+
+
+  int *list_region = (int *)MSTK_malloc((MAXPF3+4)*nr*sizeof(int));
+
+  nrfs = 0;
+  /* first store nrf, then the face ids, then the 3 auxilliary data fields */
+  for(i = 0; i < nr; i++) {
+    mr = MESH_Region(submesh,i);
+    mrfaces = MR_Faces(mr);
+    nrf = List_Num_Entries(mrfaces);
+    list_region[nrfs] = nrf;
+    for(j = 0; j < nrf; j++) {
+      dir = MR_FaceDir_i(mr,j) == 1 ? 1 : -1;
+      list_region[nrfs+j+1] = dir*MF_ID(List_Entry(mrfaces,j));
+    }
+    list_region[nrfs+nrf+1] = (MR_GEntID(mr)<<3) | (MR_GEntDim(mr));
+    list_region[nrfs+nrf+2] = (MR_MasterParID(mr) <<2) | (MR_PType(mr));
+    list_region[nrfs+nrf+3] = MR_GlobalID(mr);
+    nrfs += (nrf + 4);
+    List_Delete(mrfaces);
+  }
+  mesh_info[7] = nrfs;
+
+  /* number of attr */
+  natt = MESH_Num_Attribs(submesh);
+  mesh_info[8] = natt;
+
+  /* collect attrs */
+  if(natt) {
+    list_attr = (int *)MSTK_malloc((natt+1)*sizeof(int));
+    list_attr_names = (char *)MSTK_malloc((natt+1)*256);
+    for(i = 0; i < natt; i++) {
+      attrib = MESH_Attrib(submesh,i);
+      MAttrib_Get_Name(attrib,attname);
+      att_type = MAttrib_Get_Type(attrib);
+      ncomp = MAttrib_Get_NumComps(attrib);
+      mtype = MAttrib_Get_EntDim(attrib);
+      list_attr[i] = (ncomp << 6) | (mtype << 3) | (att_type);
+      strcpy(&list_attr_names[i*256],attname);
+    }
+  }
+
+
+  /* Mesh entity sets */
+
+  nset = MESH_Num_MSets(submesh);
+  mesh_info[9] = nset;
+
+  if (nset) {
+    list_mset = (int *) MSTK_malloc(nset*sizeof(int));
+    list_mset_names = (char *) MSTK_malloc(nset*256*sizeof(char));
+
+    for (i = 0; i < nset; i++) {
+      mset = MESH_MSet(submesh,i);
+      MSet_Name(mset,msetname);
+      mtype = MSet_EntDim(mset);
+      list_mset[i] = mtype;
+      strcpy(&list_mset_names[i*256],msetname);
+    }
+  }
+
+
+
+  /* send mesh_info */
+  MPI_Send(mesh_info,10,MPI_INT,rank,rank,comm);
+
+  /* send vertices */
+  /* printf("%d vertices sent to rank %d\n",nv,rank); */
+  MPI_Send(list_vertex,3*nv,MPI_INT,rank,rank,comm);
+  MPI_Send(list_coor,3*nv,MPI_DOUBLE,rank,rank,comm);
+
+  /* send edges */
+  MPI_Send(list_edge,nevs,MPI_INT,rank,rank,comm);
+  
+  /* send faces */
+  MPI_Send(list_face,nfes,MPI_INT,rank,rank,comm);
+
+  /* send regions */
+  /* printf("%d regions sent to rank %d\n",nr,rank); */
+  MPI_Send(list_region,nrfs,MPI_INT,rank,rank,comm);
+
+  /* send attr */
+  /* printf("%d attr sent to rank %d\n",natt,rank); */
+  if(natt) {
+    MPI_Send(list_attr,natt,MPI_INT,rank,rank,comm);
+    MPI_Send(list_attr_names,natt*256,MPI_CHAR,rank,rank,comm);
+    MSTK_free(list_attr);
+    MSTK_free(list_attr_names);
+  }
+
+
+  /* send sets */
+  if (nset) {
+    MPI_Send(list_mset,nset,MPI_INT,rank,rank,comm);
+    MPI_Send(list_mset_names,nset*256,MPI_CHAR,rank,rank,comm);
+    MSTK_free(list_mset);
+    MSTK_free(list_mset_names);
+  }
+
+
+
+  MSTK_free(list_vertex);
+  MSTK_free(list_region);
+  MSTK_free(list_coor);
+  return 1;
+}
+
+
+
+
+int MESH_Surf_AssignGlobalIDs_R1R2R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  MSTK_Report("MESH_Surf_AssignGlobalIDs_R1R2R4","Not implemented",MSTK_FATAL);
+}
+
+
+int MESH_Vol_AssignGlobalIDs_R1R2(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  MSTK_Report("MESH_Vol_AssignGlobalIDs_R4","Not implemented",MSTK_FATAL);
+}
+
+
+int MESH_Vol_AssignGlobalIDs_R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  MSTK_Report("MESH_Vol_AssignGlobalIDs_R4","Not implemented",MSTK_FATAL);
+}
+
+
+
+
+
+  
+#ifdef __cplusplus
+}
+#endif
+

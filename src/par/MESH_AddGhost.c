@@ -17,7 +17,7 @@ extern "C" {
      0: only ghost vertex on processor boundary
      1: 1-ring of ghost face(surface mesh) or region(volume mesh)
 
-     must call PMESH_BuildPBoundary() first
+     must call MESH_BuildPBoundary() first
 
   */
 
