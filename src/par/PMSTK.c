@@ -321,6 +321,9 @@ extern "C" {
       MESH_Set_Prtn(*mesh,rank,num);
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
     }
+
+    MESH_Update_ParallelAdj(mesh, rank, num,  comm);
+
     return 1;
   }
 
@@ -332,8 +335,6 @@ extern "C" {
     int i, natt;
     char attr_name[256];
     MAttrib_ptr attrib;
-
-    MESH_Update_ParallelAdj(mesh, rank, num,  comm);
 
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {
