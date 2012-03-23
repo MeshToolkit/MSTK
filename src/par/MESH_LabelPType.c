@@ -12,32 +12,31 @@ extern "C" {
 
   /* 
      This function is a collective call
-     It assigns each submesh the global IDs of vertices and elements
-     
-     It also labels ghost and overlap entities, but that is not its main functionality
-     To label PType, call MESH_LabelPType()
+     It label ghost and overlap entities based on global ID
+     It also assign master partition ID
 
+     Assume PBOUNDARY label is already assigned for processor boundary entities
      Author(s): Duo Wang, Rao Garimella
   */
 
 
-  int MESH_Vol_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
-  int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
-  int MESH_Vol_AssignGlobalIDs_R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
-  int MESH_Vol_AssignGlobalIDs_R1R2(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
-  int MESH_Surf_AssignGlobalIDs_R1R2R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Vol_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Vol_LabelPType_R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Vol_LabelPType_R1R2(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Surf_LabelPType_R1R2R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
-  static int (*MESH_Vol_AssignGlobalIDs_jmp[MSTK_MAXREP])(Mesh_ptr submesh, int rank, int num, 
+  static int (*MESH_Vol_LabelPType_jmp[MSTK_MAXREP])(Mesh_ptr submesh, int rank, int num, 
 						   MPI_Comm comm) = 
-  {MESH_Vol_AssignGlobalIDs_FN, MESH_Vol_AssignGlobalIDs_FN, MESH_Vol_AssignGlobalIDs_R1R2, 
-   MESH_Vol_AssignGlobalIDs_R1R2, MESH_Vol_AssignGlobalIDs_R4};
-  static int (*MESH_Surf_AssignGlobalIDs_jmp[MSTK_MAXREP])(Mesh_ptr submesh, int rank, int num, 
+  {MESH_Vol_LabelPType_FN, MESH_Vol_LabelPType_FN, MESH_Vol_LabelPType_R1R2, 
+   MESH_Vol_LabelPType_R1R2, MESH_Vol_LabelPType_R4};
+  static int (*MESH_Surf_LabelPType_jmp[MSTK_MAXREP])(Mesh_ptr submesh, int rank, int num, 
 						    MPI_Comm comm) = 
-  {MESH_Surf_AssignGlobalIDs_FN, MESH_Surf_AssignGlobalIDs_FN, MESH_Surf_AssignGlobalIDs_R1R2R4, 
-   MESH_Surf_AssignGlobalIDs_R1R2R4, MESH_Surf_AssignGlobalIDs_R1R2R4};
+  {MESH_Surf_LabelPType_FN, MESH_Surf_LabelPType_FN, MESH_Surf_LabelPType_R1R2R4, 
+   MESH_Surf_LabelPType_R1R2R4, MESH_Surf_LabelPType_R1R2R4};
 
 
-int MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
+int MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   int nf, nr;
   RepType rtype;
 
@@ -48,51 +47,17 @@ int MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   /* build geometric entity dimension, mark boundary vertices */
   MESH_BuildVertexClassfn(submesh);
   if (nr)
-    (*MESH_Vol_AssignGlobalIDs_jmp[rtype])(submesh, rank, num, comm);
+    (*MESH_Vol_LabelPType_jmp[rtype])(submesh, rank, num, comm);
   else if(nf) 
-    (*MESH_Surf_AssignGlobalIDs_jmp[rtype])(submesh, rank, num, comm);
+    (*MESH_Surf_LabelPType_jmp[rtype])(submesh, rank, num, comm);
   else {
-    MSTK_Report("MESH_AssignGlobalIDs()","only send volume or surface mesh",MSTK_ERROR);
+    MSTK_Report("MESH_LabelPType()","only send volume or surface mesh",MSTK_ERROR);
     exit(-1);
   }
   return 1;
 }
 
-
-
-static int vertex_on_boundary(MVertex_ptr mv) {
-  int i, nve, ok = 0;
-  MEdge_ptr me;
-  List_ptr vedges = MV_Edges(mv);
-  nve = List_Num_Entries(vedges);
-  for(i = 0; i < nve; i++) {
-    me = List_Entry(vedges,i);
-    if(List_Num_Entries(ME_Faces(me)) <= 1)
-      ok = 1;
-  }
-  List_Delete(vedges);
-  return ok;
-}
-  
-int coor_compare(const void * a, const void * b) {
-  double tol = 1e-8;
-  int i;
-  double *coor1 = (double *)a;
-  double *coor2 = (double *)b;
-  for(i = 0; i < 3; i++) {
-    if ( (coor1[i] - coor2[i]) > tol )
-      return 1;
-    if ( (coor2[i] - coor1[i]) > tol )
-      return -1;
-  }
-  return 0;
-}
-  /* 
-     First build boundary list of vertices and broadcast them
-  */
-     
-
-int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, j, nv, nbv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
   int nfe;
   MVertex_ptr mv;
@@ -107,7 +72,7 @@ int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm c
   MSet_ptr mset;
   int *list_attr, *list_mset;
   char *list_attr_names, *list_mset_names;
-  double coor[3], *loc;
+  int *loc;
   int iloc, num_ghost_verts, global_id;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -127,23 +92,17 @@ int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm c
   boundary_verts = List_New(10);
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
-    if (vertex_on_boundary(mv)) {
-      MV_Set_PType(mv,PBOUNDARY);
+    if (MV_PType(mv) == PBOUNDARY) {
       List_Add(boundary_verts,mv);
       nbv++;
     }
   }
   mesh_info[4] = nbv;
   
-  /* sort boundary vertices based on coordinate value, for binary search */
-  List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
+  /* sort boundary vertices based on global ID, for binary search */
+  List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
-    MV_Coords(mv,coor);
-    /*
-      printf("after sort, rank %d, boundary vertex %d, coors (%lf %lf %lf)\n", rank,MV_ID(mv), \
-	   coor[0],coor[1],coor[2]); 
-    */
   }
 
 
@@ -161,26 +120,18 @@ int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm c
       max_nbv = global_mesh_info[10*i+4];
 
   int *list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
-  double *list_boundary_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
-
   int *recv_list_vertex = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
-  double *recv_list_coor = (double *)MSTK_malloc(3*num*max_nbv*sizeof(double));
 
-  /* only local id and coordinate values are sent */
+  /* only global ID are sent */
   int index_nbv = 0;
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
-    list_boundary_vertex[index_nbv] = MV_ID(mv);
-    MV_Coords(mv,coor);
-    list_boundary_coor[index_nbv*3] = coor[0];
-    list_boundary_coor[index_nbv*3+1] = coor[1];
-    list_boundary_coor[index_nbv*3+2] = coor[2];
+    list_boundary_vertex[index_nbv] = MV_GlobalID(mv);
     index_nbv++;
   }
 
   /* gather boundary vertices */
   MPI_Allgather(list_boundary_vertex,max_nbv,MPI_INT,recv_list_vertex,max_nbv,MPI_INT,comm);
-  MPI_Allgather(list_boundary_coor,3*max_nbv,MPI_DOUBLE,recv_list_coor,3*max_nbv,MPI_DOUBLE,comm);
 
   /* indicate if a vertex is overlapped */
   int *vertex_ov_label = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
@@ -189,133 +140,82 @@ int MESH_Surf_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm c
      it is used to assign global id of local ghost vertices
      do not need to store master partition id, MV_MasterParID(mv) is assigned
   */
-  int *id_on_ov_list = (int *)MSTK_malloc(max_nbv*sizeof(int));
-
   for (i = 0; i < num*max_nbv; i++)
     vertex_ov_label[i] = 0;
   num_ghost_verts = 0;
   /* for processor other than 0 */
-  if(rank > 0) {
-    for(i = 0; i < nbv; i++) {
-      mv = List_Entry(boundary_verts,i);
-      MV_Coords(mv,coor);
-      /* check which previous processor has the same coordinate vertex */
-      for(j = 0; j < rank; j++) {
-	/* since each processor has sorted the boundary vertices, use binary search */
-	loc = (int *)bsearch(&coor,
-			     &recv_list_coor[3*max_nbv*j],
-			     global_mesh_info[10*j+4],
-			     3*sizeof(double),
-			     coor_compare);
-	/* if found the vertex on previous processors */
-	if(loc) {
-	  /* here the location iloc is relative to the beginning of the jth processor */
-	  iloc = (int)(loc - &recv_list_coor[3*max_nbv*j])/3;
-	  /* add to ghost list, set PType and master partition ID */
-	  MESH_Add_GhostVertex(submesh, mv);
-	  MV_Set_PType(mv,PGHOST);
-	  MV_Set_MasterParID(mv,j);
-	  printf("rank %d,boundary vertex local ID %d, found on processor %d, loc %d\n",rank, MV_ID(mv), j, iloc);
-	  num_ghost_verts++;
-	  /* label the original vertex as overlapped */
-	  vertex_ov_label[max_nbv*j+iloc] |= 1;
-	  id_on_ov_list[i] = iloc;
-	  /* if found on processor j, no need to test for j+1,j+2...*/
-	  break;
-	}
+  for(i = 0; i < nbv; i++) {
+    mv = List_Entry(boundary_verts,i);
+    global_id = MV_GlobalID(mv);
+    /* check which processor has the same coordinate vertex */
+    for(j = 0; j < num; j++) {
+      if(j == rank)
+	continue;
+      /* since each processor has sorted the boundary vertices, use binary search */
+      loc = (int *)bsearch(&global_id,
+			   &recv_list_vertex[max_nbv*j],
+			   global_mesh_info[10*j+4],
+			   sizeof(int),
+			   compareGlobalID);
+      /* if found the vertex on previous processors */
+      if(loc) {
+	/* here the location iloc is relative to the beginning of the jth processor */
+	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);
+	MV_Set_PType(mv,PGHOST);
+	MV_Set_MasterParID(mv,j);
+	printf("rank %d,boundary vertex local ID %d, found on processor %d, loc %d\n",rank, MV_ID(mv), j, iloc);
+	num_ghost_verts++;
+	/* label the original vertex as overlapped */
+	vertex_ov_label[max_nbv*j+iloc] |= 1;
+	/* if found on processor j, no need to test other processors*/
+	break;
       }
     }
-    /* num of ghost verts */
-    mesh_info[5] = num_ghost_verts;
+  }
+  /* num of ghost verts */
+  mesh_info[5] = num_ghost_verts;
+  printf("befor reduce rank %d:",rank);
+  for (i = 0; i < num*max_nbv; i++)
+    printf("%d",vertex_ov_label[i]);
+  printf("\n");
 
-    /*
-    printf("befor reduce rank %d:",rank);
-    for (i = 0; i < num*max_nbv; i++)
-      printf("%d",vertex_ov_label[i]);
-    printf("\n");
-    */
-  }
-  /* for processor 0 */
-  else {
-    mesh_info[5] = 0;
-  }
-  
   /* update ghost verts number */
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   /* since this is a or reduction, we can use MPI_IN_PLACE, send buffer same as recv buffer */
   MPI_Allreduce(MPI_IN_PLACE,vertex_ov_label,num*max_nbv,MPI_INT,MPI_LOR,comm);    
-  /*
   printf("after reduce rank %d:",rank);
   for (i = 0; i < num*max_nbv; i++) {
     printf("%d",vertex_ov_label[i]);
   }
   printf("\n");
-  */
+
 
   /* calculate starting global id number for vertices*/
-  global_id = 1;
-  for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+1]-global_mesh_info[10*i+5];
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (MV_PType(mv) == PGHOST)
       continue;
-    MV_Set_GlobalID(mv,global_id++);
-    /*    MV_Set_MasterParID(mv,rank);*/
+    MV_Set_MasterParID(mv,rank);
   }
 
-  int *vertex_ov_global_id = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
-  for(i = 0; i < num*max_nbv; i++) 
-    vertex_ov_global_id[i] = 0;
   for(i = 0; i < nbv; i++) {
     if(vertex_ov_label[rank*max_nbv+i]) {
       mv = List_Entry(boundary_verts,i);
       MV_Set_PType(mv,POVERLAP);
-      vertex_ov_global_id[rank*max_nbv+i] = MV_GlobalID(mv);
     }
-  }
-  MPI_Allreduce(MPI_IN_PLACE,vertex_ov_global_id,num*max_nbv,MPI_INT,MPI_MAX,comm);    
-  for(i = 0; i < nbv; i++) {
-    mv = List_Entry(boundary_verts,i);
-    if(MV_PType(mv) == PGHOST) {
-      MV_Set_GlobalID(mv,vertex_ov_global_id[MV_MasterParID(mv)*max_nbv+id_on_ov_list[i]]);
-      /*
-      printf("assign ID: rank %d, local ID %d, global ID %d, assigned to processor %d, loc %d\n", \
-	     rank, MV_ID(mv), MV_GlobalID(mv),MV_MasterParID(mv), id_on_ov_list[i]);
-      */
-    }
-  }
-
-
-
-  /* calculate starting global id number for faces*/
-  global_id = 1;
-  for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+3];
-  for(i = 0; i < nf; i++) {
-    mf = MESH_Face(submesh,i);
-    MF_Set_PType(mf,PINTERIOR);
-    MF_Set_GlobalID(mf,global_id++);
-    /*
-      MF_Set_MasterParID(mf,rank);
-    */
   }
 
   List_Delete(boundary_verts);
   MSTK_free(global_mesh_info);
   MSTK_free(vertex_ov_label);
-  MSTK_free(vertex_ov_global_id);
-  MSTK_free(id_on_ov_list);
 
   MSTK_free(list_boundary_vertex);
-  MSTK_free(list_boundary_coor);
   MSTK_free(recv_list_vertex);
-  MSTK_free(recv_list_coor);
   return 1;
 }
 
 
-int MESH_Vol_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+int MESH_Vol_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, j, nv, ne, nf, nr, mesh_info[10];
   int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
   MVertex_ptr mv;
@@ -508,18 +408,18 @@ int MESH_Vol_AssignGlobalIDs_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 
 
 
-int MESH_Surf_AssignGlobalIDs_R1R2R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  MSTK_Report("MESH_Surf_AssignGlobalIDs_R1R2R4","Not implemented",MSTK_FATAL);
+int MESH_Surf_LabelPType_R1R2R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  MSTK_Report("MESH_Surf_LabelPType_R1R2R4","Not implemented",MSTK_FATAL);
 }
 
 
-int MESH_Vol_AssignGlobalIDs_R1R2(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  MSTK_Report("MESH_Vol_AssignGlobalIDs_R4","Not implemented",MSTK_FATAL);
+int MESH_Vol_LabelPType_R1R2(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  MSTK_Report("MESH_Vol_LabelPType_R4","Not implemented",MSTK_FATAL);
 }
 
 
-int MESH_Vol_AssignGlobalIDs_R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  MSTK_Report("MESH_Vol_AssignGlobalIDs_R4","Not implemented",MSTK_FATAL);
+int MESH_Vol_LabelPType_R4(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  MSTK_Report("MESH_Vol_LabelPType_R4","Not implemented",MSTK_FATAL);
 }
 
 
