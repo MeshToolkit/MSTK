@@ -12,7 +12,7 @@ extern "C" {
 
   /* 
      This function is a collective call
-     It label ghost and overlap entities based on global ID
+     It is similar as MESH_AssignGlobalIDs(), except that here global IDs are given
      It also assign master partition ID
 
      Assume PBOUNDARY label is already assigned for processor boundary entities
@@ -58,7 +58,7 @@ int MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
 }
 
 int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, nv, nbv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
+  int i, j, k, nv, nbv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
   int nfe;
   MVertex_ptr mv;
   MEdge_ptr me;
@@ -74,6 +74,7 @@ int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) 
   char *list_attr_names, *list_mset_names;
   int *loc;
   int iloc, num_ghost_verts, global_id;
+  double coor[3];
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   /* mesh_info store the mesh reptype, nv, ne, nf, nbv */
@@ -92,7 +93,7 @@ int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) 
   boundary_verts = List_New(10);
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
-    if (MV_PType(mv) == PBOUNDARY) {
+    if (MV_PType(mv)) {
       List_Add(boundary_verts,mv);
       nbv++;
     }
@@ -101,10 +102,15 @@ int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) 
   
   /* sort boundary vertices based on global ID, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
+
+  /*
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
-  }
-
+    MV_Coords(mv,coor);
+    printf("label after sort, rank %d, boundary vertex %d, coors (%lf %lf %lf)\n", rank,MV_ID(mv), \
+	      coor[0],coor[1],coor[2]); 
+	      }
+  */
 
   /* 
      gather submeshes information
@@ -148,22 +154,26 @@ int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) 
     mv = List_Entry(boundary_verts,i);
     global_id = MV_GlobalID(mv);
     /* check which processor has the same coordinate vertex */
-    for(j = 0; j < num; j++) {
-      if(j == rank)
-	continue;
+    for(j = 0; j < rank; j++) {
       /* since each processor has sorted the boundary vertices, use binary search */
       loc = (int *)bsearch(&global_id,
 			   &recv_list_vertex[max_nbv*j],
 			   global_mesh_info[10*j+4],
 			   sizeof(int),
-			   compareGlobalID);
+			   compareINT);
       /* if found the vertex on previous processors */
       if(loc) {
 	/* here the location iloc is relative to the beginning of the jth processor */
 	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);
 	MV_Set_PType(mv,PGHOST);
 	MV_Set_MasterParID(mv,j);
-	printf("rank %d,boundary vertex local ID %d, found on processor %d, loc %d\n",rank, MV_ID(mv), j, iloc);
+
+	/*
+	printf("label:  rank %d,boundary vertex local ID %d, global ID %d, found on processor %d, loc %d  ",rank, MV_ID(mv),global_id, j, iloc);
+
+	MV_Coords(mv,coor);
+	printf("coor (%lf,%lf,%lf)\n",coor[0],coor[1],coor[2]);
+	*/
 	num_ghost_verts++;
 	/* label the original vertex as overlapped */
 	vertex_ov_label[max_nbv*j+iloc] |= 1;
@@ -174,16 +184,18 @@ int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) 
   }
   /* num of ghost verts */
   mesh_info[5] = num_ghost_verts;
-  printf("befor reduce rank %d:",rank);
+  /*
+  printf("before reduce rank %d:",rank);
   for (i = 0; i < num*max_nbv; i++)
     printf("%d",vertex_ov_label[i]);
   printf("\n");
-
+  */
   /* update ghost verts number */
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   /* since this is a or reduction, we can use MPI_IN_PLACE, send buffer same as recv buffer */
   MPI_Allreduce(MPI_IN_PLACE,vertex_ov_label,num*max_nbv,MPI_INT,MPI_LOR,comm);    
-  printf("after reduce rank %d:",rank);
+
+  printf("Label  after reduce rank %d:",rank);
   for (i = 0; i < num*max_nbv; i++) {
     printf("%d",vertex_ov_label[i]);
   }
@@ -197,6 +209,7 @@ int MESH_Surf_LabelPType_FN(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) 
       continue;
     MV_Set_MasterParID(mv,rank);
   }
+
 
   for(i = 0; i < nbv; i++) {
     if(vertex_ov_label[rank*max_nbv+i]) {
