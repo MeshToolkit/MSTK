@@ -112,17 +112,6 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   
   /* sort boundary vertices based on coordinate value, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
-  /*
-  for(i = 0; i < nbv; i++) {
-    mv = List_Entry(boundary_verts,i);
-
-    MV_Coords(mv,coor);
-    printf("assig after sort, rank %d, boundary vertex %d, coors (%lf %lf %lf)\n", rank,MV_ID(mv), \
-	     coor[0],coor[1],coor[2]); 
-
-  }
-  */
-
   /* 
      gather submeshes information
      right now we only need nv and nbv, and later num_ghost_verts, but we gather all mesh_info
