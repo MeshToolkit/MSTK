@@ -208,26 +208,26 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   /* If you call the routines to set master partition ID or Global ID
      without knowing what you are doing, you can shoot yourself in the
      foot. So if you are casual MSTK user, you are strongly advised
-     against calling the Set_MasterPrtnID and Set_GlobalID routines */  
+     against calling the Set_MasterParID and Set_GlobalID routines */  
 
   void  MV_Set_PType(MVertex_ptr v, PType ptype);
-  void  MV_Set_MasterPrtnID(MVertex_ptr v, int masterpartid);
+  void  MV_Set_MasterParID(MVertex_ptr v, int masterpartid);
   void  MV_Set_GlobalID(MVertex_ptr v, int globalid);
 
   void  ME_Set_PType(MEdge_ptr e, PType ptype);
-  void  ME_Set_MasterPrtnID(MEdge_ptr e, int masterparid);
+  void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
   void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
 
   void  MF_Set_PType(MFace_ptr f, PType ptype);
-  void  MF_Set_MasterPrtnID(MFace_ptr f, int masterpartid);
+  void  MF_Set_MasterParID(MFace_ptr f, int masterpartid);
   void  MF_Set_GlobalID(MFace_ptr f, int globalid);
 
   void  MR_Set_PType(MRegion_ptr r, PType ptype);
-  void  MR_Set_MasterPrtnID(MRegion_ptr r, int masterpartid);
+  void  MR_Set_MasterParID(MRegion_ptr r, int masterpartid);
   void  MR_Set_GlobalID(MRegion_ptr r, int globalid);
 
   void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
-  void  MEnt_Set_MasterPrtnID(MEntity_ptr ent, int masterpartid);
+  void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterpartid);
   void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
 
 
@@ -266,6 +266,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* build processor boundary */
   int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
+  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
+  int        MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
 
   /* add ghost elements */
   int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
@@ -330,8 +332,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Rem_OverlapFace(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Rem_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r);
 
-  int compareGlobalID(MEntity_ptr *a, MEntity_ptr *b);
-  int compareVertexCoor(MVertex_ptr *a, MVertex_ptr *b);
+  /*  int compareGlobalID(const void *a, const void *b); */
+  int compareINT(const void *a, const void *b);
+  int compareGlobalID(const void *a, const void *b);
+  int compareVertexCoor(const void *a, const void *b);
+  int compareCoorDouble(const void * a, const void * b);
 #endif
 
 

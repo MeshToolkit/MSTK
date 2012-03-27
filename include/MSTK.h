@@ -180,7 +180,7 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
   PType       MV_PType(MVertex_ptr v);
-  int         MV_MasterPrtnID(MVertex_ptr v);
+  int         MV_MasterParID(MVertex_ptr v);
   int         MV_GlobalID(MVertex_ptr v);
 #endif
 
@@ -229,7 +229,7 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
   PType       ME_PType(MEdge_ptr e);
-  int         ME_MasterPrtnID(MEdge_ptr e);
+  int         ME_MasterParID(MEdge_ptr e);
   int         ME_GlobalID(MEdge_ptr e);
 #endif
 
@@ -294,7 +294,7 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
   PType       MF_PType(MFace_ptr f);  
-  int         MF_MasterPrtnID(MFace_ptr f);
+  int         MF_MasterParID(MFace_ptr f);
   int         MF_GlobalID(MFace_ptr f);
 #endif
 
@@ -352,7 +352,7 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
   PType       MR_PType(MRegion_ptr r);  
-  int         MR_MasterPrtnID(MRegion_ptr r);
+  int         MR_MasterParID(MRegion_ptr r);
   int         MR_GlobalID(MRegion_ptr r);
 #endif
 
@@ -363,7 +363,7 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
   PType       MEnt_PType(MEntity_ptr ent);
-  int         MEnt_MasterPrtnID(MEntity_ptr ent);
+  int         MEnt_MasterParID(MEntity_ptr ent);
   int         MEnt_GlobalID(MEntity_ptr ent);
 #endif
 
