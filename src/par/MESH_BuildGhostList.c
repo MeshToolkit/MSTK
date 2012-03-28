@@ -30,23 +30,38 @@ extern "C" {
     nr = MESH_Num_Regions(mesh);
 
     /* first delete the old GHOST or OVERLAP Lists */
-    if ( mesh->ghvertex != (List_ptr)NULL )
+    if ( mesh->ghvertex != (List_ptr)NULL ) {
       List_Delete(mesh->ghvertex);
-    if ( mesh->ghedge != (List_ptr)NULL )
+      mesh->ghvertex = (List_ptr)NULL;
+    }
+    if ( mesh->ghedge != (List_ptr)NULL ) {
       List_Delete(mesh->ghedge);
-    if ( mesh->ghface != (List_ptr)NULL )
+      mesh->ghedge = (List_ptr)NULL;
+    }
+    if ( mesh->ghface != (List_ptr)NULL ) {
       List_Delete(mesh->ghface);
-    if ( mesh->ghregion != (List_ptr)NULL )
+      mesh->ghface = (List_ptr)NULL;
+    }
+    if ( mesh->ghregion != (List_ptr)NULL ) {
       List_Delete(mesh->ghregion);
-
-    if ( mesh->ovvertex != (List_ptr)NULL )
+      mesh->ghregion = (List_ptr)NULL;
+    }
+    if ( mesh->ovvertex != (List_ptr)NULL ) {
       List_Delete(mesh->ovvertex);
-    if ( mesh->ovedge != (List_ptr)NULL )
+      mesh->ovvertex = (List_ptr)NULL;
+    }
+    if ( mesh->ovedge != (List_ptr)NULL ) {
       List_Delete(mesh->ovedge);
-    if ( mesh->ovface != (List_ptr)NULL )
+      mesh->ovedge = (List_ptr)NULL;
+    }
+    if ( mesh->ovface != (List_ptr)NULL ) {
       List_Delete(mesh->ovface);
-    if ( mesh->ovregion != (List_ptr)NULL )
+      mesh->ovface = (List_ptr)NULL;
+    }
+    if ( mesh->ovregion != (List_ptr)NULL ) {
       List_Delete(mesh->ovregion);
+      mesh->ovregion = (List_ptr)NULL;
+    }
 
 
     if (nr) 

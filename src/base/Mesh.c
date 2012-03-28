@@ -730,7 +730,6 @@ void MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e){
 
   mesh->medge = List_Add(mesh->medge, (void *) e);
   mesh->ne = List_Num_Entries(mesh->medge);
-
   if (ME_ID(e) == 0) { /* New edge */
     (mesh->max_eid)++;
     ME_Set_ID(e,mesh->max_eid);
@@ -758,6 +757,7 @@ void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
   if (MF_ID(f) == 0) { /* New face */
     (mesh->max_fid)++;
     MF_Set_ID(f,mesh->max_fid);
+
   }
 }    
      
