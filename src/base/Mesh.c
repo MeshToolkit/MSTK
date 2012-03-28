@@ -1105,7 +1105,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
                   
 
   int MESH_Sort_GhostLists(Mesh_ptr mesh, 
-	       int (*compfunc)(MEntity_ptr, MEntity_ptr)) {
+	       int (*compfunc)(const void*, const void*)) {
 
     if (mesh->ghvertex)
       List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
@@ -1587,7 +1587,6 @@ void MESH_Add_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
 void MESH_Add_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r){
   if (mesh->ovregion == (List_ptr) NULL)
     mesh->ovregion = List_New(10);
-
   mesh->ovregion = List_Add(mesh->ovregion, (void *) r);
 }    
      

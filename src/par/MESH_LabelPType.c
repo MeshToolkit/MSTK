@@ -3,7 +3,6 @@
 #include <string.h>
 #include <time.h>
 #include "MSTK.h"
-#include "Mesh.h"
 #include "MSTK_private.h"
 #ifdef __cplusplus
 extern "C" {

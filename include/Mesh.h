@@ -30,7 +30,7 @@ extern "C" {
 #endif
   } Mesh, *Mesh_ptr;
 #else
-  typedef void *Mesh;
+   typedef void *Mesh;
 #endif
 
 

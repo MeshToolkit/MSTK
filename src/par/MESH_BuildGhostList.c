@@ -1,8 +1,11 @@
+#define _H_Mesh_Private
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
+#include "Mesh.h"
 #include "MSTK.h"
 #include "MSTK_private.h"
 
@@ -25,6 +28,26 @@ extern "C" {
     /* basic mesh information */
     nf = MESH_Num_Faces(mesh);
     nr = MESH_Num_Regions(mesh);
+
+    /* first delete the old GHOST or OVERLAP Lists */
+    if ( mesh->ghvertex != (List_ptr)NULL )
+      List_Delete(mesh->ghvertex);
+    if ( mesh->ghedge != (List_ptr)NULL )
+      List_Delete(mesh->ghedge);
+    if ( mesh->ghface != (List_ptr)NULL )
+      List_Delete(mesh->ghface);
+    if ( mesh->ghregion != (List_ptr)NULL )
+      List_Delete(mesh->ghregion);
+
+    if ( mesh->ovvertex != (List_ptr)NULL )
+      List_Delete(mesh->ovvertex);
+    if ( mesh->ovedge != (List_ptr)NULL )
+      List_Delete(mesh->ovedge);
+    if ( mesh->ovface != (List_ptr)NULL )
+      List_Delete(mesh->ovface);
+    if ( mesh->ovregion != (List_ptr)NULL )
+      List_Delete(mesh->ovregion);
+
 
     if (nr) 
       MESH_Vol_Build_GhostLists(mesh);
@@ -57,6 +80,7 @@ extern "C" {
     
     /* build vertex */
     idx = 0; count_ghost = 0; count_ov = 0;
+
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
       if (MV_PType(mv) == PGHOST) {
 	count_ghost++;
@@ -206,4 +230,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
 
