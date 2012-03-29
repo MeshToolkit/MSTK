@@ -112,11 +112,22 @@ extern "C" {
   int        MESH_Num_GhostFaces(Mesh_ptr mesh);
   int        MESH_Num_GhostRegions(Mesh_ptr mesh);
 
+
+  List_ptr  MESH_GhostVertex_List(Mesh_ptr mesh);
+  List_ptr    MESH_GhostEdge_List(Mesh_ptr mesh);
+  List_ptr    MESH_GhostFace_List(Mesh_ptr mesh);
+  List_ptr  MESH_GhostRegion_List(Mesh_ptr mesh);
+
+  List_ptr  MESH_OverlapVertex_List(Mesh_ptr mesh);
+  List_ptr    MESH_OverlapEdge_List(Mesh_ptr mesh);
+  List_ptr    MESH_OverlapFace_List(Mesh_ptr mesh);
+  List_ptr  MESH_OverlapRegion_List(Mesh_ptr mesh);
+
   MVertex_ptr  MESH_GhostVertex(Mesh_ptr mesh, int i);
   MEdge_ptr    MESH_GhostEdge(Mesh_ptr mesh, int i);
   MFace_ptr    MESH_GhostFace(Mesh_ptr mesh, int i);
   MRegion_ptr  MESH_GhostRegion(Mesh_ptr mesh, int i);
-  
+
   MVertex_ptr  MESH_Next_GhostVertex(Mesh_ptr mesh, int *index);
   MEdge_ptr    MESH_Next_GhostEdge(Mesh_ptr mesh, int *index);
   MFace_ptr    MESH_Next_GhostFace(Mesh_ptr mesh, int *index);

@@ -1148,6 +1148,13 @@ int MESH_Num_InteriorVertices(Mesh_ptr mesh) {
     return 0;
 }
 
+List_ptr MESH_GhostVertex_List(Mesh_ptr mesh) {
+  return (mesh->ghvertex);
+}
+List_ptr MESH_OverlapVertex_List(Mesh_ptr mesh) {
+  return (mesh->ovvertex);
+}
+
 int MESH_Num_GhostEdges(Mesh_ptr mesh) {
   RepType rtype;
 
@@ -1189,6 +1196,14 @@ int MESH_Num_InteriorEdges(Mesh_ptr mesh) {
       List_Num_Entries(mesh->ovedge)- \
       List_Num_Entries(mesh->ghedge);
 }
+
+List_ptr MESH_GhostEdge_List(Mesh_ptr mesh) {
+  return (mesh->ghedge);
+}
+List_ptr MESH_OverlapEdge_List(Mesh_ptr mesh) {
+  return (mesh->ovedge);
+}
+
 
 int MESH_Num_GhostFaces(Mesh_ptr mesh) {
   RepType rtype;
@@ -1250,6 +1265,13 @@ int MESH_Num_InteriorFaces(Mesh_ptr mesh) {
     return 0;
 }
 
+List_ptr MESH_GhostFace_List(Mesh_ptr mesh) {
+  return (mesh->ghface);
+}
+List_ptr MESH_OverlapFace_List(Mesh_ptr mesh) {
+  return (mesh->ovface);
+}
+
 int MESH_Num_GhostRegions(Mesh_ptr mesh) {
   if (mesh->ghregion)
     return List_Num_Entries(mesh->ghregion);
@@ -1269,6 +1291,12 @@ int MESH_Num_InteriorRegions(Mesh_ptr mesh) {
       -List_Num_Entries(mesh->ghregion);
   else
     return 0;
+}
+List_ptr MESH_GhostRegion_List(Mesh_ptr mesh) {
+  return (mesh->ghregion);
+}
+List_ptr MESH_OverlapRegion_List(Mesh_ptr mesh) {
+  return (mesh->ovregion);
 }
 
 
@@ -1712,6 +1740,26 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
 
   return;
 }    
+
+
+/* using binary search to find vertex on ghost list based on global_id */
+  MVertex_ptr MESH_GhostVertexFromGlobalID(Mesh_ptr mesh, int global_id) {
+    MVertex_ptr *loc_mv, mv = MV_New(NULL); /* create a temporal vertex */
+    int iloc;
+    MV_Set_GlobalID(mv,global_id);
+    //    printf("global id %d, num of gh vertex %d\n",global_id, MESH_Num_GhostVertices(mesh));
+    loc_mv = (MVertex_ptr *)bsearch(&mv,
+				    List_Entries(mesh->ghvertex),
+				    MESH_Num_GhostVertices(mesh),
+				    sizeof(MVertex_ptr),
+				    compareGlobalID);
+    if(loc_mv) {
+      // printf("found global id %d\n",MV_GlobalID(*loc_mv));
+    return *loc_mv;
+    }
+    //      MV_Delete(mv,0);
+    return NULL;
+  }
 
 #endif /* MSTK_HAVE_MPI */
 
