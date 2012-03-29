@@ -201,7 +201,7 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   MFace_ptr mf;
   List_ptr fverts;
   idx = 0;
-  while( (mf=MESH_Next_Face(submesh,&idx)) ) {
+  while( (mf = MESH_Next_Face(submesh,&idx)) ) {
       fverts = MF_Vertices(mf,1,0);
       for(i = 0; i < List_Num_Entries(fverts); i++) {
 	mv = List_Entry(fverts,i);
