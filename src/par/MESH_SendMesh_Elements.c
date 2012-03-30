@@ -68,7 +68,7 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   int nfvs, mkvid;
   MVertex_ptr mv;
   MFace_ptr mf;
-  List_ptr mfverts, list_send_verts;
+  List_ptr mfverts;
   RepType rtype;
   char msetname[256];
   MType mtype;
@@ -78,7 +78,7 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   double coor[3], *list_coor;
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
-  nv = 0;
+
   nf = List_Num_Entries(list_send_elements);            /* number of faces to be sent */
   if (nf == 0)                                    
     return 1;
@@ -91,17 +91,18 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   list_vertex = (int *)MSTK_malloc(3*nf*MAXPV2*sizeof(int));
   list_coor = (double *)MSTK_malloc(3*nf*MAXPV2*sizeof(double));
 
-  /* stores the map from MV_ID to ID on list_send_verts */
+  /* stores the map from MV_ID to ID */
   MV_to_list_ID = (int *)MSTK_malloc(MESH_Num_Vertices(mesh)*sizeof(int));
-
+  for (i = 0; i < MESH_Num_Vertices(mesh); i++)
+    MV_to_list_ID[i] = -1;                         /*initialized to be -1 */
 
   /* 
      In the following code, we encode the face and vertex information at the same time
-     The neighboring vertex IDs of a face are IDs on the list_send_verts, not MV_ID
+     The neighboring vertex IDs of a face are IDs on the send_list, not MV_ID
   */
 
-  list_send_verts = List_New(10);
   nfvs = 0;
+  nv = 0;
   for (i = 0; i < nf; i++) {
     mf = List_Entry(list_send_elements,i);
     mfverts = MF_Vertices(mf,1,0);        /* add vertices */
@@ -109,10 +110,7 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
     list_face[nfvs] = nfv;
     for (j = 0; j < nfv; j++) {
       mv = List_Entry(mfverts,j);
-      if (!MEnt_IsMarked(mv,mkvid)) {
-	List_Add(list_send_verts,mv);
-	MEnt_Mark(mv,mkvid);
-
+      if (MV_to_list_ID[MV_ID(mv)-1] < 0) {
 	list_vertex[3*nv] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));  /* encode the vertex information */
 	list_vertex[3*nv+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
 	list_vertex[3*nv+2] = MV_GlobalID(mv);
@@ -132,9 +130,6 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
 
     List_Delete(mfverts);    
   }
-  List_Unmark(list_send_verts, mkvid);
-  MSTK_FreeMarker(mkvid); 
-
 
   /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
   rtype = MESH_RepType(mesh);
@@ -145,47 +140,18 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
 
   mesh_info[5] = nfvs;
 
-  /* Mesh entity sets */
-
-  nset = MESH_Num_MSets(mesh);
-  mesh_info[7] = nset;
-
-  if (nset) {
-    list_mset = (int *) MSTK_malloc(nset*sizeof(int));
-    list_mset_names = (char *) MSTK_malloc(nset*256*sizeof(char));
-
-    for (i = 0; i < nset; i++) {
-      mset = MESH_MSet(mesh,i);
-      MSet_Name(mset,msetname);
-      mtype = MSet_EntDim(mset);
-      list_mset[i] = mtype;
-      strcpy(&list_mset_names[i*256],msetname);
-    }
-  }
-
   /* send mesh_info */
   MPI_Send(mesh_info,10,MPI_INT,rank,rank,comm);
 
   /* send vertices */
-  /* printf("%d vertices sent to rank %d\n",nv,rank); */
+  printf("%d vertices sent to rank %d\n",nv,rank); 
   MPI_Send(list_vertex,3*nv,MPI_INT,rank,rank,comm);
   MPI_Send(list_coor,3*nv,MPI_DOUBLE,rank,rank,comm);
 
   /* send faces */
-  /* printf("%d faces sent to rank %d\n",nf,rank); */
+  printf("%d faces sent to rank %d\n",nf,rank);
   MPI_Send(list_face,nfvs,MPI_INT,rank,rank,comm);
   
-  /* send sets */
-  if (nset) {
-    MPI_Send(list_mset,nset,MPI_INT,rank,rank,comm);
-    MPI_Send(list_mset_names,nset*256,MPI_CHAR,rank,rank,comm);
-    MSTK_free(list_mset);
-    MSTK_free(list_mset_names);
-  }
-
-
-  List_Delete(list_send_verts);
-
   MSTK_free(MV_to_list_ID);
   MSTK_free(list_vertex);
   MSTK_free(list_coor);

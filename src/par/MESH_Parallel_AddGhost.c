@@ -62,15 +62,13 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 
   /* allocate meshes to receive from other processors */
   num_recv_procs = MESH_Num_GhostPrtns(submesh);
-  printf("on rank %d, number of recv_procs %d\n",rank, num_recv_procs);
+  printf(" number of recv_procs %d,on rank %d\n",rank, num_recv_procs);
 
   /* 
      printf("before rank %d,  num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
      printf("before rank %d,  num of ov vertex %d, number of ov face %d\n",rank,MESH_Num_OverlapVertices(submesh),MESH_Num_OverlapFaces(submesh));
      send and receive overlap meshes 
   */
-
-
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     

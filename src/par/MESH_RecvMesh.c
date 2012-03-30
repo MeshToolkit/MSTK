@@ -264,7 +264,7 @@ extern "C" {
     nrfs = mesh_info[7];
     natt = mesh_info[8];
     nset = mesh_info[9];
-
+    
     MESH_SetRepType(mesh,rtype);
 
     /* allocate receive buffer */

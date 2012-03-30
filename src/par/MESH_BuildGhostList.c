@@ -16,6 +16,8 @@ extern "C" {
   /*
     Build ghost and overlap entity lists and sort them by global id
 
+    If the lists are not empty, delete them first
+
     Author(s): Duo Wang, Rao Garimella
   */
 
