@@ -71,7 +71,7 @@ extern "C" {
 
 
   int MESH_Surf_RecvMesh_Elements_FN(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
-    int i, j,  nfv, nfvs, nfvs_local, natt, nset, count, ncomp;
+    int i, j,k,  nfv, nfvs, nfvs_local, natt, nset, count, ncomp;
     int nv, ne, nf, mv_list_id, mv_local_id,mv_global_id;
     int add_face;
     MVertex_ptr *verts, *fverts, mv;
@@ -95,9 +95,6 @@ extern "C" {
     nf = mesh_info[3];
 
     nfvs = mesh_info[5];
-
-    nset = mesh_info[7];
-  
 
     /* allocate receive buffer */
     list_vertex = (int *) malloc(3*nv*sizeof(int));
@@ -128,14 +125,17 @@ extern "C" {
 	mv_list_id = list_face[nfvs_local+j+1];
 	mv_global_id = list_vertex[3*mv_list_id+2];
 
+	mv = MESH_GhostVertexFromGlobalID(mesh,mv_global_id);  /* use binary search on ghost list */
+	if (mv) {                             /* if found the vertex, add the face */
+	  add_face = 1;
+	}                               
+
 	mv_local_id = list_to_MV_ID[mv_list_id];
-	if(mv_local_id) {                             /* if the vertex is already checked */
-	  fverts[j] = MESH_Vertex(mesh,mv_local_id);
+	if(mv_local_id) {              /* if the vertex is already checked */
+	  //printf("existing vertex %d added for %d th on rank %d\n", mv_global_id,j,rank);
+	  fverts[j] = MESH_VertexFromID(mesh,mv_local_id);
 	  continue;
 	} 
-	mv = MESH_GhostVertexFromGlobalID(mesh,mv_global_id);
-	if (mv) 
-	  add_face = 1;                               /* if found the vertex, add the face */
 	else {                                        /* if not found and not added yet, add the vertex */
 	  mv = MV_New(mesh);
 	  MV_Set_GEntDim(mv,(list_vertex[3*mv_list_id] & 7));
@@ -147,10 +147,10 @@ extern "C" {
 	  coor[1] = list_coor[mv_list_id*3+1];
 	  coor[2] = list_coor[mv_list_id*3+2];
 	  MV_Set_Coords(mv,coor);
-
-	  list_to_MV_ID[mv_list_id] = MV_ID(mv);          /* mark as added and stores the local ID */
 	}
+	//	printf("new vertex %d added for %d th on rank %d \n", MV_GlobalID(mv),j, rank);
 	fverts[j] = mv;         
+	list_to_MV_ID[mv_list_id] = MV_ID(mv);          /* mark as added and stores the local ID */
       }
       if(add_face) {
 	mf = MF_New(mesh);
@@ -159,37 +159,19 @@ extern "C" {
 	MF_Set_PType(mf,PGHOST);  /* set as GHOST face */ 
 	MF_Set_MasterParID(mf,(list_face[nfvs_local+nfv+2] >> 2));
 	MF_Set_GlobalID(mf,list_face[nfvs_local+nfv+3]);
-
+	/*
+	printf("on rank %d, new face global id %d vertices global ID:  ",rank, MF_GlobalID(mf));
+	for (k = 0; k < nfv; k++)
+	  printf(" %d", MV_GlobalID(fverts[k]));
+	printf("\n");
+	*/
 	MF_Set_Vertices(mf,nfv,fverts);
-
-	nfvs_local += (nfv +4);
       }
+      nfvs_local += (nfv +4);
       //      List_Delete(fverts);
     }
 
     
-
-    /* receive mesh entity sets */
-    if(nset) {
-      list_mset = (int *) malloc(nset*sizeof(int));
-      list_mset_names = (char *) malloc((nset)*256*sizeof(char));
-    
-      MPI_Recv(list_mset,nset,MPI_INT,send_rank,rank,comm,&status);
-      MPI_Recv(list_mset_names,nset*256,MPI_CHAR,send_rank,rank,comm,&status);
-      MPI_Get_count(&status,MPI_INT,&count);
-
-      for(i = 0; i < nset; i++) {
-	strcpy(msetname,&list_mset_names[i*256]);
-	/* see if the mset exists */
-	if(MESH_MSetByName(mesh,msetname))
-	  continue;
-	mtype = list_mset[i];
-	mset =  MSet_New(mesh, msetname, mtype);
-      }
-      MSTK_free(list_mset);    
-      MSTK_free(list_mset_names);
-    }
-
     MSTK_free(list_to_MV_ID);    
     MSTK_free(list_vertex);    
     MSTK_free(list_face);    

@@ -105,11 +105,14 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   nv = 0;
   for (i = 0; i < nf; i++) {
     mf = List_Entry(list_send_elements,i);
+    MF_Set_PType(mf, POVERLAP);           /* set as overlap face before sending */ 
     mfverts = MF_Vertices(mf,1,0);        /* add vertices */
     nfv = List_Num_Entries(mfverts);
     list_face[nfvs] = nfv;
     for (j = 0; j < nfv; j++) {
       mv = List_Entry(mfverts,j);
+      if(MV_PType(mv) != PGHOST)
+	MV_Set_PType(mv,POVERLAP);        /* if not a ghost vertex, set as overlap */
       if (MV_to_list_ID[MV_ID(mv)-1] < 0) {
 	list_vertex[3*nv] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));  /* encode the vertex information */
 	list_vertex[3*nv+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
@@ -144,12 +147,12 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   MPI_Send(mesh_info,10,MPI_INT,rank,rank,comm);
 
   /* send vertices */
-  printf("%d vertices sent to rank %d\n",nv,rank); 
+  /* printf("%d vertices sent to rank %d\n",nv,rank);  */
   MPI_Send(list_vertex,3*nv,MPI_INT,rank,rank,comm);
   MPI_Send(list_coor,3*nv,MPI_DOUBLE,rank,rank,comm);
 
   /* send faces */
-  printf("%d faces sent to rank %d\n",nf,rank);
+  /* printf("%d faces sent to rank %d\n",nf,rank); */
   MPI_Send(list_face,nfvs,MPI_INT,rank,rank,comm);
   
   MSTK_free(MV_to_list_ID);
