@@ -125,7 +125,7 @@ extern "C" {
 	mv_list_id = list_face[nfvs_local+j+1];
 	mv_global_id = list_vertex[3*mv_list_id+2];
 
-	mv = MESH_GhostVertexFromGlobalID(mesh,mv_global_id);  /* use binary search on ghost list */
+	mv = MESH_GhostVertexFromGlobalID(mesh,mv_global_id);  /* search on ghost  and overlap list */
 	if (mv) {                             /* if found the vertex, add the face */
 	  add_face = 1;
 	}                               

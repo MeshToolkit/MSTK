@@ -45,15 +45,9 @@ extern "C" {
     MESH_Partition(mesh, num, part, submeshes);
 
     for(i = 0; i < num; i++) {
-
-      /* */
-
       MESH_BuildPBoundary(mesh,submeshes[i]);
-
       /* Add ghost layers */
-
       MESH_AddGhost(mesh,submeshes[i],i,ring);
-
     }
 
     if (with_attr) {
@@ -307,14 +301,15 @@ extern "C" {
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
       MSTK_Mesh_Partition(*mesh, num, part, ring, with_attr, submeshes);
       
-      *mesh = submeshes[0];
       for(i = 1; i < num; i++) {
 
 	MSTK_SendMesh(submeshes[i],i,with_attr,comm);
 
 	MESH_Delete(submeshes[i]);  
       }
-
+      *mesh = submeshes[0];
+      MESH_Build_GhostLists(*mesh);
+     
     }
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
@@ -322,7 +317,7 @@ extern "C" {
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
     }
 
-    MESH_Update_ParallelAdj(mesh, rank, num,  comm);
+    MESH_Update_ParallelAdj(*mesh, rank, num,  comm);
 
     return 1;
   }

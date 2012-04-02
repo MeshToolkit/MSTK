@@ -62,28 +62,30 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   List_ptr fedges, fverts;
   int adj;
   /* allocate meshes to receive from other processors */
+  /*
   num_recv_procs = MESH_Num_GhostPrtns(submesh);
   printf(" number of recv_procs %d,on rank %d\n",rank, num_recv_procs);
-
+  */
   /* 
      first update parallel adjancy information
      any two processor that has vertex connection now has face connection
   */
+
+
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
-    if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+    if( adj = MESH_Has_Ghosts_From_Prtn(submesh,i,MANYTYPE) ) {
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MFACE);
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MVERTEX);
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MFACE);
     }
-    if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+    if( adj = MESH_Has_Overlaps_On_Prtn(submesh,i,MANYTYPE) ) {
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MFACE);
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MVERTEX);
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MFACE);
     }
   }
-
-
+  /*
   for(i = 0; i < num; i++) {
     if (adj = MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE))
       printf("after rank %d has overlap face on rank %d\n", rank,i);
@@ -91,29 +93,37 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       printf("after rank %d has ghost face from rank %d\n", rank,i);
 
   } 
-
+  */
   /* 
      printf("before rank %d,  num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
      printf("before rank %d,  num of ov vertex %d, number of ov face %d\n",rank,MESH_Num_OverlapVertices(submesh),MESH_Num_OverlapFaces(submesh));
      send and receive overlap meshes 
   */
-  /*
+
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) )
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) {
 	MESH_RecvMesh_Elements(submesh,2,i,rank,comm);
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) )
+	printf("rank %d receives elements from rank %d\n", rank,i);
+      }
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) {
 	MESH_SendMesh_Elements(submesh,MESH_OverlapFace_List(submesh),i,comm);
+	printf("rank %d sends elements to rank %d\n", rank,i);
+      }
     }
     if(i > rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) )
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) {
 	MESH_SendMesh_Elements(submesh,MESH_OverlapFace_List(submesh),i,comm);
+	printf("rank %d sends elements to rank %d\n", rank,i);
+      }
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) )
-	MESH_RecvMesh_Elements(submesh,2,i,rank,comm);
+	MESH_RecvMesh_Elements(submesh,2,i,rank,comm); {
+	printf("rank %d receives elements from rank %d\n", rank,i);
+      }
     }
   }
-  */
+
   //  printf("after  rank %d, ov_mesh num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
 
   return 1;

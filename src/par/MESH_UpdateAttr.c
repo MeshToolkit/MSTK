@@ -13,23 +13,13 @@ extern "C" {
   /* 
      this function sends ov attributes and update ghost attributes
      
-     must call MESH_Update_ProcessorRel() first
+     must call MESH_Update_ParallelAdj() first
      called by every process
      
      attr_name: the attribute name
 
      Author(s): Duo Wang, Rao Garimella
   */
-
-  int ov_compare(const void * a, const void * b) {
-    if ( *(int*)a > *(int*)b ) 
-      return 1;
-    else if ( *(int*)a < *(int*)b ) 
-      return -1;
-    else 
-      return 0;
-  }
-
 
   int MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int myrank, int numprocs,  MPI_Comm comm) {
     int i, j, k, *loc, ebit, count;
@@ -299,7 +289,7 @@ extern "C" {
 			   &list_info_recv[recv_pos[rank_g2l[par_id]]],
                            nent,
 			   sizeof(int),
-			   ov_compare);
+			   compareINT);
       /* get the index */
       i = (int)(loc - &list_info_recv[0]);
       if (att_type == INT)

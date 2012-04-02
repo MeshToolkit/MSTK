@@ -191,9 +191,8 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   
   /* 
      Right now assume faces are not overlapped across processors
-     Label the face that has OVERLAP vertex as OVERLAP
+     Label the face that has OVERLAP or Ghost vertex as OVERLAP
      
-     It is not a parallel call right now
   */
 int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, idx;
@@ -205,7 +204,7 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
       fverts = MF_Vertices(mf,1,0);
       for(i = 0; i < List_Num_Entries(fverts); i++) {
 	mv = List_Entry(fverts,i);
-	if(MV_PType(mv) == POVERLAP) {
+	if( MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP ) {
 	  MF_Set_PType(mf,POVERLAP);
 	  break;
 	}
@@ -232,7 +231,7 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
       rverts = MR_Vertices(mr);
       for(i = 0; i < List_Num_Entries(rverts); i++) {
 	mv = List_Entry(rverts,i);
-	if(MV_PType(mv) == POVERLAP) {
+	if(MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) {
 	  MR_Set_PType(mr,POVERLAP);
 	  break;
 	}
