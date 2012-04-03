@@ -106,14 +106,18 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   for (i = 0; i < nf; i++) {
     mf = List_Entry(list_send_elements,i);
     MF_Set_PType(mf, POVERLAP);           /* set as overlap face before sending */ 
+    //    MESH_Add_OverlapFace(mesh,mf);
     mfverts = MF_Vertices(mf,1,0);        /* add vertices */
     nfv = List_Num_Entries(mfverts);
     list_face[nfvs] = nfv;
     for (j = 0; j < nfv; j++) {
       mv = List_Entry(mfverts,j);
-      if(MV_PType(mv) != PGHOST)
-	MV_Set_PType(mv,POVERLAP);        /* if not a ghost vertex, set as overlap */
       if (MV_to_list_ID[MV_ID(mv)-1] < 0) {
+	if(MV_PType(mv) != PGHOST) {
+	  MV_Set_PType(mv,POVERLAP);        /* if not a ghost vertex, set as overlap */
+	  //	  MESH_Add_OverlapVertex(mesh,mv);
+	}
+
 	list_vertex[3*nv] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));  /* encode the vertex information */
 	list_vertex[3*nv+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
 	list_vertex[3*nv+2] = MV_GlobalID(mv);

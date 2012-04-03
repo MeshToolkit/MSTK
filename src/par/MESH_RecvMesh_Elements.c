@@ -121,20 +121,31 @@ extern "C" {
     for (i = 0; i < nf; i++) {
       add_face = 0;                           /* add the face if only it has a vertex of same global id */
       nfv = list_face[nfvs_local];
+      /* first round decide if adding the face */
       for (j = 0; j < nfv; j++) {
-	mv_list_id = list_face[nfvs_local+j+1];
+	mv_list_id = list_face[nfvs_local+j+1];                 /* id on the receive vertex list */
 	mv_global_id = list_vertex[3*mv_list_id+2];
-
-	mv = MESH_GhostVertexFromGlobalID(mesh,mv_global_id);  /* search on ghost  and overlap list */
-	if (mv) {                             /* if found the vertex, add the face */
+	mv = MESH_GhostVertexFromGlobalID(mesh,mv_global_id);   /* search on ghost  and overlap list */
+	if (mv) {                                               /* if found the vertex, add the face */
+	  list_to_MV_ID[mv_list_id] = MV_ID(mv);                /* mark as existing and stores the local ID */
 	  add_face = 1;
-	}                               
+	}
+	mv = MESH_VertexFromGlobalID(mesh,mv_global_id);
+	if (mv) 
+	  list_to_MV_ID[mv_list_id] = MV_ID(mv);                /* mark as existing and stores the local ID */
+      }
 
+      if(!add_face) {
+	nfvs_local += (nfv +4);
+	continue;
+      }
+      /* second round add face and vertex */
+      for (j = 0; j < nfv; j++) {
+	mv_list_id = list_face[nfvs_local+j+1];                 /* id on the receive vertex list */
 	mv_local_id = list_to_MV_ID[mv_list_id];
-	if(mv_local_id) {              /* if the vertex is already checked */
+	if(mv_local_id) {                                       /* if the vertex exists or already added */
 	  //printf("existing vertex %d added for %d th on rank %d\n", mv_global_id,j,rank);
 	  fverts[j] = MESH_VertexFromID(mesh,mv_local_id);
-	  continue;
 	} 
 	else {                                        /* if not found and not added yet, add the vertex */
 	  mv = MV_New(mesh);
@@ -147,30 +158,31 @@ extern "C" {
 	  coor[1] = list_coor[mv_list_id*3+1];
 	  coor[2] = list_coor[mv_list_id*3+2];
 	  MV_Set_Coords(mv,coor);
+	  //printf("on rank %d, added new vertex global id %d, from rank %d\n",rank,MV_GlobalID(mv), send_rank);
+	  //	  MESH_Add_GhostVertex(mesh,mv);
+	  fverts[j] = mv;         
+	  list_to_MV_ID[mv_list_id] = MV_ID(mv);          /* mark as added and stores the local ID */
 	}
 	//	printf("new vertex %d added for %d th on rank %d \n", MV_GlobalID(mv),j, rank);
-	fverts[j] = mv;         
-	list_to_MV_ID[mv_list_id] = MV_ID(mv);          /* mark as added and stores the local ID */
       }
-      if(add_face) {
-	mf = MF_New(mesh);
-	MF_Set_GEntDim(mf,(list_face[nfvs_local+nfv+1] & 7));
-	MF_Set_GEntID(mf,(list_face[nfvs_local+nfv+1] >> 3));
-	MF_Set_PType(mf,PGHOST);  /* set as GHOST face */ 
-	MF_Set_MasterParID(mf,(list_face[nfvs_local+nfv+2] >> 2));
-	MF_Set_GlobalID(mf,list_face[nfvs_local+nfv+3]);
-	/*
+      mf = MF_New(mesh);
+      MF_Set_GEntDim(mf,(list_face[nfvs_local+nfv+1] & 7));
+      MF_Set_GEntID(mf,(list_face[nfvs_local+nfv+1] >> 3));
+      MF_Set_PType(mf,PGHOST);  /* set as GHOST face */ 
+      MF_Set_MasterParID(mf,(list_face[nfvs_local+nfv+2] >> 2));
+      MF_Set_GlobalID(mf,list_face[nfvs_local+nfv+3]);
+      /*
 	printf("on rank %d, new face global id %d vertices global ID:  ",rank, MF_GlobalID(mf));
 	for (k = 0; k < nfv; k++)
-	  printf(" %d", MV_GlobalID(fverts[k]));
+	printf(" %d", MV_GlobalID(fverts[k]));
 	printf("\n");
-	*/
-	MF_Set_Vertices(mf,nfv,fverts);
-      }
+      */
+      MF_Set_Vertices(mf,nfv,fverts);
+      //      MESH_Add_GhostFace(mesh,mf);
       nfvs_local += (nfv +4);
-      //      List_Delete(fverts);
+    //      List_Delete(fverts);
     }
-
+  
     
     MSTK_free(list_to_MV_ID);    
     MSTK_free(list_vertex);    

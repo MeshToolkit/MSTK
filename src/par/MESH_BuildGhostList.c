@@ -1,11 +1,13 @@
+
 #define _H_Mesh_Private
+#include "Mesh.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include "Mesh.h"
+
 #include "MSTK.h"
 #include "MSTK_private.h"
 
@@ -109,7 +111,7 @@ extern "C" {
       }
     }
     
-#ifdef DEBUG_MAX
+#ifndef DEBUG_MAX
       printf("Mesh 0x%x num of vertex %d , ghost vertex %d, ov vertex %d\n",
 	   (unsigned int) mesh, nv, count_ghost, count_ov);  
 #endif
@@ -147,7 +149,7 @@ extern "C" {
       }
     }
 
-#ifdef DEBUG_MAX
+#ifndef DEBUG_MAX
     printf("Mesh 0x%x num of face %d , ghost face %d, ov face %d\n",
 	   (unsigned int) mesh, nf, count_ghost, count_ov);  
 #endif
