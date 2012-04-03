@@ -689,6 +689,7 @@ MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
   return NULL;
 }
 
+ 
 MEntity_ptr MESH_EntityFromID(Mesh_ptr mesh, int mtype, int id) {
 
   switch (mtype) {
@@ -1045,7 +1046,8 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
     int found, i, ghnum;
 
-    if (!mesh->par_recv_info) MESH_Init_Par_Recv_Info(mesh);
+    //    if (!mesh->par_recv_info) 
+    MESH_Init_Par_Recv_Info(mesh);
  
     if (mtype < MVERTEX || mtype > MREGION) {
       MSTK_Report("MESH_Set_Num_RecvEnts_On_Prtn","Invalid entity type",MSTK_ERROR);
@@ -1054,15 +1056,16 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
     found = 0;
     ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
-    for (i = 0; i < ghnum; i++) 
+    //    printf("set rank %d has %d processors to receive type %d\n",prtn,ghnum,mtype);
+    for (i = 0; i < ghnum; i++) {
       if (mesh->par_recv_info[1+i] == prtn) {
         found = 1;
         break;
       }
-
+    }
     if (!found) {
       char mesg[256];
-      sprintf(mesg,"This partition (%-d) does not have ghost entities from partition %-d",mesh->mypartn,prtn);
+      sprintf(mesg,"This partition (%-d) does not have ghost entities %d from partition %-d",mesh->mypartn,mtype,prtn);
       MSTK_Report("MESH_Set_Num_Recv_From_Prtn",mesg,MSTK_ERROR);
       return;
     }
@@ -1103,6 +1106,65 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
     return mesh->par_recv_info[1+ghnum+4*i+mtype];
   }
                   
+  /* right now using linear search, a hash table should be more efficient */
+MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MVertex_ptr mv;
+  while( mv = MESH_Next_Vertex(mesh, &idx) ) {
+      if (MV_GlobalID(mv) == global_id)
+	return mv;
+    }
+    return NULL;
+}
+
+MEdge_ptr MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MEdge_ptr me;
+  while( me = MESH_Next_Edge(mesh, &idx) ) {
+      if (ME_GlobalID(me) == global_id)
+	return me;
+    }
+    return NULL;
+}
+
+MFace_ptr MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MFace_ptr mf;
+  while( mf = MESH_Next_Face(mesh, &idx) ) {
+      if (MF_GlobalID(mf) == global_id)
+	return mf;
+    }
+    return NULL;
+}
+
+MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MRegion_ptr mr;
+  while( mr = MESH_Next_Region(mesh, &idx) ) {
+      if (MR_GlobalID(mr) == global_id)
+	return mr;
+    }
+    return NULL;
+}
+
+MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, int mtype, int id) {
+
+  switch (mtype) {
+  case 0:
+    return MESH_VertexFromGlobalID(mesh,id);
+  case 1:
+    return MESH_EdgeFromGlobalID(mesh,id);
+  case 2:
+    return MESH_FaceFromGlobalID(mesh,id);
+  case 3:
+    return MESH_RegionFromGlobalID(mesh,id);
+  default:
+    MSTK_Report("MESH_EntityFromGlobalID","Unrecognized entity type",MSTK_ERROR);
+    return NULL;
+  }
+
+}
+
 
   int MESH_Sort_GhostLists(Mesh_ptr mesh, 
 	       int (*compfunc)(const void*, const void*)) {
@@ -1744,7 +1806,20 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
 
 /* using binary search to find vertex on ghost list based on global_id */
   MVertex_ptr MESH_GhostVertexFromGlobalID(Mesh_ptr mesh, int global_id) {
-    MVertex_ptr *loc_mv, mv = MV_New(NULL); /* create a temporal vertex */
+    MVertex_ptr mv;
+    int idx = 0;
+    while(  (mv = MESH_Next_GhostVertex(mesh,&idx)) ){
+	if (MV_GlobalID(mv) == global_id)
+	  return mv;
+    }
+    idx = 0;
+    while(  (mv = MESH_Next_OverlapVertex(mesh,&idx)) ){
+	if (MV_GlobalID(mv) == global_id)
+	  return mv;
+    }
+
+    /*
+    MVertex_ptr *loc_mv, mv = MV_New(NULL);
     int iloc;
     MV_Set_GlobalID(mv,global_id);
     //    printf("global id %d, num of gh vertex %d\n",global_id, MESH_Num_GhostVertices(mesh));
@@ -1758,6 +1833,7 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
     return *loc_mv;
     }
     //      MV_Delete(mv,0);
+    */
     return NULL;
   }
 

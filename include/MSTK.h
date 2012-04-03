@@ -112,7 +112,11 @@ void MSTK_Init(void);
 #ifdef MSTK_HAVE_MPI
 
 
-
+  MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
+  MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);
+  MFace_ptr   MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id);
+  MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
+  MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
   /* parallel wrapper functions for user */
 
   /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
