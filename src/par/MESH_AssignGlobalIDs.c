@@ -36,7 +36,7 @@ int MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   nr = MESH_Num_Regions(submesh);
   /* 
      build geometric entity dimension, mark boundary vertices
-  MESH_BuildVertexClassfn(submesh);
+     MESH_BuildVertexClassfn(submesh);
  */
 
   /* Assign Vertex Global ID */
@@ -236,17 +236,6 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 
 
 
-  /* calculate starting global id number for faces*/
-  global_id = 1;
-  for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+3];
-  for(i = 0; i < nf; i++) {
-    mf = MESH_Face(submesh,i);
-    MF_Set_PType(mf,PINTERIOR);
-    MF_Set_GlobalID(mf,global_id++);
-    MF_Set_MasterParID(mf,rank);
-  }
-
   List_Delete(boundary_verts);
   MSTK_free(global_mesh_info);
   MSTK_free(vertex_ov_label);
@@ -331,7 +320,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   global_id = 1;
   for(i = 0; i < rank; i++) 
     global_id = global_id + global_mesh_info[10*i+4];
-  for(i = 0; i < nf; i++) {
+  for(i = 0; i < nr; i++) {
     mr = MESH_Region(submesh,i);
     MR_Set_PType(mr,PINTERIOR);
     MR_Set_GlobalID(mr,global_id++);
