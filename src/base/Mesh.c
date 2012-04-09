@@ -1021,33 +1021,34 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   void MESH_Init_Par_Recv_Info(Mesh_ptr mesh) {
     int i;
 
-    if (!mesh->par_recv_info) { /* first time */
-      int ngp = 0;
-      
-      /* count the number of ghost processor on this processor */
-      
-      for (i = 0; i < mesh->numpartns; i++)
-        if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE))
-          ngp++;
-      
-      mesh->par_recv_info = (unsigned int *) MSTK_malloc((1+5*ngp)*sizeof(unsigned int));
-      
-      mesh->par_recv_info[0] = ngp;
-      
-      ngp = 0;
-      for (i = 0; i < mesh->numpartns; i++)
-        if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE)) {
-          mesh->par_recv_info[1+ngp] = i;
-          ngp++;
-        }
+    if (mesh->par_recv_info) { /* delete old information */
+      free(mesh->par_recv_info);
     }
+    int ngp = 0;
+      
+    /* count the number of ghost processor on this processor */
+    
+    for (i = 0; i < mesh->numpartns; i++)
+      if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE))
+	ngp++;
+    
+    mesh->par_recv_info = (unsigned int *) MSTK_malloc((1+5*ngp)*sizeof(unsigned int));
+    
+    mesh->par_recv_info[0] = ngp;
+    
+    ngp = 0;
+    for (i = 0; i < mesh->numpartns; i++)
+      if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE)) {
+	mesh->par_recv_info[1+ngp] = i;
+	ngp++;
+      }
   }
   
   void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
     int found, i, ghnum;
 
-    //    if (!mesh->par_recv_info) 
-    MESH_Init_Par_Recv_Info(mesh);
+    if (!mesh->par_recv_info) 
+      MESH_Init_Par_Recv_Info(mesh);
  
     if (mtype < MVERTEX || mtype > MREGION) {
       MSTK_Report("MESH_Set_Num_RecvEnts_On_Prtn","Invalid entity type",MSTK_ERROR);
@@ -1058,6 +1059,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
     ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
     //    printf("set rank %d has %d processors to receive type %d\n",prtn,ghnum,mtype);
     for (i = 0; i < ghnum; i++) {
+      printf("   par_recv_info[%d]=%d\n",i,mesh->par_recv_info[i]);    
       if (mesh->par_recv_info[1+i] == prtn) {
         found = 1;
         break;

@@ -80,12 +80,13 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
 
       if (j) {
         MESH_Flag_Has_Overlaps_On_Prtn(mesh,i,mtype);
-
+	/*  this part seems not used
         if (ovnum == 0 || 
             (ovnum > 0 && prtnums[ovnum-1] != i)) {
           prtnums[ovnum] = i;
           ovnum++;
         }
+	*/
       } /* if my partition (myprtn) has ghosts from partition i */
     }
   }
@@ -110,7 +111,7 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
 
   /* Set how many entities a partition can expect to receive from
      another partititon whether it is used on this partition or not */
-
+  MESH_Init_Par_Recv_Info(mesh);
   for(i = 0; i < numprtns; i++) {
     if (MESH_Has_Ghosts_From_Prtn(mesh,i,MANYTYPE)) {
       for (mtype = MVERTEX; mtype < MREGION; mtype++) 
