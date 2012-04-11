@@ -1059,7 +1059,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
     ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
     //    printf("set rank %d has %d processors to receive type %d\n",prtn,ghnum,mtype);
     for (i = 0; i < ghnum; i++) {
-      printf("   par_recv_info[%d]=%d\n",i,mesh->par_recv_info[i]);    
+      //printf("   par_recv_info[%d]=%d\n",i,mesh->par_recv_info[i]);    
       if (mesh->par_recv_info[1+i] == prtn) {
         found = 1;
         break;

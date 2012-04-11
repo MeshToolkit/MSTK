@@ -85,7 +85,7 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MFACE);
     }
   }
-  /*
+
   for(i = 0; i < num; i++) {
     if (adj = MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE))
       printf("after rank %d has overlap face on rank %d\n", rank,i);
@@ -93,7 +93,7 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       printf("after rank %d has ghost face from rank %d\n", rank,i);
 
   } 
-  */
+
   /* 
      printf("before rank %d,  num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
      printf("before rank %d,  num of ov vertex %d, number of ov face %d\n",rank,MESH_Num_OverlapVertices(submesh),MESH_Num_OverlapFaces(submesh));

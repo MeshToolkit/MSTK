@@ -135,8 +135,13 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
     global_id = MV_GlobalID(mv);
-    /* check which processor has the same coordinate vertex */
-    for(j = 0; j < rank; j++) {
+    /* check which processor has the same coordinate vertex 
+     Different from assigning global id, we check all the other processors, from large to small
+     by rank, whenever a vertex is found, mark rank and j as neighbors, and the masterparid is still
+     the smallest rank processor
+    */
+    for(j = num-1; j >= 0; j--) {
+      if(j == rank) continue;
       /* since each processor has sorted the boundary vertices, use binary search */
       loc = (int *)bsearch(&global_id,
 			   &recv_list_vertex[max_nbv*j],
@@ -149,6 +154,7 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);
 	MV_Set_PType(mv,PGHOST);
 	MV_Set_MasterParID(mv,j);
+	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
 	num_ghost_verts++;
 	/* label the original vertex as overlapped */
 	vertex_ov_label[max_nbv*j+iloc] |= 1;
