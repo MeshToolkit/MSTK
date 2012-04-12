@@ -54,7 +54,7 @@ int MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
 
 
 
-static int vertex_on_boundary(MVertex_ptr mv) {
+static int vertex_on_face_boundary(MVertex_ptr mv) {
   int i, nve, ok = 0;
   MEdge_ptr me;
   List_ptr vedges = MV_Edges(mv);
@@ -67,13 +67,26 @@ static int vertex_on_boundary(MVertex_ptr mv) {
   List_Delete(vedges);
   return ok;
 }
+static int vertex_on_region_boundary(MVertex_ptr mv) {
+  int i, nrf, ok = 0;
+  MFace_ptr mf;
+  List_ptr vfaces = MV_Faces(mv);
+  nrf = List_Num_Entries(vfaces);
+  for(i = 0; i < nrf; i++) {
+    mf = List_Entry(vfaces,i);
+    if(List_Num_Entries(MF_Regions(mf)) <= 1)
+      ok = 1;
+  }
+  List_Delete(vfaces);
+  return ok;
+}
   
  /* 
      First build boundary list of vertices and broadcast them
   */
      
 int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, nv, nbv, ne, nf, mesh_info[10];
+  int i, j, nv, nbv, ne, nf, nr, mesh_info[10];
   MVertex_ptr mv;
   MFace_ptr mf;
   List_ptr boundary_verts;
@@ -82,8 +95,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   int index_nbv, max_nbv, iloc, num_ghost_verts, global_id;
   int *global_mesh_info, *list_boundary_vertex, *recv_list_vertex, *vertex_ov_label, *vertex_ov_global_id, *id_on_ov_list;
   double *list_boundary_coor, *recv_list_coor;
-
-
+  int (*func)(MVertex_ptr mv);                /* function pointer to check boundary vertex */
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   /* mesh_info store the mesh reptype, nv, ne, nf, nbv */
@@ -91,24 +103,28 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   nv = MESH_Num_Vertices(submesh);
   ne = MESH_Num_Edges(submesh);
   nf = MESH_Num_Faces(submesh);
+  nr = MESH_Num_Regions(submesh);
 
   mesh_info[0] = rtype;
   mesh_info[1] = nv;
   mesh_info[2] = ne;
   mesh_info[3] = nf;
+  mesh_info[4] = nr;
 
+  if(nr) func = vertex_on_region_boundary;
+  else   func = vertex_on_face_boundary;
   /* calculate number of boundary vertices */ 
   nbv = 0;
   boundary_verts = List_New(10);
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
-    if (vertex_on_boundary(mv)) {
+    if (func(mv)) {
       MV_Set_PType(mv,PBOUNDARY);
       List_Add(boundary_verts,mv);
       nbv++;
     }
   }
-  mesh_info[4] = nbv;
+  mesh_info[5] = nbv;
   
   /* sort boundary vertices based on coordinate value, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
@@ -122,8 +138,8 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   /* get largest number of boundary vertices of all the processors */
   max_nbv = 0;
   for(i = 0; i < num; i++)
-    if(max_nbv < global_mesh_info[10*i+4])
-      max_nbv = global_mesh_info[10*i+4];
+    if(max_nbv < global_mesh_info[10*i+5])
+      max_nbv = global_mesh_info[10*i+5];
 
   list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
   list_boundary_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
@@ -170,7 +186,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 	/* since each processor has sorted the boundary vertices, use binary search */
 	loc = (double *)bsearch(&coor,
 			     &recv_list_coor[3*max_nbv*j],
-			     global_mesh_info[10*j+4],
+			     global_mesh_info[10*j+5],
 			     3*sizeof(double),
 			     compareCoorDouble);
 	/* if found the vertex on previous processors */
@@ -197,7 +213,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   
   }
 
-  mesh_info[5] = num_ghost_verts;
+  mesh_info[9] = num_ghost_verts;
   /* update ghost verts number */
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   /* since this is a OR reduction, we can use MPI_IN_PLACE, send buffer same as recv buffer */
@@ -206,7 +222,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   /* calculate starting global id number for vertices*/
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+1]-global_mesh_info[10*i+5];
+    global_id = global_id + global_mesh_info[10*i+1]-global_mesh_info[10*i+9];
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (MV_PType(mv) == PGHOST)
