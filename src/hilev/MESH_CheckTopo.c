@@ -93,6 +93,7 @@ extern "C" {
       if (gvdim == 2) {
 	MEdge_ptr e0, ecur, enxt;
 	MFace_ptr fcur;
+        int flipped = 0;
 
 	/* If vertex is classified on a model face, then we should be
 	   able to find a ring of faces classified on that model
@@ -148,7 +149,18 @@ extern "C" {
 	   
 	  fedges = MF_Edges(fcur,1,mv);
 	  nfe = List_Num_Entries(fedges);
-	  enxt = List_Entry(fedges,nfe-1);
+
+          if (List_Entry(fedges,0) == ecur)
+            enxt = List_Entry(fedges,nfe-1);
+          else if (List_Entry(fedges,nfe-1) == ecur) {
+            enxt = List_Entry(fedges,0);
+            flipped = 1;
+          }
+          else {
+            sprintf(mesg,"Could not find next edge while traversing around vertex %-d on model face %-d",vid,gvid);
+            MSTK_Report(funcname,mesg,MSTK_ERROR);
+          }
+
 	  List_Delete(fedges);
 
 	  if (enxt == e0)
@@ -159,9 +171,14 @@ extern "C" {
 	}
 
 	if (!done) {
-	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find ring of faces classified on this model face",vid,gvid);
+	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not  find ring of faces classified on this model face",vid,gvid);
 	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	}
+
+        if (done && flipped) {
+          sprintf(mesg,"Inconsistent orientations of boundary faces around vertex %-d",vid);
+          MSTK_Report(funcname,mesg,MSTK_WARN);
+        }
       }
 
 
@@ -194,12 +211,12 @@ extern "C" {
 	gvdim = MV_GEntDim(ev);
 
 	if (gedim < gvdim) {
-	  sprintf(mesg,"Edge %-d classified on lower dimensional entity than\n connected vertex %-d",eid,vid);
+	  sprintf(mesg,"Edge %-d classified on lower dimensional entity than  connected vertex %-d",eid,vid);
 	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
 	else if (gedim == gvdim && geid != gvid) {
-	  sprintf(mesg,"Edge %-d and its vertex %-d classified on different\n entities of the same dimension",eid,vid);
+	  sprintf(mesg,"Edge %-d and its vertex %-d classified on different entities of the same dimension",eid,vid);
 	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
