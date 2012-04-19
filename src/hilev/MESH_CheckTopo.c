@@ -181,6 +181,11 @@ extern "C" {
       gedim = ME_GEntDim(me);
       geid = ME_GEntID(me);
 
+      if (ME_Vertex(me,0) == ME_Vertex(me,1)) {
+        sprintf(mesg,"Edge %-d has repeated vertices",eid);
+        MSTK_Report(funcname,mesg,MSTK_ERROR);
+      }
+
       for (i = 0; i < 2; i++) {
 	MVertex_ptr ev = ME_Vertex(me,i);
 
@@ -363,6 +368,12 @@ extern "C" {
       gfdim = MF_GEntDim(mf);
 
       fedges = MF_Edges(mf,1,0);
+
+      if (List_Num_Entries(fedges) < 3) {
+        sprintf(mesg,"Face %-d has less than 3 edges",fid);
+        MSTK_Report(funcname,mesg,MSTK_ERROR);
+      }
+
       idx2 = 0;
       while ((fe = List_Next_Entry(fedges,&idx2))) {
 	eid = ME_ID(fe);
@@ -428,6 +439,12 @@ extern "C" {
       grid = MR_GEntID(mr);
 
       rfaces = MR_Faces(mr);
+
+      if (List_Num_Entries(rfaces) < 4) {
+        sprintf(mesg,"Region %-d has less than 4 faces",rid);
+        MSTK_Report(funcname,mesg,MSTK_ERROR);
+      }
+
       idx2 = 0;
       while ((rf = List_Next_Entry(rfaces,&idx2))) {
 	int dir;
