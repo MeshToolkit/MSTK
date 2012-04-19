@@ -129,7 +129,7 @@ int MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   
 
 
-  /* get ov info */
+  /* Count the number of processors that contribute ghosts to this processor */
   ov_index = 0;
   for(i = 0; i < num; i++)
     if(local_ranks[i])
@@ -143,7 +143,12 @@ int MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {
   local_info = (int *) MSTK_malloc((5*(ov_index)+1)*sizeof(int));      
   for(i = 0; i < 5*(ov_index)+1; i++)
     local_info[i] = 0;
+
   local_info[0] = ov_index;
+
+  /* mark how many overlap entities processor i will send to this processor */
+  /* Right now each processor will send ALL its overlap entities to any 
+     processor that wants it */
   ov_index2 = 0;
   for(i = 0; i < num; i++) {
     ebit = local_ranks[i];
