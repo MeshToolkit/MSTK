@@ -901,6 +901,9 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
     if (nsidesets) {
 
+      if (mesh_type == 3)
+        MSTK_Report("MESH_ImportFromExodusII.c","Cannot handle sidesets in meshes with surface and solid elements",MSTK_FATAL);
+
       sideset_ids = (int *) malloc(nsidesets*sizeof(int));
 
       status = ex_get_side_set_ids(exoid,sideset_ids);
@@ -916,10 +919,6 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 	sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
-	sidesetatt = MAttrib_New(mesh,sidesetname,INT,MFACE);
-
-	sideset = MSet_New(mesh,sidesetname,MFACE);
-      
 	status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
 				       &num_df_in_set);
 	
@@ -934,64 +933,110 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	}
 	
 	
-	for (j = 0; j < num_sides_in_set; j++) {
-	  int eltype;
-	  List_ptr rverts;
 
-	  mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
-	  
-	  rfaces = MR_Faces(mr);       /* No particular order */
-	  rverts = MR_Vertices(mr); /* Ordered for standard elements */
+        if (mesh_type == 1) {
 
-	  if (List_Num_Entries(rverts) == 4)
-	    eltype = 0;
-	  else if (List_Num_Entries(rverts) == 6)
-	    eltype = 1;
-	  else if (List_Num_Entries(rverts) == 8)
-	    eltype = 2;
-	  else
-	    eltype = 3; /* Polyhedron */
+          sidesetatt = MAttrib_New(mesh,sidesetname,INT,MEDGE);
+          sideset = MSet_New(mesh,sidesetname,MEDGE);          
+      
+          for (j = 0; j < num_sides_in_set; j++) {
+            int eltype;
+            List_ptr fedges;
+            
+            mf = MESH_FaceFromID(mesh,ss_elem_list[j]);
+            if (!mf)
+              MSTK_Report(funcname,"Cannot find element in sideset",MSTK_FATAL);
+            
+            fedges = MF_Edges(mf,1,0);
+            
+            int lfnum = ss_side_list[j]-1;
+              
+            /* Since we made the faces of the region according the
+               convention that Exodus II uses, the local face number
+               of the Exodus II element matches that of the MSTK element */
+            
+            me = List_Entry(fedges,lfnum);
 
-	  if (eltype == 3) { 
-	    mf = List_Entry(rfaces,ss_side_list[j]-1);
-	  }
-	  else {
-	    int lfnum;
-	    lfnum = ss_side_list[j]-1;
+            if (!me)
+              MSTK_Report(funcname,"Could not find sideset edge",MSTK_FATAL);
+            else {
+              List_ptr efaces;
+              efaces = ME_Faces(me);
+              if (List_Num_Entries(efaces) != 1) {
+                MSTK_Report("MESH_ImportFromExodusII",
+                            "Interior edge identified as being on the boundary",
+                            MSTK_ERROR);
+              }
+              if (efaces) List_Delete(efaces);
+            }
+            List_Delete(fedges);
+            
+            /* Set attribute value for this face */
+            
+            MEnt_Set_AttVal(me,sidesetatt,sideset_ids[i],0.0,NULL);
+            
+            /* Add the face to a set */
+            
+            MSet_Add(sideset,me);
+            
+            /* Interpret sideset attribute as classification info for the edge */
+            
+            ME_Set_GEntDim(me,1);
+            ME_Set_GEntID(me,sideset_ids[i]);
+          }
+        }
+        else if (mesh_type == 2) {
 
-	    /* Since we made the faces of the region according the
-	       convention that Exodus II uses, the local face number
-	       of the Exodus II element matches that of the MSTK element */
+          sidesetatt = MAttrib_New(mesh,sidesetname,INT,MFACE);
+          sideset = MSet_New(mesh,sidesetname,MFACE);
+      
+          for (j = 0; j < num_sides_in_set; j++) {
+            int eltype;
+            List_ptr rverts;
+            
+            mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
+            if (!mr)
+              MSTK_Report(funcname,"Could not find element in sideset",MSTK_FATAL);
 
-	    mf = List_Entry(rfaces,lfnum);
-	  }
-	  if (!mf)
-	    MSTK_Report(funcname,"Could not find sideset face",MSTK_FATAL);
-	  else {
-	    List_ptr fregs;
-	    fregs = MF_Regions(mf);
-	    if (List_Num_Entries(fregs) == 2) {
-	      MSTK_Report("MESH_ImportFromExodusII",
-			  "Interior face identified as being on the boundary",
-			  MSTK_ERROR);
-	    }
-	    if (fregs) List_Delete(fregs);
-	  }
-	  List_Delete(rfaces);
-	  
-	  /* Set attribute value for this face */
-	  
-	  MEnt_Set_AttVal(mf,sidesetatt,sideset_ids[i],0.0,NULL);
+            rfaces = MR_Faces(mr);       /* No particular order */
+            rverts = MR_Vertices(mr); /* Ordered for standard elements */
+            
+            int lfnum = ss_side_list[j]-1;
+            
+            /* Since we made the faces of the region according the
+               convention that Exodus II uses, the local face number
+               of the Exodus II element matches that of the MSTK element */
+            
+            mf = List_Entry(rfaces,lfnum);
 
-	  /* Add the face to a set */
-
-	  MSet_Add(sideset,mf);
-	  
-	  /* Interpret sideset attribute as classification info for the edge */
-	  
-	  MF_Set_GEntDim(mf,2);
-	  MF_Set_GEntID(mf,sideset_ids[i]);
-	}
+            if (!mf)
+              MSTK_Report(funcname,"Could not find sideset face",MSTK_FATAL);
+            else {
+              List_ptr fregs;
+              fregs = MF_Regions(mf);
+              if (List_Num_Entries(fregs) != 1) {
+                MSTK_Report("MESH_ImportFromExodusII",
+                            "Interior face identified as being on the boundary",
+                            MSTK_ERROR);
+              }
+              if (fregs) List_Delete(fregs);
+            }
+            List_Delete(rfaces);
+            
+            /* Set attribute value for this face */
+            
+            MEnt_Set_AttVal(mf,sidesetatt,sideset_ids[i],0.0,NULL);
+            
+            /* Add the face to a set */
+            
+            MSet_Add(sideset,mf);
+            
+            /* Interpret sideset attribute as classification info for the edge */
+            
+            MF_Set_GEntDim(mf,2);
+            MF_Set_GEntID(mf,sideset_ids[i]);
+          }
+        }
 	
 	free(ss_elem_list);
 	free(ss_side_list);
