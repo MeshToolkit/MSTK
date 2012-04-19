@@ -136,6 +136,12 @@ extern "C" {
 
   void MF_Set_Vertices(MFace_ptr f, int n, MVertex_ptr *verts) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
+
+#ifdef DEBUG
+    if (n < 3)
+      MSTK_Report("MF_Set_Vertices","Trying to create face with only 2 vertices",MSTK_ERROR);
+#endif
+
     (*MF_Set_Vertices_jmp[RTYPE])(f,n,verts);
   }
 
