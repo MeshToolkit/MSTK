@@ -26,7 +26,7 @@ extern "C" {
   int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
   int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
-int MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
+  int MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   int nf, nr;
   RepType rtype;
 
@@ -63,7 +63,7 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int *list_attr, *list_mset;
   char *list_attr_names, *list_mset_names;
   int *loc;
-  int iloc, num_ghost_verts, global_id;
+  int iloc,  global_id;
   double coor[3];
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -95,7 +95,6 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 
   /* 
      gather submeshes information
-     right now we only need nv and nbv, and later num_ghost_verts, but we gather all mesh_info
   */
   int *global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
@@ -130,7 +129,6 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   */
   for (i = 0; i < num*max_nbv; i++)
     vertex_ov_label[i] = 0;
-  num_ghost_verts = 0;
   /* for processor other than 0 */
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
@@ -155,19 +153,13 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	MV_Set_PType(mv,PGHOST);
 	MV_Set_MasterParID(mv,j);
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
-	num_ghost_verts++;
 	/* label the original vertex as overlapped */
 	vertex_ov_label[max_nbv*j+iloc] |= 1;
-	/* if found on processor j, no need to test other processors*/
-	break;
+	/* if found on processor j, still need to check other processors*/
       }
     }
   }
 
-  mesh_info[5] = num_ghost_verts;
-
-  /* update ghost verts number */
-  MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   /* since this is a or reduction, we can use MPI_IN_PLACE, send buffer same as recv buffer */
   MPI_Allreduce(MPI_IN_PLACE,vertex_ov_label,num*max_nbv,MPI_INT,MPI_LOR,comm);    
 

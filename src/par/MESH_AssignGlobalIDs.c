@@ -462,8 +462,8 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
 }
 
  /* 
-    as of now, each processor knowns its overlap and ghost vertices 
-
+    Assume no region is shared.
+    First assign face global ID.
     
  */
      
