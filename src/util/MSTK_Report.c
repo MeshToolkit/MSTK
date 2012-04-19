@@ -27,10 +27,10 @@ extern "C" {
       fprintf(stderr, "Warning!! in %s: %s\n",funcname,message);
       break;
     case MSTK_ERROR:
-      fprintf(stderr, "MSTK_ERROR!! in %s: %s\n",funcname,message);
+      fprintf(stderr, "ERROR!! in %s: %s\n",funcname,message);
       break;
     case MSTK_FATAL:
-      fprintf(stderr, "MSTK_FATAL MSTK_ERROR!! in %s: %s\n",funcname,message);
+      fprintf(stderr, "FATAL ERROR!! in %s: %s\n",funcname,message);
       exit(-1);
     }
   }
