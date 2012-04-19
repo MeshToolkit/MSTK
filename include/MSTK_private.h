@@ -337,6 +337,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int compareGlobalID(const void *a, const void *b);
   int compareVertexCoor(const void *a, const void *b);
   int compareCoorDouble(const void * a, const void * b);
+  int compareEdgeINT(const void *a, const void *b);
+  int compareEdgeID(const void *a, const void *b);
+  int compareFaceINT(const void *a, const void *b);
+  int compareFaceID(const void *a, const void *b);
+
 #endif
 
 
