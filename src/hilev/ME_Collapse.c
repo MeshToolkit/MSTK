@@ -147,12 +147,12 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
       rfaces = MR_Faces(reg);
       nrf = List_Num_Entries(rfaces);
 
-      if (nrf == 4) {
-      
-	/* This is a tet - it will become degenerate */
-
-	MR_Delete(reg,0);
-
+      if (nrf == 4) {      
+        List_ptr rverts = MR_Vertices(reg);
+        if (List_Num_Entries(rverts) == 4) {
+          MR_Delete(reg,0);    /* This is a tet - it will become degenerate */
+        }
+        List_Delete(rverts);
       }
       else {
 
