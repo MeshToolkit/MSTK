@@ -31,6 +31,9 @@ extern const int MSTK_rfdir_template[5][6];
 /* Face-edge templates for standard regions */
 extern const int MSTK_rfe_template[5][6][5]; 
 
+/* Face-edge templates for standard regions */
+extern const int MSTK_rfedir_template[5][6][5]; 
+
 /* Edge-vertex templates for standard regions */
 extern const int MSTK_rev_template[5][12][2];
 
