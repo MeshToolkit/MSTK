@@ -122,6 +122,11 @@ extern "C" {
     (*MF_Set_Edges_jmp[RTYPE])(f,n,edges,dir);
   }
 
+  void MF_Rem_Edge(MFace_ptr f, MEdge_ptr edge) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
+    (*MF_Rem_Edge_jmp[RTYPE])(f,edge);
+  }
+
   void MF_Replace_Edges(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, 
 			MEdge_ptr *nuedges) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
