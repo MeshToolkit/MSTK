@@ -235,41 +235,41 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
 	    if (MF_GEntDim(adjface) == 2)
 	      List_Add(ebfaces,adjface);
 	  }
+          List_Delete(efaces);
 
 	  nbf = List_Num_Entries(ebfaces);
 	  if (nbf == 2) {
 	    /* we might be on a model face or on a model edge */
-
+            
 	    adjface = List_Entry(ebfaces,0);
 	    if (adjface == subface)
 	      adjface = List_Entry(ebfaces,1);
 	    gfid2 = MF_GEntID(adjface);
 
+            
 	    if (gfid == gfid2) {
 	      /* The two faces are of the same ID. If the angle
 		 between them is not sharp they can be classified as
 		 being on the same subface */
 	      
 	      ang = MFs_DihedralAngle(subface,adjface,edge);
-
+              
 	      if (ang <= COSSHARPANG) {
 		/* Add face2 to subface list unless its already there */
-		if (MEnt_IsMarked(adjface,submk))  
-		  continue;
-		
-		List_Add(subfaces,adjface);
-		MEnt_Mark(adjface,submk);
+		if (!MEnt_IsMarked(adjface,submk)) {
+                  List_Add(subfaces,adjface);
+                  MEnt_Mark(adjface,submk);
+                }
 	      }
 	      else {
 		/* The two faces make a very sharp angle. We will
 		   consider the edge b/w them to be a model edge */
 		/* Tag the edge as being on a model edge (we don't
 		   know the model edge ID as yet) and continue */
-
+                
 		ME_Set_GEntDim(edge,1);
 		ME_Set_GEntID(edge,0);
-		continue;
-	      }
+              }
 	    }
 	    else {
 	      /* we reached a model edge */
@@ -278,7 +278,6 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
 
 	      ME_Set_GEntDim(edge,1);
 	      ME_Set_GEntID(edge,0);
-	      continue;
 	    }
 	  }
 	  else {
@@ -288,11 +287,9 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
 
 	    ME_Set_GEntDim(edge,1);
 	    ME_Set_GEntID(edge,0);
-	    continue;
 	  }
-	  List_Delete(efaces);
-	  List_Delete(ebfaces);	  
-	}
+          List_Delete(ebfaces);
+        }
 
 	/* Finished processing all neighbors of the face */
 	List_Delete(fedges);

@@ -109,6 +109,7 @@ extern "C" {
 	    break;
 	  }
 	}
+        List_Delete(vfaces);
 
 	if (!found) {
 	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find connected face classified on this model face",vid,gvid);
@@ -364,6 +365,7 @@ extern "C" {
 	      valid = 0;
 	    }
 	  } /* for (i = 0; i < nfr; i++) */
+          List_Delete(fregs);
 
 	} /* if (geid == 2) */
 
