@@ -62,7 +62,7 @@ void MSTK_Init(void);
   int        MESH_CheckTopo(Mesh_ptr mesh);
 
   /* Check if mesh geometry is valid */
-  int        MESH_CheckGeom(Mesh_ptr mesh);
+  /* int        MESH_CheckGeom(Mesh_ptr mesh); */
 
 
   GModel_ptr MESH_GModel(Mesh_ptr mesh);
@@ -350,9 +350,11 @@ void MSTK_Init(void);
   void MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
   void MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
+  void MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
   void MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
   int MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
+  
 
 
   Mesh_ptr MR_Mesh(MRegion_ptr mregion);
