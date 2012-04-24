@@ -111,7 +111,7 @@ extern "C" {
       }
     }
     
-#ifndef DEBUG_MAX
+#ifdef DEBUG_MAX
       printf("Mesh 0x%x num of vertex %d , ghost vertex %d, ov vertex %d\n",
 	   (unsigned int) mesh, nv, count_ghost, count_ov);  
 #endif
@@ -149,7 +149,7 @@ extern "C" {
       }
     }
 
-#ifndef DEBUG_MAX
+#ifdef DEBUG_MAX
     printf("Mesh 0x%x num of face %d , ghost face %d, ov face %d\n",
 	   (unsigned int) mesh, nf, count_ghost, count_ov);  
 #endif

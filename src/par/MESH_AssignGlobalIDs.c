@@ -197,7 +197,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       for(j = 0; j < rank; j++) {
 	/* since each processor has sorted the boundary vertices, use binary search */
 	loc = (double *)bsearch(&coor,
-			     &recv_list_coor[3*max_nbv*j],
+				&recv_list_coor[3*max_nbv*j],
 				global_mesh_info[10*j+5],
 				3*sizeof(double),
 				compareCoorDouble);
