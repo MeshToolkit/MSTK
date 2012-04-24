@@ -48,23 +48,13 @@ extern "C" {
 }
 
 int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, k, nv, nbv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
-  int nfe;
+  int i, j, nv, nbv, ne, nf, mesh_info[10];
   MVertex_ptr mv;
-  MEdge_ptr me;
-  MFace_ptr mf;
-  List_ptr boundary_verts, fverts, mfedges;
+  List_ptr boundary_verts;
   RepType rtype;
-  char attname[256], msetname[256];
-  MType mtype;
-  MAttType att_type;
-  MAttrib_ptr attrib;
-  MSet_ptr mset;
-  int *list_attr, *list_mset;
-  char *list_attr_names, *list_mset_names;
   int *loc;
   int iloc,  global_id;
-  double coor[3];
+
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   /* mesh_info store the mesh reptype, nv, ne, nf, nbv */
@@ -151,7 +141,6 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	/* here the location iloc is relative to the beginning of the jth processor */
 	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);
 	MV_Set_PType(mv,PGHOST);
-	MV_Set_MasterParID(mv,j);
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
 	/* label the original vertex as overlapped */
 	vertex_ov_label[max_nbv*j+iloc] |= 1;
@@ -225,7 +214,7 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   MVertex_ptr mv;
   List_ptr rverts;
   idx = 0;
-  while( (mr=MESH_Next_Region(submesh,&idx)) ) {
+  while( (mr = MESH_Next_Region(submesh,&idx)) ) {
       rverts = MR_Vertices(mr);
       for(i = 0; i < List_Num_Entries(rverts); i++) {
 	mv = List_Entry(rverts,i);

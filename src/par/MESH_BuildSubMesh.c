@@ -48,14 +48,13 @@ int MESH_BuildSubMesh(Mesh_ptr mesh, Mesh_ptr submesh) {
      First update the parallel adjancy information, 
   */
 int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
-  RepType rtype;
   int nv, ne, nf, nfe, i, j, k;
   MVertex_ptr mv, new_mv;
   MEdge_ptr me, new_me, *fedges;
   MFace_ptr mf, new_mf;
   List_ptr mfedges;
   List_ptr faces, edges, verts;
-  int adj, idx, *fedirs;
+  int idx, *fedirs;
   int mkvid, mkeid, mkfid;
   double coor[3];
   nv = MESH_Num_Vertices(mesh);
@@ -68,9 +67,8 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
   edges = List_New(10);
   verts = List_New(10);
 
-  int *MV_to_list_id = (int *)MSTK_malloc((nv+1)*sizeof(int));
-  int *ME_to_list_id = (int *)MSTK_malloc((ne+1)*sizeof(int));
-  //  int *MF_to_list_id = (int *)MSTK_malloc((nf+1)*sizeof(int));
+  int *MV_to_list_id = (int *)MSTK_malloc((nv)*sizeof(int));
+  int *ME_to_list_id = (int *)MSTK_malloc((ne)*sizeof(int));
   /* build the 1-ring outside layer send mesh */
   idx = 0;
 
@@ -92,7 +90,7 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
     nfe = List_Num_Entries(mfedges);
     for(j = 0; j < nfe; j++) {
       me = List_Entry(mfedges,j);
-      if(MEnt_IsMarked(me,mkeid)) new_me = MESH_Edge(submesh,ME_to_list_id[ME_ID(me)]-1);
+      if(MEnt_IsMarked(me,mkeid)) new_me = MESH_Edge(submesh,ME_to_list_id[ME_ID(me)-1]);
       else {
 	new_me = ME_New(submesh);    /* add new edge and copy information */
 	ME_Set_GEntDim(new_me,ME_GEntDim(me));
@@ -101,12 +99,12 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
 	ME_Set_MasterParID(new_me,ME_MasterParID(me));
 	ME_Set_GlobalID(new_me,ME_GlobalID(me));
 
-	ME_to_list_id[ME_ID(me)] = ME_ID(new_me);
+	ME_to_list_id[ME_ID(me)-1] = ME_ID(new_me)-1;
 	List_Add(edges,me);
 	MEnt_Mark(me,mkeid);
  	for(k = 0; k < 2; k++) {
 	  mv = ME_Vertex(me,k);
-	  if(MEnt_IsMarked(mv,mkvid)) new_mv = MESH_Vertex(submesh,MV_to_list_id[MV_ID(mv)]-1);
+	  if(MEnt_IsMarked(mv,mkvid)) new_mv = MESH_Vertex(submesh,MV_to_list_id[MV_ID(mv)-1]);
 	  else {
 	    new_mv = MV_New(submesh);  /* add new vertex and copy information */
 	    MV_Set_GEntDim(new_mv,MV_GEntDim(mv));
@@ -117,19 +115,18 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
 	    MV_Coords(mv,coor);
 	    MV_Set_Coords(new_mv,coor);
 
-	    MV_to_list_id[MV_ID(mv)] = MV_ID(new_mv);
+	    MV_to_list_id[MV_ID(mv)-1] = MV_ID(new_mv)-1;
 	    List_Add(verts,mv);
 	    MEnt_Mark(mv,mkvid);
 	  }
-	  ME_Set_Vertex(new_me,k,new_mv);
+	  ME_Set_Vertex(new_me,k,new_mv);  /* set edge-vertex */
 	}
       }
       
       fedges[j] = new_me;
       fedirs[j] = MF_EdgeDir_i(mf,j) == 1 ? 1 : 0;
     }
-    MF_Set_Edges(new_mf,nfe,fedges,fedirs);
-    printf("new face %d with %d edges\n",MF_ID(new_mf),nfe);
+    MF_Set_Edges(new_mf,nfe,fedges,fedirs); /* set face-edge */
   }
 
   List_Unmark(faces,mkfid);
