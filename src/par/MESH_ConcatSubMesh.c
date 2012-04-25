@@ -41,8 +41,14 @@ int MESH_ConcatSubMesh(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   }
   return 1;
 }
-
-
+  /* check is l has the same entity as m, based on global ID */
+MEntity_ptr entity_on_list(MEntity_ptr m, List_ptr *l) {
+  int i, num = List_Num_Entries(*l);
+  for(i = 0; i < num; i++)
+    if(MEnt_GlobalID(m) == MEnt_GlobalID(List_Entry(*l,i)))
+      return List_Entry(*l,i);
+  return NULL;
+}
   /* 
      Concatenate submeshes into mesh 
   */
@@ -52,7 +58,7 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   MEdge_ptr me, new_me, sub_me, *fedges;
   MFace_ptr mf, new_mf, sub_mf;
   List_ptr mfverts, mfedges;
-  List_ptr faces, edges, verts;
+  List_ptr faces, edges, verts, added_edges, added_verts;
   List_ptr boundary_edges, boundary_verts;
   int add_face, idx, *fedirs, global_id, iloc, *loc;
   int mkvid, mkeid, mkvid2, mkeid2, mkfid;
@@ -74,13 +80,15 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   mkvid = MSTK_GetMarker(); /* mark the vertices in submeshes that is in mesh or already added into mesh */
   mkeid = MSTK_GetMarker(); /* mark the edges in submeshes that is in mesh or already added into mesh */
 
-  mkvid2 = MSTK_GetMarker(); /* mark the vertices in submeshes that is in mesh, used to decide whether to add a face  */
-  mkeid2 = MSTK_GetMarker(); /* mark the edges in submeshes that is in mesh, used to decide whether to add a face  */
+  mkvid2 = MSTK_GetMarker(); /* mark the vertices on mesh boundary, used to decide whether to add a face  */
+  mkeid2 = MSTK_GetMarker(); /* mark the edges in on mesh boundary, used to decide whether to add a face  */
 
   mkfid = MSTK_GetMarker();
   faces = List_New(10);
   edges = List_New(10);          
   verts = List_New(10);
+  added_edges = List_New(10);          
+  added_verts = List_New(10);
   
   boundary_verts = List_New(10);
   boundary_edges = List_New(10);
@@ -143,9 +151,8 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
       nfv = List_Num_Entries(mfverts);
       for(j = 0; j < nfv; j++) {
 	sub_mv = List_Entry(mfverts,j);
-	if(MEnt_IsMarked(sub_mv,mkvid)) {
-	  if(MEnt_IsMarked(sub_mv,mkvid2))
-	    add_face = 1; 
+	if(MEnt_IsMarked(sub_mv,mkvid2)) {
+	  add_face = 1; 
 	  continue;
 	}
 	global_id = MV_GlobalID(sub_mv);
@@ -168,9 +175,8 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
       nfe = List_Num_Entries(mfedges);
       for(j = 0; j < nfe; j++) {
 	sub_me = List_Entry(mfedges,j);
-	if(MEnt_IsMarked(sub_me,mkeid)) {
-	  if(MEnt_IsMarked(sub_me,mkeid2))
-	    add_face = 1; 
+	if(MEnt_IsMarked(sub_me,mkeid2)) {
+	  add_face = 1; 
 	  continue;
 	}
 	global_id = ME_GlobalID(sub_me);
@@ -204,13 +210,17 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
       for(j = 0; j < nfe; j++) {
 	sub_me = List_Entry(mfedges,j);
 	fedirs[j] = MF_EdgeDir_i(sub_mf,j) == 1 ? 1 : 0;
-	if(MEnt_IsMarked(sub_me,mkeid)) {
-	  new_me = MESH_Edge(mesh,ME_to_list_id[i*max_ne+ME_ID(sub_me)-1]);
+	new_me = NULL;
+	if(MEnt_IsMarked(sub_me,mkeid)) /* first check if it is already in mesh */
+	  new_me = MESH_Edge(mesh,ME_to_list_id[i*max_ne+ME_ID(sub_me)-1]); 
+	else 
+	  new_me = (MEdge_ptr)entity_on_list(sub_me,&added_edges); /* check if it is already added */
+	if(new_me)
 	  if(MV_GlobalID(ME_Vertex(new_me,0)) != MV_GlobalID(ME_Vertex(sub_me,0)))
 	    fedirs[j] = 1 - fedirs[j];  /* if the edge dir is not the same, reverse the edge dir */
-	}
-	else {
-	  new_me = ME_New(mesh);    /* add new edge and copy information */
+	
+	if(!new_me)  {                 /* if this is really a new edge */
+	  new_me = ME_New(mesh);      /* add new edge and copy information */
 	  ME_Set_GEntDim(new_me,ME_GEntDim(sub_me));
 	  ME_Set_GEntID(new_me,ME_GEntID(sub_me));
 	  ME_Set_PType(new_me,PGHOST);
@@ -219,11 +229,17 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	  
 	  ME_to_list_id[i*max_ne+ME_ID(sub_me)-1] = ME_ID(new_me)-1;
 	  List_Add(edges,sub_me);
+	  List_Add(added_edges,new_me);
 	  MEnt_Mark(sub_me,mkeid);
 	  for(k = 0; k < 2; k++) {
 	    sub_mv = ME_Vertex(sub_me,k);
-	    if(MEnt_IsMarked(mv,mkvid)) new_mv = MESH_Vertex(mesh,MV_to_list_id[i*max_nv+MV_ID(sub_mv)-1]);
-	    else {
+	    new_mv = NULL;
+	    if(MEnt_IsMarked(sub_mv,mkvid)) 
+	      new_mv = MESH_Vertex(mesh,MV_to_list_id[i*max_nv+MV_ID(sub_mv)-1]);
+	    else
+	      new_mv = (MVertex_ptr)entity_on_list(sub_mv,&added_verts);
+	    
+	    if(!new_mv) {
 	      new_mv = MV_New(mesh);  /* add new vertex and copy information */
 	      MV_Set_GEntDim(new_mv,MV_GEntDim(sub_mv));
 	      MV_Set_GEntID(new_mv,MV_GEntID(sub_mv));
@@ -235,6 +251,7 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	      
 	      MV_to_list_id[i*max_nv+MV_ID(sub_mv)-1] = MV_ID(new_mv)-1;
 	      List_Add(verts,sub_mv);
+	      List_Add(added_verts,new_mv);
 	      MEnt_Mark(sub_mv,mkvid);
 	    }
 	    ME_Set_Vertex(new_me,k,new_mv);  /* set edge-vertex */
@@ -254,6 +271,9 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_Unmark(verts,mkvid2);
   List_Delete(boundary_edges);
   List_Delete(boundary_verts);
+  List_Delete(added_edges);
+  List_Delete(added_verts);
+
   List_Delete(faces);
   List_Delete(edges);
   List_Delete(verts);
