@@ -23,6 +23,7 @@ extern "C" {
   */
 
   int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
   int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
   int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
@@ -30,7 +31,7 @@ extern "C" {
   int nf, nr;
   RepType rtype;
 
-  /* basic mesh information */
+   /* basic mesh information */
   rtype = MESH_RepType(submesh);
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
@@ -48,13 +49,18 @@ extern "C" {
   return 1;
 }
 
+  /* 
+     vertex PType information is the key for edge, face and region PType 
+     
+     inter process communication is required here in case global ID is already assigned 
+  */
 int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, j, nv, nbv, ne, nf, mesh_info[10];
   MVertex_ptr mv;
   List_ptr boundary_verts;
   RepType rtype;
-  int *loc;
-  int iloc,  global_id;
+  int *loc, *global_mesh_info, *list_boundary_vertex, *recv_list_vertex, *vertex_ov_label;
+  int iloc,  global_id, max_nbv, index_nbv;
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -87,20 +93,20 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   /* 
      gather submeshes information
   */
-  int *global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   /* get largest number of boundary vertices of all the processors */
-  int max_nbv = 0;
+  max_nbv = 0;
   for(i = 0; i < num; i++)
     if(max_nbv < global_mesh_info[10*i+4])
       max_nbv = global_mesh_info[10*i+4];
 
-  int *list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
-  int *recv_list_vertex = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
+  list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
+  recv_list_vertex = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
 
   /* only global ID are sent */
-  int index_nbv = 0;
+  index_nbv = 0;
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
     list_boundary_vertex[index_nbv] = MV_GlobalID(mv);
@@ -111,7 +117,7 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   MPI_Allgather(list_boundary_vertex,max_nbv,MPI_INT,recv_list_vertex,max_nbv,MPI_INT,comm);
 
   /* indicate if a vertex is overlapped */
-  int *vertex_ov_label = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
+  vertex_ov_label = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
 
   /* 
      store the local boundary id on ov processor
