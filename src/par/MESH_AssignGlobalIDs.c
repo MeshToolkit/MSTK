@@ -530,20 +530,6 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   mesh_info[7] = nr;
   /* sort overlap faces based on coordinate value, for binary search */
   List_Sort(overlap_faces,nof,sizeof(MFace_ptr),compareFaceID);
-  /*
-  printf("after sort on rank %d\n",rank);
-  for(i = 0; i < nof; i++) {
-    mf = List_Entry(overlap_faces,i);
-    mfverts = MF_Vertices(mf,1,0);
-    nfv = List_Num_Entries(mfverts);
-    printf("face %d: ",i);
-    for(j = 0; j < nfv; j++) {
-      mv = List_Entry(mfverts,j);
-      printf("vertex %d: %d\t",j,MV_GlobalID(mv));
-    }
-    printf("\n");
-  }
-  */
   /* 
      gather submeshes information
   */
@@ -609,7 +595,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 			     global_mesh_info[10*j+6],
 			     (MAXPV2+3)*sizeof(int),
 			     compareFaceINT);
-	/* if found the vertex on previous processors */
+	/* if found the face on previous processors */
 	if(loc) {
 	  /* here the location iloc is relative to the beginning of the jth processor */
 	  iloc = (int)(loc - &recv_list_face[(MAXPV2+3)*max_nof*j]);

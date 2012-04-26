@@ -36,6 +36,7 @@ extern "C" {
   nr = MESH_Num_Regions(submesh);
   /* first label vertex */
   MESH_LabelPType_Vertex(submesh, rank, num, comm);
+  MESH_LabelPType_Edge(submesh, rank, num, comm);
   if (nr)
     MESH_LabelPType_Region(submesh, rank, num, comm);
   else if(nf) 
@@ -123,10 +124,11 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
     global_id = MV_GlobalID(mv);
-    /* check which processor has the same coordinate vertex 
-     Different from assigning global id, we check all the other processors, from large to small
-     by rank, whenever a vertex is found, mark rank and j as neighbors, and the masterparid is still
-     the smallest rank processor
+    /* 
+       check which processor has the same coordinate vertex 
+       Different from assigning global id, we check all the other processors, from large to small
+       by rank, whenever a vertex is found, mark rank and j as neighbors, and the masterparid is still
+       the smallest rank processor
     */
     for(j = num-1; j >= 0; j--) {
       if(j == rank) continue;
@@ -141,6 +143,8 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	/* here the location iloc is relative to the beginning of the jth processor */
 	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);
 	MV_Set_PType(mv,PGHOST);
+	if(j < rank)
+	  MV_Set_MasterParID(mv,j); 
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
 	/* label the original vertex as overlapped */
 	vertex_ov_label[max_nbv*j+iloc] |= 1;
@@ -176,6 +180,38 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   return 1;
 }
   
+int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+  int idx;
+  MVertex_ptr mv1, mv2;
+  MEdge_ptr me;
+  idx = 0;
+  while( (me = MESH_Next_Edge(submesh,&idx)) ) {
+    ME_Set_MasterParID(me,rank);
+    /*
+      if both ends are ghost vertices, then the edge is a ghost
+      set its master par id to be the smaller of endpoint vertex master par id
+    */
+    mv1 = ME_Vertex(me,0); mv2 = ME_Vertex(me,1);  
+    if(MV_PType(mv1) == PGHOST && MV_PType(mv2) == PGHOST) {
+      ME_Set_PType(me,PGHOST);
+      if(MV_MasterParID(mv1) <= MV_MasterParID(mv2))
+	ME_Set_MasterParID(me,MV_MasterParID(mv1));
+      else
+	ME_Set_MasterParID(me,MV_MasterParID(mv2));
+    }
+    
+    /* 
+       if either ends are overlap vertices, then the edge is a overlap
+       this may produce more than necessary overlap edges 
+    */
+    if(MV_PType(mv1) == POVERLAP || MV_PType(mv2) == POVERLAP) {
+      ME_Set_PType(me,POVERLAP);
+    }
+  }
+  
+  return 1;
+}
+
   /* 
      Right now assume faces are not overlapped across processors
      Label the face that has OVERLAP or Ghost vertex as OVERLAP
@@ -209,10 +245,40 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 
 
 int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, idx;
+  int i, nfv, idx;
   MRegion_ptr mr;
+  MFace_ptr mf;
   MVertex_ptr mv;
-  List_ptr rverts;
+  List_ptr mfverts, rverts;
+  int is_ghost, is_overlap;
+  int min_par_id;
+  idx = 0;
+  while( (mf = MESH_Next_Face(submesh,&idx)) ) {
+    MF_Set_MasterParID(mf, rank);
+    is_ghost = 1; is_overlap = 0;
+    min_par_id = num-1;
+    mfverts = MF_Vertices(mf,1,0);
+    nfv = List_Num_Entries(mfverts);
+    for(i = 0; i < nfv; i++) {
+      mv = List_Entry(mfverts,i);
+      if(min_par_id > MV_MasterParID(mv))
+	min_par_id = MV_MasterParID(mv);
+      if(MV_PType(mv) != PGHOST)  /* if all vertices are ghost, then the face is a ghost*/
+	is_ghost = 0;
+      if(MV_PType(mv) == POVERLAP) /*  if either vertex is a overlap, then the face is a overlap */
+	is_overlap = 1;
+    }
+    if(is_ghost) {
+      MF_Set_PType(mf,PGHOST);
+      MF_Set_MasterParID(mf,min_par_id);
+    }
+    
+    if(is_overlap) {
+      MF_Set_PType(mf,POVERLAP);
+      }
+    List_Delete(mfverts);
+  }
+  
   idx = 0;
   while( (mr = MESH_Next_Region(submesh,&idx)) ) {
       rverts = MR_Vertices(mr);
