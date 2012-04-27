@@ -86,20 +86,6 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 
   printf(" number of recv_procs %d,on rank %d\n", num_recv_procs, rank);
 
-  /*
-  for(i = 0; i < num; i++) {
-    if (adj = MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE))
-      printf("after rank %d has overlap face on rank %d\n", rank,i);
-    if (adj = MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE))
-      printf("after rank %d has ghost face from rank %d\n", rank,i);
-
-  } 
-  */
-  /* 
-     printf("before rank %d,  num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
-     printf("before rank %d,  num of ov vertex %d, number of ov face %d\n",rank,MESH_Num_OverlapVertices(submesh),MESH_Num_OverlapFaces(submesh));
-     send and receive overlap meshes 
-  */
   index_recv_mesh = 0;
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
@@ -124,46 +110,13 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       }
     }
   }
-  /*
-  Mesh_ptr mymesh = recv_meshes[0];
-  int nv, ne, nf;
-  nv = MESH_Num_Vertices(mymesh);
-  ne = MESH_Num_Edges(mymesh);
-  nf = MESH_Num_Faces(mymesh);
-  double coor[3];
-  if(rank == 0) {
-    for(i = 0; i < nv; i++) {
-      mv = MESH_Vertex(mymesh,i);
-      MV_Coords(mv,coor);
-      printf("Concat rank %d, local id %d, global %d master id %d ",rank,MV_ID(mv),MV_GlobalID(mv), MV_MasterParID(mv));
-      printf("PType: %d, coordinate: (%lf, %lf, %lf)\n",MV_PType(mv),coor[0],coor[1],coor[2]);
-    }
-    
-    for(i = 0; i < ne; i++) {
-      me = MESH_Edge(mymesh,i);
-      printf("Edge: on rank %d, local id %d, global id %d, PType: %d, Master Partition: %d vertex 1: %d, vertex 2: %d\n",rank,ME_ID(me),ME_GlobalID(me), ME_PType(me), ME_MasterParID(me), MV_ID(ME_Vertex(me,0)),MV_ID(ME_Vertex(me,1)));
-    }
-    
-  int j, dir;
-  for(i = 0; i < nf; i++) {
-    mf = MESH_Face(mymesh,i);
-    printf("Face: on rank %d, local id %d, global id %d, PType: %d, Master Partition: %d\n",rank,MF_ID(mf),MF_GlobalID(mf), MF_PType(mf), MF_MasterParID(mf) );
-    for(j = 0; j < List_Num_Entries(MF_Edges(mf,1,0)); j++) {
-      dir = MF_EdgeDir_i(mf,j) == 1 ? 1 : -1;
-      printf("dir: %d, eid: %d\n", dir, dir*ME_ID(List_Entry(MF_Edges(mf,1,0),j)));
-    }
-    printf("\n");
-  }
-  }
-  */
-  /*
-  for (i = 0; i < num_recv_procs; i++) 
-     MESH_CheckTopo(recv_meshes[i]);
-  */
+
+  /* concatenate the recv_meshes */
   MESH_ConcatSubMesh(submesh, num_recv_procs, recv_meshes);
-  //for (i = 0; i < num; i++) 
-  //  MESH_Delete(recv_meshes[i]);
-  //  printf("after  rank %d, ov_mesh num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
+
+  /* delete recvmeshes */
+  for (i = 0; i < num_recv_procs; i++) 
+    MESH_Delete(recv_meshes[i]);
 
   return 1;
 }
@@ -228,61 +181,13 @@ int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm 
       }
     }
   }
+  
+  /* concatenate the recv_meshes */
+  MESH_ConcatSubMesh(submesh, num_recv_procs, recv_meshes);
 
-  /*
-  Mesh_ptr mymesh = recv_meshes[0];
-  int nv, ne, nf, nr;
-  MVertex_ptr mv;
-  MEdge_ptr me;
-  MFace_ptr mf;
-  MRegion_ptr mr;
-  nv = MESH_Num_Vertices(mymesh);
-  ne = MESH_Num_Edges(mymesh);
-  nf = MESH_Num_Faces(mymesh);
-  nr = MESH_Num_Regions(mymesh);
-  double coor[3];
-  if(rank == 0) {
-    for(i = 0; i < nv; i++) {
-      mv = MESH_Vertex(mymesh,i);
-      MV_Coords(mv,coor);
-      printf("Concat rank %d, local id %d, global %d master id %d ",rank,MV_ID(mv),MV_GlobalID(mv), MV_MasterParID(mv));
-      printf("PType: %d, coordinate: (%lf, %lf, %lf)\n",MV_PType(mv),coor[0],coor[1],coor[2]);
-    }
-    
-    for(i = 0; i < ne; i++) {
-      me = MESH_Edge(mymesh,i);
-      printf("Edge: on rank %d, local id %d, global id %d, PType: %d, Master Partition: %d vertex 1: %d, vertex 2: %d\n",rank,ME_ID(me),ME_GlobalID(me), ME_PType(me), ME_MasterParID(me), MV_ID(ME_Vertex(me,0)),MV_ID(ME_Vertex(me,1)));
-    }
-    
-  int j, dir;
-  for(i = 0; i < nf; i++) {
-    mf = MESH_Face(mymesh,i);
-    printf("Face: on rank %d, local id %d, global id %d, PType: %d, Master Partition: %d\n",rank,MF_ID(mf),MF_GlobalID(mf), MF_PType(mf), MF_MasterParID(mf) );
-    for(j = 0; j < List_Num_Entries(MF_Edges(mf,1,0)); j++) {
-      dir = MF_EdgeDir_i(mf,j) == 1 ? 1 : -1;
-      printf("dir: %d, eid: %d\n", dir, dir*ME_ID(List_Entry(MF_Edges(mf,1,0),j)));
-    }
-    printf("\n");
-  }
-  for(i = 0; i < nr; i++) {
-    mr = MESH_Region(mymesh,i);
-    printf("Region: on rank %d, local id %d, global id %d, PType: %d, Master Partition: %d\n",rank,MR_ID(mr),MR_GlobalID(mr), MR_PType(mr), MR_MasterParID(mr) );
-    for(j = 0; j < List_Num_Entries(MR_Faces(mr)); j++) {
-      dir = MR_FaceDir_i(mr,j) == 1 ? 1 : -1;
-      printf("dir: %d, eid: %d\n", dir, dir*ME_ID(List_Entry(MR_Faces(mr),j)));
-    }
-    printf("\n");
-  }
-  }
-  */
-  /*
+  /* delete recvmeshes */
   for (i = 0; i < num_recv_procs; i++) 
-     MESH_CheckTopo(recv_meshes[i]);
-  */
-    MESH_ConcatSubMesh(submesh, num_recv_procs, recv_meshes);
-  //for (i = 0; i < num; i++) 
-  //  MESH_Delete(recv_meshes[i]);
-  //  printf("after  rank %d, ov_mesh num of vertex %d, number of face %d\n",rank,MESH_Num_Vertices(submesh),MESH_Num_Faces(submesh));
+    MESH_Delete(recv_meshes[i]);
 
   return 1;
 
