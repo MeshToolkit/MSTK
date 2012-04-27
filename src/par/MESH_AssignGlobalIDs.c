@@ -99,8 +99,6 @@ static int face_on_region_boundary(MFace_ptr mf) {
 int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, j, nv, nbv, ne, nf, nr, mesh_info[10];
   MVertex_ptr mv;
-  MEdge_ptr me;
-  MFace_ptr mf;
   List_ptr boundary_verts;
   RepType rtype;
   double coor[3], *loc;
@@ -287,16 +285,11 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
      
 int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, j, nv, noe, nge, ne, nf, nr, mesh_info[10], global_id;
-  MVertex_ptr mv;
   MEdge_ptr me;
-  MFace_ptr mf;
   List_ptr overlap_edges, ghost_edges;
   RepType rtype;
-  double coor[3];
-  int *loc, edge_id[2],index_noe, max_noe, iloc, num_ghost_verts;
+  int *loc, edge_id[2],index_noe, max_noe, iloc;
   int *global_mesh_info, *list_overlap_edge, *recv_list_edge;
-  double *list_boundary_coor, *recv_list_coor;
-  printf("assign edge id on rank %d\n",rank);
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   /* mesh_info store the mesh reptype, nv, ne, nf, noe */
@@ -470,17 +463,13 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
 int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, j, k, nv, nfv, nof, ngf, ne, nf, nr, mesh_info[10], global_id;
   MVertex_ptr mv;
-  MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
   List_ptr overlap_faces, ghost_faces, mfverts;
   RepType rtype;
-  double coor[3];
-  int *loc, face_id[MAXPV2+3],index_nof, max_nof, iloc, num_ghost_verts;
+  int *loc, face_id[MAXPV2+3],index_nof, max_nof, iloc;
   int *global_mesh_info, *list_overlap_face, *recv_list_face;
-  double *list_boundary_coor, *recv_list_coor;
   int is_ghost, is_overlap;
-  printf("assign face id on rank %d\n",rank);
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   /* mesh_info store the mesh reptype, nv, ne, nf, nof */
