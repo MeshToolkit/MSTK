@@ -147,11 +147,13 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
       /* if found the vertex on previous processors */
       if(loc) {
 	/* here the location iloc is relative to the beginning of the jth processor */
-	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);
-	MV_Set_PType(mv,PGHOST);
-	if(j < rank)
-	  MV_Set_MasterParID(mv,j); 
+	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);	
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
+	if(j < rank) {
+	  printf("set mv %d to be ghost on %d\n",global_id,rank);
+	  MV_Set_PType(mv,PGHOST);
+	  MV_Set_MasterParID(mv,j);
+	} 
 	/* label the original vertex as overlapped */
 	vertex_ov_label[max_nbv*j+iloc] |= 1;
 	/* if found on processor j, still need to check other processors*/
@@ -173,7 +175,8 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   for(i = 0; i < nbv; i++) {
     if(vertex_ov_label[rank*max_nbv+i]) {
       mv = List_Entry(boundary_verts,i);
-      MV_Set_PType(mv,POVERLAP);
+      if(MV_PType(mv)!=PGHOST)
+	MV_Set_PType(mv,POVERLAP);
     }
   }
 

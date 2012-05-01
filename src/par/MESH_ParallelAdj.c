@@ -30,7 +30,6 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
   MType mtype;
 
   /* set ghost adjacencies */
-
   idx = 0;
   while(mv = MESH_Next_GhostVertex(mesh,&idx))
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,MV_MasterParID(mv),MVERTEX);
