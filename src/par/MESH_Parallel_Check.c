@@ -11,15 +11,112 @@ extern "C" {
   /* Routine to check that the topological structure of the mesh is valid */
   /* Rao Garimella - 12/16/2010                                           */
 int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank);
+int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
   int valid;
-  //  valid = MESH_CheckTopo(mesh);
+  //valid = MESH_CheckTopo(mesh);
   valid = MESH_Parallel_Check_Ghost(mesh,rank);
+  valid = MESH_Parallel_Check_GlobalID(mesh,rank,num,comm);
   return valid;
 
 } /* int MESH_Parallel_Check */
 
+int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+  MESH_Parallel_Check_VertexGlobalID(mesh,rank,num,comm);
+  return 1;
 
+}
+
+int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+  int i, idx, nv, max_nv, index_mv;
+  int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
+  MPI_Status status;
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+  List_ptr mfedges, mrfaces, mrverts;
+  double coor[3];
+  int count, mesh_info[10], *global_mesh_info;
+  for (i = 0; i < 10; i++) mesh_info[i] = 0;
+  nv = MESH_Num_Vertices(mesh);
+  mesh_info[0] = nv;
+  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
+  max_nv = nv;
+  for(i = 0; i < num; i++)
+    if(max_nv < global_mesh_info[10*i])
+      max_nv = global_mesh_info[10*i];
+
+  /* collect data */
+  int *list_vertex = (int *)MSTK_malloc(3*nv*sizeof(int));
+  double *list_coor = (double *)MSTK_malloc(3*nv*sizeof(double));
+
+  int *recv_list_vertex = (int *)MSTK_malloc(3*max_nv*sizeof(int));
+  double *recv_list_coor = (double *)MSTK_malloc(3*max_nv*sizeof(double));
+
+  for(i = 0; i < num; i++) {
+    if(i == rank) continue;
+    if(i < rank) {     
+      if( MESH_Has_Overlaps_On_Prtn(mesh,i,MVERTEX) ) {
+	MPI_Recv(recv_list_vertex,3*nv,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	printf("rank %d receives %d elements from rank %d\n", rank,count/3, i);
+	MPI_Recv(recv_list_coor,3*nv,MPI_DOUBLE,i,rank,comm,&status);
+
+      }
+    
+      if( MESH_Has_Ghosts_From_Prtn(mesh,i,MVERTEX) ) {
+	idx = 0; index_mv = 0;
+	while(mv = MESH_Next_Vertex(mesh, &idx)) {
+	  if(MV_MasterParID(mv) == i) {
+	    list_vertex[3*index_mv] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));
+	    list_vertex[3*index_mv+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
+	    list_vertex[3*index_mv+2] = MV_GlobalID(mv);
+	    MV_Coords(mv,coor);
+	    list_coor[index_mv*3] = coor[0];
+	    list_coor[index_mv*3+1] = coor[1];
+	    list_coor[index_mv*3+2] = coor[2];
+	    index_mv++;
+	  }
+	}
+	MPI_Send(list_vertex,3*index_mv,MPI_INT,i,i,comm);
+	printf("rank %d sends %d elements to rank %d\n", rank,index_mv, i);
+	MPI_Send(list_coor,3*index_mv,MPI_DOUBLE,i,i,comm);
+
+      }
+
+    }
+    if(i > rank) {     
+      if( MESH_Has_Ghosts_From_Prtn(mesh,i,MVERTEX) ) {
+	idx = 0; index_mv = 0;
+	while(mv = MESH_Next_Vertex(mesh, &idx)) {
+	  if(MV_MasterParID(mv) == i) {
+	    list_vertex[3*index_mv] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));
+	    list_vertex[3*index_mv+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
+	    list_vertex[3*index_mv+2] = MV_GlobalID(mv);
+	    MV_Coords(mv,coor);
+	    list_coor[index_mv*3] = coor[0];
+	    list_coor[index_mv*3+1] = coor[1];
+	    list_coor[index_mv*3+2] = coor[2];
+	    index_mv++;
+	  }
+	}
+	MPI_Send(list_vertex,3*index_mv,MPI_INT,i,i,comm);
+	printf("rank %d sends %d elements to rank %d\n", rank,index_mv, i);
+	MPI_Send(list_coor,3*index_mv,MPI_DOUBLE,i,i,comm);
+	
+      }
+      if( MESH_Has_Overlaps_On_Prtn(mesh,i,MVERTEX) ) {
+	MPI_Recv(recv_list_vertex,3*nv,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	printf("rank %d receives %d elements from rank %d\n", rank,count/3, i);
+	MPI_Recv(recv_list_coor,3*nv,MPI_DOUBLE,i,rank,comm,&status);
+      }
+    }
+  }
+}
 /* 
    check if every ghost entity has a master partition number that is different from current partition 
    check if other PType entity has the same master partition number as this parition

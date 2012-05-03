@@ -150,7 +150,6 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	iloc = (int)(loc - &recv_list_vertex[max_nbv*j]);	
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
 	if(j < rank) {
-	  printf("set mv %d to be ghost on %d\n",global_id,rank);
 	  MV_Set_PType(mv,PGHOST);
 	  MV_Set_MasterParID(mv,j);
 	} 
