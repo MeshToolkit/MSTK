@@ -226,23 +226,32 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
      
   */
 int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, idx;
+  int i, idx, ov_face;
   MVertex_ptr mv;
   MFace_ptr mf;
   List_ptr fverts;
   idx = 0;
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
-      fverts = MF_Vertices(mf,1,0);
+    ov_face = 0;
+    fverts = MF_Vertices(mf,1,0);
+    for(i = 0; i < List_Num_Entries(fverts); i++) {
+      mv = List_Entry(fverts,i);
+      if( MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP ) {
+	ov_face = 1;
+	MF_Set_PType(mf,POVERLAP);
+	break;
+      }
+    }
+    /* if the face is marked, mark its edges and vertices */
+    if(ov_face) {
       for(i = 0; i < List_Num_Entries(fverts); i++) {
 	mv = List_Entry(fverts,i);
-	if( MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP ) {
-	  MF_Set_PType(mf,POVERLAP);
-	  break;
-	}
+	if(MV_PType(mv) != PGHOST)
+	  MV_Set_PType(mv,POVERLAP);
       }
-      List_Delete(fverts);
     }
-    
+    List_Delete(fverts);
+  }
   return 1;
 }
 
@@ -253,7 +262,7 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 
 
 int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, nfv, idx;
+  int i, nfv, idx, ov_region;
   MRegion_ptr mr;
   MFace_ptr mf;
   MVertex_ptr mv;
@@ -289,17 +298,26 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   
   idx = 0;
   while( (mr = MESH_Next_Region(submesh,&idx)) ) {
-      rverts = MR_Vertices(mr);
+    ov_region = 0;
+    rverts = MR_Vertices(mr);
+    for(i = 0; i < List_Num_Entries(rverts); i++) {
+      mv = List_Entry(rverts,i);
+      if(MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) {
+	ov_region = 1;
+	MR_Set_PType(mr,POVERLAP);
+	break;
+      }
+    }
+    /* if the region is marked, mark it vertices */
+    if(ov_region) {
       for(i = 0; i < List_Num_Entries(rverts); i++) {
 	mv = List_Entry(rverts,i);
-	if(MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) {
-	  MR_Set_PType(mr,POVERLAP);
-	  break;
-	}
+	if(MV_PType(mv) != PGHOST)
+	  MV_Set_PType(mv,POVERLAP);
       }
-      List_Delete(rverts);
     }
-    
+    List_Delete(rverts);
+  }
   return 1;
 }
 
