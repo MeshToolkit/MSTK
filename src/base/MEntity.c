@@ -70,7 +70,8 @@ extern "C" {
   }
 
   MType MEnt_Dim(MEntity_ptr ent) {
-    int del_flag=0, dim=0;
+    int del_flag=0;
+    MType dim=MVERTEX;
     unsigned int data = ent->entdat.dim_id;
 
     del_flag = data & 1; /* check the first bit */
@@ -78,7 +79,7 @@ extern "C" {
       return MDELETED;
     
     dim = (data >> 2) & 7; /* check bits 2,3 and 4 */
-    if (dim <= 3)
+    if (dim <= MREGION)
       return dim;
     else
       return MUNKNOWNTYPE;
@@ -97,7 +98,8 @@ extern "C" {
   }
 
   MType MEnt_OrigDim(MEntity_ptr ent) {
-    int del_flag=0, dim=0;
+    int del_flag=0;
+    MType dim=MVERTEX;
     unsigned int data = ent->entdat.dim_id;
 
     del_flag = data & 1;
@@ -106,7 +108,7 @@ extern "C" {
     if (!del_flag)
       MSTK_Report("MEnt_OrigDim","This is not a deleted entity",MSTK_WARN);    
 
-    if (dim <= 3)
+    if (dim <= MREGION)
       return dim;
     else 
       return MUNKNOWNTYPE;
@@ -191,7 +193,7 @@ extern "C" {
   }
 
   RepType MEnt_RepType(MEntity_ptr ent) {
-    int rtype=0;
+    RepType rtype;
     unsigned int data = ent->entdat.rtype_gdim_gid;
 
     rtype = data & 15;
