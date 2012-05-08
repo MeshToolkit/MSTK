@@ -228,8 +228,9 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, idx, ov_face;
   MVertex_ptr mv;
+  MEdge_ptr me;
   MFace_ptr mf;
-  List_ptr fverts;
+  List_ptr fverts, fedges;
   idx = 0;
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
     ov_face = 0;
@@ -249,6 +250,14 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	if(MV_PType(mv) != PGHOST)
 	  MV_Set_PType(mv,POVERLAP);
       }
+
+      fedges = MF_Edges(mf,1,0);
+      for(i = 0; i < List_Num_Entries(fedges); i++) {
+	me = List_Entry(fedges,i);
+	if(ME_PType(me) != PGHOST)
+	  ME_Set_PType(me,POVERLAP);
+      }
+      List_Delete(fedges);
     }
     List_Delete(fverts);
   }
