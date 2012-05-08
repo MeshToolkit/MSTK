@@ -39,6 +39,7 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
   List_ptr ov_verts;
   double coor[3];
   int count, mesh_info[10], *global_mesh_info, *ov_list;
+  int gid, gdim, ptype, master_id;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   nv = MESH_Num_Vertices(mesh);
 
@@ -76,6 +77,7 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
   int *recv_list_vertex = (int *)MSTK_malloc(3*max_nv*sizeof(int));
   double *recv_list_coor = (double *)MSTK_malloc(3*max_nv*sizeof(double));
 
+  /* similar as updateattr() and parallel_addghost(), order the send and recv process based on rank */
   for(i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
@@ -93,23 +95,47 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 			       compareINT);
 	  if(!loc) {              /* vertex not found */
 	    valid = 0;
-	    sprintf(mesg,"Global vertex %-d on processor %d is not on processor %d ", global_id, i, rank);
-	    printf("coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+	    sprintf(mesg,"Global vertex %-d from processor %d is not on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  }
 
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mv = MESH_Vertex(mesh, ov_list(nov + iloc));  /* get the vertex on current mesh */
-	    MV_Set_GEntDim(verts[i],(list_vertex[3*i] & 7));
-	    MV_Set_GEntID(verts[i],(list_vertex[3*i] >> 3));
+	    mv = MESH_Vertex(mesh, ov_list[nov + iloc]);  /* get the vertex on current mesh */
+	    gdim = (recv_list_vertex[3*j] & 7);
+	    gid = (recv_list_vertex[3*j] >> 3);
+	    ptype = (recv_list_vertex[3*j+1] & 3);
+	    master_id = (recv_list_vertex[3*j+1] >> 2);
+	    if(MV_GEntDim(mv) != gdim) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(MV_GEntID(mv) != gid) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MV_GEntID(mv));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
 
-	    MV_Set_PType(mv,PGHOST);
-	    MV_Set_MasterParID(mv,j);
+	    if(ptype != PGHOST) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not a ghost", global_id, i);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    
+	    if(master_id != rank) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not on processor %d", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(!valid) {
+	      MV_Coords(mv,coor);
+	      printf("the mismatch vertex coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+	    }
 	  }
-
 	}
-      }	
+      }
       if( MESH_Has_Ghosts_From_Prtn(mesh,i,MVERTEX) ) {
 	idx = 0; index_mv = 0;
 	while(mv = MESH_Next_Vertex(mesh, &idx)) {
@@ -163,19 +189,49 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 			       nov,
 			       sizeof(int),
 			       compareINT);
-	  if(!loc) {
-	    sprintf(mesg,"Global vertex %-d on processor %d is not on processor %d ", global_id, i, rank);
-	    MSTK_Report(funcname,mesg,MSTK_ERROR);
+	  if(!loc) {              /* vertex not found */
 	    valid = 0;
+	    sprintf(mesg,"Global vertex %-d from processor %d is not on processor %d" , global_id, i, rank);
 	    printf("coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  }
-	  /*
-	  if(loc) {
+
+	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    MV_Set_PType(mv,PGHOST);
-	    MV_Set_MasterParID(mv,j);
+	    mv = MESH_Vertex(mesh, ov_list[nov + iloc]);  /* get the vertex on current mesh */
+	    gdim = (recv_list_vertex[3*j] & 7);
+	    gid = (recv_list_vertex[3*j] >> 3);
+	    ptype = (recv_list_vertex[3*j+1] & 3);
+	    master_id = (recv_list_vertex[3*j+1] >> 2);
+	    if(MV_GEntDim(mv) != gdim) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(MV_GEntID(mv) != gid) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MV_GEntID(mv));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(ptype != PGHOST) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not a ghost", global_id, i);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    
+	    if(master_id != rank) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not on processor %d", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(!valid) {
+	      MV_Coords(mv,coor);
+	      printf("the mismatch vertex coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+	    }
+
 	  }
-	  */
 	}
       }
     }
