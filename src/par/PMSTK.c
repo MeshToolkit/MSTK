@@ -323,6 +323,46 @@ extern "C" {
   }
 
 
+  /* Weave a set of distributed mesh partitions together to build the
+     parallel connections and ghost info.
+
+     input_type indicates what info is already present on the mesh
+     
+     0 -- we are given NO information about how these meshes are connected
+          other than the knowledge that they come from the partitioning of
+          a single mesh
+
+     1 -- we are given partitioned meshes with a unique global ID on 
+          each mesh vertex
+
+  */
+     
+
+
+  int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
+                                     int input_type, int rank, int num, 
+                                     MPI_Comm comm) {
+
+    if (num_ghost_layers > 1)
+      MSTK_Report("MSTK_Weave_DistributedMeshes", "Only 1 ghost layer supported currently", MSTK_FATAL);
+
+    if (input_type > 1) 
+      MSTK_Report("MSTK_Weave_DistributedMeshes","Unrecognized input type for meshes", MSTK_WARN);
+
+
+    MESH_Set_Prtn(mesh, rank, num);
+    
+    if (input_type == 0)
+      MESH_AssignGlobalIDs(mesh, rank, num, comm);
+
+    
+    MESH_LabelPType(mesh, rank, num, comm);
+
+    MESH_Parallel_AddGhost(mesh, rank, num, comm);
+
+    MESH_Build_GhostLists(mesh);
+  }
+
 
   /* Update attributes on partitions */
 
