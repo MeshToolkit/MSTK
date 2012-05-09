@@ -134,6 +134,13 @@ void MSTK_Init(void);
 			   int *dim, int ring, int with_attr, 
 			   int method, int rank, int num, MPI_Comm comm);
 
+
+  /* 'Weave' a set of distributed meshes by building ghost layers */
+
+  int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
+                                           int input_type, int rank, int num, 
+                                           MPI_Comm comm);
+
   /* Parallel update attribute values for ghost entities */
 
   int         MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm);
