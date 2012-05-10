@@ -163,7 +163,14 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	if(loc) {
 	  add_face = 1; 
 	  iloc = loc - MV_global_id;
-	  MV_to_list_id[i*max_nv+MV_ID(sub_mv)-1] = MV_ID(List_Entry(boundary_verts,iloc))-1;
+	  mv = List_Entry(boundary_verts,iloc); 
+	  /* here set the ghost vertex property, only necessary when the input submeshes are not consistent */
+	  if(MV_PType(mv) == PGHOST && MV_PType(sub_mv) != PGHOST) {
+	    MV_Set_GEntDim(mv,MV_GEntDim(sub_mv));
+	    MV_Set_GEntID(mv,MV_GEntID(sub_mv));
+	  }
+
+	  MV_to_list_id[i*max_nv+MV_ID(sub_mv)-1] = MV_ID(mv)-1;
 	  List_Add(verts,sub_mv); 
 	  MEnt_Mark(sub_mv,mkvid);
 	  MEnt_Mark(sub_mv,mkvid2);
@@ -460,10 +467,18 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	  if(loc) {
 	    add_region = 1; 
 	    iloc = loc - MV_global_id;
-	    MV_to_list_id[h*max_nv+MV_ID(sub_mv)-1] = MV_ID(List_Entry(boundary_verts,iloc))-1;
+	    mv = List_Entry(boundary_verts,iloc); 
+	    /* here set the ghost vertex property, only necessary when the input submeshes are not consistent */
+	    if(MV_PType(mv) == PGHOST && MV_PType(sub_mv) != PGHOST) {
+	      MV_Set_GEntDim(mv,MV_GEntDim(sub_mv));
+	      MV_Set_GEntID(mv,MV_GEntID(sub_mv));
+	    }
+
+	    MV_to_list_id[h*max_nv+MV_ID(sub_mv)-1] = MV_ID(mv)-1;
 	    List_Add(verts,sub_mv); 
 	    MEnt_Mark(sub_mv,mkvid);
 	    MEnt_Mark(sub_mv,mkvid2);
+
 	  }
 	}
 	
