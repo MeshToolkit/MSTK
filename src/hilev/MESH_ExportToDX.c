@@ -4,9 +4,11 @@
 #include <unistd.h>
 #include "MSTK.h"
 
+int MESH_ExportToDXBin(Mesh_ptr, const char *fname);
+
 int MESH_ExportToDX(Mesh_ptr mesh, const char *fname, int binary) {
 
-  MESH_ExportToDXBin(mesh, fname);
+  return MESH_ExportToDXBin(mesh, fname);
 
 }
 

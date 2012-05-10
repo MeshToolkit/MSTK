@@ -361,6 +361,8 @@ extern "C" {
     MESH_Parallel_AddGhost(mesh, rank, num, comm);
 
     MESH_Build_GhostLists(mesh);
+
+    return 1;
   }
 
 

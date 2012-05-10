@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 
 #ifdef __cplusplus
@@ -106,7 +107,7 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
   for (i = 0; i < nf; i++) {
     mf = List_Entry(list_send_elements,i);
     MF_Set_PType(mf, POVERLAP);           /* set as overlap face before sending */ 
-    //    MESH_Add_OverlapFace(mesh,mf);
+    /*    MESH_Add_OverlapFace(mesh,mf); */
     mfverts = MF_Vertices(mf,1,0);        /* add vertices */
     nfv = List_Num_Entries(mfverts);
     list_face[nfvs] = nfv;
@@ -115,7 +116,7 @@ int MESH_Surf_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, i
       if (MV_to_list_ID[MV_ID(mv)-1] < 0) {
 	if(MV_PType(mv) != PGHOST) {
 	  MV_Set_PType(mv,POVERLAP);        /* if not a ghost vertex, set as overlap */
-	  //	  MESH_Add_OverlapVertex(mesh,mv);
+	  /*	  MESH_Add_OverlapVertex(mesh,mv); */
 	}
 
 	list_vertex[3*nv] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));  /* encode the vertex information */
@@ -362,16 +363,19 @@ int MESH_Vol_SendMesh_Elements_FN(Mesh_ptr mesh, List_ptr list_send_elements, in
 
 int MESH_Surf_SendMesh_Elements_R1R2R4(Mesh_ptr mesh, List_ptr list_send_elements, int rank, MPI_Comm comm) {
   MSTK_Report("MESH_Surf_SendMesh_Elements_R1R2R4","Not implemented",MSTK_FATAL);
+  return 0;
 }
 
 
 int MESH_Vol_SendMesh_Elements_R1R2(Mesh_ptr mesh, List_ptr list_send_elements, int rank, MPI_Comm comm) {
   MSTK_Report("MESH_Vol_SendMesh_Elements_R4","Not implemented",MSTK_FATAL);
+  return 0;
 }
 
 
 int MESH_Vol_SendMesh_Elements_R4(Mesh_ptr mesh, List_ptr list_send_elements, int rank, MPI_Comm comm) {
   MSTK_Report("MESH_Vol_SendMesh_Elements_R4","Not implemented",MSTK_FATAL);
+  return 0;
 }
 
 

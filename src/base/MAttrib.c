@@ -13,7 +13,7 @@ extern "C" {
 
   MAttrib_ptr MAttrib_New(Mesh_ptr mesh, const char *att_name, MAttType att_type, MType entdim, ...) {
     MAttrib_ptr attrib;
-    int i, natt, ncomponents=1;
+    int ncomponents=1;
     va_list ap;
 
 #ifdef DEBUG

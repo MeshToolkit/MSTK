@@ -125,7 +125,6 @@ extern "C" {
 	  vert = List_Entry(fverts,i);
 	  if (!List_Contains(rvertices,vert)) { /* found apex vtx of pyramid */
 	    List_Add(rvertices,vert);
-	    n++;
 	    break;
 	  }
 	}

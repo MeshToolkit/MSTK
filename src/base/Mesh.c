@@ -1057,9 +1057,9 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
     found = 0;
     ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
-    //    printf("set rank %d has %d processors to receive type %d\n",prtn,ghnum,mtype);
+    /*    printf("set rank %d has %d processors to receive type %d\n",prtn,ghnum,mtype); */
     for (i = 0; i < ghnum; i++) {
-      //printf("   par_recv_info[%d]=%d\n",i,mesh->par_recv_info[i]);    
+      /* printf("   par_recv_info[%d]=%d\n",i,mesh->par_recv_info[i]); */
       if (mesh->par_recv_info[1+i] == prtn) {
         found = 1;
         break;
@@ -1102,7 +1102,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
       char mesg[256];
       sprintf(mesg,"This partition (%-d) does not have ghost entities from partition %-d",mesh->mypartn,prtn);
       MSTK_Report("MESH_Num_Recv_From_Prtn",mesg,MSTK_ERROR);
-      return;
+      return 0;
     }
 
     return mesh->par_recv_info[1+ghnum+4*i+mtype];
@@ -1112,7 +1112,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MVertex_ptr mv;
-  while( mv = MESH_Next_Vertex(mesh, &idx) ) {
+  while( (mv = MESH_Next_Vertex(mesh, &idx)) ) {
       if (MV_GlobalID(mv) == global_id)
 	return mv;
     }
@@ -1122,7 +1122,7 @@ MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id) {
 MEdge_ptr MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MEdge_ptr me;
-  while( me = MESH_Next_Edge(mesh, &idx) ) {
+  while( (me = MESH_Next_Edge(mesh, &idx)) ) {
       if (ME_GlobalID(me) == global_id)
 	return me;
     }
@@ -1132,7 +1132,7 @@ MEdge_ptr MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id) {
 MFace_ptr MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MFace_ptr mf;
-  while( mf = MESH_Next_Face(mesh, &idx) ) {
+  while( (mf = MESH_Next_Face(mesh, &idx)) ) {
       if (MF_GlobalID(mf) == global_id)
 	return mf;
     }
@@ -1142,7 +1142,7 @@ MFace_ptr MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id) {
 MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MRegion_ptr mr;
-  while( mr = MESH_Next_Region(mesh, &idx) ) {
+  while( (mr = MESH_Next_Region(mesh, &idx)) ) {
       if (MR_GlobalID(mr) == global_id)
 	return mr;
     }
@@ -1168,27 +1168,29 @@ MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, int mtype, int id) {
 }
 
 
-  int MESH_Sort_GhostLists(Mesh_ptr mesh, 
-	       int (*compfunc)(const void*, const void*)) {
+int MESH_Sort_GhostLists(Mesh_ptr mesh, 
+                         int (*compfunc)(const void*, const void*)) {
 
-    if (mesh->ghvertex)
-      List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
-    if (mesh->ghedge)
-      List_Sort(mesh->ghedge,List_Num_Entries(mesh->ghedge),sizeof(MEdge_ptr),compfunc);
-    if (mesh->ghface)
+  if (mesh->ghvertex)
+    List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
+  if (mesh->ghedge)
+    List_Sort(mesh->ghedge,List_Num_Entries(mesh->ghedge),sizeof(MEdge_ptr),compfunc);
+  if (mesh->ghface)
       List_Sort(mesh->ghface,List_Num_Entries(mesh->ghface),sizeof(MFace_ptr),compfunc);
-    if (mesh->ghregion)
+  if (mesh->ghregion)
       List_Sort(mesh->ghregion,List_Num_Entries(mesh->ghregion),sizeof(MRegion_ptr),compfunc);
 
-    if (mesh->ovvertex)
-      List_Sort(mesh->ovvertex,List_Num_Entries(mesh->ovvertex),sizeof(MVertex_ptr),compfunc);
-    if (mesh->ovedge)
-      List_Sort(mesh->ovedge,List_Num_Entries(mesh->ovedge),sizeof(MEdge_ptr),compfunc);
-    if (mesh->ovface)
+  if (mesh->ovvertex)
+    List_Sort(mesh->ovvertex,List_Num_Entries(mesh->ovvertex),sizeof(MVertex_ptr),compfunc);
+  if (mesh->ovedge)
+    List_Sort(mesh->ovedge,List_Num_Entries(mesh->ovedge),sizeof(MEdge_ptr),compfunc);
+  if (mesh->ovface)
       List_Sort(mesh->ovface,List_Num_Entries(mesh->ovface),sizeof(MFace_ptr),compfunc);
-    if (mesh->ovregion)
+  if (mesh->ovregion)
       List_Sort(mesh->ovregion,List_Num_Entries(mesh->ovregion),sizeof(MRegion_ptr),compfunc);
-  }
+
+  return 1;
+}
 
 int MESH_Num_GhostVertices(Mesh_ptr mesh) {
   if(mesh->ghvertex)

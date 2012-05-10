@@ -142,7 +142,7 @@ extern "C" {
 	for (i = 0; i < 3; i++) {
 	  topvert = List_Entry(fverts,i);
 
-	  if (latedge = MVs_CommonEdge(botvert,topvert)) {
+	  if ((latedge = MVs_CommonEdge(botvert,topvert))) {
 	    found = 1;
 	    break;
 	  }
@@ -286,7 +286,7 @@ extern "C" {
 	for (i = 0; i < 4; i++) {
 	  topvert = List_Entry(fverts,i);
 
-	  if (latedge = MVs_CommonEdge(botvert,topvert)) {
+	  if ((latedge = MVs_CommonEdge(botvert,topvert))) {
 	    found = 1;
 	    break;
 	  }

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -144,7 +145,7 @@ extern "C" {
 	mv_list_id = list_face[nfvs_local+j+1];                 /* id on the receive vertex list */
 	mv_local_id = list_to_MV_ID[mv_list_id];
 	if(mv_local_id) {                                       /* if the vertex exists or already added */
-	  //printf("existing vertex %d added for %d th on rank %d\n", mv_global_id,j,rank);
+	  /* printf("existing vertex %d added for %d th on rank %d\n", mv_global_id,j,rank); */
 	  fverts[j] = MESH_VertexFromID(mesh,mv_local_id);
 	} 
 	else {                                        /* if not found and not added yet, add the vertex */
@@ -158,12 +159,12 @@ extern "C" {
 	  coor[1] = list_coor[mv_list_id*3+1];
 	  coor[2] = list_coor[mv_list_id*3+2];
 	  MV_Set_Coords(mv,coor);
-	  //printf("on rank %d, added new vertex global id %d, from rank %d\n",rank,MV_GlobalID(mv), send_rank);
-	  //	  MESH_Add_GhostVertex(mesh,mv);
+	  /* printf("on rank %d, added new vertex global id %d, from rank %d\n",rank,MV_GlobalID(mv), send_rank); */
+	  /*	  MESH_Add_GhostVertex(mesh,mv); */
 	  fverts[j] = mv;         
 	  list_to_MV_ID[mv_list_id] = MV_ID(mv);          /* mark as added and stores the local ID */
 	}
-	//	printf("new vertex %d added for %d th on rank %d \n", MV_GlobalID(mv),j, rank);
+	/*	printf("new vertex %d added for %d th on rank %d \n", MV_GlobalID(mv),j, rank); */
       }
       mf = MF_New(mesh);
       MF_Set_GEntDim(mf,(list_face[nfvs_local+nfv+1] & 7));
@@ -178,9 +179,9 @@ extern "C" {
 	printf("\n");
       */
       MF_Set_Vertices(mf,nfv,fverts);
-      //      MESH_Add_GhostFace(mesh,mf);
+      /*      MESH_Add_GhostFace(mesh,mf); */
       nfvs_local += (nfv +4);
-    //      List_Delete(fverts);
+      /*      List_Delete(fverts); */
     }
   
     
@@ -376,16 +377,19 @@ extern "C" {
 
   int MESH_Surf_RecvMesh_Elements_R1R2R4(Mesh_ptr mesh, int *mesh_info,  int send_rank, int rank, MPI_Comm comm) {
     MSTK_Report("MESH_Surf_RecvMesh_Elements_R1R2R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
   int MESH_Vol_RecvMesh_Elements_R1R2(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
     MSTK_Report("MESH_Vol_RecvMesh_Elements_R1R2","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 
   int MESH_Vol_RecvMesh_Elements_R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
 
     MSTK_Report("MESH_Vol_RecvMesh_Elements_R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 
