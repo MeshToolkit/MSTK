@@ -194,7 +194,8 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   MEdge_ptr me;
   idx = 0;
   while( (me = MESH_Next_Edge(submesh,&idx)) ) {
-    ME_Set_MasterParID(me,rank);
+    if(ME_PType(me) != PGHOST)
+      ME_Set_MasterParID(me,rank);
     /*
       if both ends are ghost vertices, then the edge is a ghost
       set its master par id to be the smaller of endpoint vertex master par id
@@ -202,10 +203,12 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
     mv1 = ME_Vertex(me,0); mv2 = ME_Vertex(me,1);  
     if(MV_PType(mv1) == PGHOST && MV_PType(mv2) == PGHOST) {
       ME_Set_PType(me,PGHOST);
+      /*
       if(MV_MasterParID(mv1) <= MV_MasterParID(mv2))
 	ME_Set_MasterParID(me,MV_MasterParID(mv1));
       else
 	ME_Set_MasterParID(me,MV_MasterParID(mv2));
+      */
     }
     
     /* 
@@ -280,7 +283,8 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int min_par_id;
   idx = 0;
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
-    MF_Set_MasterParID(mf, rank);
+    if(MF_PType(mf) != PGHOST)
+      MF_Set_MasterParID(mf, rank);
     is_ghost = 1; is_overlap = 0;
     min_par_id = num-1;
     mfverts = MF_Vertices(mf,1,0);
