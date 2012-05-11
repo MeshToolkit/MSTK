@@ -194,7 +194,13 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	if(loc) {
 	  add_face = 1; 
 	  iloc = loc - ME_global_id;
-	  ME_to_list_id[i*max_ne+ME_ID(sub_me)-1] = ME_ID(List_Entry(boundary_edges,iloc))-1;
+	  me = List_Entry(boundary_edges,iloc); 
+	  /* here set the ghost edge property, only necessary when the input submeshes are not consistent */
+	  if(ME_PType(me) == PGHOST && ME_PType(sub_me) != PGHOST) {
+	    ME_Set_GEntDim(me,ME_GEntDim(sub_me));
+	    ME_Set_GEntID(me,ME_GEntID(sub_me));
+	  }
+	  ME_to_list_id[i*max_ne+ME_ID(sub_me)-1] = ME_ID(me)-1;
 	  List_Add(edges,sub_me); 
 	  MEnt_Mark(sub_me,mkeid);
 	  MEnt_Mark(sub_me,mkeid2);
@@ -443,7 +449,13 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	  if(loc) {
 	    add_region = 1; 
 	    iloc = loc - ME_global_id;
-	    ME_to_list_id[h*max_ne+ME_ID(sub_me)-1] = ME_ID(List_Entry(boundary_edges,iloc))-1;
+	    me = List_Entry(boundary_edges,iloc); 
+	    /* here set the ghost edge property, only necessary when the input submeshes are not consistent */
+	    if(ME_PType(me) == PGHOST && ME_PType(sub_me) != PGHOST) {
+	      ME_Set_GEntDim(me,ME_GEntDim(sub_me));
+	      ME_Set_GEntID(me,ME_GEntID(sub_me));
+	    }
+	    ME_to_list_id[i*max_ne+ME_ID(sub_me)-1] = ME_ID(me)-1;
 	    List_Add(edges,sub_me); 
 	    MEnt_Mark(sub_me,mkeid);
 	    MEnt_Mark(sub_me,mkeid2);
