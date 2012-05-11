@@ -130,8 +130,9 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 	    }
 
 	    MV_Coords(mv,coor);
-	    if(!compareCoorDouble(coor, &recv_list_coor[3*j])) {
+	    if(compareCoorDouble(coor, &recv_list_coor[3*j]) != 0 ) {
 	      valid = 0;
+	      printf("the recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate value mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
@@ -231,13 +232,14 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 	    }
 
 	    MV_Coords(mv,coor);
-	    if(!compareCoorDouble(coor, &recv_list_coor[3*j])) {
+	    if(compareCoorDouble(coor, &recv_list_coor[3*j]) != 0 ) {
 	      valid = 0;
+	      printf("the recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate value mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(!valid) 
-	      printf("the mismatch vertex coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+	      printf("the mismatch vertex %d coor: (%f,%f,%f)\n", MV_GlobalID(mv), coor[0], coor[1], coor[2]);
 	  }
 	}
       }
@@ -261,6 +263,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
   MEdge_ptr me;
   List_ptr ov_edges;
   int count, mesh_info[10], *global_mesh_info, *ov_list;
+  int edge_int[2], gid, gdim, ptype, master_id;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   ne = MESH_Num_Edges(mesh);
 
@@ -311,25 +314,60 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 			       sizeof(int),
 			       compareINT);
 	  if(!loc) {
-	    sprintf(mesg,"Global edge %-d on processor %d is not on processor %d ", global_id, i, rank);
+	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+	    sprintf(mesg,"Global edge %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
 	  }
-	  /*
-	  if(loc) {
+	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    ME_Set_PType(me,PGHOST);
-	    ME_Set_MasterParID(me,j);
+	    me = MESH_Edge(mesh, ov_list[noe + iloc]-1);  /* get the edge on current mesh */
+	    gdim = (recv_list_edge[5*j+2] & 7);
+	    gid = (recv_list_edge[5*j+2] >> 3);
+	    ptype = (recv_list_edge[5*j+3] & 3);
+	    master_id = (recv_list_edge[5*j+3] >> 2);
+	    if(MV_GEntDim(me) != gdim) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(ME_GEntID(me) != gid) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(ptype != PGHOST) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not a ghost", global_id, i);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    
+	    if(master_id != rank) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not on processor %d", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    edge_int[0] = recv_list_edge[5*j];
+	    edge_int[1] = recv_list_edge[5*j+1];
+	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
+	      valid = 0;
+	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d endpoints mismatch", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(!valid) 
+	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
 	  }
-	  */
 	}
       }	
       if( MESH_Has_Ghosts_From_Prtn(mesh,i,MEDGE) ) {
 	idx = 0; index_me = 0;
 	while(me = MESH_Next_Edge(mesh, &idx)) {
 	  if(ME_MasterParID(me) == i) {
-	    list_edge[5*index_me]   = MV_ID(ME_Vertex(me,0));
-	    list_edge[5*index_me+1] = MV_ID(ME_Vertex(me,1));
+	    list_edge[5*index_me]   = MV_GlobalID(ME_Vertex(me,0));
+	    list_edge[5*index_me+1] = MV_GlobalID(ME_Vertex(me,1));
 	    list_edge[5*index_me+2] = (ME_GEntID(me)<<3) | (ME_GEntDim(me));
 	    list_edge[5*index_me+3] = (ME_MasterParID(me) <<2) | (ME_PType(me));
 	    list_edge[5*index_me+4] = ME_GlobalID(me);
@@ -345,8 +383,8 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 	idx = 0; index_me = 0;
 	while(me = MESH_Next_Edge(mesh, &idx)) {
 	  if(ME_MasterParID(me) == i) {
-	    list_edge[5*index_me]   = MV_ID(ME_Vertex(me,0));
-	    list_edge[5*index_me+1] = MV_ID(ME_Vertex(me,1));
+	    list_edge[5*index_me]   = MV_GlobalID(ME_Vertex(me,0));
+	    list_edge[5*index_me+1] = MV_GlobalID(ME_Vertex(me,1));
 	    list_edge[5*index_me+2] = (ME_GEntID(me)<<3) | (ME_GEntDim(me));
 	    list_edge[5*index_me+3] = (ME_MasterParID(me) <<2) | (ME_PType(me));
 	    list_edge[5*index_me+4] = ME_GlobalID(me);
@@ -354,7 +392,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 	  }
 	}
 	MPI_Send(list_edge,5*index_me,MPI_INT,i,i,comm);
-	printf("rank %d sends %d elements to rank %d\n", rank,index_me, i);
+	printf("rank %d sends %d edges to rank %d\n", rank,index_me, i);
       }
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MEDGE) ) {
 	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);
@@ -368,19 +406,54 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 			       sizeof(int),
 			       compareINT);
 	  if(!loc) {
-	    sprintf(mesg,"Global edge %-d on processor %d is not on processor %d ", global_id, i, rank);
+	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+	    sprintf(mesg,"Global edge %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
 	  }
-	  /*
-	  if(loc) {
+	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    ME_Set_PType(me,PGHOST);
-	    ME_Set_MasterParID(me,j);
+	    me = MESH_Edge(mesh, ov_list[noe + iloc]-1);  /* get the edge on current mesh */
+	    gdim = (recv_list_edge[5*j+2] & 7);
+	    gid = (recv_list_edge[5*j+2] >> 3);
+	    ptype = (recv_list_edge[5*j+3] & 3);
+	    master_id = (recv_list_edge[5*j+3] >> 2);
+	    if(MV_GEntDim(me) != gdim) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(ME_GEntID(me) != gid) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(ptype != PGHOST) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not a ghost", global_id, i);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    
+	    if(master_id != rank) {
+	      valid = 0;
+	      sprintf(mesg,"Global edge %-d from processor %d is not on processor %d", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    edge_int[0] = recv_list_edge[5*j];
+	    edge_int[1] = recv_list_edge[5*j+1];
+	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
+	      valid = 0;
+	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d endpoints mismatch", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(!valid) 
+	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
 	  }
-	  */
-	}
-      }	
+	}	
+      }
     }
   }
   MSTK_free(list_edge);
