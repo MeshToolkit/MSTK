@@ -26,9 +26,15 @@ int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
 
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
   int valid = 1;
+  printf("begin checking vertex on submesh %d\n",rank);
   valid = MESH_Parallel_Check_VertexGlobalID(mesh,rank,num,comm);
+  if (valid) printf("checking vertex on submesh %d passed\n",rank);
+  printf("begin checking edge on submesh %d\n",rank);
   valid = MESH_Parallel_Check_EdgeGlobalID(mesh,rank,num,comm);
+  if (valid) printf("checking edge on submesh %d passed\n",rank);
+  printf("begin checking face on submesh %d\n",rank);
   valid = MESH_Parallel_Check_FaceGlobalID(mesh,rank,num,comm);
+  if (valid) printf("checking face on submesh %d passed\n",rank);
   return 1;
 
 }
@@ -508,15 +514,15 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
       max_nf = global_mesh_info[10*i];
   
   /* collect data */
-  int *list_face = (int *)MSTK_malloc((MAXPV2+4)*max_nf*sizeof(int));
-  int *recv_list_face = (int *)MSTK_malloc((MAXPV2+4)*max_nf*sizeof(int));
+  int *list_face = (int *)MSTK_malloc((MAXPV3+4)*max_nf*sizeof(int));
+  int *recv_list_face = (int *)MSTK_malloc((MAXPV3+4)*max_nf*sizeof(int));
   for(i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MFACE) ) {
-	MPI_Recv(recv_list_face,(MAXPV2+4)*nf,MPI_INT,i,rank,comm,&status);
+	MPI_Recv(recv_list_face,(MAXPV3+4)*nf,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	printf("rank %d receives %d faces from rank %d\n", rank,count, i);
+	//printf("rank %d receives %d faces from rank %d\n", rank,count, i);
 	for(index_mf = 0; index_mf < count;) {
 	  nfe = recv_list_face[index_mf];
 	  global_id = recv_list_face[index_mf+nfe+3];;
@@ -539,12 +545,12 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 	    master_id = (recv_list_face[index_mf+nfe+2] >> 2);
 	    if(MF_GEntDim(mf) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MF_GEntID(mf) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MF_GEntID(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -599,7 +605,7 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 	  }
 	}
 	MPI_Send(list_face,index_mf,MPI_INT,i,i,comm);
-	printf("rank %d sends %d faces to rank %d\n", rank,index_mf, i);
+	//printf("rank %d sends %d faces to rank %d\n", rank,index_mf, i);
       }
     }
     if(i > rank) {     
@@ -622,13 +628,13 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 	  }
 	}
 	MPI_Send(list_face,index_mf,MPI_INT,i,i,comm);
-	printf("rank %d sends %d faces to rank %d\n", rank,index_mf, i);
+	//printf("rank %d sends %d faces to rank %d\n", rank,index_mf, i);
       }
 
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MFACE) ) {
-	MPI_Recv(recv_list_face,(MAXPV2+4)*nf,MPI_INT,i,rank,comm,&status);
+	MPI_Recv(recv_list_face,(MAXPV3+4)*nf,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	printf("rank %d receives %d faces from rank %d\n", rank,count, i);
+	//printf("rank %d receives %d faces from rank %d\n", rank,count, i);
 	for(index_mf = 0; index_mf < count;) {
 	  nfe = recv_list_face[index_mf];
 	  global_id = recv_list_face[index_mf+nfe+3];;
@@ -651,12 +657,12 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 	    master_id = (recv_list_face[index_mf+nfe+2] >> 2);
 	    if(MF_GEntDim(mf) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MF_GEntID(mf) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MF_GEntID(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
