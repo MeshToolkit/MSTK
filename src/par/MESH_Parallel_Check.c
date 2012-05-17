@@ -14,6 +14,7 @@ int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank);
 int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
   int valid = 1;
@@ -26,15 +27,13 @@ int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
 
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
   int valid = 1;
-  printf("begin checking vertex on submesh %d\n",rank);
+  printf("Begin checking parallel information on submesh %d\n",rank);
   valid = MESH_Parallel_Check_VertexGlobalID(mesh,rank,num,comm);
-  if (valid) printf("checking vertex on submesh %d passed\n",rank);
-  printf("begin checking edge on submesh %d\n",rank);
   valid = MESH_Parallel_Check_EdgeGlobalID(mesh,rank,num,comm);
-  if (valid) printf("checking edge on submesh %d passed\n",rank);
-  printf("begin checking face on submesh %d\n",rank);
   valid = MESH_Parallel_Check_FaceGlobalID(mesh,rank,num,comm);
-  if (valid) printf("checking face on submesh %d passed\n",rank);
+  if(MESH_Num_Regions(mesh))
+    valid = MESH_Parallel_Check_RegionGlobalID(mesh,rank,num,comm);
+  if (valid) printf("Passed parallel checking on submesh %d\n",rank);
   return 1;
 
 }
@@ -705,6 +704,210 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
   MSTK_free(ov_list);
   MSTK_free(global_mesh_info);
   List_Delete(ov_faces);
+  return valid;
+}
+
+int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+  int i, j, idx, nr, nor, nrf, max_nr, index_mr, global_id, *loc, iloc, valid = 1;
+  char mesg[256], funcname[32] = "MESH_Parallel_Check";
+  MPI_Status status;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+  List_ptr ov_regions, mrfaces;
+  int count, mesh_info[10], *global_mesh_info, *ov_list;
+  int *region_int, gid, gdim, ptype, master_id, dir;
+  for (i = 0; i < 10; i++) mesh_info[i] = 0;
+  nr = MESH_Num_Regions(mesh);
+
+  mesh_info[0] = nr;
+
+  /* collect overlap region list for fast checking */
+  idx = 0; nor = 0; ov_regions = List_New(10);
+  while(mr = MESH_Next_Region(mesh, &idx))  {
+    if(MR_PType(mr) == POVERLAP)  {
+      List_Add(ov_regions,mr);
+      nor++;
+    }
+  }
+  List_Sort(ov_regions,nor,sizeof(MRegion_ptr),compareGlobalID);
+
+  /* first half stores the global id, second half are the local ids */
+  ov_list = (int *) MSTK_malloc(2*nor*sizeof(int));
+  for(i = 0; i < nor; i++) {
+    mr = List_Entry(ov_regions,i);
+    ov_list[i] = MR_GlobalID(mr);
+    ov_list[nor+i] = MR_ID(mr);
+  }
+
+  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
+
+  max_nr = nr;
+  for(i = 0; i < num; i++)
+    if(max_nr < global_mesh_info[10*i])
+      max_nr = global_mesh_info[10*i];
+  
+  /* collect data */
+  int *list_region = (int *)MSTK_malloc((MAXPF3+4)*max_nr*sizeof(int));
+  int *recv_list_region = (int *)MSTK_malloc((MAXPF3+4)*max_nr*sizeof(int));
+  for(i = 0; i < num; i++) {
+    if(i == rank) continue;
+    if(i < rank) {     
+      if( MESH_Has_Overlaps_On_Prtn(mesh,i,MREGION) ) {
+	MPI_Recv(recv_list_region,(MAXPF3+4)*nr,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	printf("rank %d receives %d regions from rank %d\n", rank,count, i);
+	for(index_mr = 0; index_mr < count;) {
+	  nrf = recv_list_region[index_mr];
+	  global_id = recv_list_region[index_mr+nrf+3];;
+	  loc = (int *)bsearch(&global_id,
+			       ov_list,
+			       nor,
+			       sizeof(int),
+			       compareINT);
+	  if(!loc) {
+	    sprintf(mesg,"Global region %-d from processor %d not found on processor %d ", global_id, i, rank);
+	    MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    valid = 0;
+	  }
+	  if(loc) {                /* vertex found, but other information mismatch */
+	    iloc = (int)(loc - ov_list);
+	    mr = MESH_Region(mesh, ov_list[nor + iloc]-1);  /* get the region on current mesh */
+	    gdim = (recv_list_region[index_mr+nrf+1] & 7);
+	    gid = (recv_list_region[index_mr+nrf+1] >> 3);
+	    ptype = (recv_list_region[index_mr+nrf+2] & 3);
+	    master_id = (recv_list_region[index_mr+nrf+2] >> 2);
+	    if(MR_GEntDim(mr) != gdim) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MR_GEntDim(mr));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(MR_GEntID(mr) != gid) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MR_GEntID(mr));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(ptype != PGHOST) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d is not a ghost", global_id, i);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    
+	    if(master_id != rank) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d is not on processor %d", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(!valid) 
+	      printf("the mismatch region %d endpoints: (%d,%d)\n", MR_GlobalID(mr), region_int[0], region_int[1]);
+	  }
+	  index_mr += (nrf + 4);
+	}
+      }
+      if( MESH_Has_Ghosts_From_Prtn(mesh,i,MREGION) ) {
+  	idx = 0; index_mr = 0;
+	while(mr = MESH_Next_Region(mesh, &idx)) {
+	  if(MR_MasterParID(mr) == i) {
+	    mrfaces = MR_Faces(mr);
+	    nrf = List_Num_Entries(mrfaces);
+	    list_region[index_mr] = nrf;
+	    for(j = 0; j < nrf; j++) {
+	      dir = MR_FaceDir_i(mr,j) == 1 ? 1 : -1;
+	      list_region[index_mr+j+1] = dir*MF_GlobalID(List_Entry(mrfaces,j));
+	    }
+	    list_region[index_mr+nrf+1] = (MR_GEntID(mr)<<3) | (MR_GEntDim(mr));
+	    list_region[index_mr+nrf+2] = (MR_MasterParID(mr)<<2) | (MR_PType(mr));
+	    list_region[index_mr+nrf+3] = MR_GlobalID(mr);
+	    index_mr += (nrf + 4);
+	    List_Delete(mrfaces);
+	  }
+	}
+	MPI_Send(list_region,index_mr,MPI_INT,i,i,comm);
+	printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
+      }
+    }
+    if(i > rank) {     
+      if( MESH_Has_Ghosts_From_Prtn(mesh,i,MREGION) ) {
+  	idx = 0; index_mr = 0;
+	while(mr = MESH_Next_Region(mesh, &idx)) {
+	  if(MR_MasterParID(mr) == i) {
+	    mrfaces = MR_Faces(mr);
+	    nrf = List_Num_Entries(mrfaces);
+	    list_region[index_mr] = nrf;
+	    for(j = 0; j < nrf; j++) {
+	      dir = MR_FaceDir_i(mr,j) == 1 ? 1 : -1;
+	      list_region[index_mr+j+1] = dir*MF_GlobalID(List_Entry(mrfaces,j));
+	    }
+	    list_region[index_mr+nrf+1] = (MR_GEntID(mr)<<3) | (MR_GEntDim(mr));
+	    list_region[index_mr+nrf+2] = (MR_MasterParID(mr)<<2) | (MR_PType(mr));
+	    list_region[index_mr+nrf+3] = MR_GlobalID(mr);
+	    index_mr += (nrf + 4);
+	    List_Delete(mrfaces);
+	  }
+	}
+	MPI_Send(list_region,index_mr,MPI_INT,i,i,comm);
+	printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
+      }
+      if( MESH_Has_Overlaps_On_Prtn(mesh,i,MREGION) ) {
+	MPI_Recv(recv_list_region,(MAXPF3+4)*nr,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	printf("rank %d receives %d regions from rank %d\n", rank,count, i);
+	for(index_mr = 0; index_mr < count;) {
+	  nrf = recv_list_region[index_mr];
+	  global_id = recv_list_region[index_mr+nrf+3];;
+	  loc = (int *)bsearch(&global_id,
+			       ov_list,
+			       nor,
+			       sizeof(int),
+			       compareINT);
+	  if(!loc) {
+	    sprintf(mesg,"Global region %-d from processor %d not found on processor %d ", global_id, i, rank);
+	    MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    valid = 0;
+	  }
+	  if(loc) {                /* vertex found, but other information mismatch */
+	    iloc = (int)(loc - ov_list);
+	    mr = MESH_Region(mesh, ov_list[nor + iloc]-1);  /* get the region on current mesh */
+	    gdim = (recv_list_region[index_mr+nrf+1] & 7);
+	    gid = (recv_list_region[index_mr+nrf+1] >> 3);
+	    ptype = (recv_list_region[index_mr+nrf+2] & 3);
+	    master_id = (recv_list_region[index_mr+nrf+2] >> 2);
+	    if(MR_GEntDim(mr) != gdim) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MR_GEntDim(mr));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(MR_GEntID(mr) != gid) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MR_GEntID(mr));
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+
+	    if(ptype != PGHOST) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d is not a ghost", global_id, i);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    
+	    if(master_id != rank) {
+	      valid = 0;
+	      sprintf(mesg,"Global region %-d from processor %d is not on processor %d", global_id, i, rank);
+	      MSTK_Report(funcname,mesg,MSTK_ERROR);
+	    }
+	    if(!valid) 
+	      printf("the mismatch region %d endpoints: (%d,%d)\n", MR_GlobalID(mr), region_int[0], region_int[1]);
+	  }
+	  index_mr += (nrf + 4);
+	}
+      }
+    }
+  }
+  MSTK_free(list_region);
+  MSTK_free(recv_list_region);
+  MSTK_free(ov_list);
+  MSTK_free(global_mesh_info);
+  List_Delete(ov_regions);
   return valid;
 }
 
