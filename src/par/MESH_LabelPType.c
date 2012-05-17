@@ -198,17 +198,11 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
       ME_Set_MasterParID(me,rank);
     /*
       if both ends are ghost vertices, then the edge is a ghost
-      set its master par id to be the smaller of endpoint vertex master par id
+      Do not set master partition id right now
     */
     mv1 = ME_Vertex(me,0); mv2 = ME_Vertex(me,1);  
     if(MV_PType(mv1) == PGHOST && MV_PType(mv2) == PGHOST) {
       ME_Set_PType(me,PGHOST);
-      /*
-      if(MV_MasterParID(mv1) <= MV_MasterParID(mv2))
-	ME_Set_MasterParID(me,MV_MasterParID(mv1));
-      else
-	ME_Set_MasterParID(me,MV_MasterParID(mv2));
-      */
     }
     
     /* 
@@ -277,35 +271,30 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, nfv, idx, ov_region;
   MRegion_ptr mr;
   MFace_ptr mf;
+  MVertex_ptr me;
   MVertex_ptr mv;
-  List_ptr mfverts, rverts;
+  List_ptr mfverts, rverts, redges, rfaces;
   int is_ghost, is_overlap;
-  int min_par_id;
   idx = 0;
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
     if(MF_PType(mf) != PGHOST)
       MF_Set_MasterParID(mf, rank);
     is_ghost = 1; is_overlap = 0;
-    min_par_id = num-1;
     mfverts = MF_Vertices(mf,1,0);
     nfv = List_Num_Entries(mfverts);
     for(i = 0; i < nfv; i++) {
       mv = List_Entry(mfverts,i);
-      if(min_par_id > MV_MasterParID(mv))
-	min_par_id = MV_MasterParID(mv);
       if(MV_PType(mv) != PGHOST)  /* if all vertices are ghost, then the face is a ghost*/
 	is_ghost = 0;
       if(MV_PType(mv) == POVERLAP) /*  if either vertex is a overlap, then the face is a overlap */
 	is_overlap = 1;
     }
-    if(is_ghost) {
+    if(is_ghost) 
       MF_Set_PType(mf,PGHOST);
-      MF_Set_MasterParID(mf,min_par_id);
-    }
     
-    if(is_overlap) {
+    if(is_overlap) 
       MF_Set_PType(mf,POVERLAP);
-      }
+
     List_Delete(mfverts);
   }
   
@@ -321,7 +310,7 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
 	break;
       }
     }
-    /* if the region is marked, mark it vertices */
+    /* if the region is marked, mark its vertices */
     if(ov_region) {
       for(i = 0; i < List_Num_Entries(rverts); i++) {
 	mv = List_Entry(rverts,i);
@@ -330,6 +319,29 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
       }
     }
     List_Delete(rverts);
+    /* if the region is marked, mark its edges */
+    if(ov_region) {
+      redges = MR_Edges(mr);
+      for(i = 0; i < List_Num_Entries(redges); i++) {
+	me = List_Entry(redges,i);
+	if(ME_PType(me) != PGHOST)
+	  ME_Set_PType(me,POVERLAP);
+      }
+      List_Delete(redges);
+    }
+
+    /* if the region is marked, mark its faces */
+    if(ov_region) {
+      rfaces = MR_Faces(mr);
+      for(i = 0; i < List_Num_Entries(rfaces); i++) {
+	mf = List_Entry(rfaces,i);
+	if(MF_PType(mf) != PGHOST)
+	  MF_Set_PType(mf,POVERLAP);
+      }
+      List_Delete(rfaces);
+    }
+
+
   }
   return 1;
 }
