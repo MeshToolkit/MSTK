@@ -424,7 +424,13 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	  if(loc) {
 	    add_region = 1; 
 	    iloc = loc - MF_global_id;
-	    MF_to_list_id[h*max_nf+MF_ID(sub_mf)-1] = MF_ID(List_Entry(boundary_faces,iloc))-1;
+	    mf = List_Entry(boundary_faces,iloc); 
+	    /* here set the ghost edge property, only necessary when the input submeshes are not consistent */
+	    if(MF_PType(mf) == PGHOST && MF_PType(sub_mf) != PGHOST) {
+	      MF_Set_GEntDim(mf,MF_GEntDim(sub_mf));
+	      MF_Set_GEntID(mf,MF_GEntID(sub_mf));
+	    }
+	    MF_to_list_id[h*max_nf+MF_ID(sub_mf)-1] = MF_ID(mf)-1;
 	    List_Add(faces,sub_mf); 
 	    MEnt_Mark(sub_mf,mkfid);
 	    MEnt_Mark(sub_mf,mkfid2);
@@ -455,7 +461,7 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	      ME_Set_GEntDim(me,ME_GEntDim(sub_me));
 	      ME_Set_GEntID(me,ME_GEntID(sub_me));
 	    }
-	    ME_to_list_id[i*max_ne+ME_ID(sub_me)-1] = ME_ID(me)-1;
+	    ME_to_list_id[h*max_ne+ME_ID(sub_me)-1] = ME_ID(me)-1;
 	    List_Add(edges,sub_me); 
 	    MEnt_Mark(sub_me,mkeid);
 	    MEnt_Mark(sub_me,mkeid2);
@@ -588,8 +594,6 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	    MF_Set_Edges(new_mf,nfe,fedges,fedirs); /* set face-edge */
 	    List_Delete(mfedges);
 	  }
-	  if(!new_mf)
-	    printf("!!!no mf\n");
 	  rfaces[i] = new_mf;
 	}
 	MR_Set_Faces(new_mr,nrf,rfaces,rfdirs); /* set region-face */
