@@ -12,10 +12,9 @@ extern "C" {
 
   /* 
      This function is a collective call
-     It assigns each submesh the global IDs of vertices and elements
+     It assigns each submesh the global IDs of vertices, edges, faces and regions
      
-     It also labels ghost and overlap entities
-     If global IDs are already given, call MESH_LabelPType()
+     If global IDs are already given, skip this function, call MESH_LabelPType()
 
      Author(s): Duo Wang, Rao Garimella
   */
@@ -35,12 +34,7 @@ int MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   rtype = MESH_RepType(submesh);
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
-  /* 
-     build geometric entity dimension, mark boundary vertices
-     MESH_BuildVertexClassfn(submesh);
- */
 
-  /* Assign Vertex Global ID */
   MESH_AssignGlobalIDs_Vertex(submesh, rank, num, comm);
   MESH_AssignGlobalIDs_Edge(submesh, rank, num, comm);
   if (nr)
@@ -55,7 +49,10 @@ int MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
 }
 
 
-
+  /* 
+     test if a vertex is on partition boundary, for surface mesh
+     a vertex is on boundary if one of its incident edges has less than 2 neighboring faces
+   */
 static int vertex_on_face_boundary(MVertex_ptr mv) {
   int i, nve, ok = 0;
   MEdge_ptr me;
@@ -69,6 +66,11 @@ static int vertex_on_face_boundary(MVertex_ptr mv) {
   List_Delete(vedges);
   return ok;
 }
+
+  /* 
+     test if a vertex is on partition boundary, for volume mesh
+     a vertex is on boundary if one of its incident faces has less than 2 neighboring regions
+ */
 static int vertex_on_region_boundary(MVertex_ptr mv) {
   int i, nrf, ok = 0;
   MFace_ptr mf;
@@ -83,17 +85,11 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
   return ok;
 }
 
-static int face_on_region_boundary(MFace_ptr mf) {
-    int ok = 0;
-    if( List_Num_Entries(MF_Regions(mf))<=1 )
-      ok = 1;
-    return ok;
-}
-
  /* 
     Assign vertex global ID for both 2D and 3D meshes
-    First build boundary list of vertices and broadcast them
-    
+    Also set PGHOST and POVERLAP, used for edge, face and region global ID 
+    MESH_LabelPType() does not rely on PType set here, it will reset PType,
+    so that user can call MESH_LabelPType() directly when global IDs are given
  */
      
 int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
@@ -108,7 +104,6 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   int (*func)(MVertex_ptr mv);                /* function pointer to check boundary vertex */
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
-  /* mesh_info store the mesh reptype, nv, ne, nf, nbv */
   rtype = MESH_RepType(submesh);
   nv = MESH_Num_Vertices(submesh);
   ne = MESH_Num_Edges(submesh);
@@ -124,8 +119,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   if(nr) func = vertex_on_region_boundary;
   else   func = vertex_on_face_boundary;
   /* calculate number of boundary vertices */ 
-  nbv = 0;
-  boundary_verts = List_New(10);
+  nbv = 0;  boundary_verts = List_New(10);
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (func(mv)) {
@@ -138,6 +132,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   
   /* sort boundary vertices based on coordinate value, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
+
   /* 
      gather submeshes information
      right now we only need nv and nbv, and later num_ghost_verts, but we gather all mesh_info
@@ -205,11 +200,6 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 	  iloc = (int)(loc - &recv_list_coor[3*max_nbv*j])/3;
 	  MV_Set_PType(mv,PGHOST);
 	  MV_Set_MasterParID(mv,j);
-	  
-	  /*
-	    printf("Assign: rank %d,boundary vertex local ID %d, found on processor %d, loc %d ",rank, MV_ID(mv), j, iloc);
-	    printf("coor (%lf,%lf,%lf)\n",coor[0],coor[1],coor[2]);
-	  */
 	  num_ghost_verts++;
 	  /* label the original vertex as overlapped */
 	  vertex_ov_label[max_nbv*j+iloc] |= 1;
@@ -230,7 +220,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   /* calculate starting global id number for vertices*/
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+1]-global_mesh_info[10*i+9];
+    global_id = global_id + global_mesh_info[10*i+1] - global_mesh_info[10*i+9];
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (MV_PType(mv) == PGHOST)
@@ -241,7 +231,7 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 
       
 
-  /* store overlapped vertices IDs and broadast*/
+  /* store overlapped vertices IDs and broadast */
   vertex_ov_global_id = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
   for(i = 0; i < num*max_nbv; i++) 
     vertex_ov_global_id[i] = 0;
@@ -278,9 +268,9 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 
 
  /* 
-    as of now, each processor knowns its overlap and ghost vertices 
+    Assign edge global ID for both 2D and 3D meshes
 
-    
+    Assume each processor knowns its overlap and ghost vertices 
  */
      
 int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
@@ -292,7 +282,6 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
   int *global_mesh_info, *list_overlap_edge, *recv_list_edge;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
-  /* mesh_info store the mesh reptype, nv, ne, nf, noe */
   rtype = MESH_RepType(submesh);
   nv = MESH_Num_Vertices(submesh);
   ne = MESH_Num_Edges(submesh);
@@ -327,21 +316,17 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
       List_Add(overlap_edges,me);
       noe++;
     }
-
   }
   mesh_info[5] = nge;
   mesh_info[6] = noe;
   
   /* sort overlap edges based on coordinate value, for binary search */
   List_Sort(overlap_edges,noe,sizeof(MEdge_ptr),compareEdgeID);
-  /* 
-     gather submeshes information
-  */
+
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   /* Assign global id to non-ghost edges */
-  /* calculate starting global id number for edges */
   global_id = 1;
   for(i = 0; i < rank; i++) 
     global_id = global_id + global_mesh_info[2] - global_mesh_info[10*i+5];
@@ -354,7 +339,6 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
   }
 
 
-  /* get largest number of boundary vertices of all the processors */
   max_noe = 0;
   for(i = 0; i < num; i++)
     if(max_noe < global_mesh_info[10*i+6])
@@ -375,7 +359,6 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
     index_noe+=2;
   }
 
-  /* gather overlap edges */
   MPI_Allgather(list_overlap_edge,4*max_noe,MPI_INT,recv_list_edge,4*max_noe,MPI_INT,comm);
 
   /* for processor other than 0 */
@@ -396,10 +379,6 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
 	  iloc = (int)(loc - &recv_list_edge[4*max_noe*j]);
 	  ME_Set_MasterParID(me,recv_list_edge[4*max_noe*j+2*global_mesh_info[10*j+6]+iloc]);
 	  ME_Set_GlobalID(me,recv_list_edge[4*max_noe*j+2*global_mesh_info[10*j+6]+iloc+1]);
-	  /*
-	    printf("Assign: rank %d,boundary vertex local ID %d, found on processor %d, loc %d ",rank, MV_ID(mv), j, iloc);
-	    printf("coor (%lf,%lf,%lf)\n",coor[0],coor[1],coor[2]);
-	  */
 	  break;
 	}
       }
@@ -414,18 +393,19 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
   return 1;
 }
 
+ /* 
+    Assign face global ID for both 2D meshes
+    Assume there are no overlapped faces
+    Assume each processor knowns its overlap and ghost vertices 
+ */
 
-  /* assume there are no overlapped faces for surface meshe*/
 int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, nv, ne, nf, global_id, mesh_info[10];
   MFace_ptr mf;
   RepType rtype;
   int *global_mesh_info;
-
-
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
-  /* mesh_info store the mesh reptype, nv, ne, nf, nbf */
   rtype = MESH_RepType(submesh);
   nv = MESH_Num_Vertices(submesh);
   ne = MESH_Num_Edges(submesh);
@@ -455,9 +435,11 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
 }
 
  /* 
-    Assume no region is shared.
-    First assign face global ID.
-    
+    Assign region global ID for both 3D meshes
+    Main work is to assign global ID for faces
+
+    Assume there are no overlapped regions
+    Assume each processor knowns its overlap and ghost vertices 
  */
      
 int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
@@ -590,11 +572,6 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
 	  iloc = (int)(loc - &recv_list_face[(MAXPV2+3)*max_nof*j]);
 	  MF_Set_MasterParID(mf,recv_list_face[(MAXPV2+3)*max_nof*j+iloc+nfv+1]);
 	  MF_Set_GlobalID(mf,recv_list_face[(MAXPV2+3)*max_nof*j+iloc+nfv+2]);
-	  //	  printf("test: rank %d, face local id %d, partition id %d, global id %d\n",rank, MF_ID(mf),MF_MasterParID(mf),MF_GlobalID(mf));
-	  /*
-	    printf("Assign: rank %d,boundary vertex local ID %d, found on processor %d, loc %d ",rank, MV_ID(mv), j, iloc);
-	    printf("coor (%lf,%lf,%lf)\n",coor[0],coor[1],coor[2]);
-	  */
 	  break;
 	}
       }
