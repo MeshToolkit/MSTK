@@ -18,9 +18,10 @@ extern "C" {
   /* 
      This function is a collective call
 
-     It send the OVERLAP elements to neighbor processors
+     It first creates a send_mesh of OVERLAP elements, then send it to neighbor processors
+     also it receives all the send_mehses from neighbor processors and install them into current mesh
      It uses SendMesh and RecvMesh to communicate
-     Assume OVERLAP elements is properly labelled
+     Assume OVERLAP elements is properly labeled
 
      Author(s): Duo Wang, Rao Garimella
   */
@@ -32,7 +33,6 @@ int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm 
 int MESH_Parallel_AddGhost(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   int nf, nr;
   RepType rtype;
-  /* basic mesh information */
 
   rtype = MESH_RepType(submesh);
   nf = MESH_Num_Faces(submesh);
@@ -55,11 +55,10 @@ int MESH_Parallel_AddGhost(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) 
   */
 int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, num_recv_procs, index_recv_mesh;
-  int adj;
   Mesh_ptr send_mesh;
   Mesh_ptr *recv_meshes;
 
-  /* build the 1-ring outside layer send mesh */
+  /* build the 1-ring layer send mesh */
   send_mesh = MESH_New(MESH_RepType(submesh));
   MESH_BuildSubMesh(submesh,send_mesh);
 
@@ -69,11 +68,11 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   */
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
-    if( adj = MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+    if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MALLTYPE);
     }
-    if( adj = MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+    if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MALLTYPE);
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
     }
@@ -84,34 +83,26 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   for(i = 0; i < num_recv_procs; i++)
     recv_meshes[i] = MESH_New(MESH_RepType(submesh));
 
-  printf(" number of recv_procs %d,on rank %d\n", num_recv_procs, rank);
+  /* printf(" number of recv_procs %d,on rank %d\n", num_recv_procs, rank); */
 
   index_recv_mesh = 0;
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i,rank,comm);
-	//printf("rank %d receives elements from rank %d\n", rank,i);
-      }
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) {
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) 
 	MESH_SendMesh(send_mesh,i,comm);
-	//printf("rank %d sends elements to rank %d\n", rank,i);
-      }
     }
     if(i > rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) {
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) 
 	MESH_SendMesh(send_mesh,i,comm);
-	//printf("rank %d sends elements to rank %d\n", rank,i);
-      }
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i,rank,comm);
-	//printf("rank %d receives elements from rank %d\n", rank,i);
-      }
     }
   }
 
-  /* concatenate the recv_meshes */
+  /* install the recv_meshes */
   MESH_ConcatSubMesh(submesh, num_recv_procs, recv_meshes);
 
   /* delete recvmeshes */
@@ -121,11 +112,9 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   return 1;
 }
 
-  /* right now assume there are no overlapped regions */
 
 int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, num_recv_procs, index_recv_mesh;
-  int adj;
   Mesh_ptr send_mesh;
   Mesh_ptr *recv_meshes;
 
@@ -139,12 +128,11 @@ int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm 
   */
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
-    if( adj = MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+    if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MALLTYPE);
-
     }
-    if( adj = MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+    if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MALLTYPE);
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
     }
@@ -155,30 +143,22 @@ int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm 
   for(i = 0; i < num_recv_procs; i++)
     recv_meshes[i] = MESH_New(MESH_RepType(submesh));
 
-  printf(" 3D number of recv_procs %d,on rank %d\n", num_recv_procs, rank);
+  /* printf(" 3D number of recv_procs %d,on rank %d\n", num_recv_procs, rank); */
 
   index_recv_mesh = 0;
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i,rank,comm);
-	//printf("rank %d receives elements from rank %d\n", rank,i);
-      }
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) {
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) 
 	MESH_SendMesh(send_mesh,i,comm);
-	//printf("rank %d sends elements to rank %d\n", rank,i);
-      }
     }
     if(i > rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) {
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) 
 	MESH_SendMesh(send_mesh,i,comm);
-	//printf("rank %d sends elements to rank %d\n", rank,i);
-      }
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i,rank,comm);
-	//printf("rank %d receives elements from rank %d\n", rank,i);
-      }
     }
   }
   
