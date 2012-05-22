@@ -27,7 +27,6 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh);
 int MESH_BuildSubMesh(Mesh_ptr mesh, Mesh_ptr submesh) {
   int nf, nr;
   RepType rtype;
-  /* basic mesh information */
   rtype = MESH_RepType(mesh);
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
@@ -75,7 +74,7 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
 
   fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
   fedirs = (int *) malloc(MAXPV2*sizeof(int));
-  while(mf = MESH_Next_Face(mesh, &idx)) {
+  while( (mf = MESH_Next_Face(mesh, &idx)) ) {
     if(MF_PType(mf) != POVERLAP) continue;
     if(MEnt_IsMarked(mf,mkfid)) continue;
     List_Add(faces,mf);
@@ -178,7 +177,7 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
   fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
   fedirs = (int *) malloc(MAXPV2*sizeof(int));
   idx = 0;  
-  while(mr = MESH_Next_Region(mesh, &idx)) {
+  while( (mr = MESH_Next_Region(mesh, &idx)) ) {
     if(MR_PType(mr) != POVERLAP) continue;
     new_mr = MR_New(submesh);
     MR_Set_GEntDim(new_mr,MR_GEntDim(mr));

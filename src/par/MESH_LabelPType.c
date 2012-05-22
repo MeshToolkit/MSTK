@@ -12,10 +12,10 @@ extern "C" {
 
   /* 
      This function is a collective call
-     It assign vertex PType similar as MESH_AssignGlobalIDs(), 
-     except that here global IDs are given
+     It assign PType similar as MESH_AssignGlobalIDs(), 
+     except here global IDs are given
 
-     It assigns all the elements with a POVERLAP vertex as POVERLAP element
+     It assigns all the elements with a POVERLAP or PGHOST vertex as POVERLAP
 
      It also assign master partition ID
 
@@ -30,12 +30,10 @@ extern "C" {
   int MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   int nf, nr;
   RepType rtype;
-
-   /* basic mesh information */
   rtype = MESH_RepType(submesh);
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
-  /* first label vertex */
+
   MESH_LabelPType_Vertex(submesh, rank, num, comm);
   MESH_LabelPType_Edge(submesh, rank, num, comm);
   if (nr)
@@ -90,13 +88,9 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   /* sort boundary vertices based on global ID, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
 
-  /* 
-     gather submeshes information
-  */
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
-  /* get largest number of boundary vertices of all the processors */
   max_nbv = 0;
   for(i = 0; i < num; i++)
     if(max_nbv < global_mesh_info[10*i+4])
@@ -126,19 +120,18 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   */
   for (i = 0; i < num*max_nbv; i++)
     vertex_ov_label[i] = 0;
-  /* for processor other than 0 */
+
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
     global_id = MV_GlobalID(mv);
     /* 
-       check which processor has the same coordinate vertex 
+       check which processor has the vertex of the same global ID
        Different from assigning global id, we check all the other processors, from large to small
-       by rank, whenever a vertex is found, mark rank and j as neighbors, and the masterparid is still
-       the smallest rank processor
+       by rank, whenever a vertex is found, mark it as neighbors, the masterparid is the smallest 
+       rank processor among all the neighbors
     */
     for(j = num-1; j >= 0; j--) {
       if(j == rank) continue;
-      /* since each processor has sorted the boundary vertices, use binary search */
       loc = (int *)bsearch(&global_id,
 			   &recv_list_vertex[max_nbv*j],
 			   global_mesh_info[10*j+4],
@@ -160,9 +153,10 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
     }
   }
 
-  /* since this is a or reduction, we can use MPI_IN_PLACE, send buffer same as recv buffer */
+  /* since this is a OR reduction, we can use MPI_IN_PLACE, send buffer same as recv buffer */
   MPI_Allreduce(MPI_IN_PLACE,vertex_ov_label,num*max_nbv,MPI_INT,MPI_LOR,comm);    
 
+  /* set non ghost vertex master partition id */
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (MV_PType(mv) == PGHOST)
@@ -187,7 +181,9 @@ int MESH_LabelPType_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   MSTK_free(recv_list_vertex);
   return 1;
 }
-  
+
+/* label edge PType based on vertex PType */  
+
 int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int idx;
   MVertex_ptr mv1, mv2;
@@ -198,17 +194,11 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
       ME_Set_MasterParID(me,rank);
     /*
       if both ends are ghost vertices, then the edge is a ghost
-      set its master par id to be the smaller of endpoint vertex master par id
+      Do not set master partition id because it is not clear
     */
     mv1 = ME_Vertex(me,0); mv2 = ME_Vertex(me,1);  
     if(MV_PType(mv1) == PGHOST && MV_PType(mv2) == PGHOST) {
       ME_Set_PType(me,PGHOST);
-      /*
-      if(MV_MasterParID(mv1) <= MV_MasterParID(mv2))
-	ME_Set_MasterParID(me,MV_MasterParID(mv1));
-      else
-	ME_Set_MasterParID(me,MV_MasterParID(mv2));
-      */
     }
     
     /* 
@@ -223,113 +213,138 @@ int MESH_LabelPType_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   return 1;
 }
 
+
   /* 
-     Right now assume faces are not overlapped across processors
+
+     For surfac mesh only, label 1-ring inner neighbor
      Label the face that has OVERLAP or Ghost vertex as OVERLAP
-     
+     Assume faces are not overlapped across processors before this     
   */
 int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, idx, ov_face;
+  int i, idx;
   MVertex_ptr mv;
   MEdge_ptr me;
   MFace_ptr mf;
   List_ptr fverts, fedges;
+  /* label 1-ring boundary face as POVERLAP */
   idx = 0;
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
-    ov_face = 0;
     fverts = MF_Vertices(mf,1,0);
     for(i = 0; i < List_Num_Entries(fverts); i++) {
       mv = List_Entry(fverts,i);
       if( MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP ) {
-	ov_face = 1;
 	MF_Set_PType(mf,POVERLAP);
 	break;
       }
     }
-    /* if the face is marked, mark its edges and vertices */
-    if(ov_face) {
-      for(i = 0; i < List_Num_Entries(fverts); i++) {
-	mv = List_Entry(fverts,i);
-	if(MV_PType(mv) != PGHOST)
-	  MV_Set_PType(mv,POVERLAP);
-      }
-
-      fedges = MF_Edges(mf,1,0);
-      for(i = 0; i < List_Num_Entries(fedges); i++) {
-	me = List_Entry(fedges,i);
-	if(ME_PType(me) != PGHOST)
-	  ME_Set_PType(me,POVERLAP);
-      }
-      List_Delete(fedges);
+    List_Delete(fverts);
+  }
+  /* 
+     if the face is marked, mark its edges and vertices
+     ghost should be still ghost
+  */
+  idx = 0;
+  while( (mf = MESH_Next_Face(submesh,&idx)) ) {
+    if(MF_PType(mf) != POVERLAP) continue;
+    fverts = MF_Vertices(mf,1,0);
+    for(i = 0; i < List_Num_Entries(fverts); i++) {
+      mv = List_Entry(fverts,i);
+      if(MV_PType(mv) != PGHOST)
+	MV_Set_PType(mv,POVERLAP);
     }
     List_Delete(fverts);
+    
+    fedges = MF_Edges(mf,1,0);
+    for(i = 0; i < List_Num_Entries(fedges); i++) {
+      me = List_Entry(fedges,i);
+      if(ME_PType(me) != PGHOST)
+	ME_Set_PType(me,POVERLAP);
+    }
+    List_Delete(fedges);
   }
   return 1;
 }
 
   /* 
-     right now assume regions are not overlapped across processors
+     For 3D mesh only, label 1-ring inner neighbor
+     Assume regions are not overlapped across processors before this     
      Label the region that has OVERLAP vertex as OVERLAP
   */
 
 
 int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, nfv, idx, ov_region;
+  int i, nfv, idx;
   MRegion_ptr mr;
   MFace_ptr mf;
+  MVertex_ptr me;
   MVertex_ptr mv;
-  List_ptr mfverts, rverts;
+  List_ptr mfverts, rverts, redges, rfaces;
   int is_ghost, is_overlap;
-  int min_par_id;
   idx = 0;
+
+  /* first label faces */
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
     if(MF_PType(mf) != PGHOST)
       MF_Set_MasterParID(mf, rank);
     is_ghost = 1; is_overlap = 0;
-    min_par_id = num-1;
     mfverts = MF_Vertices(mf,1,0);
     nfv = List_Num_Entries(mfverts);
     for(i = 0; i < nfv; i++) {
       mv = List_Entry(mfverts,i);
-      if(min_par_id > MV_MasterParID(mv))
-	min_par_id = MV_MasterParID(mv);
       if(MV_PType(mv) != PGHOST)  /* if all vertices are ghost, then the face is a ghost*/
 	is_ghost = 0;
       if(MV_PType(mv) == POVERLAP) /*  if either vertex is a overlap, then the face is a overlap */
 	is_overlap = 1;
     }
-    if(is_ghost) {
+    if(is_ghost) 
       MF_Set_PType(mf,PGHOST);
-      MF_Set_MasterParID(mf,min_par_id);
-    }
     
-    if(is_overlap) {
+    if(is_overlap) 
       MF_Set_PType(mf,POVERLAP);
-      }
+
     List_Delete(mfverts);
   }
   
+  /* label overlap region */
   idx = 0;
   while( (mr = MESH_Next_Region(submesh,&idx)) ) {
-    ov_region = 0;
     rverts = MR_Vertices(mr);
     for(i = 0; i < List_Num_Entries(rverts); i++) {
       mv = List_Entry(rverts,i);
       if(MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) {
-	ov_region = 1;
 	MR_Set_PType(mr,POVERLAP);
 	break;
       }
     }
-    /* if the region is marked, mark it vertices */
-    if(ov_region) {
-      for(i = 0; i < List_Num_Entries(rverts); i++) {
-	mv = List_Entry(rverts,i);
-	if(MV_PType(mv) != PGHOST)
-	  MV_Set_PType(mv,POVERLAP);
-      }
+  }
+
+  /* if the region is marked, mark its vertices, edges and faces */
+  idx = 0;
+  while( (mr = MESH_Next_Region(submesh,&idx)) ) {
+    if(MV_PType(mr) != POVERLAP) continue;
+    rverts = MR_Vertices(mr);
+    for(i = 0; i < List_Num_Entries(rverts); i++) {
+      mv = List_Entry(rverts,i);
+      if(MV_PType(mv) != PGHOST)
+	MV_Set_PType(mv,POVERLAP);
     }
     List_Delete(rverts);
+
+    redges = MR_Edges(mr);
+    for(i = 0; i < List_Num_Entries(redges); i++) {
+      me = List_Entry(redges,i);
+      if(ME_PType(me) != PGHOST)
+	ME_Set_PType(me,POVERLAP);
+    }
+    List_Delete(redges);
+
+    rfaces = MR_Faces(mr);
+    for(i = 0; i < List_Num_Entries(rfaces); i++) {
+      mf = List_Entry(rfaces,i);
+      if(MF_PType(mf) != PGHOST)
+	  MF_Set_PType(mf,POVERLAP);
+    }
+    List_Delete(rfaces);
   }
   return 1;
 }

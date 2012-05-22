@@ -1,0 +1,351 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 1
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1cm
+\rightmargin 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Building parallel information from distributed meshes
+\end_layout
+
+\begin_layout Abstract
+This documents shows how to build parallel information from distributed
+ submeshes without any additional information except vertex coordinates.
+ 
+\end_layout
+
+\begin_layout Section
+Assign global IDs
+\end_layout
+
+\begin_layout Standard
+Here we are given submeshes on each processor, the aim is to assign each
+ entity a unique global ID.
+ For an entity shared by 2 or more processors, we assign its ownership to
+ the processor with lowest rank.
+ It uses partition boundary vertex coordinate values to detect ghost vertex.
+\end_layout
+
+\begin_layout Subsection
+All to all comunication
+\end_layout
+
+\begin_layout Standard
+If the distributed submesh has no additional information, i.e.
+ each submesh does not know its neighbors, MESH_AssignGlobalIDs() should
+ be called.
+ It has 4 subroutines, assign global ID for vertex, edge, face and region
+ respectively.
+ It uses Allgather() communication routine in MPI.
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm
+ comm); 
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm
+ comm);
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm
+ comm); 
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm
+ comm);
+\end_layout
+
+\begin_layout Subsection
+Point to point comunication
+\end_layout
+
+\begin_layout Standard
+If the parallel information is given, i.e.
+ each submesh knows its neighbors, MESH_AssignGlobalIDs_point() should be
+ called.
+ It has 4 subroutines, assign global ID for vertex, edge, face and region
+ respectively.
+ It uses Send() communication routine in MPI.
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num,
+ MPI_Comm comm); 
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num,
+ MPI_Comm comm);
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_point_Face(Mesh_ptr submesh, int rank, int num,
+ MPI_Comm comm); 
+\end_layout
+
+\begin_layout Itemize
+int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num,
+ MPI_Comm comm);
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Paragraph*
+PMSTK_AssignGlobalIDs(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) 
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+1.
+  extract boundary vertices list l with vertex coordinates
+\end_layout
+
+\begin_layout LyX-Code
+2.
+  sort the list based on vertex coordinates values
+\end_layout
+
+\begin_layout LyX-Code
+3.
+  Allgather number of total and boundary vertices 
+\end_layout
+
+\begin_layout LyX-Code
+4.
+  for i = 0:num-1      
+\end_layout
+
+\begin_layout LyX-Code
+5.
+      Broadcast l with vertex coordinates
+\end_layout
+
+\begin_layout LyX-Code
+6.
+  for j = 0:rank-1
+\end_layout
+
+\begin_layout LyX-Code
+7.
+      compare each vertex v on l with vertices from processor j
+\end_layout
+
+\begin_layout LyX-Code
+8.
+        if there is a match, set the master partition id of v
+\end_layout
+
+\begin_layout LyX-Code
+9.
+  calculate number of ghost vertices
+\end_layout
+
+\begin_layout LyX-Code
+10.
+ Allgather number of ghost vertices
+\end_layout
+
+\begin_layout LyX-Code
+11.
+ Assign global IDs of owned vertices
+\end_layout
+
+\begin_layout LyX-Code
+11.
+ for i = 0:num-1      
+\end_layout
+
+\begin_layout LyX-Code
+12.
+      Broadcast l with global IDs
+\end_layout
+
+\begin_layout LyX-Code
+13.
+ Assign global IDs of ghost vertices
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+    
+\end_layout
+
+\begin_layout Standard
+An alternative way to do this is using space-filling curve, but that is
+ generally used for all the vertices on all processors, here we only need
+ to deal with boundary vertices on each processors since we assume there
+ is no overlapping elements.
+\end_layout
+
+\begin_layout Section
+Label PType information across processors based on Global ID
+\end_layout
+
+\begin_layout Standard
+Use vertices global ID to identify neighboring processor information, each
+ mesh object stores a list of neighboring processor IDs.
+ 
+\end_layout
+
+\begin_layout Paragraph*
+PMSTK_LabelPType(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) 
+\end_layout
+
+\begin_layout Standard
+This function builds neighboring processors information.
+ The difference between this function and MESH_Update_ParallelAdj() is that
+ the latter function assumes each submesh has ghost entities, while here
+ we only assume the global IDs are given.
+ This function is similar to PMSTK_AssignGlobalIDs() except it uses global
+ ID as the key instead of coordinate value, also it sets mesh_par_adj_flags
+ and mesh_par_adj_info, similar to function MESH_Update_ParallelAdj()
+\end_layout
+
+\begin_layout Section
+Add ghost cells through communications
+\end_layout
+
+\begin_layout Paragraph*
+PMSTK_BuildGhostElements(Mesh_ptr mesh, int rank, int num, MPI_Comm comm)
+\end_layout
+
+\begin_layout Standard
+This function adds ghost elements on each processor.
+\end_layout
+
+\begin_layout Itemize
+MSTK_SendGhostElements(Mesh_ptr mesh, int rank, int num, MPI_Comm comm)
+\end_layout
+
+\begin_layout Standard
+send the list of boundary elements to the neighboring processors.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+1.
+  for i = 0:num-1
+\end_layout
+
+\begin_layout LyX-Code
+2.
+  if processor i has ghost elements on processor rank
+\end_layout
+
+\begin_layout LyX-Code
+3.
+     send the list of boundary elements to processor i    
+\end_layout
+
+\begin_layout Itemize
+MSTK_RecvGhostElements(Mesh_ptr mesh, int rank, int num, MPI_Comm comm)
+\end_layout
+
+\begin_layout Standard
+receive the list of boundary elements from the neighboring processors.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+1.
+  for i = 0:num-1
+\end_layout
+
+\begin_layout LyX-Code
+2.
+  if processor rank has ghost elements on processor i
+\end_layout
+
+\begin_layout LyX-Code
+3.
+     receive the list of boundary elements from processor i 
+\end_layout
+
+\begin_layout LyX-Code
+4.
+  for each element e in the receive buffer
+\end_layout
+
+\begin_layout LyX-Code
+5.
+      if e has a vertex with the same global ID as a vertex v on processor
+ rank
+\end_layout
+
+\begin_layout LyX-Code
+6.
+          add e to the neighboring list of v
+\end_layout
+
+\end_body
+\end_document

@@ -16,7 +16,8 @@ extern "C" {
 
 
   /* 
-     This function concatenates submesh into mesh, based on vertex global ID
+     This function concatenates submesh into mesh, based on global ID
+
      Author(s): Duo Wang, Rao Garimella
   */
 
@@ -27,7 +28,6 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes);
 int MESH_ConcatSubMesh(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   int nf, nr;
   RepType rtype;
-  /* basic mesh information */
   rtype = MESH_RepType(mesh);
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
@@ -41,6 +41,7 @@ int MESH_ConcatSubMesh(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   }
   return 1;
 }
+
   /* check if l has the same entity as m, based on global ID */
 MEntity_ptr entity_on_list(MEntity_ptr m, List_ptr *l) {
   int i, num = List_Num_Entries(*l);
@@ -49,9 +50,7 @@ MEntity_ptr entity_on_list(MEntity_ptr m, List_ptr *l) {
       return List_Entry(*l,i);
   return NULL;
 }
-  /* 
-     Concatenate submeshes into mesh 
-  */
+
 int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   int max_nv, max_ne, max_nf, nfv, nfe, i, j, k, nbv, nbe;
   MVertex_ptr mv, new_mv, sub_mv;
@@ -101,13 +100,13 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 
   /* collect boundary edges and vertices */
   idx = 0; nbe = 0;
-  while(me = MESH_Next_Edge(mesh,&idx)) 
+  while( (me = MESH_Next_Edge(mesh,&idx)) ) 
     if(ME_PType(me)) {
       List_Add(boundary_edges,me);
       nbe++;
     }
   idx = 0; nbv = 0;
-  while(mv = MESH_Next_Vertex(mesh,&idx))
+  while( (mv = MESH_Next_Vertex(mesh,&idx)) )
     if(MV_PType(mv)) {
       List_Add(boundary_verts,mv);
       nbv++;
@@ -131,19 +130,11 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
     MV_global_id[idx++] = MV_GlobalID(mv);
   }
 
-  /*
-  printf("max_nv %d, max_ne %d\n",max_nv,max_ne);
-  printf("nbe %d, nbv %d\n",nbe,nbv);
-  printf("global id: \n");
-  for(i = 0; i < List_Num_Entries(boundary_verts); i++)
-    printf(" %d ", MV_GlobalID(List_Entry(boundary_verts,i)));
-  printf("\n");
-  */
   
   for(i = 0; i < num; i++) {
     submesh = submeshes[i];
     idx = 0;
-    while (sub_mf = MESH_Next_Face(submesh, &idx)) {
+    while ( (sub_mf = MESH_Next_Face(submesh, &idx)) ) {
       add_face = 0;
       /* pre store vertices from submesh that is already in mesh */
       mfverts = MF_Vertices(sub_mf,1,0);
@@ -349,19 +340,19 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 
   /* collect boundary faces, edges and vertices */
   idx = 0; nbf = 0;
-  while(mf = MESH_Next_Face(mesh,&idx)) 
+  while( (mf = MESH_Next_Face(mesh,&idx)) ) 
     if(MF_PType(mf)) {
       List_Add(boundary_faces,mf);
       nbf++;
     }
   idx = 0; nbe = 0;
-  while(me = MESH_Next_Edge(mesh,&idx)) 
+  while( (me = MESH_Next_Edge(mesh,&idx)) ) 
     if(ME_PType(me)) {
       List_Add(boundary_edges,me);
       nbe++;
     }
   idx = 0; nbv = 0;
-  while(mv = MESH_Next_Vertex(mesh,&idx))
+  while( (mv = MESH_Next_Vertex(mesh,&idx)) )
     if(MV_PType(mv)) {
       List_Add(boundary_verts,mv);
       nbv++;
@@ -404,7 +395,7 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   for(h = 0; h < num; h++) {
     submesh = submeshes[h];
     idx = 0;
-    while (sub_mr = MESH_Next_Region(submesh, &idx)) {
+    while ( (sub_mr = MESH_Next_Region(submesh, &idx)) ) {
 	add_region = 0;
 	/* pre store faces from submesh that is already in mesh */
 	mrfaces = MR_Faces(sub_mr);
@@ -424,13 +415,18 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	  if(loc) {
 	    add_region = 1; 
 	    iloc = loc - MF_global_id;
-	    MF_to_list_id[h*max_nf+MF_ID(sub_mf)-1] = MF_ID(List_Entry(boundary_faces,iloc))-1;
+	    mf = List_Entry(boundary_faces,iloc); 
+	    /* here set the ghost edge property, only necessary when the input submeshes are not consistent */
+	    if(MF_PType(mf) == PGHOST && MF_PType(sub_mf) != PGHOST) {
+	      MF_Set_GEntDim(mf,MF_GEntDim(sub_mf));
+	      MF_Set_GEntID(mf,MF_GEntID(sub_mf));
+	    }
+	    MF_to_list_id[h*max_nf+MF_ID(sub_mf)-1] = MF_ID(mf)-1;
 	    List_Add(faces,sub_mf); 
 	    MEnt_Mark(sub_mf,mkfid);
 	    MEnt_Mark(sub_mf,mkfid2);
 	  }
 	}
-	
 	/* pre store edges from submesh that is already in mesh */
 	mredges = MR_Edges(sub_mr);
 	nre = List_Num_Entries(mredges);
@@ -455,7 +451,7 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	      ME_Set_GEntDim(me,ME_GEntDim(sub_me));
 	      ME_Set_GEntID(me,ME_GEntID(sub_me));
 	    }
-	    ME_to_list_id[i*max_ne+ME_ID(sub_me)-1] = ME_ID(me)-1;
+	    ME_to_list_id[h*max_ne+ME_ID(sub_me)-1] = ME_ID(me)-1;
 	    List_Add(edges,sub_me); 
 	    MEnt_Mark(sub_me,mkeid);
 	    MEnt_Mark(sub_me,mkeid2);
@@ -588,8 +584,6 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	    MF_Set_Edges(new_mf,nfe,fedges,fedirs); /* set face-edge */
 	    List_Delete(mfedges);
 	  }
-	  if(!new_mf)
-	    printf("!!!no mf\n");
 	  rfaces[i] = new_mf;
 	}
 	MR_Set_Faces(new_mr,nrf,rfaces,rfdirs); /* set region-face */
