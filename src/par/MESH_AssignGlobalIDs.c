@@ -329,7 +329,7 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
   /* Assign global id to non-ghost edges */
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[2] - global_mesh_info[10*i+5];
+    global_id = global_id + global_mesh_info[10*i+2] - global_mesh_info[10*i+5];
   for(i = 0; i < ne; i++) {
     me = MESH_Edge(submesh,i);
     if(ME_PType(me) != PGHOST) {
@@ -511,7 +511,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   /* calculate starting global id number for faces */
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[3] - global_mesh_info[10*i+5];
+    global_id = global_id + global_mesh_info[10*i+3] - global_mesh_info[10*i+5];
   for(i = 0; i < nf; i++) {
     mf = MESH_Face(submesh,i);
     if(MF_PType(mf) != PGHOST) {

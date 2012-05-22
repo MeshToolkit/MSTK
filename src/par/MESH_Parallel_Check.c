@@ -756,7 +756,7 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MREGION) ) {
 	MPI_Recv(recv_list_region,(MAXPF3+4)*nr,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	printf("rank %d receives %d regions from rank %d\n", rank,count, i);
+	//	printf("rank %d receives %d regions from rank %d\n", rank,count, i);
 	for(index_mr = 0; index_mr < count;) {
 	  nrf = recv_list_region[index_mr];
 	  global_id = recv_list_region[index_mr+nrf+3];;
@@ -824,7 +824,7 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 	  }
 	}
 	MPI_Send(list_region,index_mr,MPI_INT,i,i,comm);
-	printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
+	//printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
       }
     }
     if(i > rank) {     
@@ -847,12 +847,12 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 	  }
 	}
 	MPI_Send(list_region,index_mr,MPI_INT,i,i,comm);
-	printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
+	//printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
       }
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MREGION) ) {
 	MPI_Recv(recv_list_region,(MAXPF3+4)*nr,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	printf("rank %d receives %d regions from rank %d\n", rank,count, i);
+	//printf("rank %d receives %d regions from rank %d\n", rank,count, i);
 	for(index_mr = 0; index_mr < count;) {
 	  nrf = recv_list_region[index_mr];
 	  global_id = recv_list_region[index_mr+nrf+3];;

@@ -29,17 +29,11 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
 
 int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   int nf, nr;
-  RepType rtype;
-
-  /* basic mesh information */
-
-  rtype = MESH_RepType(submesh);
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
-
   MESH_AssignGlobalIDs_point_Vertex(submesh, rank, num, comm);
-  /*
   MESH_AssignGlobalIDs_point_Edge(submesh, rank, num, comm);
+  /*
   if (nr)
     MESH_AssignGlobalIDs_point_Region(submesh, rank, num, comm);
   else if(nf) 
@@ -103,7 +97,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
   MPI_Status status;
   RepType rtype;
   double coor[3], *loc;
-  int index_nbv, iloc, num_ghost_verts, global_id, mesh_info[10];
+  int max_nbv, index_nbv, iloc, num_ghost_verts, global_id, mesh_info[10];
   int *global_mesh_info, *list_vertex, *recv_list_vertex, *mv_remote_info;
   double *list_coor, *recv_list_coor;
   int (*func)(MVertex_ptr mv);                /* function pointer to check boundary vertex */
@@ -135,8 +129,20 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
   /* sort boundary vertices based on coordinate value, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
 
+  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
+
+  /* get largest number of boundary vertices of all the processors */
+  max_nbv = 0;
+  for(i = 0; i < num; i++)
+    if(max_nbv < global_mesh_info[10*i+5])
+      max_nbv = global_mesh_info[10*i+5];
+
+
   list_vertex = (int *)MSTK_malloc(nbv*sizeof(int));
   list_coor = (double *)MSTK_malloc(3*nbv*sizeof(double));
+  recv_list_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
+  recv_list_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
 
   /* only coordinate values are sent */
   index_nbv = 0;
@@ -149,8 +155,6 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
     index_nbv++;
   }
   
-  recv_list_vertex = (int *)MSTK_malloc(nv*sizeof(int));
-  recv_list_coor = (double *)MSTK_malloc(3*nv*sizeof(double));
 
   /* 
      used to store list id on incoming buffer of ghost vertex 
@@ -259,7 +263,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
  */
      
 int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, nv, noe, nge, ne, nf, nr, mesh_info[10], global_id;
+  int i, j, noe, nge, ne, mesh_info[10], global_id;
   MEdge_ptr me;
   List_ptr overlap_edges, ghost_edges;
   RepType rtype;
@@ -268,16 +272,10 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   rtype = MESH_RepType(submesh);
-  nv = MESH_Num_Vertices(submesh);
   ne = MESH_Num_Edges(submesh);
-  nf = MESH_Num_Faces(submesh);
-  nr = MESH_Num_Regions(submesh);
 
   mesh_info[0] = rtype;
-  mesh_info[1] = nv;
   mesh_info[2] = ne;
-  mesh_info[3] = nf;
-  mesh_info[4] = nr;
 
   /* calculate number of GHOST and OVERLAP edges */ 
   noe = 0; nge = 0;
@@ -314,7 +312,7 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
   /* Assign global id to non-ghost edges */
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[2] - global_mesh_info[10*i+5];
+    global_id = global_id + global_mesh_info[10*i+2] - global_mesh_info[10*i+5];
   for(i = 0; i < ne; i++) {
     me = MESH_Edge(submesh,i);
     if(ME_PType(me) != PGHOST) {
@@ -322,7 +320,6 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
       ME_Set_MasterParID(me,rank);
     }
   }
-
 
   max_noe = 0;
   for(i = 0; i < num; i++)
