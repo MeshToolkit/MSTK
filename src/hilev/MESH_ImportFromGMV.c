@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 
-int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
+int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs) {
   MRegion_ptr mr;
   MFace_ptr rfaces[MAXPF3], mf, *vface=NULL;
   MEdge_ptr fedges[MAXPV3*2], me, *vedge=NULL;

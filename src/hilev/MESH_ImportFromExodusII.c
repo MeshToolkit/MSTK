@@ -19,7 +19,7 @@ extern "C" {
      - Should we pick one of the first two? */
 
 
-int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
+int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs) {
 
   char mesg[256], funcname[256]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
