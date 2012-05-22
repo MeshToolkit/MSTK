@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mpi.h>
 
 #include "MSTK.h" 
 
@@ -91,6 +92,14 @@ int main(int argc, char *argv[]) {
   }
 
 
+
+  MPI_Init(&argc,&argv);
+
+  int rank, numprocs;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+  
+
   MSTK_Init();
 
 
@@ -109,11 +118,11 @@ int main(int argc, char *argv[]) {
     switch(inmeshformat) {
     case GMV:
       fprintf(stderr,"Importing mesh from GMV file...");
-      ok = MESH_ImportFromFile(mesh,infname,"gmv");
+      ok = MESH_ImportFromFile(mesh,infname,"gmv",rank,numprocs);
       break;
     case EXODUSII:
       fprintf(stderr,"Importing mesh from ExodusII file...");
-      ok = MESH_ImportFromFile(mesh,infname,"exodusii");
+      ok = MESH_ImportFromFile(mesh,infname,"exodusii",rank,numprocs);
       break;
     case CGNS:
       fprintf(stderr,"Cannot import mesh from CGNS format. ");
@@ -125,7 +134,8 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"Cannot import mesh from AVS format. ");
       break;
     case X3D:
-      fprintf(stderr,"Cannot import mesh from X3D format. ");
+      fprintf(stderr,"Importing mesh from X3D format...");
+      ok = MESH_ImportFromFile(mesh,infname,"x3d",rank,numprocs);
       break;
     default:
       fprintf(stderr,"Cannot import from unrecognized format. ");
