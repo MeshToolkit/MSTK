@@ -11,13 +11,9 @@ extern "C" {
 
 
   /* 
-     This function is a collective call
-     It assign PType similar as MESH_AssignGlobalIDs(), 
-     except here global IDs are given
-
+     This function lable 1-ring boundary layer
+     
      It assigns all the elements with a POVERLAP or PGHOST vertex as POVERLAP
-
-     It also assign master partition ID
 
      Author(s): Duo Wang, Rao Garimella
   */
@@ -91,7 +87,6 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
      Assume regions are not overlapped across processors before this     
      Label the region that has OVERLAP vertex as OVERLAP
   */
-
 
 int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   int i, nfv, idx;

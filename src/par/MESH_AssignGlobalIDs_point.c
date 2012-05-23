@@ -110,9 +110,9 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
   mesh_info[1] = nv;
   mesh_info[4] = nr;
 
-
   if(nr) func = vertex_on_region_boundary;
   else   func = vertex_on_face_boundary;
+
   /* calculate number of boundary vertices */ 
   nbv = 0;  boundary_verts = List_New(10);
   for(i = 0; i < nv; i++) {
@@ -136,7 +136,6 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
     if(max_nbv < global_mesh_info[10*i+5])
       max_nbv = global_mesh_info[10*i+5];
 
-
   list_vertex = (int *)MSTK_malloc(nbv*sizeof(int));
   list_coor = (double *)MSTK_malloc(3*nbv*sizeof(double));
   recv_list_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
@@ -153,12 +152,12 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
     index_nbv++;
   }
   
-
   /* 
      used to store list id on incoming buffer of ghost vertex 
      No need to store processor id, already stored in master partition id
   */
   mv_remote_info = (int *)MSTK_malloc(nbv*sizeof(int));
+  /* lable if a vertex is overlap */
   mv_ov_label = (int *)MSTK_malloc(max_nbv*sizeof(int));
 
   ngv = 0; nov = 0;

@@ -15,7 +15,9 @@ extern "C" {
      It assigns each submesh the global IDs of vertices, edges, faces and regions
      It assumes no additional information at all
 
-     If global IDs are already given, skip this function, call MESH_LabelPType()
+     It also assign the proper master partition id and ptype
+
+     If global IDs are already given, skip this function, call MESH_BuildConnection()
 
      Author(s): Duo Wang, Rao Garimella
   */

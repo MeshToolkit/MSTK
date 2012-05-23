@@ -383,15 +383,6 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
     MV_global_id[idx++] = MV_GlobalID(mv);
   }
 
-  /*
-  printf("max_nv %d, max_ne %d\n",max_nv,max_ne);
-  printf("nbe %d, nbv %d\n",nbe,nbv);
-  printf("global id: \n");
-  for(i = 0; i < List_Num_Entries(boundary_verts); i++)
-    printf(" %d ", MV_GlobalID(List_Entry(boundary_verts,i)));
-  printf("\n");
-  */
-  
   for(h = 0; h < num; h++) {
     submesh = submeshes[h];
     idx = 0;
