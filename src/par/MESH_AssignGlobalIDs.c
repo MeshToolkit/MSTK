@@ -274,25 +274,16 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm co
  */
      
 int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, nv, noe, nge, ne, nf, nr, mesh_info[10], global_id;
+  int i, j, k, noe, nge, ne, mesh_info[10], global_id;
+  MVertex_ptr mv;
   MEdge_ptr me;
   List_ptr overlap_edges, ghost_edges;
-  RepType rtype;
+  int is_ghost, is_overlap;
   int *loc, edge_id[2],index_noe, max_noe, iloc;
   int *global_mesh_info, *list_overlap_edge, *recv_list_edge;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
-
-  rtype = MESH_RepType(submesh);
-  nv = MESH_Num_Vertices(submesh);
   ne = MESH_Num_Edges(submesh);
-  nf = MESH_Num_Faces(submesh);
-  nr = MESH_Num_Regions(submesh);
-
-  mesh_info[0] = rtype;
-  mesh_info[1] = nv;
   mesh_info[2] = ne;
-  mesh_info[3] = nf;
-  mesh_info[4] = nr;
 
   /* calculate number of GHOST and OVERLAP edges */ 
   noe = 0; nge = 0;
@@ -300,23 +291,29 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
   ghost_edges = List_New(10);
   for(i = 0; i < ne; i++) {
     me = MESH_Edge(submesh,i);
-    /* if both ends are ghost vertices, then the edge is a ghost*/
-    if(MV_PType(ME_Vertex(me,0)) == PGHOST && MV_PType(ME_Vertex(me,1)) == PGHOST) {
+    is_ghost = 1; is_overlap = 1;     /* if both ends are ghost vertices, then the edge is a ghost*/
+    me = MESH_Edge(submesh,i);        /* if either ends is overlap, the other end is ghost or overlap */
+    for( k = 0; k < 2; k++) {
+      mv = ME_Vertex(me,k);
+      if(MV_PType(mv) != PGHOST) {
+	is_ghost = 0;
+	if(MV_PType(mv) != POVERLAP)
+	  is_overlap = 0;
+      }
+    }
+
+    if(is_ghost) {
       List_Add(ghost_edges,me);
       ME_Set_PType(me,PGHOST);
       nge++;
     }
-
-    /* 
-       if either ends are overlap vertices, then the edge is a overlap
-       this may produce more than necessary overlap edges 
-    */
-    if(MV_PType(ME_Vertex(me,0)) == POVERLAP || MV_PType(ME_Vertex(me,1)) == POVERLAP) {
+    else if(is_overlap) {
       ME_Set_PType(me,POVERLAP);
       List_Add(overlap_edges,me);
       noe++;
     }
   }
+
   mesh_info[5] = nge;
   mesh_info[6] = noe;
   
@@ -443,27 +440,17 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
  */
      
 int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, k, nv, nfv, nof, ngf, ne, nf, nr, mesh_info[10], global_id;
+  int i, j, k, nfv, nof, ngf, nf, nr, mesh_info[10], global_id;
   MVertex_ptr mv;
   MFace_ptr mf;
   MRegion_ptr mr;
   List_ptr overlap_faces, ghost_faces, mfverts;
-  RepType rtype;
   int *loc, face_id[MAXPV2+3],index_nof, max_nof, iloc;
   int *global_mesh_info, *list_overlap_face, *recv_list_face;
   int is_ghost, is_overlap;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
-
-  /* mesh_info store the mesh reptype, nv, ne, nf, nof */
-  rtype = MESH_RepType(submesh);
-  nv = MESH_Num_Vertices(submesh);
-  ne = MESH_Num_Edges(submesh);
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
-
-  mesh_info[0] = rtype;
-  mesh_info[1] = nv;
-  mesh_info[2] = ne;
   mesh_info[3] = nf;
   mesh_info[4] = nr;
 
@@ -473,23 +460,23 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   ghost_faces = List_New(10);
   for(i = 0; i < nf; i++) {
     mf = MESH_Face(submesh,i);
-    is_ghost = 1; is_overlap = 0;
+    is_ghost = 1; is_overlap = 1;
     mfverts = MF_Vertices(mf,1,0);
     nfv = List_Num_Entries(mfverts);
     for(j = 0; j < nfv; j++) {
       mv = List_Entry(mfverts,j);
-      if(MV_PType(mv) != PGHOST)  /* if all vertices are ghost, then the face is a ghost*/
+      if(MV_PType(mv) != PGHOST) {  /* if all vertices are ghost, then the face is a ghost*/ 
 	is_ghost = 0;
-      if(MV_PType(mv) == POVERLAP) /*  if either vertex is a overlap, then the face is a overlap */
-	is_overlap = 1;
+	if(MV_PType(mv) != POVERLAP) /*  if all vertices are ghost but at least one of them is overlap */
+	  is_overlap = 0;
+      }
     }
     if(is_ghost) {
       List_Add(ghost_faces,mf);
       MF_Set_PType(mf,PGHOST);
       ngf++;
     }
-
-    if(is_overlap) {
+    else if(is_overlap) {
       List_Add(overlap_faces,mf);
       MF_Set_PType(mf,POVERLAP);
       nof++;
