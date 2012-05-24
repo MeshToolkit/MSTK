@@ -11,7 +11,7 @@ extern "C" {
 
 
   /* 
-     This function lable 1-ring boundary layer
+     This function label 1-ring boundary layer
      
      It assigns all the elements with a POVERLAP or PGHOST vertex as POVERLAP
 
@@ -102,22 +102,21 @@ int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   while( (mf = MESH_Next_Face(submesh,&idx)) ) {
     if(MF_PType(mf) != PGHOST)
       MF_Set_MasterParID(mf, rank);
-    is_ghost = 1; is_overlap = 0;
+    is_ghost = 1; is_overlap = 1;
     mfverts = MF_Vertices(mf,1,0);
     nfv = List_Num_Entries(mfverts);
     for(i = 0; i < nfv; i++) {
       mv = List_Entry(mfverts,i);
-      if(MV_PType(mv) != PGHOST)  /* if all vertices are ghost, then the face is a ghost*/
+      if(MV_PType(mv) != PGHOST) {  /* if all vertices are ghost, then the face is a ghost*/ 
 	is_ghost = 0;
-      if(MV_PType(mv) == POVERLAP) /*  if either vertex is a overlap, then the face is a overlap */
-	is_overlap = 1;
+	if(MV_PType(mv) != POVERLAP) /*  if all vertices are ghost but at least one of them is overlap */
+	  is_overlap = 0;
+      }
     }
     if(is_ghost) 
       MF_Set_PType(mf,PGHOST);
-    
-    if(is_overlap) 
+    else if(is_overlap) 
       MF_Set_PType(mf,POVERLAP);
-
     List_Delete(mfverts);
   }
   

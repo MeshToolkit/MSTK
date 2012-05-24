@@ -77,11 +77,16 @@ Assign global IDs
 \end_layout
 
 \begin_layout Standard
-Here we are given submeshes on each processor, the aim is to assign each
- entity a unique global ID.
+Here we are given submeshes on each processor, MESH_AssignGlobalID() assigns
+ each entity a unique global ID.
  For an entity shared by 2 or more processors, we assign its ownership to
  the processor with lowest rank.
  It uses partition boundary vertex coordinate values to detect ghost vertex.
+\end_layout
+
+\begin_layout Standard
+Besides assigning global IDs, it also set master partition id and ptype
+ for all entities.
 \end_layout
 
 \begin_layout Subsection
@@ -115,6 +120,10 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm
 \begin_layout Itemize
 int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm
  comm);
+\end_layout
+
+\begin_layout Standard
+After this function, call MESH_BuildConnection() to build parallel information.
 \end_layout
 
 \begin_layout Subsection
@@ -154,197 +163,26 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num,
 
 \end_layout
 
-\begin_layout Paragraph*
-PMSTK_AssignGlobalIDs(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) 
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-1.
-  extract boundary vertices list l with vertex coordinates
-\end_layout
-
-\begin_layout LyX-Code
-2.
-  sort the list based on vertex coordinates values
-\end_layout
-
-\begin_layout LyX-Code
-3.
-  Allgather number of total and boundary vertices 
-\end_layout
-
-\begin_layout LyX-Code
-4.
-  for i = 0:num-1      
-\end_layout
-
-\begin_layout LyX-Code
-5.
-      Broadcast l with vertex coordinates
-\end_layout
-
-\begin_layout LyX-Code
-6.
-  for j = 0:rank-1
-\end_layout
-
-\begin_layout LyX-Code
-7.
-      compare each vertex v on l with vertices from processor j
-\end_layout
-
-\begin_layout LyX-Code
-8.
-        if there is a match, set the master partition id of v
-\end_layout
-
-\begin_layout LyX-Code
-9.
-  calculate number of ghost vertices
-\end_layout
-
-\begin_layout LyX-Code
-10.
- Allgather number of ghost vertices
-\end_layout
-
-\begin_layout LyX-Code
-11.
- Assign global IDs of owned vertices
-\end_layout
-
-\begin_layout LyX-Code
-11.
- for i = 0:num-1      
-\end_layout
-
-\begin_layout LyX-Code
-12.
-      Broadcast l with global IDs
-\end_layout
-
-\begin_layout LyX-Code
-13.
- Assign global IDs of ghost vertices
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-    
+\begin_layout Section
+Label PType
 \end_layout
 
 \begin_layout Standard
-An alternative way to do this is using space-filling curve, but that is
- generally used for all the vertices on all processors, here we only need
- to deal with boundary vertices on each processors since we assume there
- is no overlapping elements.
+MESH_LabelPType() label 1-ring boundary elements as POVERLAP.
+ The corresponding ghost entities remain to be ghost, otherwise become overlap.
 \end_layout
 
 \begin_layout Section
-Label PType information across processors based on Global ID
+Parallel Add Ghost
 \end_layout
 
 \begin_layout Standard
-Use vertices global ID to identify neighboring processor information, each
- mesh object stores a list of neighboring processor IDs.
- 
-\end_layout
-
-\begin_layout Paragraph*
-PMSTK_LabelPType(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) 
-\end_layout
-
-\begin_layout Standard
-This function builds neighboring processors information.
- The difference between this function and MESH_Update_ParallelAdj() is that
- the latter function assumes each submesh has ghost entities, while here
- we only assume the global IDs are given.
- This function is similar to PMSTK_AssignGlobalIDs() except it uses global
- ID as the key instead of coordinate value, also it sets mesh_par_adj_flags
- and mesh_par_adj_info, similar to function MESH_Update_ParallelAdj()
-\end_layout
-
-\begin_layout Section
-Add ghost cells through communications
-\end_layout
-
-\begin_layout Paragraph*
-PMSTK_BuildGhostElements(Mesh_ptr mesh, int rank, int num, MPI_Comm comm)
-\end_layout
-
-\begin_layout Standard
-This function adds ghost elements on each processor.
-\end_layout
-
-\begin_layout Itemize
-MSTK_SendGhostElements(Mesh_ptr mesh, int rank, int num, MPI_Comm comm)
-\end_layout
-
-\begin_layout Standard
-send the list of boundary elements to the neighboring processors.
- 
-\end_layout
-
-\begin_layout LyX-Code
-1.
-  for i = 0:num-1
-\end_layout
-
-\begin_layout LyX-Code
-2.
-  if processor i has ghost elements on processor rank
-\end_layout
-
-\begin_layout LyX-Code
-3.
-     send the list of boundary elements to processor i    
-\end_layout
-
-\begin_layout Itemize
-MSTK_RecvGhostElements(Mesh_ptr mesh, int rank, int num, MPI_Comm comm)
-\end_layout
-
-\begin_layout Standard
-receive the list of boundary elements from the neighboring processors.
- 
-\end_layout
-
-\begin_layout LyX-Code
-1.
-  for i = 0:num-1
-\end_layout
-
-\begin_layout LyX-Code
-2.
-  if processor rank has ghost elements on processor i
-\end_layout
-
-\begin_layout LyX-Code
-3.
-     receive the list of boundary elements from processor i 
-\end_layout
-
-\begin_layout LyX-Code
-4.
-  for each element e in the receive buffer
-\end_layout
-
-\begin_layout LyX-Code
-5.
-      if e has a vertex with the same global ID as a vertex v on processor
- rank
-\end_layout
-
-\begin_layout LyX-Code
-6.
-          add e to the neighboring list of v
+MESH_Parallel_AddGhost() add 1-ring ghost elements through inter processor
+ point to point communications.
+ First it builds a mesh of 1-ring overlap layer through MESH_BuildSubMesh()
+ on each submesh then use MESH_SendMesh() to send it to neighbor processors,
+ MESH_RecvMesh() is used to receive layers from neighbor processors, add
+ these layers onto each submesh through MESH_ConcatSubMesh() 
 \end_layout
 
 \end_body
