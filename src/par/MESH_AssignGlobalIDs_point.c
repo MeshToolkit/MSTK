@@ -166,7 +166,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
     for(j = 0; j < max_nbv; j++) mv_ov_label[j] = 0;
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
 	MPI_Recv(recv_list_coor,3*max_nbv,MPI_DOUBLE,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_DOUBLE,&count);
 	for(j = 0; j < nbv; j++) {
@@ -191,7 +191,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
       }
     }
     if(i > rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
 	MPI_Send(list_coor,3*nbv,MPI_DOUBLE,i,i,comm);
 	MPI_Recv(mv_ov_label,nbv,MPI_INT,i,rank,comm,&status);
 	/* label overlap vertex */
@@ -234,7 +234,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
 	MPI_Recv(recv_list_vertex,max_nbv,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
 	for(j = 0; j < nbv; j++) {
@@ -245,7 +245,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
       }
     }
     if(i > rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) )
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) )
 	MPI_Send(list_vertex,nbv,MPI_INT,i,i,comm);
     }
   }
@@ -353,7 +353,7 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MEDGE) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MEDGE) ) {
 	MPI_Recv(recv_list_edge,4*max_noe,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
 	for(j = 0; j < nge; j++) {
@@ -375,7 +375,7 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
       }
     }
     if(i > rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MEDGE) )
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MEDGE) )
 	MPI_Send(list_overlap_edge,4*noe,MPI_INT,i,i,comm);
     }
   }
@@ -535,7 +535,7 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) {
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) {
 	MPI_Recv(recv_list_face,(MAXPV2+3)*max_nof,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
 	for(j = 0; j < ngf; j++) {
@@ -560,7 +560,7 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
       }
     }
     if(i > rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) )
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) )
 	MPI_Send(list_overlap_face,(MAXPV2+3)*nof,MPI_INT,i,i,comm);
     }
   }

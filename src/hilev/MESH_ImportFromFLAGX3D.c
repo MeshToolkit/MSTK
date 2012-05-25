@@ -137,7 +137,6 @@ int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, 
 
   
   /* Read the rest of the file */
-
   done = 0;
   while (!done) {
 
@@ -182,7 +181,6 @@ int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, 
 	status = fscanf(fp,"%d %lf %lf %lf",&nodeid,&(xyz[0]),&(xyz[1]),&(xyz[2]));
         if (status == EOF)
           MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
-
 	mv[nodeid-1] = MV_New(mesh);
 	MV_Set_Coords(mv[nodeid-1],xyz);
       }
@@ -333,7 +331,20 @@ int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, 
 
     }
     else if (strncmp(keyword,"ghost_nodes",11) == 0) {
+      int dum, pid;
+      status = fscanf(fp,"%d",&dum);
+      for (i = 0; i < num_ghost_nodes; i++) {
+	status = fscanf(fp,"%d %d %d %d",&dum, &pid, &dum, &dum);
+        if (status == EOF)
+          MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
+	pid--;
 
+	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
+	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
+	if(ndim == 3) {
+	  MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
+	}
+      }
     }
     else if (strncmp(keyword,"cell_data",9) == 0) {
 
