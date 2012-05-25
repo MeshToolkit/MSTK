@@ -97,17 +97,19 @@ int MESH_BuildConnection(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
 	*/	
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MVERTEX);
 	MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MEDGE);
-	MESH_Flag_Has_Overlaps_On_Prtn(submesh,j,MVERTEX);
-	MESH_Flag_Has_Overlaps_On_Prtn(submesh,j,MEDGE);
+	//	MESH_Flag_Has_Overlaps_On_Prtn(submesh,j,MVERTEX);
+	//MESH_Flag_Has_Overlaps_On_Prtn(submesh,j,MEDGE);
 	if(nr) {
 	  MESH_Flag_Has_Ghosts_From_Prtn(submesh,j,MFACE);
-	  MESH_Flag_Has_Overlaps_On_Prtn(submesh,j,MFACE);
+	  //MESH_Flag_Has_Overlaps_On_Prtn(submesh,j,MFACE);
 	}
 
 	/* if found on processor j, still need to check j-1, j-2 ...*/
       }
     }
   }
+
+  MESH_Update_ParallelAdj(submesh, rank, num, MPI_COMM_WORLD);
 
   List_Delete(boundary_verts);
   MSTK_free(global_mesh_info);

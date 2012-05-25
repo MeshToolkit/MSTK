@@ -17,24 +17,26 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
-  int valid = 1;
-  //valid = MESH_CheckTopo(mesh);
+  int valid;
+  printf("Begin checking parallel information on submesh %d\n",rank);
   valid = MESH_Parallel_Check_Ghost(mesh,rank);
-  valid = MESH_Parallel_Check_GlobalID(mesh,rank,num,comm);
+  if(valid)
+    valid = MESH_Parallel_Check_GlobalID(mesh,rank,num,comm);
+  if (valid) printf("Passed parallel checking on submesh %d\n",rank);
+  else printf("Failed parallel checking on submesh %d\n",rank);
+
   return valid;
 
 } /* int MESH_Parallel_Check */
 
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
   int valid = 1;
-  printf("Begin checking parallel information on submesh %d\n",rank);
   valid = MESH_Parallel_Check_VertexGlobalID(mesh,rank,num,comm);
-  valid = MESH_Parallel_Check_EdgeGlobalID(mesh,rank,num,comm);
-  valid = MESH_Parallel_Check_FaceGlobalID(mesh,rank,num,comm);
+  valid &= MESH_Parallel_Check_EdgeGlobalID(mesh,rank,num,comm);
+  valid &= MESH_Parallel_Check_FaceGlobalID(mesh,rank,num,comm);
   if(MESH_Num_Regions(mesh))
-    valid = MESH_Parallel_Check_RegionGlobalID(mesh,rank,num,comm);
-  if (valid) printf("Passed parallel checking on submesh %d\n",rank);
-  return 1;
+    valid &= MESH_Parallel_Check_RegionGlobalID(mesh,rank,num,comm);
+  return valid;
 
 }
 
@@ -928,7 +930,6 @@ int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank) {
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
   idx = 0;
-  printf("checking mesh %d \n", (int)mesh);
   /* check vertex */
   while(mv = MESH_Next_Vertex(mesh, &idx)) {
     if(MV_PType(mv) == PGHOST) {
@@ -953,6 +954,7 @@ int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank) {
     if(ME_PType(me) == PGHOST) {
       if (ME_MasterParID(me) == rank) {
 	sprintf(mesg,"Ghost Edge %-d has master partition id %d but it is on partition %d", ME_GlobalID(me), ME_MasterParID(me),rank);
+	printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), MV_GlobalID(ME_Vertex(me,0)), MV_GlobalID(ME_Vertex(me,1)));
 	MSTK_Report(funcname,mesg,MSTK_ERROR);
 	valid = 0;
       }
@@ -961,6 +963,7 @@ int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank) {
       if(ME_MasterParID(me) != rank) {
 	sprintf(mesg,"Non-Ghost Edge %-d has master partition id %d but it is on partition %d", ME_GlobalID(me), ME_MasterParID(me),rank);
 	MSTK_Report(funcname,mesg,MSTK_ERROR);
+	printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), MV_GlobalID(ME_Vertex(me,0)), MV_GlobalID(ME_Vertex(me,1)));
 	valid = 0;
       }	
     }

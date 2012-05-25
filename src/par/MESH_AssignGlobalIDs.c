@@ -399,20 +399,15 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
  */
 
 int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, nv, ne, nf, global_id, mesh_info[10];
+  int i, nf, global_id, mesh_info[10];
   MFace_ptr mf;
   RepType rtype;
   int *global_mesh_info;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
-
   rtype = MESH_RepType(submesh);
-  nv = MESH_Num_Vertices(submesh);
-  ne = MESH_Num_Edges(submesh);
   nf = MESH_Num_Faces(submesh);
 
   mesh_info[0] = rtype;
-  mesh_info[1] = nv;
-  mesh_info[2] = ne;
   mesh_info[3] = nf;
 
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
@@ -455,7 +450,6 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   nr = MESH_Num_Regions(submesh);
   mesh_info[3] = nf;
   mesh_info[4] = nr;
-
   /* calculate number of GHOST and OVERLAP faces */ 
   nof = 0; ngf = 0;
   overlap_faces = List_New(10);
@@ -487,7 +481,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   }
   mesh_info[5] = ngf;
   mesh_info[6] = nof;
-  mesh_info[7] = nr;
+
   /* sort overlap faces based on coordinate value, for binary search */
   List_Sort(overlap_faces,nof,sizeof(MFace_ptr),compareFaceID);
   /* 
@@ -570,7 +564,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   /* assign region global id */
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+7];
+    global_id = global_id + global_mesh_info[10*i+4];
   for(i = 0; i < nr; i++) {
     mr = MESH_Region(submesh,i);
     MR_Set_PType(mr,PINTERIOR);

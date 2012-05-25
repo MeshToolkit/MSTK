@@ -89,38 +89,15 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
   */
 
 int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, nfv, idx;
+  int i, idx;
   MRegion_ptr mr;
   MFace_ptr mf;
   MVertex_ptr me;
   MVertex_ptr mv;
-  List_ptr mfverts, rverts, redges, rfaces;
-  int is_ghost, is_overlap;
+  List_ptr rverts, redges, rfaces;
   idx = 0;
-
-  /* first label faces */
-  while( (mf = MESH_Next_Face(submesh,&idx)) ) {
-    if(MF_PType(mf) != PGHOST)
-      MF_Set_MasterParID(mf, rank);
-    is_ghost = 1; is_overlap = 1;
-    mfverts = MF_Vertices(mf,1,0);
-    nfv = List_Num_Entries(mfverts);
-    for(i = 0; i < nfv; i++) {
-      mv = List_Entry(mfverts,i);
-      if(MV_PType(mv) != PGHOST) {  /* if all vertices are ghost, then the face is a ghost*/ 
-	is_ghost = 0;
-	if(MV_PType(mv) != POVERLAP) /*  if all vertices are ghost but at least one of them is overlap */
-	  is_overlap = 0;
-      }
-    }
-    if(is_ghost) 
-      MF_Set_PType(mf,PGHOST);
-    else if(is_overlap) 
-      MF_Set_PType(mf,POVERLAP);
-    List_Delete(mfverts);
-  }
   
-  /* label overlap region */
+  /* label 1-ring boundary region as POVERLAP */
   idx = 0;
   while( (mr = MESH_Next_Region(submesh,&idx)) ) {
     rverts = MR_Vertices(mr);

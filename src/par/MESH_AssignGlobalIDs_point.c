@@ -269,95 +269,82 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
  */
      
 int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, k, noe, nge, ne, mesh_info[10], global_id, count;
+  int i, j, k, nbe, noe, nge, ne, mesh_info[10], global_id, count;
   MVertex_ptr mv;
   MEdge_ptr me;
-  List_ptr overlap_edges, ghost_edges;
+  List_ptr boundary_edges;
   MPI_Status status;
-  int is_ghost, is_overlap;
-  int *loc, edge_id[2],index_noe, max_noe, iloc;
-  int *global_mesh_info, *list_overlap_edge, *recv_list_edge;
+  int is_boundary;
+  int *loc, edge_id[2],index_nbe, max_nbe, iloc;
+  int *global_mesh_info, *list_edge, *recv_list_edge, *me_remote_info, *me_ov_label;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   ne = MESH_Num_Edges(submesh);
   mesh_info[2] = ne;
 
-  /* calculate number of GHOST and OVERLAP edges */ 
-  noe = 0; nge = 0;
-  overlap_edges = List_New(10);
-  ghost_edges = List_New(10);
+  /* 
+     collect 'boundary' edges
+     if endpoints are either GHOST or OVERLAP, then it is a boundary edge 
+  */
+  nbe = 0;  boundary_edges = List_New(10);
   for(i = 0; i < ne; i++) {
-    is_ghost = 1; is_overlap = 1;     /* if both ends are ghost vertices, then the edge is a ghost*/
-    me = MESH_Edge(submesh,i);        /* if either ends is overlap, the other end is ghost or overlap */
+    is_boundary = 1;       
+    me = MESH_Edge(submesh,i);
     for( k = 0; k < 2; k++) {
       mv = ME_Vertex(me,k);
-      if(MV_PType(mv) != PGHOST) {
-	is_ghost = 0;
-	if(MV_PType(mv) != POVERLAP)
-	  is_overlap = 0;
-      }
+      if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP)
+	is_boundary = 0;
     }
-    if(is_ghost) {
-      List_Add(ghost_edges,me);
-      ME_Set_PType(me,PGHOST);
-      nge++;
-    }
-    else if(is_overlap) {
-      ME_Set_PType(me,POVERLAP);
-      List_Add(overlap_edges,me);
-      noe++;
+    if(is_boundary) {
+      ME_Set_PType(me,PBOUNDARY);
+      List_Add(boundary_edges,me);
+      nbe++;
     }
   }
+  printf("num of boundary edges %d on rank %d\n", nbe, rank);  
+  mesh_info[5] = nbe;
 
-  mesh_info[5] = nge;
-  mesh_info[6] = noe;
-  
-  /* sort overlap edges based on coordinate value, for binary search */
-  List_Sort(overlap_edges,noe,sizeof(MEdge_ptr),compareEdgeID);
+  List_Sort(boundary_edges,nbe,sizeof(MEdge_ptr),compareEdgeID);
 
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
-  /* Assign global id to non-ghost edges */
-  global_id = 1;
-  for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+2] - global_mesh_info[10*i+5];
-  for(i = 0; i < ne; i++) {
-    me = MESH_Edge(submesh,i);
-    if(ME_PType(me) != PGHOST) {
-      ME_Set_GlobalID(me,global_id++);
-      ME_Set_MasterParID(me,rank);
-    }
-  }
-
-  max_noe = 0;
+  /* get largest number of boundary vertices of all the processors */
+  max_nbe = 0;
   for(i = 0; i < num; i++)
-    if(max_noe < global_mesh_info[10*i+6])
-      max_noe = global_mesh_info[10*i+6];
+    if(max_nbe < global_mesh_info[10*i+5])
+      max_nbe = global_mesh_info[10*i+5];
 
-  list_overlap_edge = (int *)MSTK_malloc(noe*4*sizeof(int));
+  list_edge = (int *)MSTK_malloc(4*nbe*sizeof(int));
+  recv_list_edge = (int *)MSTK_malloc(4*max_nbe*sizeof(int));
 
-  recv_list_edge = (int *)MSTK_malloc(max_noe*4*sizeof(int));
-
-  /* pack edge information to send  */
-  index_noe = 0;
-  for(i = 0; i < noe; i++) {
-    me = List_Entry(overlap_edges,i);
-    list_overlap_edge[index_noe] = MV_GlobalID(ME_Vertex(me,0));
-    list_overlap_edge[index_noe+1] = MV_GlobalID(ME_Vertex(me,1));
-    list_overlap_edge[2*noe+index_noe] = ME_MasterParID(me);
-    list_overlap_edge[2*noe+index_noe+1] = ME_GlobalID(me);
-    index_noe += 2;
+  index_nbe = 0;
+  for(i = 0; i < nbe; i++) {
+    me = List_Entry(boundary_edges,i);
+    list_edge[index_nbe] = MV_GlobalID(ME_Vertex(me,0));
+    list_edge[index_nbe+1] = MV_GlobalID(ME_Vertex(me,1));
+    list_edge[2*nbe+index_nbe] = ME_MasterParID(me);
+    list_edge[2*nbe+index_nbe+1] = ME_GlobalID(me);
+    index_nbe += 2;
   }
-
-  /* Assign ghost edge global ID */
+  
+  /* 
+     used to store list id on incoming buffer of ghost edge 
+     No need to store processor id, already stored in master partition id
+  */
+  me_remote_info = (int *)MSTK_malloc(nbe*sizeof(int));
+  /* lable if a edge is overlap */
+  me_ov_label = (int *)MSTK_malloc(max_nbe*sizeof(int));
+  nge = 0; noe = 0;
+  /* label ghost and overlap edge */
   for (i = 0; i < num; i++) {
+    for(j = 0; j < max_nbe; j++) me_ov_label[j] = 0;
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MEDGE) ) {
-	MPI_Recv(recv_list_edge,4*max_noe,MPI_INT,i,rank,comm,&status);
+	MPI_Recv(recv_list_edge,4*max_nbe,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	for(j = 0; j < nge; j++) {
-	  me = List_Entry(ghost_edges,j);
+	for(j = 0; j < nbe; j++) {
+	  me = List_Entry(boundary_edges,j);
 	  if(ME_GlobalID(me) > 0) continue;  /* if already assigned */
 	  edge_id[0] = MV_GlobalID(ME_Vertex(me,0));
 	  edge_id[1] = MV_GlobalID(ME_Vertex(me,1));
@@ -367,24 +354,85 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
 			       2*sizeof(int),
 			       compareEdgeINT);
 	  if(loc) {
-	    iloc = (int)(loc - recv_list_edge);
-	    ME_Set_MasterParID(me,recv_list_edge[count/2+iloc]);
-	    ME_Set_GlobalID(me,recv_list_edge[count/2+iloc+1]);
+	    iloc = (int)(loc - recv_list_edge)/2;
+	    ME_Set_PType(me,PGHOST);
+	    ME_Set_MasterParID(me,i);
+	    nge++;
+	    me_remote_info[j] = iloc;
+	    me_ov_label[iloc] = 1;
 	  }
+	}
+	MPI_Send(me_ov_label,count/4,MPI_INT,i,i,comm);
+      }
+    }
+    if(i > rank) {     
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MEDGE) ) {
+	MPI_Send(list_edge,4*nbe,MPI_INT,i,i,comm);
+	MPI_Recv(me_ov_label,nbe,MPI_INT,i,rank,comm,&status);
+	/* label overlap edge */
+	for(j = 0; j < nbe; j++) {
+	  me = List_Entry(boundary_edges,j);
+	  if(me_ov_label[j] && ME_PType(me) != POVERLAP && ME_PType(me) != PGHOST) {
+	    noe++;
+	    ME_Set_PType(me,POVERLAP);
+	    ME_Set_MasterParID(me,rank);
+	  }
+	}
+      }
+    }
+  }
+  
+  printf("num of ghost edges %d, overlap edges %d on rank %d\n", nge, noe, rank);  
+  mesh_info[9] = nge;
+  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
+  
+  /* Assign global ID for non ghost vertex */
+  global_id = 1;
+  for(i = 0; i < rank; i++) 
+    global_id = global_id + global_mesh_info[10*i+2] - global_mesh_info[10*i+9];
+  for(i = 0; i < ne; i++) {
+    me = MESH_Edge(submesh,i);
+    if (ME_PType(me) == PGHOST) continue;
+    ME_Set_GlobalID(me,global_id++);
+    ME_Set_MasterParID(me,rank);
+  }
+
+  /* this time only global id are sent */
+  index_nbe = 0;
+  for(i = 0; i < nbe; i++) {
+    me = List_Entry(boundary_edges,i);
+    list_edge[index_nbe] = ME_GlobalID(me);
+    index_nbe++;
+  }
+
+  /* Assign ghost vertex global ID */
+  for (i = 0; i < num; i++) {
+    if(i == rank) continue;
+    if(i < rank) {     
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MEDGE) ) {
+	MPI_Recv(recv_list_edge,max_nbe,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	for(j = 0; j < nbe; j++) {
+	  me = List_Entry(boundary_edges,j);
+	  if(ME_MasterParID(me) != i) continue;
+	  ME_Set_GlobalID(me,recv_list_edge[me_remote_info[j]]);
 	}
       }
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MEDGE) )
-	MPI_Send(list_overlap_edge,4*noe,MPI_INT,i,i,comm);
+	MPI_Send(list_edge,nbe,MPI_INT,i,i,comm);
     }
   }
 
-  printf("num of ghost edges %d overlap edges %d on rank %d\n",nge,noe,rank);  
-  List_Delete(overlap_edges);
-  MSTK_free(global_mesh_info);
 
-  MSTK_free(list_overlap_edge);
+
+  List_Delete(boundary_edges);
+  MSTK_free(global_mesh_info);
+  MSTK_free(me_remote_info);
+  MSTK_free(me_ov_label);
+  MSTK_free(list_edge);
   MSTK_free(recv_list_edge);
   return 1;
 }
@@ -431,16 +479,15 @@ int MESH_AssignGlobalIDs_point_Face(Mesh_ptr submesh, int rank, int num, MPI_Com
  */
      
 int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
-  int i, j, k, nfv, nof, ngf, nf, nr, mesh_info[10], global_id, count;
+  int i, j, k, nfv, nbf, nof, ngf, nf, nr, mesh_info[10], global_id, count;
   MVertex_ptr mv;
   MFace_ptr mf;
   MRegion_ptr mr;
   MPI_Status status;
-  List_ptr overlap_faces, ghost_faces, mfverts;
+  List_ptr boundary_faces, mfverts;
   RepType rtype;
-  int *loc, face_id[MAXPV2+3],index_nof, max_nof, iloc;
-  int *global_mesh_info, *list_overlap_face, *recv_list_face;
-  int is_ghost, is_overlap;
+  int *loc, face_id[MAXPV2+3],index_nbf, max_nbf, iloc, is_boundary;
+  int *global_mesh_info, *list_face, *recv_list_face, *mf_remote_info, *mf_ov_label;
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
   /* mesh_info store the mesh reptype, nv, ne, nf, nof */
@@ -452,94 +499,76 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
   mesh_info[3] = nf;
   mesh_info[4] = nr;
 
-  /* calculate number of GHOST and OVERLAP faces */ 
-  nof = 0; ngf = 0;
-  overlap_faces = List_New(10);
-  ghost_faces = List_New(10);
+  /* 
+     collect 'boundary' faces
+     if all endpoints are either GHOST or OVERLAP, then it is a boundary face 
+  */
+  nbf = 0;  boundary_faces = List_New(10);
   for(i = 0; i < nf; i++) {
+    is_boundary = 1;       
     mf = MESH_Face(submesh,i);
-    is_ghost = 1; is_overlap = 1;
     mfverts = MF_Vertices(mf,1,0);
     nfv = List_Num_Entries(mfverts);
     for(j = 0; j < nfv; j++) {
       mv = List_Entry(mfverts,j);
-      if(MV_PType(mv) != PGHOST) {  /* if all vertices are ghost, then the face is a ghost*/ 
-	is_ghost = 0;
-	if(MV_PType(mv) != POVERLAP) /*  if all vertices are ghost but at least one of them is overlap */
-	  is_overlap = 0;
-      }
+      if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP)
+	is_boundary = 0;
     }
-    if(is_ghost) {
-      List_Add(ghost_faces,mf);
-      MF_Set_PType(mf,PGHOST);
-      ngf++;
+    if(is_boundary) {
+      MF_Set_PType(mf,PBOUNDARY);
+      List_Add(boundary_faces,mf);
+      nbf++;
     }
-    else if(is_overlap) {
-      List_Add(overlap_faces,mf);
-      MF_Set_PType(mf,POVERLAP);
-      nof++;
-    }
-    List_Delete(mfverts);
   }
-  mesh_info[5] = ngf;
-  mesh_info[6] = nof;
-  mesh_info[7] = nr;
 
-  /* sort overlap faces based on coordinate value, for binary search */
-  List_Sort(overlap_faces,nof,sizeof(MFace_ptr),compareFaceID);
+  mesh_info[5] = nbf;
+
+  List_Sort(boundary_faces,nbf,sizeof(MFace_ptr),compareFaceID);
 
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
-  /* Assign global id to non-ghost faces */
-  /* calculate starting global id number for faces */
-  global_id = 1;
-  for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+3] - global_mesh_info[10*i+5];
-  for(i = 0; i < nf; i++) {
-    mf = MESH_Face(submesh,i);
-    if(MF_PType(mf) != PGHOST) {
-      MF_Set_GlobalID(mf,global_id++);
-      MF_Set_MasterParID(mf,rank);
-    }
-  }
-
-
-  /* get largest number of boundary vertices of all the processors */
-  max_nof = 0;
+  /* get largest number of boundary faces of all the processors */
+  max_nbf = 0;
   for(i = 0; i < num; i++)
-    if(max_nof < global_mesh_info[10*i+6])
-      max_nof = global_mesh_info[10*i+6];
+    if(max_nbf < global_mesh_info[10*i+5])
+      max_nbf = global_mesh_info[10*i+5];
 
-  list_overlap_face = (int *)MSTK_malloc(nof*(MAXPV2+3)*sizeof(int));
+  list_face = (int *)MSTK_malloc((MAXPV2+3)*nbf*sizeof(int));
+  recv_list_face = (int *)MSTK_malloc((MAXPV2+3)*max_nbf*sizeof(int));
 
-  recv_list_face = (int *)MSTK_malloc(num*max_nof*(MAXPV2+3)*sizeof(int));
-
-  /* pack face information to send  */
-  index_nof = 0;
-  for(i = 0; i < nof; i++) {
-    mf = List_Entry(overlap_faces,i);
+  index_nbf = 0;
+  for(i = 0; i < nbf; i++) {
+    mf = List_Entry(boundary_faces,i);
     mfverts = MF_Vertices(mf,1,0);
     nfv = List_Num_Entries(mfverts);
-    list_overlap_face[index_nof] = nfv;
+    list_face[index_nbf] = nfv;
     for(j = 0; j < nfv; j++) 
-      list_overlap_face[index_nof+j+1] = MV_GlobalID(List_Entry(mfverts,j));
-
-    list_overlap_face[index_nof+nfv+1] = MF_MasterParID(mf);
-    list_overlap_face[index_nof+nfv+2] = MF_GlobalID(mf);
-    index_nof += MAXPV2+3;
+      list_face[index_nbf+j+1] = MV_GlobalID(List_Entry(mfverts,j));
+    list_face[index_nbf+nfv+1] = MF_MasterParID(mf);
+    list_face[index_nbf+nfv+2] = MF_GlobalID(mf);
+    index_nbf += MAXPV2+3;
     List_Delete(mfverts);
   }
-
-  /* Assign ghost face global ID */
+  
+  /* 
+     used to store list id on incoming buffer of ghost edge 
+     No need to store processor id, already stored in master partition id
+  */
+  mf_remote_info = (int *)MSTK_malloc(nbf*sizeof(int));
+  /* lable if a edge is overlap */
+  mf_ov_label = (int *)MSTK_malloc(max_nbf*sizeof(int));
+  ngf = 0; nof = 0;
+  /* label ghost and overlap edge */
   for (i = 0; i < num; i++) {
+    for(j = 0; j < max_nbf; j++) mf_ov_label[j] = 0;
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) {
-	MPI_Recv(recv_list_face,(MAXPV2+3)*max_nof,MPI_INT,i,rank,comm,&status);
+	MPI_Recv(recv_list_face,(MAXPV2+3)*max_nbf,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	for(j = 0; j < ngf; j++) {
-	  mf = List_Entry(ghost_faces,j);
+	for(j = 0; j < nbf; j++) {
+	  mf = List_Entry(boundary_faces,j);
 	  if(MF_GlobalID(mf) > 0) continue;  /* if already assigned */
 	  mfverts = MF_Vertices(mf,1,0);
 	  nfv = List_Num_Entries(mfverts);
@@ -552,25 +581,83 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
 			       (MAXPV2+3)*sizeof(int),
 			       compareFaceINT);
 	  if(loc) {
-	    iloc = (int)(loc - recv_list_face);
-	    MF_Set_MasterParID(mf,recv_list_face[iloc+nfv+1]);
-	    MF_Set_GlobalID(mf,recv_list_face[iloc+nfv+2]);
+	    iloc = (int)(loc - recv_list_face)/(MAXPV2+3);
+	    MF_Set_PType(mf,PGHOST);
+	    MF_Set_MasterParID(mf,i);
+	    ngf++;
+	    mf_remote_info[j] = iloc;
+	    mf_ov_label[iloc] = 1;
 	  }
+	  List_Delete(mfverts);
+	}
+	MPI_Send(mf_ov_label,count/(MAXPV2+3),MPI_INT,i,i,comm);
+      }
+    }
+    if(i > rank) {     
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) {
+	MPI_Send(list_face,(MAXPV2+3)*nbf,MPI_INT,i,i,comm);
+	MPI_Recv(mf_ov_label,nbf,MPI_INT,i,rank,comm,&status);
+	/* label overlap edge */
+	for(j = 0; j < nbf; j++) {
+	  mf = List_Entry(boundary_faces,j);
+	  if(mf_ov_label[j] && MF_PType(mf) != POVERLAP && MF_PType(mf) != PGHOST) {
+	    nof++;
+	    MF_Set_PType(mf,POVERLAP);
+	    MF_Set_MasterParID(mf,rank);
+	  }
+	}
+      }
+    }
+  }
+  
+  printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank);  
+  mesh_info[9] = ngf;
+  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
+  
+  /* Assign global ID for non ghost vertex */
+  global_id = 1;
+  for(i = 0; i < rank; i++) 
+    global_id = global_id + global_mesh_info[10*i+3] - global_mesh_info[10*i+9];
+  for(i = 0; i < nf; i++) {
+    mf = MESH_Face(submesh,i);
+    if (MF_PType(mf) == PGHOST) continue;
+    MF_Set_GlobalID(mf,global_id++);
+    MF_Set_MasterParID(mf,rank);
+  }
+
+  /* this time only global id are sent */
+  index_nbf = 0;
+  for(i = 0; i < nbf; i++) {
+    mf = List_Entry(boundary_faces,i);
+    list_face[index_nbf] = MF_GlobalID(mf);
+    index_nbf++;
+  }
+
+  /* Assign ghost vertex global ID */
+  for (i = 0; i < num; i++) {
+    if(i == rank) continue;
+    if(i < rank) {     
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) {
+	MPI_Recv(recv_list_face,max_nbf,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	for(j = 0; j < nbf; j++) {
+	  mf = List_Entry(boundary_faces,j);
+	  if(MF_MasterParID(mf) != i) continue;
+	  MF_Set_GlobalID(mf,recv_list_face[mf_remote_info[j]]);
 	}
       }
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) )
-	MPI_Send(list_overlap_face,(MAXPV2+3)*nof,MPI_INT,i,i,comm);
+	MPI_Send(list_face,nbf,MPI_INT,i,i,comm);
     }
   }
-
-  printf("num of ghost faces %d overlap faces %d on rank %d\n",ngf,nof,rank);  
 
   /* assign region global id */
   global_id = 1;
   for(i = 0; i < rank; i++) 
-    global_id = global_id + global_mesh_info[10*i+7];
+    global_id = global_id + global_mesh_info[10*i+4];
   for(i = 0; i < nr; i++) {
     mr = MESH_Region(submesh,i);
     MR_Set_PType(mr,PINTERIOR);
@@ -578,12 +665,13 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
     MR_Set_MasterParID(mr,rank);
   }
 
-  List_Delete(overlap_faces);
-  List_Delete(ghost_faces);
+  List_Delete(boundary_faces);
   MSTK_free(global_mesh_info);
-
-  MSTK_free(list_overlap_face);
+  MSTK_free(mf_remote_info);
+  MSTK_free(mf_ov_label);
+  MSTK_free(list_face);
   MSTK_free(recv_list_face);
+
   return 1;
 }
 

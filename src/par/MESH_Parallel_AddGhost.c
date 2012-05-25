@@ -68,7 +68,7 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
   */
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
-    if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+    if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) )  {
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
       MESH_Flag_Has_Overlaps_On_Prtn(submesh,i,MALLTYPE);
     }
@@ -77,6 +77,9 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
     }
   }
+
+  MESH_Update_ParallelAdj(submesh, rank, num, comm);
+
   /* allocate meshes to receive from other processors */
   num_recv_procs = MESH_Num_GhostPrtns(submesh);
   recv_meshes = (Mesh_ptr*)MSTK_malloc(num_recv_procs*sizeof(Mesh_ptr));
