@@ -1002,7 +1002,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
               (mesh->par_adj_flags[prtn]>>5 & 1) &
               (mesh->par_adj_flags[prtn]>>7 & 1));
     else      
-      return ((mesh->par_adj_flags[prtn])>>(2*mtype) & 1);
+      return ((mesh->par_adj_flags[prtn])>>(2*mtype+1) & 1);
   }
 
 
