@@ -387,7 +387,7 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   
-  /* Assign global ID for non ghost vertex */
+  /* Assign global ID for non ghost edge */
   global_id = 1;
   for(i = 0; i < rank; i++) 
     global_id = global_id + global_mesh_info[10*i+2] - global_mesh_info[10*i+9];
@@ -399,11 +399,9 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
   }
 
   /* this time only global id are sent */
-  index_nbe = 0;
   for(i = 0; i < nbe; i++) {
     me = List_Entry(boundary_edges,i);
-    list_edge[index_nbe] = ME_GlobalID(me);
-    index_nbe++;
+    list_edge[i] = ME_GlobalID(me);
   }
 
   /* Assign ghost vertex global ID */
