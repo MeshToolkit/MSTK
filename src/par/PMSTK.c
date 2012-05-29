@@ -335,6 +335,10 @@ extern "C" {
      1 -- we are given partitioned meshes with a unique global ID on 
           each mesh vertex
 
+     2 -- we are given parallel neighbor information, but no global ID on 
+          each mesh vertex
+
+
   */
      
 
@@ -352,10 +356,16 @@ extern "C" {
 
     MESH_Set_Prtn(mesh, rank, num);
     
-    if (input_type == 0)
+    if (input_type == 0) {
       MESH_AssignGlobalIDs(mesh, rank, num, comm);
+      MESH_BuildConnection(mesh, rank, num, comm);
+    }
+    if (input_type == 1) 
+      MESH_BuildConnection(mesh, rank, num, comm);
 
-    
+    if (input_type == 2) 
+      MESH_AssignGlobalIDs_point(mesh, rank, num, comm);
+
     MESH_LabelPType(mesh, rank, num, comm);
 
     MESH_Parallel_AddGhost(mesh, rank, num, comm);
