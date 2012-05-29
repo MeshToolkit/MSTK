@@ -127,7 +127,7 @@ TEST(UpdAtt2D_Weave) {
 
    CHECK(status);
 
-   int DebugWait=1;
+   int DebugWait=0;
    while (DebugWait);
 
 
