@@ -372,6 +372,7 @@ extern "C" {
 
     MESH_Build_GhostLists(mesh);
 
+    MESH_Update_ParallelAdj(mesh, rank, num, comm);
     return 1;
   }
 
@@ -382,7 +383,6 @@ extern "C" {
     int i, natt;
     char attr_name[256];
     MAttrib_ptr attrib;
-
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {
       attrib = MESH_Attrib(mesh,i);
@@ -390,6 +390,7 @@ extern "C" {
       MPI_Barrier(comm);
       MESH_UpdateAttr(mesh,attr_name,rank,num,comm);
     }
+
 
     return 1;
   }

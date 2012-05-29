@@ -35,7 +35,6 @@ extern "C" {
     MAttrib_ptr attrib;
     MPI_Status status;
 
-
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */
     if (!attrib) {
@@ -131,12 +130,10 @@ extern "C" {
 
 
 
-
     /* Info about how many processors we will receive info from, their
        IDs, number of entities they will send etc */
 
     num_recv_procs = MESH_Num_GhostPrtns(mesh);
-
     /* this stores the global to local processor id map */
     int *rank_g2l = (int*) MSTK_malloc((numprocs+1)*sizeof(int));
 
