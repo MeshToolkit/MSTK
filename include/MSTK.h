@@ -146,6 +146,10 @@ void MSTK_Init(void);
 
   int         MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm);
 
+
+  /* Update vertex coordinates for ghost vertices */
+  int         MESH_UpdateVertexCoords(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+
   /* END PRIMARY ROUTINES FOR PARALLEL APPLICATION */
 #endif
 
