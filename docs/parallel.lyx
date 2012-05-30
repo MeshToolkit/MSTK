@@ -68,11 +68,45 @@ Building parallel information from distributed meshes
 
 \begin_layout Abstract
 This documents shows how to build parallel information from distributed
- submeshes without any additional information except vertex coordinates.
+ submeshes.
  
 \end_layout
 
-\begin_layout Section
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/PMSTK.png
+	scale 80
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+The overall flow chart
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
 Assign global IDs
 \end_layout
 
@@ -85,11 +119,11 @@ Here we are given submeshes on each processor, MESH_AssignGlobalID() assigns
 \end_layout
 
 \begin_layout Standard
-Besides assigning global IDs, it also set master partition id and ptype
+Besides assigning global IDs, it also sets master partition id and ptype
  for all entities.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsection*
 All to all comunication
 \end_layout
 
@@ -102,31 +136,11 @@ If the distributed submesh has no additional information, i.e.
  It uses Allgather() communication routine in MPI.
 \end_layout
 
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int rank, int num, MPI_Comm
- comm); 
-\end_layout
-
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm
- comm);
-\end_layout
-
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm
- comm); 
-\end_layout
-
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm
- comm);
-\end_layout
-
 \begin_layout Standard
 After this function, call MESH_BuildConnection() to build parallel information.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsection*
 Point to point comunication
 \end_layout
 
@@ -139,50 +153,45 @@ If the parallel information is given, i.e.
  It uses Send() communication routine in MPI.
 \end_layout
 
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num,
- MPI_Comm comm); 
-\end_layout
-
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num,
- MPI_Comm comm);
-\end_layout
-
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_point_Face(Mesh_ptr submesh, int rank, int num,
- MPI_Comm comm); 
-\end_layout
-
-\begin_layout Itemize
-int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num,
- MPI_Comm comm);
-\end_layout
-
 \begin_layout Standard
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Section*
 Label PType
 \end_layout
 
 \begin_layout Standard
-MESH_LabelPType() label 1-ring boundary elements as POVERLAP.
- The corresponding ghost entities remain to be ghost, otherwise become overlap.
+MESH_LabelPType() labels 1-ring boundary elements.
+ It assigns all the elements with a POVERLAP or PGHOST vertex as POVERLAP,
+ the corresponding ghost entities remain to be PGHOST, otherwise become
+ POVERLAP.
 \end_layout
 
-\begin_layout Section
+\begin_layout Section*
 Parallel Add Ghost
 \end_layout
 
 \begin_layout Standard
-MESH_Parallel_AddGhost() add 1-ring ghost elements through inter processor
+MESH_Parallel_AddGhost() adds 1-ring ghost elements through inter processor
  point to point communications.
  First it builds a mesh of 1-ring overlap layer through MESH_BuildSubMesh()
- on each submesh then use MESH_SendMesh() to send it to neighbor processors,
+ on each submesh then uses MESH_SendMesh() to send it to neighbor processors,
  MESH_RecvMesh() is used to receive layers from neighbor processors, add
  these layers onto each submesh through MESH_ConcatSubMesh() 
+\end_layout
+
+\begin_layout Section*
+Parallel Checking
+\end_layout
+
+\begin_layout Standard
+MESH_Parallel_Check() checks if the parallel mesh is valid.
+ First it checks if every ghost entity has a master partition number that
+ is different from current partition, and if other PType entitties has the
+ same master partition number as this parition.
+ Second, it sends ghost entities to their host processor and check if it
+ exists and if the information matches.
 \end_layout
 
 \end_body
