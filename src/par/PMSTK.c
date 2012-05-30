@@ -311,9 +311,10 @@ extern "C" {
       MESH_Build_GhostLists(*mesh);
      
     }
+
+    MESH_Set_Prtn(*mesh,rank,num);
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
-      MESH_Set_Prtn(*mesh,rank,num);
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
     }
 

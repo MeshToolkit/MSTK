@@ -8,8 +8,7 @@
 extern "C" {
 #endif
 
-  /* Routine to check that the topological structure of the mesh is valid */
-  /* Rao Garimella - 12/16/2010                                           */
+  /* check is the parallel mesh is valid */
 int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank);
 int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
@@ -27,7 +26,12 @@ int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
 
   return valid;
 
-} /* int MESH_Parallel_Check */
+}
+ 
+ /* 
+    Send ghost entities to their host processor and check if it exists and if 
+    the information matches
+ */
 
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
   int valid = 1;
