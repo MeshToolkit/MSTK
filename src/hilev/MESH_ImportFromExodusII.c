@@ -5,8 +5,9 @@
 #include "MSTK.h"
 
 #include "exodusII.h"
+#ifdef EXODUSII_4
 #include "exodusII_ext.h"
-
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +33,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   int nedges, nedge_blk, nfaces, nface_blk, nelemsets;
   int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
   int *elem_blk_ids, *connect, *node_map, *elem_map, *nnpe;
-  int nelnodes, neledges, nelfaces, ntotnodes, ntotedges, ntotfaces;
+  int nelnodes, neledges, nelfaces;
   int nelem_i, natts;
   int *sideset_ids, *ss_elem_list, *ss_side_list, *nodeset_ids, *ns_node_list;
   int num_nodes_in_set, num_sides_in_set, num_df_in_set;
@@ -343,9 +344,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polygons (counting duplicates) */
 
-	ntotnodes = nelnodes;
-	
-	connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
+	connect = (int *) MSTK_malloc(nelnodes*sizeof(int));
 
 	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
 			   NULL, NULL);
@@ -582,8 +581,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
-			    elem_type, &nelem_i, &ntotnodes, 
-			    &ntotedges, &ntotfaces, &natts);
+			    elem_type, &nelem_i, &nelnodes, 
+			    &neledges, &nelfaces, &natts);
       if (status < 0) {
 	sprintf(mesg,
 		"Error while reading element block %s in Exodus II file %s\n",
@@ -606,9 +605,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polyhedra (counting duplicates) */
 
-	ntotfaces = nelfaces;
-	
-	connect = (int *) MSTK_malloc(ntotfaces*sizeof(int));
+	connect = (int *) MSTK_malloc(nelfaces*sizeof(int));
 
 	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], NULL, NULL,
 			     connect);
@@ -791,9 +788,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polygons (counting duplicates) */
 
-	ntotnodes = nelnodes;
-	
-	connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
+	connect = (int *) MSTK_malloc(nelnodes*sizeof(int));
 
 	status = ex_get_conn(exoid, EX_FACE_BLOCK, elem_blk_ids[i], connect,
 			   NULL, NULL);
