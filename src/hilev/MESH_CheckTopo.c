@@ -93,6 +93,7 @@ extern "C" {
       if (gvdim == 2) {
 	MEdge_ptr e0, ecur, enxt;
 	MFace_ptr fcur;
+        int flipped = 0;
 
 	/* If vertex is classified on a model face, then we should be
 	   able to find a ring of faces classified on that model
@@ -108,6 +109,7 @@ extern "C" {
 	    break;
 	  }
 	}
+        List_Delete(vfaces);
 
 	if (!found) {
 	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find connected face classified on this model face",vid,gvid);
@@ -148,7 +150,18 @@ extern "C" {
 	   
 	  fedges = MF_Edges(fcur,1,mv);
 	  nfe = List_Num_Entries(fedges);
-	  enxt = List_Entry(fedges,nfe-1);
+
+          if (List_Entry(fedges,0) == ecur)
+            enxt = List_Entry(fedges,nfe-1);
+          else if (List_Entry(fedges,nfe-1) == ecur) {
+            enxt = List_Entry(fedges,0);
+            flipped = 1;
+          }
+          else {
+            sprintf(mesg,"Could not find next edge while traversing around vertex %-d on model face %-d",vid,gvid);
+            MSTK_Report(funcname,mesg,MSTK_ERROR);
+          }
+
 	  List_Delete(fedges);
 
 	  if (enxt == e0)
@@ -159,9 +172,14 @@ extern "C" {
 	}
 
 	if (!done) {
-	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not \n find ring of faces classified on this model face",vid,gvid);
+	  sprintf(mesg,"Vertex %-d classified on model face %-d but could not  find ring of faces classified on this model face",vid,gvid);
 	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	}
+
+        if (done && flipped) {
+          sprintf(mesg,"Inconsistent orientations of boundary faces around vertex %-d",vid);
+          MSTK_Report(funcname,mesg,MSTK_WARN);
+        }
       }
 
 
@@ -181,6 +199,11 @@ extern "C" {
       gedim = ME_GEntDim(me);
       geid = ME_GEntID(me);
 
+      if (ME_Vertex(me,0) == ME_Vertex(me,1)) {
+        sprintf(mesg,"Edge %-d has repeated vertices",eid);
+        MSTK_Report(funcname,mesg,MSTK_ERROR);
+      }
+
       for (i = 0; i < 2; i++) {
 	MVertex_ptr ev = ME_Vertex(me,i);
 
@@ -189,12 +212,12 @@ extern "C" {
 	gvdim = MV_GEntDim(ev);
 
 	if (gedim < gvdim) {
-	  sprintf(mesg,"Edge %-d classified on lower dimensional entity than\n connected vertex %-d",eid,vid);
+	  sprintf(mesg,"Edge %-d classified on lower dimensional entity than  connected vertex %-d",eid,vid);
 	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
 	else if (gedim == gvdim && geid != gvid) {
-	  sprintf(mesg,"Edge %-d and its vertex %-d classified on different\n entities of the same dimension",eid,vid);
+	  sprintf(mesg,"Edge %-d and its vertex %-d classified on different entities of the same dimension",eid,vid);
 	  MSTK_Report(funcname,mesg,MSTK_WARN);
 	  valid = 0;
 	}
@@ -342,6 +365,7 @@ extern "C" {
 	      valid = 0;
 	    }
 	  } /* for (i = 0; i < nfr; i++) */
+          List_Delete(fregs);
 
 	} /* if (geid == 2) */
 
@@ -363,6 +387,12 @@ extern "C" {
       gfdim = MF_GEntDim(mf);
 
       fedges = MF_Edges(mf,1,0);
+
+      if (List_Num_Entries(fedges) < 3) {
+        sprintf(mesg,"Face %-d has less than 3 edges",fid);
+        MSTK_Report(funcname,mesg,MSTK_ERROR);
+      }
+
       idx2 = 0;
       while ((fe = List_Next_Entry(fedges,&idx2))) {
 	eid = ME_ID(fe);
@@ -428,6 +458,12 @@ extern "C" {
       grid = MR_GEntID(mr);
 
       rfaces = MR_Faces(mr);
+
+      if (List_Num_Entries(rfaces) < 4) {
+        sprintf(mesg,"Region %-d has less than 4 faces",rid);
+        MSTK_Report(funcname,mesg,MSTK_ERROR);
+      }
+
       idx2 = 0;
       while ((rf = List_Next_Entry(rfaces,&idx2))) {
 	int dir;

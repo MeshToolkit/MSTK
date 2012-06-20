@@ -18,7 +18,7 @@ extern "C" {
 
     MEnt_Init_CmnData((MEntity_ptr) f);
     MEnt_Set_Mesh((MEntity_ptr) f,mesh);
-    MEnt_Set_Dim((MEntity_ptr) f,2);
+    MEnt_Set_Dim((MEntity_ptr) f,MFACE);
     MEnt_Set_GEntDim((MEntity_ptr) f,4); /* nonsensical value as we don't know what it is */
     MEnt_Set_GEntID((MEntity_ptr) f,0);
 
@@ -122,6 +122,11 @@ extern "C" {
     (*MF_Set_Edges_jmp[RTYPE])(f,n,edges,dir);
   }
 
+  void MF_Rem_Edge(MFace_ptr f, MEdge_ptr edge) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
+    (*MF_Rem_Edge_jmp[RTYPE])(f,edge);
+  }
+
   void MF_Replace_Edges(MFace_ptr f, int nold, MEdge_ptr *oldedges, int nnu, 
 			MEdge_ptr *nuedges) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
@@ -136,6 +141,12 @@ extern "C" {
 
   void MF_Set_Vertices(MFace_ptr f, int n, MVertex_ptr *verts) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
+
+#ifdef DEBUG
+    if (n < 3)
+      MSTK_Report("MF_Set_Vertices","Trying to create face with only 2 vertices",MSTK_ERROR);
+#endif
+
     (*MF_Set_Vertices_jmp[RTYPE])(f,n,verts);
   }
 

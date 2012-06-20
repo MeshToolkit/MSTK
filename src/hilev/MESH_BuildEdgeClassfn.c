@@ -426,11 +426,10 @@ int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
 
 	      if (cosang <= COSSHARPANG) {
 		/* Add edge2 to subedge list unless its already there */
-		if (MEnt_IsMarked(adjedge,submk))  
-		  continue;
-		
-		List_Add(subedges,adjedge);
-		MEnt_Mark(adjedge,submk);
+		if (!MEnt_IsMarked(adjedge,submk)) {
+                  List_Add(subedges,adjedge);
+                  MEnt_Mark(adjedge,submk);
+                }
 	      }
 	      else {
 		/* The two edges make a very sharp angle. We will
@@ -440,7 +439,6 @@ int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
 
 		MV_Set_GEntDim(ev[j],0);
 		MV_Set_GEntID(ev[j],0);
-		continue;
 	      }
 	    }
 	    else {
@@ -450,7 +448,6 @@ int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
 
 	      MV_Set_GEntDim(ev[j],0);
 	      MV_Set_GEntID(ev[j],0);
-	      continue;
 	    }
 	  }
 	  else {
@@ -460,7 +457,6 @@ int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
 
 	    ME_Set_GEntDim(ev[j],0);
 	    ME_Set_GEntID(ev[j],0);
-	    continue;
 	  }
 	  List_Delete(vedges);
 	  List_Delete(vbedges);	  

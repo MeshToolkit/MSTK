@@ -286,8 +286,7 @@ extern "C" {
 	nfe = MSTK_rfe_template[regtype][i][0];
 	for (j = 0; j < nfe; j++) {
 	  ind = MSTK_rfe_template[regtype][i][j+1];
-	  sgn = (ind >= 0) ? 1 : 0;
-	  ind = abs(ind);
+	  sgn = MSTK_rfedir_template[regtype][i][j+1];
 	  fedges[j] = redges[ind];
 	  fedirs[j] = !(redirs[ind]^sgn);
 
@@ -500,7 +499,7 @@ extern "C" {
 
     /* Move the remaining bits to the right */
     
-    for (i = findex+1; i < nf-1; i++) {
+    for (i = findex; i < nf-1; i++) {
 
       j = (int) i/(8*sizeof(unsigned int));
       k = i%(8*sizeof(unsigned int));
@@ -511,7 +510,7 @@ extern "C" {
       j1 = (int) (i+1)/(8*sizeof(unsigned int));
       k1 = (i+1)%(8*sizeof(unsigned int));
       
-      dir = (adj->fdirs[j1]>>(k1+1)) & 1;
+      dir = (adj->fdirs[j1]>>k1) & 1;
       
       /* move bit for i+1 to i */
       

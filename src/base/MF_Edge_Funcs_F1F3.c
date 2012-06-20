@@ -162,7 +162,7 @@ extern "C" {
 
     /* Move the remaining bits to the right */
     int k, dir;
-    for (k = eindex+1; k < ne-1; k++) {
+    for (k = eindex; k < ne-1; k++) {
       /* set bit k to 0 */
       adj->edirs = adj->edirs & ~(1<<k);
 

@@ -63,7 +63,7 @@ void MSTK_Init(void);
   int         MESH_CheckTopo(Mesh_ptr mesh);
 
   /* Check if mesh geometry is valid */
-  int         MESH_CheckGeom(Mesh_ptr mesh);
+  /* int        MESH_CheckGeom(Mesh_ptr mesh); */
 
 
   GModel_ptr  MESH_GModel(Mesh_ptr mesh);
@@ -270,6 +270,7 @@ void MSTK_Init(void);
   void        MF_Replace_Edges(MFace_ptr mface, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
   void        MF_Replace_Vertex(MFace_ptr mface, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void        MF_Replace_Edges_i(MFace_ptr mface, int nold, int i, int nnu, MEdge_ptr *nuedge);
+  void MF_Rem_Edge(MFace_ptr mface, MEdge_ptr medge);
   void        MF_Replace_Vertex_i(MFace_ptr mface, int i, MVertex_ptr nuvertex);
   void        MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
   void        MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
@@ -337,9 +338,11 @@ void MSTK_Init(void);
   void        MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
   void        MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void        MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
+  void MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
   void        MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
   int         MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int         MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
+  
 
 
   Mesh_ptr    MR_Mesh(MRegion_ptr mregion);

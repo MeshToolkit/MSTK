@@ -17,7 +17,7 @@ extern "C" {
 
     MEnt_Init_CmnData((MEntity_ptr) e);
     MEnt_Set_Mesh((MEntity_ptr) e,mesh);
-    MEnt_Set_Dim((MEntity_ptr) e,1);
+    MEnt_Set_Dim((MEntity_ptr) e,MEDGE);
     MEnt_Set_GEntDim((MEntity_ptr) e,4); /* Nonsensical value as we don't 
                                             know what it is */
     MEnt_Set_GEntID((MEntity_ptr) e,0);
