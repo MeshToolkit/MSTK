@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../include/MSTK.h"
+#include "../../include/MSTK.h"
 
 // Test if we can remove a face correctly from a region (check list of
 // remaining faces and their directions)
