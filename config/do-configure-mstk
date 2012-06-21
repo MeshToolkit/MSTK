@@ -88,6 +88,7 @@ rm -f CMakeCache.txt
   -D METIS_DIR:FILEPATH=$HOME/sources/metis-4.0.3 \
   -D ZOLTAN_DIR:FILEPATH=$HOME/packages/zoltan \
   -D ENABLE_Tests=no \
+  -D ZOLTAN_DIR:FILEPATH=$HOME/packages/${ARCHOS}/trilinos-10.6.4./ \
   -D UnitTest_DIR:FILEPATH=$HOME/packages/${ARCHOS}/UnitTest++ \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
   -D INSTALL_ADD_VERSION=no \

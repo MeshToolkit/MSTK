@@ -255,7 +255,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 	MV_Set_GEntID(lmv,MV_GEntID(gmv));
 	MV_Set_GEntDim(lmv,MV_GEntDim(gmv));
 	MV_Set_PType(lmv,PGHOST);
-	MV_Set_GlobalID(lmv,MV_ID(gmv));
+	MV_Set_GlobalID(lmv,MV_GlobalID(gmv));
 	MV_Set_MasterParID(lmv,MV_MasterParID(gmv));
 	MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
 	List_Add(lmvlist,lmv);
@@ -306,7 +306,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
 	  ME_Set_Vertex(lme,j,lmv);
 	}
-	ME_Set_GlobalID(lme,ME_ID(gme));
+	ME_Set_GlobalID(lme,ME_GlobalID(gme));
 	ME_Set_MasterParID(lme,ME_MasterParID(gme));
 	MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
 	List_Add(lmelist,lme);
@@ -323,7 +323,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
     MF_Set_GEntDim(lmf,MF_GEntDim(gmf));
     MF_Set_PType(lmf,PGHOST);
     MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
-    MF_Set_GlobalID(lmf,MF_ID(gmf));
+    MF_Set_GlobalID(lmf,MF_GlobalID(gmf));
     MF_Set_MasterParID(lmf,MF_MasterParID(gmf));
 
     MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
@@ -566,7 +566,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 	MV_Set_GEntID(lmv,MV_GEntID(gmv));
 	MV_Set_GEntDim(lmv,MV_GEntDim(gmv));
 	MV_Set_PType(lmv,PGHOST);
-	MV_Set_GlobalID(lmv,MV_ID(gmv));
+	MV_Set_GlobalID(lmv,MV_GlobalID(gmv));
 	MV_Set_MasterParID(lmv,MV_MasterParID(gmv));
 	MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
 	List_Add(lmvlist,lmv);
@@ -616,7 +616,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
 	  ME_Set_Vertex(lme,j,lmv);
 	}
-	ME_Set_GlobalID(lme,ME_ID(gme));
+	ME_Set_GlobalID(lme,ME_GlobalID(gme));
 	ME_Set_MasterParID(lme,ME_MasterParID(gme));
 	MEnt_Set_AttVal(lme,l2gatt,0,0,gme);
 	List_Add(lmelist,lme);
@@ -670,7 +670,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 	  lfedirs[j] = MF_EdgeDir_i(gmf,j);
 	}
 	MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
-	MF_Set_GlobalID(lmf,MF_ID(gmf));
+	MF_Set_GlobalID(lmf,MF_GlobalID(gmf));
 	MF_Set_MasterParID(lmf,MF_MasterParID(gmf));
 	MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
 	List_Add(lmflist,lmf);
@@ -685,7 +685,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
     MR_Set_GEntDim(lmr,MR_GEntDim(gmf));
     MR_Set_PType(lmr,PGHOST);
     MR_Set_Faces(lmr,nrf,lrfaces,lrfdirs);
-    MR_Set_GlobalID(lmr,MR_ID(gmr));
+    MR_Set_GlobalID(lmr,MR_GlobalID(gmr));
     MR_Set_MasterParID(lmr,MR_MasterParID(gmr));
 
     MEnt_Set_AttVal(lmr,l2gatt,0,0,gmr);

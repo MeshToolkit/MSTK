@@ -43,7 +43,7 @@ find_package(NetCDF REQUIRED)
       "Try defining NetCDF_DIR: (-D NetCDF_DIR:FILEPATH=<NetCDF_install_prefix>)")
   endif()
 
-  message("---- NETCDF_LIBRARY : " ${NETCDF_LIBRARY})
+  message("---- NETCDF_LIBRARY : " ${NetCDF_LIBRARIES})
 
   ##############################################################################
   # HDF5 - 
@@ -72,7 +72,7 @@ find_package(NetCDF REQUIRED)
   
   include_directories(${ExodusII_INCLUDE_DIRS})
  
-  message("---- EXODUSII_LIBRARY : " ${EXODUSII_LIBRARY})
+  message("---- EXODUSII_LIBRARY : " ${ExodusII_LIBRARIES})
 
 endif(ENABLE_ExodusII)
 
@@ -108,6 +108,8 @@ if (ENABLE_PARALLEL)
     add_definitions("-D_MSTK_WITH_METIS")
 
   endif (ENABLE_METIS)
+  # Zoltan
+  ##############################################################################
 
   ##############################################################################
   # Zoltan

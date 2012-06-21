@@ -287,6 +287,10 @@ extern "C" {
                            nent,
 			   sizeof(int),
 			   compareINT);
+
+      if (loc == NULL)
+        MSTK_Report("MESH_UpdateAttr","Cannot find global ID in list",MSTK_ERROR);
+
       /* get the index */
       i = (int)(loc - &list_info_recv[0]);
       if (att_type == INT)

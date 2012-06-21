@@ -283,15 +283,15 @@ extern "C" {
 			   int ring, int with_attr, 
 			   int method, int rank, int num, 
 			   MPI_Comm comm) {
-    int i, root=0, recv_dim;
+    int i, recv_dim=rank+5;
     int *send_dim, *part;
 
     send_dim = (int *) malloc(num*sizeof(int));
     for (i = 0; i < num; i++) send_dim[i] = *dim;
 
-    MPI_Scatter(send_dim, 1, MPI_INT, &recv_dim, 1, MPI_INT, root, comm);
+    MPI_Scatter(send_dim, 1, MPI_INT, &recv_dim, 1, MPI_INT, 0, comm);
 
-    if (rank != root)
+    if (rank != 0)
       *dim = recv_dim;
     MESH_Get_Partitioning(*mesh, num, method, rank, comm, &part);
 
