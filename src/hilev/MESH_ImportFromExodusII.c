@@ -145,6 +145,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank,
     for (i = 0; i < nnodes; i++) {
       mv = MESH_Vertex(mesh, i);
       MEnt_Set_AttVal(mv, nmapatt, node_map[i], 0.0, NULL);
+      if (numprocs > 1)
+        MEnt_Set_GlobalID(mv, node_map[i]);
     }
     
   }
@@ -504,8 +506,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank,
     }
     
     
-    /* read element number map - store it as an attribute to spit out
-       later if necessary */
+    /* read element number map - interpret it as the GLOBAL ID of the element 
+       for multi-processor runs */
     
     elem_map = (int *) malloc(nelems*sizeof(int));
     
@@ -522,6 +524,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank,
       for (i = 0; i < nelems; i++) {
 	mf = MESH_Face(mesh, i);
 	MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+        if (numprocs > 1)
+          MEnt_Set_GlobalID(mf,elem_map[i]);
       }
       
     }
@@ -1062,6 +1066,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank,
 	for (i = 0; i < nelems; i++) {
 	  mf = MESH_Face(mesh, i);
 	  MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+          if (numprocs > 1)
+            MEnt_Set_GlobalID(mf,elem_map[i]);
 	}
       }
       else if (mesh_type == 2) {
@@ -1070,6 +1076,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank,
 	for (i = 0; i < nelems; i++) {
 	  mr = MESH_Region(mesh, i);
 	  MEnt_Set_AttVal(mr, nmapatt, elem_map[i], 0.0, NULL);
+          if (numprocs > 1)
+            MEnt_Set_GlobalID(mr,elem_map[i]);
 	}
       }
       else {
