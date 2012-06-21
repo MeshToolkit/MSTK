@@ -272,6 +272,10 @@ extern "C" {
 			   local_info[1+num_recv_procs+4*rank_g2l[par_id]+mtype],
 			   sizeof(int),
 			   ov_compare);
+
+      if (loc == NULL)
+        MSTK_Report("MESH_UpdateAttr","Cannot find global ID in list",MSTK_ERROR);
+
       /* get the index */
       i = (int)(loc - &list_info_recv[0]);
       if (att_type == INT)
