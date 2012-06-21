@@ -72,24 +72,6 @@ extern "C" {
       exit(-1);
     }
 
-    /* assign global ID equal to ID for global mesh */
-    /* and master partition ID of -1                */
-    idx = 0;
-    while ((gmv = MESH_Next_Vertex(mesh,&idx)))
-      MV_Set_GlobalID(gmv,MV_ID(gmv));
-
-    idx = 0;
-    while ((gme = MESH_Next_Edge(mesh,&idx)))
-      ME_Set_GlobalID(gme,ME_ID(gme));
-
-    idx = 0;
-    while ((gmf = MESH_Next_Face(mesh,&idx)))
-      MF_Set_GlobalID(gmf,MF_ID(gmf));
-
-    idx = 0;  
-    while ((gmr = MESH_Next_Region(mesh,&idx)))
-      MR_Set_GlobalID(gmr,MR_ID(gmr));
-    
     if (nr) {
       part = (int *) MSTK_malloc(nr*sizeof(int));
       ok = MESH_PartitionWithMetis(mesh, num, &part);
@@ -152,6 +134,7 @@ extern "C" {
   int MESH_Surf_Partition_FN(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     int i, j, ic, idx, idx2, max_nfv, found;
     int nv, nf, nfv, nfe, mpart_no;
+    int gfid=1, geid=1, gvid=1;
     double xyz[3];
     MVertex_ptr lmv, gmv;
     MEdge_ptr lme, gme;
@@ -229,10 +212,11 @@ extern "C" {
 	    if (mpart_no == 0) {
 	      MV_Set_MasterParID(lmv,part_no);
 	      MV_Set_MasterParID(gmv,part_no+1); /* will subract 1 at the end */
+              MV_Set_GlobalID(gmv,gvid++);	    
 	    }
 	    else
 	      MV_Set_MasterParID(lmv,mpart_no-1);
-	    MV_Set_GlobalID(lmv,MV_ID(gmv));	    
+            MV_Set_GlobalID(lmv,MV_GlobalID(gmv));	    
 	    MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv); 
 	    List_Add(lmvlist,lmv);
 	  }
@@ -266,10 +250,11 @@ extern "C" {
 	    if (mpart_no == 0) { /* not set */
 	      ME_Set_MasterParID(lme,part_no);
 	      ME_Set_MasterParID(gme,part_no+1); 
+              ME_Set_GlobalID(gme,geid++);
 	    }
 	    else
 	      ME_Set_MasterParID(lme,mpart_no-1);
-	    ME_Set_GlobalID(lme,ME_ID(gme));
+	    ME_Set_GlobalID(lme,ME_GlobalID(gme));
 
 	    for (j = 0; j < 2; j++) {
 	      gmv = ME_Vertex(gme,j);
@@ -304,7 +289,9 @@ extern "C" {
 	MF_Set_PType(lmf,PINTERIOR);
 	MF_Set_MasterParID(lmf,part_no);
 	MF_Set_MasterParID(gmf,part_no);
-	MF_Set_GlobalID(lmf,MF_ID(gmf));
+	MF_Set_GlobalID(lmf,gfid);
+	MF_Set_GlobalID(gmf,gfid);
+        gfid++;
 	MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
 
 	lmflist = List_New(0);
@@ -334,6 +321,7 @@ extern "C" {
   int MESH_Vol_Partition_FN(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     int i, j, ic, idx, idx2, mpart_no, found;
     int nv, nr, nrv, nre, nrf, nfe;
+    int grid=1, gfid=1, geid=1, gvid=1;
     double xyz[3];
     MVertex_ptr lmv, gmv;
     MEdge_ptr lme, gme;
@@ -398,10 +386,11 @@ extern "C" {
 	    if (mpart_no == 0) { /* Not set */
 	      MV_Set_MasterParID(lmv,part_no);
 	      MV_Set_MasterParID(gmv,part_no+1);
+              MV_Set_GlobalID(gmv,gvid++);
 	    }
 	    else
 	      MV_Set_MasterParID(lmv,mpart_no-1);
-	    MV_Set_GlobalID(lmv,MV_ID(gmv));
+	    MV_Set_GlobalID(lmv,MV_GlobalID(gmv));
 	    MEnt_Set_AttVal(lmv,l2gatt,0,0,gmv);
 	    List_Add(lmvlist,lmv);
 	  }
@@ -437,10 +426,11 @@ extern "C" {
 	    if (mpart_no == 0) { /* not set */
 	      ME_Set_MasterParID(lme,part_no);
 	      ME_Set_MasterParID(gme,part_no+1);
+              ME_Set_GlobalID(gme,geid++);
 	    }
 	    else
 	      ME_Set_MasterParID(lme,mpart_no-1);
-	    ME_Set_GlobalID(lme,ME_ID(gme));
+	    ME_Set_GlobalID(lme,ME_GlobalID(gme));
 
 	    for (j = 0; j < 2; j++) {
 	      gmv = ME_Vertex(gme,j);
@@ -497,10 +487,11 @@ extern "C" {
 	    if (mpart_no == 0) { /* not set */
 	      MF_Set_MasterParID(lmf,part_no);
 	      MF_Set_MasterParID(gmf,part_no+1);
+              MF_Set_GlobalID(gmf,gfid++);
 	    }
 	    else
 	      MF_Set_MasterParID(lmf,mpart_no-1);
-	    MF_Set_GlobalID(lmf,MF_ID(gmf));
+	    MF_Set_GlobalID(lmf,MF_GlobalID(gmf));
 
 	    fedges = MF_Edges(gmf,1,0);
 	    nfe = List_Num_Entries(fedges);
@@ -541,7 +532,9 @@ extern "C" {
 	MR_Set_PType(lmr,PINTERIOR);
 	MR_Set_MasterParID(lmr,part_no);
 	MR_Set_MasterParID(gmr,part_no);
-	MR_Set_GlobalID(lmr,MR_ID(gmr));
+	MR_Set_GlobalID(lmr,grid);
+        MR_Set_GlobalID(gmr,grid);
+        grid++;
 	MR_Set_Faces(lmr,nrf,lrfaces,lrfdirs);
 
 	lmrlist = List_New(0);
