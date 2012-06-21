@@ -78,7 +78,7 @@ extern "C" {
     if (del_flag)
       return MDELETED;
     
-    dim = (data >> 2) & 7; /* check bits 2,3 and 4 */
+    dim = (MType) ((data >> 2) & 7); /* check bits 2,3 and 4 */
     if (dim <= MREGION)
       return dim;
     else
@@ -103,7 +103,7 @@ extern "C" {
     unsigned int data = ent->entdat.dim_id;
 
     del_flag = data & 1;
-    dim = (data>>2) & 7;
+    dim = (MType) ((data>>2) & 7);
 
     if (!del_flag)
       MSTK_Report("MEnt_OrigDim","This is not a deleted entity",MSTK_WARN);    
@@ -168,11 +168,12 @@ extern "C" {
   }
 
   void MEnt_Set_RepType(MEntity_ptr ent, RepType rtype) {
-    unsigned int dim, data = ent->entdat.dim_id;
+    unsigned int data = ent->entdat.dim_id;
+    MType dim;
 
     /* Get the dimension of the entity */
 
-    dim = (data>>1) & 7;
+    dim = (MType) ((data>>1) & 7);
 
     switch (dim) {
     case MVERTEX:
@@ -196,7 +197,7 @@ extern "C" {
     RepType rtype;
     unsigned int data = ent->entdat.rtype_gdim_gid;
 
-    rtype = data & 15;
+    rtype = (RepType) (data & 15);
     
     if (rtype == 15)
       return UNKNOWN_REP;
