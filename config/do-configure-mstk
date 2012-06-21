@@ -20,8 +20,10 @@
 # 
 # -D ENABLE_PARALLEL=yes|no  (default is yes)
 #
-# Must define path to Metis
+# Must enable Metis or ZOLTAN or both and define a path to the libraries
 #
+# -D ENABLE_METIS=yes|no 
+# -D ENABLE_ZOLTAN=yes|no 
 #
 # Support for importing/exporting ExodusII file
 #
@@ -80,10 +82,13 @@ rm -f CMakeCache.txt
   -D CMAKE_C_COMPILER:FILEPATH="mpicc" \
   -D CMAKE_CXX_COMPILER:FILEPATH="mpiCC" \
   -D ENABLE_PARALLEL=yes \
+  -D ENABLE_METIS=yes \
+  -D ENABLE_ZOLTAN=yes \
   -D ENABLE_ExodusII=yes \
   -D NetCDF_DIR:FILEPATH=$HOME/packages/${ARCHOS}/netcdf-3.6.3 \
   -D ExodusII_DIR:FILEPATH=$HOME/packages/${ARCHOS}/ACCESS/libraries/exodusii \
-  -D Metis_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0 \
+  -D METIS_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0 \
+  -D ZOLTAN_DIR:FILEPATH=$HOME/packages/${ARCHOS}/trilinos-10.6.4./ \
   -D ENABLE_Tests=yes \
   -D UnitTest_DIR:FILEPATH=$HOME/packages/${ARCHOS}/UnitTest++ \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
