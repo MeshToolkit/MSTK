@@ -27,8 +27,8 @@ extern "C" {
 
 
   /* this function get the local side number */
-  int Get_Local_Face_Number(MFace_ptr mf, MRType mrtype, List_ptr mrvertices);
-  int Get_Local_Edge_Number(MEdge_ptr me, MFType mftype, List_ptr mfvertices);
+  int MF_LocalID_in_Region(MFace_ptr mf, MRegion_ptr mr);
+  int ME_LocalID_in_Face(MEdge_ptr me, MFace_ptr mf);
   void itoa(int n, char s[]);
   void reverse(char s[]);
 
