@@ -98,6 +98,7 @@ extern "C" {
     case PYRAMID:
 
       quad0 = NULL; iquad0 = -1;
+      tri0 = NULL; itri0 = -1;
 
       for (i = 0; i < nf; i++) {
 	face = List_Entry(adj->rfaces,i);
@@ -106,8 +107,14 @@ extern "C" {
 	  if (!quad0) {
 	    quad0 = face;
 	    iquad0 = i;
-	  }
+	  }          
 	}
+        else if (ne == 3) {
+          if (!tri0) {
+            tri0 = face;
+            itri0 = i;
+          }
+        }
       }
       
 
