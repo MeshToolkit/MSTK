@@ -225,6 +225,26 @@ extern "C" {
     return 0;
   }
 
+
+  MFType MF_ElementType(MFace_ptr f) {
+    int nfv = MF_Num_Vertices(f);
+    switch (nfv) {
+    case 0: case 1: case 2:
+      return FUNKNOWN;
+      break;
+    case 3:
+      return TRI;
+      break;
+    case 4:
+      return QUAD;
+      break;
+    default:
+      return POLYGON;
+    }
+
+    return RUNKNOWN;
+  }
+
   int MF_Num_Vertices(MFace_ptr f) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) f);
     return (*MF_Num_Vertices_jmp[RTYPE])(f);
