@@ -17,6 +17,19 @@ extern "C" {
 
   */
 
+#ifdef MSTK_HAVE_MPI
+
+  MPI_Comm MSTK_communicator;    /* Global */
+
+  void MSTK_Set_Comm(MPI_Comm comm) {
+    MSTK_communicator = comm;
+  }
+
+  MPI_Comm MSTK_Comm() {
+    return MSTK_communicator;
+  }
+
+
   /* Partition a given mesh into 'num' submeshes, adding a 'ring'
      layers of ghost elements around each partition. If 'with_attr' is
      1, attributes from the mesh are copied onto the submeshes. This
@@ -312,11 +325,11 @@ extern "C" {
      
     }
 
-    MESH_Set_Prtn(*mesh,rank,num);
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
     }
+    MESH_Set_Prtn(*mesh,rank,num);
 
     MESH_Update_ParallelAdj(*mesh, rank, num,  comm);
 
@@ -396,6 +409,8 @@ extern "C" {
     return 1;
   }
 
+  
+#endif  /* End #ifdef MSTK_HAVE_MPI */ 
 
 #ifdef __cplusplus
 }
