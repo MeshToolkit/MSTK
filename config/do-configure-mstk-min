@@ -16,12 +16,10 @@
 #
 # -D INSTALL_ADD_VERSION=yes|no
 #
-# Support for parallel meshes
-# 
-# -D ENABLE_PARALLEL=yes|no  (default is yes)
+# Use Metis or Zoltan as a partitioner (specify at least one)
 #
-# Must define path to Metis
-#
+# -D ENABLE_METIS=yes|no 
+# -D ENABLE_ZOLTAN=yes|no
 #
 # Support for importing/exporting ExodusII file
 #
@@ -63,7 +61,7 @@ ARCHOS=${ARCH}_${OS}
 
 # Top level directory where the code lives
 
-SOURCE=PATH_TO_MSTK_SOURCE
+SOURCE=$HOME/develop/mstk/1.86par
 
 
 
@@ -77,10 +75,12 @@ rm -f CMakeCache.txt
 
 /usr/bin/cmake \
   -D CMAKE_BUILD_TYPE:STRING=Release \
-  -D CMAKE_C_COMPILER:FILEPATH="gcc" \
-  -D CMAKE_CXX_COMPILER:FILEPATH="g++" \
-  -D ENABLE_PARALLEL=no \
+  -D CMAKE_C_COMPILER:FILEPATH="mpicc" \
+  -D CMAKE_CXX_COMPILER:FILEPATH="mpiCC" \
   -D ENABLE_ExodusII=no \
+  -D ENABLE_METIS=yes \
+  -D METIS_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0 \
+  -D METIS_INCLUDE_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0/Lib \
   -D ENABLE_Tests=no \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
   -D INSTALL_ADD_VERSION=no \
