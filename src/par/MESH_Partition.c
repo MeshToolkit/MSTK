@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 
 #ifdef __cplusplus
@@ -117,7 +118,7 @@ extern "C" {
       MESH_Set_Prtn(submeshes[i],i,num);
     }
 
-    (*MESH_Surf_Partition_jmp[rtype])(mesh, num, part, submeshes);
+    return (*MESH_Surf_Partition_jmp[rtype])(mesh, num, part, submeshes);
   }
 
   int MESH_Vol_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
@@ -129,7 +130,7 @@ extern "C" {
       MESH_Set_Prtn(submeshes[i],i,num);
     }
 
-    (*MESH_Vol_Partition_jmp[rtype])(mesh, num, part, submeshes);
+    return (*MESH_Vol_Partition_jmp[rtype])(mesh, num, part, submeshes);
   }
 
 
@@ -575,16 +576,19 @@ extern "C" {
 
   int MESH_Surf_Partition_R1R2R4(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     MSTK_Report("MESH_Surf_Partition_R1R2R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
     
   int MESH_Vol_Partition_R1R2(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     MSTK_Report("MESH_Vol_Partition_R1R2","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 
   int MESH_Vol_Partition_R4(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     MSTK_Report("MESH_Vol_Partition_R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 
