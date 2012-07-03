@@ -50,8 +50,17 @@ int main(int argc, char **argv) {
   strcpy(gmvfname,mname);
   strcat(gmvfname,"-chk.gmv");
 
+#ifdef _MSTK_HAVE_MPI
+  MPI_Init(&argc,&argv);
+
+  int rank, numprocs;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+#endif
+  
 
   MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
   fprintf(stderr,"\n\nChecking mesh %s\n\n",infname);
 
@@ -179,8 +188,7 @@ int main(int argc, char **argv) {
     for (i = 0; i < MAXPF3; i++)
       free(rfverts[i]);
     free(rfverts);
-  }
-
+  }  
 
   if (status)
      fprintf(stderr,"OK\n");
@@ -191,7 +199,6 @@ int main(int argc, char **argv) {
     fprintf(stderr,"Mesh is A-OK!!\n");
     fprintf(stderr,"***************\n");
     fprintf(stderr,"\n\n");
-    exit(0);
   }
   else {
     if (nbad) {
@@ -199,9 +206,13 @@ int main(int argc, char **argv) {
 
       fprintf(stderr,"Tagging bad elements in GMV file %s\n\n",gmvfname);
       MESH_ExportToGMV(mesh,gmvfname,0,NULL,NULL);
-      exit(-1);
     }
   }
+
+
+#ifdef _MSTK_HAVE_MPI
+  status = status | MESH_Parallel_Check(mesh,rank,numprocs,MPI_COMM_WORLD);
+#endif
 
 }
 
