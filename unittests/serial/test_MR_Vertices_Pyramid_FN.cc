@@ -12,7 +12,7 @@ TEST(MR_Vertices_Pyramid_FN)
   int exp_nv = 5;
   int exp_vids[5] = {5,1,3,4,2};
 
-  MSTK_Init();
+  MSTK_Init(NULL);
 
   mesh = MESH_New(UNKNOWN_REP);
 

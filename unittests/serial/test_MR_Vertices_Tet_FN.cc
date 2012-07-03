@@ -12,7 +12,7 @@ TEST(MR_Vertices_Tet_FN)
   int exp_nv = 4;
   int exp_vids[4] = {2,4,3,1};
 
-  MSTK_Init();
+  MSTK_Init(NULL);
 
   mesh = MESH_New(UNKNOWN_REP);
 

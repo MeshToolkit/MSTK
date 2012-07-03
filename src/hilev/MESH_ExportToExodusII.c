@@ -47,7 +47,7 @@ extern "C" {
 
   int MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
 			    const int natt, const char **attnames, 
-			    int *opts) {
+			    const int *opts) {
 
     int enable_set, verbose;
     int i, j, k, idx, idx2;
@@ -78,6 +78,9 @@ extern "C" {
 			        {4,5,1,2,3,0}, /* PRISM, must verify nums */
 			        {5,6,1,2,3,4}};/* HEX */
 
+    int rank, numprocs;
+    MPI_Comm_size(MSTK_Comm(),&numprocs);
+    MPI_Comm_rank(MSTK_Comm(),&rank);
     
     verbose = opts ? opts[0] : 0;
     enable_set = opts ? opts[1] : 1;

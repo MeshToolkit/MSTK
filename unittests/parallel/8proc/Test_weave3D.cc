@@ -212,7 +212,7 @@ TEST(Weave3D) {
   };
 
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);

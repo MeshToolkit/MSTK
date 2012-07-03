@@ -14,7 +14,7 @@ TEST(MR_Edges_Prism_FN)
 		     1, 5, 7,
 		     2, 6, 9};
 
-  MSTK_Init();
+  MSTK_Init(NULL);
 
   mesh = MESH_New(UNKNOWN_REP);
 

@@ -40,7 +40,7 @@ extern "C" {
 
 
 int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt, 
-		     const char **attnames, int *opts) {
+		     const char **attnames, const int *opts) {
   int			gentid, *gentities;
   MFType		ftype;
   MRType                rtype;
@@ -70,6 +70,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 					 {4,5,6,7,0,1,2,3}};
   MAttrib_ptr    vidatt=0,eidatt=0,fidatt=0,ridatt=0;
 
+  int rank, numprocs;
+  MPI_Comm_size(MSTK_Comm(),&numprocs);
+  MPI_Comm_rank(MSTK_Comm(),&rank);
 
   gmodel = 1;
   
@@ -933,7 +936,6 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   }
 
 
-#ifdef MSTK_HAVE_MPI
 
   /* Write out global ID and Master Processor Rank for each node and
      for each element */
@@ -1029,9 +1031,6 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
   }
   if (k%10 != 0) fprintf(fp,"\n");
-
-
-#endif
 
   fprintf(fp,"endvars \n");
   

@@ -50,17 +50,13 @@ int main(int argc, char **argv) {
   strcpy(gmvfname,mname);
   strcat(gmvfname,"-chk.gmv");
 
-#ifdef _MSTK_HAVE_MPI
   MPI_Init(&argc,&argv);
 
   int rank, numprocs;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
-#endif
-  
 
-  MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Init(MPI_COMM_WORLD);
 
   fprintf(stderr,"\n\nChecking mesh %s\n\n",infname);
 

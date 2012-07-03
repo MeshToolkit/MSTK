@@ -28,7 +28,6 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->mface = (List_ptr) NULL;
   newmesh->mregion = (List_ptr) NULL;
 
-#ifdef MSTK_HAVE_MPI
   newmesh->mypartn  = 0;
   newmesh->numpartns = 0;
   newmesh->ghvertex = (List_ptr) NULL;
@@ -41,7 +40,6 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->ovregion = (List_ptr) NULL;
   newmesh->par_adj_flags = NULL;
   newmesh->par_recv_info = NULL;
-#endif
 
   newmesh->geom = (GModel_ptr) NULL;
   newmesh->AttribList = (List_ptr) NULL;
@@ -56,9 +54,7 @@ Mesh_ptr MESH_New(RepType type) {
 
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
 
-#ifdef MSTK_HAVE_MPI
   newmesh->max_ghvid = newmesh->max_gheid = newmesh->max_ghfid = newmesh->max_ghrid = 0;
-#endif
 
   return newmesh;
 }
@@ -81,7 +77,6 @@ void MESH_Delete(Mesh_ptr mesh) {
   }
 #endif 
 
-#ifdef MSTK_HAVE_MPI
   if(mesh->ovvertex)
     List_Delete(mesh->ovvertex);
   if(mesh->ovedge)
@@ -94,7 +89,6 @@ void MESH_Delete(Mesh_ptr mesh) {
     MSTK_free(mesh->par_adj_flags);
   if (mesh->par_recv_info)
     MSTK_free(mesh->par_recv_info);
-#endif
 
   if (mesh->mregion) {
     nr = mesh->nr;
@@ -145,7 +139,6 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->mvertex);
   }
 
-#ifdef MSTK_HAVE_MPI
   /*
     FOR NOW IT SEEMS THAT GHOST REGIONS ARE ALSO ENCOUNTERED WHEN
     GOING THROUGH THE REGULAR MESH AND SO WE DON'T NEED TO DELETE THEM
@@ -181,7 +174,6 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->ghvertex);
   }
   */
-#endif /* MSTK_HAVE_MPI */
   
   if (mesh->AttribList) {
     i = 0;
@@ -918,7 +910,6 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 }
 
 
-#ifdef MSTK_HAVE_MPI
 
   /* Even though some of these routine names are uncharacteristically
      long, they describe exactly what they do, so use them */
@@ -1840,8 +1831,6 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
     */
     return NULL;
   }
-
-#endif /* MSTK_HAVE_MPI */
 
      
 void MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom){

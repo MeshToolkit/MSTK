@@ -187,13 +187,6 @@ endif()
 # MAIN MSTK LIBRARY BUILD
 ##############################################################################
 
-# Flags for parallel build
-
-if (ENABLE_PARALLEL)
-  add_definitions(-DMSTK_HAVE_MPI)
-endif (ENABLE_PARALLEL)
-
-
 # Default build type is Release (Optimized)
 
 if (NOT CMAKE_BUILD_TYPE)

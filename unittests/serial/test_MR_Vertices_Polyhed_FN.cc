@@ -12,7 +12,7 @@ TEST(MR_Vertices_polyhed_FN)
   int exp_nv = 9;
   int exp_vids[9] = {3,4,5,1,6,2,7,8,9};
 
-  MSTK_Init();
+  MSTK_Init(NULL);
 
   mesh = MESH_New(UNKNOWN_REP);
 

@@ -4,16 +4,19 @@
 
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs) {
+  /* Import a single or distributed mesh from a FLAG X3D format file */
+
+  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename) {
 
   char funcname[256] = "MESH_ImportFromFLAGX3D";
-  char mesg[256], temp_str[1028], keyword[1028];
+  char mesg[256], temp_str[1028], keyword[1028], modfilename[256];
 
   FILE *fp;
 
@@ -29,13 +32,27 @@ int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, 
 
   char (*matnames)[256], (*mateos)[256], (*matopc)[256];
 
-  
-  if (!(fp = fopen(filename,"r"))) {
-    sprintf(mesg,"Cannot open file %s for reading\n",filename);
-    MSTK_Report(funcname,mesg,MSTK_FATAL);
-  }
 
-  
+  int rank = 0;
+
+  int numprocs;
+  MPI_Comm_size(MSTK_Comm(),&numprocs);
+  MPI_Comm_rank(MSTK_Comm(),&rank);
+
+  if (numprocs > 1) {
+    sprintf(modfilename,"%s.%05d",filename,rank);
+    if (!(fp = fopen(modfilename,"r"))) {
+      sprintf(mesg,"Cannot open file %s for reading\n",filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+  }
+  else {
+    if (!(fp = fopen(filename,"r"))) {
+      sprintf(mesg,"Cannot open file %s for reading\n",filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+  }  
+
 
   /* Confirm identifying string */
 
@@ -371,6 +388,21 @@ int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, 
   free(matnames);
   free(mateos);
   free(matopc);
+
+  
+  if (numprocs > 1) {
+    /* Must weave distributed meshes to create correct ghost links */
+  
+    int num_ghost_layers = 1;
+    int input_type = 2;
+  
+    status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type, 
+                                          rank, numprocs, MSTK_Comm());
+  
+    if (!status)
+      MSTK_Report(funcname,"Could weave distributed meshes together correctly",
+                  MSTK_FATAL);
+  }
  
   return 1;
 }

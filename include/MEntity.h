@@ -17,12 +17,8 @@ extern "C" {
     unsigned int marker;
     List_ptr AttInsList;
 
-#ifdef MSTK_HAVE_MPI
-    /*for mpi*/
     unsigned int ptype_masterparid;
     unsigned int globalid;
-    /*end for mpi*/
-#endif
 
   } MEntity_Data, *MEntity_Data_ptr;
 

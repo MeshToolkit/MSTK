@@ -41,11 +41,9 @@ extern "C" {
     if (MEnt_Dim((MEntity_ptr) f) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) f);
 
-#ifdef MSTK_HAVE_MPI
       if (MF_PType(f) == PGHOST) 
 	MESH_Rem_GhostFace(mesh,f);
       else
-#endif
 	MESH_Rem_Face(mesh,f);
 
       MEnt_Set_DelFlag((MEntity_ptr) f);
@@ -71,11 +69,9 @@ extern "C" {
 
     MEnt_Rem_DelFlag((MEntity_ptr) f);
 
-#ifdef MSTK_HAVE_MPI
     if (MF_PType(f) == PGHOST)
       MESH_Add_GhostFace(mesh,f);
     else
-#endif
       MESH_Add_Face(mesh,f);
 
     (*MF_Restore_jmp[RTYPE])(f);
@@ -410,7 +406,6 @@ extern "C" {
   }
 
 
-#ifdef MSTK_HAVE_MPI
   PType MF_PType(MFace_ptr f) {
     return MEnt_PType((MEntity_ptr) f);
   }
@@ -457,7 +452,6 @@ extern "C" {
 
     return f;
   }
-#endif /* MSTK_HAVE_MPI */
   
 #ifdef __cplusplus
 }

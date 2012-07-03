@@ -142,7 +142,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* Export */
-
+  /*
   int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
@@ -151,7 +151,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
 				      int *procids);
-
+  */
   int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
 
 
@@ -203,8 +203,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
 
-#ifdef MSTK_HAVE_MPI
-
   /* If you call the routines to set master partition ID or Global ID
      without knowing what you are doing, you can shoot yourself in the
      foot. So if you are casual MSTK user, you are strongly advised
@@ -252,6 +250,14 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
                                            MType mtype, unsigned int numrecv);
   unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn,
                                        MType mtype);
+
+  int MESH_Sort_GhostLists(Mesh_ptr mesh, 
+                           int (*compfunc)(const void*, const void*));
+
+  int MESH_BuildConnection(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
+
+  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
 
   /* Mesh Partitioning Routines*/
@@ -343,7 +349,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int compareFaceINT(const void *a, const void *b);
   int compareFaceID(const void *a, const void *b);
 
-#endif
 
 
 #ifdef __cplusplus

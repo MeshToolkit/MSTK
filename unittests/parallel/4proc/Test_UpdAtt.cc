@@ -16,7 +16,7 @@ TEST(UpdAtt2D_Dist) {
   char filename[256];
 
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
 
   MPI_Comm_size(MPI_COMM_WORLD,&nproc);
@@ -103,7 +103,7 @@ TEST(UpdAtt2D_Weave) {
   char filename[256];
 
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
 
   MPI_Comm_size(MPI_COMM_WORLD,&nproc);

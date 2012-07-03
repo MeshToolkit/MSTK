@@ -3,6 +3,7 @@
 #include <string.h>
 #include "MSTK.h"
 
+#include "mpi.h"
 
 /* Example program to read a mesh and print out some information about it */
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
   /* Initialize MSTK - Always do this even if it does not seem to
      matter in this version of MSTK */
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
   /* Load the mesh */
 

@@ -15,7 +15,7 @@ TEST(VertexUpdate2D) {
   char filename[256];
 
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
 
   MPI_Comm_size(MPI_COMM_WORLD,&nproc);

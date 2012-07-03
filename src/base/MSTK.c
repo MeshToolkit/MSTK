@@ -10,26 +10,36 @@ extern "C" {
 #endif
 
 
-  void MSTK_Init() {
 
-#ifdef MSTK_HAVE_MPI
+
+  void MSTK_Init(MPI_Comm comm) {
+
     int initstatus;
     MPI_Initialized(&initstatus);
     if (initstatus == 0) {
       int loc_argc=1;
       char **loc_argv=NULL;
-
+      
       MPI_Init(&loc_argc,&loc_argv);
     }
-#endif
 
+    MSTK_communicator = comm;
+    
+    /* Make some dummy calls so that the symbols get defined */
+    
     MV_Print(0,0);
     ME_Print(0,0);
     MF_Print(0,0);
     MR_Print(0,0);
     {
-     int n = MSTK_rev_template[0][0][0];
+      int n = MSTK_rev_template[0][0][0];
     }
+    
+  }
+
+
+  MPI_Comm MSTK_Comm() {
+    return MSTK_communicator;
   }
 
 

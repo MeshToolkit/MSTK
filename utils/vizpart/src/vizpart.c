@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
   }
 
       
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
   
   strcpy(basename,meshname);

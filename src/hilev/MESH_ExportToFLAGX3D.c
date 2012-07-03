@@ -24,12 +24,10 @@ extern "C" {
      Currently, it is a dummy argument
   */
 
-  /* WE ARE NOT HANDLING DISTRIBUTED MESHES */
-
 
 
 int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt, 
-			 const char **attnames, int *opts) {
+			 const char **attnames, const int *opts) {
   int			gentid, *gentities;
   List_ptr	        fverts, rfaces, fregs, efaces, fedges;
   MVertex_ptr           vertex;
@@ -53,6 +51,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   void                 *pval;
   FILE		        *fp;
 
+
+  int rank, numprocs;
+  MPI_Comm_size(MSTK_Comm(),&numprocs);
+  MPI_Comm_rank(MSTK_Comm(),&rank);
 
   vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
   eidatt = MAttrib_New(mesh,"eidatt",INT,MEDGE);

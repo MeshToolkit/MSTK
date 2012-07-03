@@ -17,18 +17,6 @@ extern "C" {
 
   */
 
-#ifdef MSTK_HAVE_MPI
-
-  MPI_Comm MSTK_communicator;    /* Global */
-
-  void MSTK_Set_Comm(MPI_Comm comm) {
-    MSTK_communicator = comm;
-  }
-
-  MPI_Comm MSTK_Comm() {
-    return MSTK_communicator;
-  }
-
 
   /* Partition a given mesh into 'num' submeshes, adding a 'ring'
      layers of ghost elements around each partition. If 'with_attr' is
@@ -408,9 +396,6 @@ extern "C" {
 
     return 1;
   }
-
-  
-#endif  /* End #ifdef MSTK_HAVE_MPI */ 
 
 #ifdef __cplusplus
 }

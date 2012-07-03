@@ -15,7 +15,7 @@ TEST(MR_Rem_Face_FNR3R4)
   int rfdirs[6];
 
 
-  MSTK_Init();
+  MSTK_Init(NULL);
 
   mesh = MESH_New(UNKNOWN_REP);
 

@@ -3,13 +3,15 @@
 #include <string.h>
 #include <MSTK.h>
 
+#include "mpi.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs) {
+int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
+
   MRegion_ptr mr;
   MFace_ptr rfaces[MAXPF3], mf, *vface=NULL;
   MEdge_ptr fedges[MAXPV3*2], me, *vedge=NULL;
@@ -30,6 +32,12 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, const int rank, cons
 		     {-1,-1,-1,-1,-1,-1,-1,-1},  /* dummy 7 node element */
 		     {4,5,6,7,0,1,2,3}};
   FILE *fp;
+
+
+  int rank = 0, numprocs = 1;
+  MPI_Comm_size(MSTK_Comm(),&numprocs);
+  MPI_Comm_rank(MSTK_Comm(),&rank);
+
 
   /* OPEN FILE */
 

@@ -48,7 +48,7 @@ TEST(Weave2D) {
     {6,8,11,12,2,3,5,7,10,0,0,0}};
 
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);

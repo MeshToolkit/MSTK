@@ -9,16 +9,15 @@
 #include "MSTK_util.h"
 #include "MSTK_malloc.h"
 
-#ifdef MSTK_HAVE_MPI
 #include <mpi.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*******************************************************************/
-void MSTK_Init(void);
+
+  void MSTK_Init(MPI_Comm comm);
 
 /********************************************************************/
 /*        MESH OBJECT OPERATORS                                     */
@@ -32,26 +31,23 @@ void MSTK_Init(void);
 				  int *nrv, int **rvids, int *nrf, 
 				  int ***rfvtemplate);
   int         MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
-                                  const char *format, const int rank, const int numprocs);
-  int         MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs);
-  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs);
-  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, const int rank, const int numprocs);
+                                  const char *format);
+  int         MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename); 
+  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename);
+  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename);
   int         MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
-			       const char *format, const int natt, 
-			       const char **attnames, int *opts);
+                                const char *format, const int natt, 
+                                const char **attnames, const int *opts);
   int         MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
-			      const int natt, const char **attnames, 
-			      int *opts);
+                               const int natt, const char **attnames,
+                               const int *opts);
   int         MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
-			      const int natt, const char **attnames, 
-			      int *opts);
+                                   const int natt, const char **attnames, 
+                                   const int *opts);
   int         MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
-				   const int natt, const char **attnames, 
-				   int *opts);
-  int         MESH_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
-				      const int nparts, const int natt, 
-				      const char **attnames, int *opts,
-				      int *procids);
+                                    const int natt, const char **attnames, 
+                                    const int *opts);
+
   int         MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
   int         MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
   int         MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
@@ -110,15 +106,10 @@ void MSTK_Init(void);
   void        MESH_Renumber(Mesh_ptr mesh);
 
 
-#ifdef MSTK_HAVE_MPI
 
+  /* What is the communicator being used by MSTK? */
 
-  MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
-  MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);
-  MFace_ptr   MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id);
-  MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
-  MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
-  /* parallel wrapper functions for user */
+  MPI_Comm MSTK_Comm();
 
   /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
 
@@ -150,8 +141,17 @@ void MSTK_Init(void);
   /* Update vertex coordinates for ghost vertices */
   int         MESH_UpdateVertexCoords(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 
+  int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+
+
   /* END PRIMARY ROUTINES FOR PARALLEL APPLICATION */
-#endif
+
+
+  MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
+  MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);
+  MFace_ptr   MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id);
+  MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
+  MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
 
 
 
@@ -194,11 +194,9 @@ void MSTK_Init(void);
   List_ptr    MV_Faces(MVertex_ptr mvertex);
   List_ptr    MV_Regions(MVertex_ptr mvertex);
 
-#ifdef MSTK_HAVE_MPI
   PType       MV_PType(MVertex_ptr v);
   int         MV_MasterParID(MVertex_ptr v);
   int         MV_GlobalID(MVertex_ptr v);
-#endif
 
 
 /********************************************************************/
@@ -243,11 +241,9 @@ void MSTK_Init(void);
   void        ME_Lock(MEdge_ptr e);
   void        ME_UnLock(MEdge_ptr e);
 
-#ifdef MSTK_HAVE_MPI
   PType       ME_PType(MEdge_ptr e);
   int         ME_MasterParID(MEdge_ptr e);
   int         ME_GlobalID(MEdge_ptr e);
-#endif
 
 /********************************************************************/
 /*        MESH FACE OPERATORS                                       */
@@ -309,11 +305,9 @@ void MSTK_Init(void);
   void        MF_Lock(MFace_ptr f);
   void        MF_UnLock(MFace_ptr f);
 
-#ifdef MSTK_HAVE_MPI
   PType       MF_PType(MFace_ptr f);  
   int         MF_MasterParID(MFace_ptr f);
   int         MF_GlobalID(MFace_ptr f);
-#endif
 
 /********************************************************************/
 /*        MESH REGN OPERATORS                                       */
@@ -369,22 +363,18 @@ void MSTK_Init(void);
 
   void        MR_Coords(MRegion_ptr mregion, int *n, double (*xyz)[3]);
 
-#ifdef MSTK_HAVE_MPI
   PType       MR_PType(MRegion_ptr r);  
   int         MR_MasterParID(MRegion_ptr r);
   int         MR_GlobalID(MRegion_ptr r);
-#endif
 
 
   /************************************************************************/
   /* GENERIC ENTITY OPERATORS                                             */
   /************************************************************************/
 
-#ifdef MSTK_HAVE_MPI
   PType       MEnt_PType(MEntity_ptr ent);
   int         MEnt_MasterParID(MEntity_ptr ent);
   int         MEnt_GlobalID(MEntity_ptr ent);
-#endif
 
   void        MEnt_Set_GEntity(MEntity_ptr mentity, GEntity_ptr gent);
   void        MEnt_Set_GEntDim(MEntity_ptr mentity, int gdim);
@@ -520,8 +510,6 @@ void MSTK_Init(void);
 /**********************************************************************/
 
 
-#ifdef MSTK_HAVE_MPI
-
   /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
   /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */
   /* YOU WILL GET WHAT YOU DESERVE                                   */
@@ -557,7 +545,6 @@ void MSTK_Init(void);
   MRegion_ptr MESH_Next_OverlapRegion(Mesh_ptr mesh, int *index);
 
   /*end for mpi */
-#endif
 
 
 

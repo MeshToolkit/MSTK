@@ -47,7 +47,7 @@ TEST(Partition2D) {
     {35,36,37,38,39,40,41,42,10,0,0,0,0,0}};
 
 
-  MSTK_Init();
+  MSTK_Init(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);

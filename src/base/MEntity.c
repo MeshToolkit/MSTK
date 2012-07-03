@@ -23,10 +23,8 @@ extern "C" {
     ent->entdat.marker = 0;
     ent->entdat.AttInsList = 0;
 
-#ifdef MSTK_HAVE_MPI
     ent->entdat.ptype_masterparid = (0<<2 | PINTERIOR); /* ?? */
     ent->entdat.globalid = 0;
-#endif
   }
 
   void MEnt_Free_CmnData(MEntity_ptr ent) {    
@@ -761,7 +759,6 @@ extern "C" {
   }
 
 
-#ifdef MSTK_HAVE_MPI
 
   PType MEnt_PType(MEntity_ptr ent) {
     unsigned int data = ent->entdat.ptype_masterparid;
@@ -794,7 +791,6 @@ extern "C" {
   void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid) {
     ent->entdat.globalid = globalid;
   }
-#endif /* MSTK_HAVE_MPI */
 
 
 #ifdef __cplusplus
