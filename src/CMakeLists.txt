@@ -16,6 +16,11 @@ foreach (FILE ${FILES})
   endif ()
 endforeach ()
 
+file (GLOB FILES io/*.c)
+foreach (FILE ${FILES})
+  set (iofiles ${iofiles} ${FILE})
+endforeach ()
+
 file (GLOB FILES misc/*.c)
 foreach (FILE ${FILES})
   set (miscfiles ${miscfiles} ${FILE})
@@ -42,5 +47,5 @@ foreach (FILE ${FILES})
   endif ()
 endforeach ()
 
-set(mstkfiles ${basefiles} ${hilevfiles} ${miscfiles} ${utilfiles} ${parfiles} PARENT_SCOPE)
+set(mstkfiles ${basefiles} ${hilevfiles} ${iofiles} ${miscfiles} ${utilfiles} ${parfiles} PARENT_SCOPE)
 
