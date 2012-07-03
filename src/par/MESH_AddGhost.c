@@ -766,14 +766,17 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
 int MESH_Surf_AddGhost_R1R2R4(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   MSTK_Report("MESH_Surf_AddGhost_R1R2R4","Not Implemented",MSTK_FATAL);
+  return 0;
 }
 
 int MESH_Vol_AddGhost_R1R2(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   MSTK_Report("MESH_Vol_AddGhost_R1R2","Not Implemented",MSTK_FATAL);
+  return 0;
 }
   
 int MESH_Vol_AddGhost_R4(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   MSTK_Report("MESH_Vol_AddGhost_R4","Not Implemented",MSTK_FATAL);
+  return 0;
 }
   
 #ifdef __cplusplus
