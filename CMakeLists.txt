@@ -82,56 +82,52 @@ endif(ENABLE_ExodusII)
 # What we need if we need parallel support
 ##############################################################################
 
-if (ENABLE_PARALLEL)
 
-  if ((NOT ENABLE_METIS) AND (NOT ENABLE_ZOLTAN))
-    message(FATAL_ERROR "Error: Must enable METIS or ZOLTAN as a partitioner")
-  endif() 
+if ((NOT ENABLE_METIS) AND (NOT ENABLE_ZOLTAN))
+  message(FATAL_ERROR "Error: Must enable METIS or ZOLTAN as a partitioner")
+endif() 
 
-  ##############################################################################
-  # Metis
-  ##############################################################################
+##############################################################################
+# Metis
+##############################################################################
 
-  if (ENABLE_METIS) 
+if (ENABLE_METIS) 
 
-    find_package(METIS REQUIRED)
-    if (NOT METIS_FOUND)
-       message(FATAL_ERROR "Error: could not find Metis library\n"
+  find_package(METIS REQUIRED)
+  if (NOT METIS_FOUND)
+     message(FATAL_ERROR "Error: could not find Metis library\n"
 	  "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n")
 
-    endif (NOT METIS_FOUND)
+  endif (NOT METIS_FOUND)
 
-    include_directories(${METIS_INCLUDE_DIRS})
+  include_directories(${METIS_INCLUDE_DIRS})
   
-    message("---- METIS_LIBRARY :" ${METIS_LIBRARY})
+  message("---- METIS_LIBRARY :" ${METIS_LIBRARY})
 
-    add_definitions("-D_MSTK_WITH_METIS")
+  add_definitions("-D_MSTK_WITH_METIS")
 
-  endif (ENABLE_METIS)
-  # Zoltan
-  ##############################################################################
+endif (ENABLE_METIS)
 
-  ##############################################################################
-  # Zoltan
-  ##############################################################################
 
-  if (ENABLE_ZOLTAN) 
+##############################################################################
+# Zoltan
+##############################################################################
 
-    find_package(ZOLTAN REQUIRED)
-    if (NOT ZOLTAN_FOUND)
-       message(FATAL_ERROR "Error: could not find Zoltan library\n"
+if (ENABLE_ZOLTAN) 
+
+  find_package(ZOLTAN REQUIRED)
+  if (NOT ZOLTAN_FOUND)
+     message(FATAL_ERROR "Error: could not find Zoltan library\n"
 	  "Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
-     endif (NOT ZOLTAN_FOUND)
+   endif (NOT ZOLTAN_FOUND)
   
-     include_directories(${ZOLTAN_INCLUDE_DIRS})
+   include_directories(${ZOLTAN_INCLUDE_DIRS})
   
-     message("---- ZOLTAN_LIBRARY :" ${ZOLTAN_LIBRARY})
+   message("---- ZOLTAN_LIBRARY :" ${ZOLTAN_LIBRARY})
 
-     add_definitions("-D_MSTK_WITH_ZOLTAN")
+   add_definitions("-D_MSTK_WITH_ZOLTAN")
 
-  endif (ENABLE_ZOLTAN)
-
-endif (ENABLE_PARALLEL) 
+endif (ENABLE_ZOLTAN)
 
 
 ##############################################################################
