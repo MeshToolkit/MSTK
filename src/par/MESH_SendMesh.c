@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "MSTK.h"
 
+#include "MSTK.h"
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -428,16 +429,19 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 
 int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   MSTK_Report("MESH_Surf_SendMesh_R1R2R4","Not implemented",MSTK_FATAL);
+  return 0;
 }
 
 
 int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
+  return 0;
 }
 
 
 int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
+  return 0;
 }
 
 
