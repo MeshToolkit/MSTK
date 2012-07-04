@@ -69,6 +69,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 					 {-1,-1,-1,-1,-1,-1,-1,-1},
 					 {4,5,6,7,0,1,2,3}};
   MAttrib_ptr    vidatt=0,eidatt=0,fidatt=0,ridatt=0;
+  char funcname[256] = "MESH_ExportToGMV", mesg[256];
 
   int rank, numprocs;
   MPI_Comm_size(MSTK_Comm(),&numprocs);
@@ -76,9 +77,21 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   gmodel = 1;
   
-  if (!(fp = fopen(filename,"w"))) {
-    fprintf(stderr,"mstk2gmv: Couldn't open output file %s\n",filename);
-    exit(2);
+
+  if (numprocs > 1) {
+    char modfilename[256];
+    sprintf(modfilename,"%s.%05d",filename,rank);
+   
+    if (!(fp = fopen(modfilename,"w"))) {
+      sprintf(mesg,"Cannot open file %s for writing",modfilename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+  }
+  else {
+    if (!(fp = fopen(filename,"w"))) {
+      sprintf(mesg,"Cannot open file %s for writing",filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);      
+    }
   }
 
 
@@ -531,7 +544,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   
   if (ncells2) {
     if (opts && opts[1] == 1) {
-      fprintf(stderr,"vface2d not yet implemented\n");
+      MSTK_Report(funcname,"vface2d not yet implemented",MSTK_WARN);
       return 0;
     }
 
