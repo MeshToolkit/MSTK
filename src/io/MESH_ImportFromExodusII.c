@@ -91,20 +91,35 @@ extern "C" {
   
     /* Try opening the file with .exo.N.n extension */
     sprintf(modfilename,"%s.exo.%-d.%-d",basename,numprocs,rank);
-  
-    exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
-  
-    if (exoid < 0) {
-      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
-    
-      exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
-    
+
+    FILE *fp;
+    if (fp = fopen(modfilename,"r")) {
+      fclose(fp);
+
+      exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
       if (exoid < 0) {
-        sprintf(mesg,"Cannot open/read parallel Exodus II file %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,numprocs,rank,basename,numprocs,rank);
+        sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
         MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
     }
-  
+    else {
+      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
+    
+      if (fp = fopen(modfilename,"r")) {
+        fclose(fp);
+
+        exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
+    
+        if (exoid < 0) {
+          sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);
+        }
+      }
+      else {
+        sprintf(mesg,"Cannot open/read parallel Exodus II file %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,numprocs,rank,basename,numprocs,rank);
+        MSTK_Report(funcname,mesg,MSTK_FATAL);        
+      }
+    }  
   }
   else {
     exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
