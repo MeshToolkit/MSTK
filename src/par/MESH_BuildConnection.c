@@ -36,7 +36,7 @@ int MESH_BuildConnection(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
   boundary_verts = List_New(10);
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
-    if (MV_PType(mv)) {
+    if (MV_PType(mv) != PINTERIOR) {
       List_Add(boundary_verts,mv);
       nbv++;
     }
