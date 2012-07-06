@@ -209,6 +209,7 @@ extern "C" {
       mv = MESH_Vertex(mesh, i);
       MEnt_Set_AttVal(mv, nmapatt, node_map[i], 0.0, NULL);
       MV_Set_GlobalID(mv, node_map[i]);
+      MV_Set_MasterParID(mv, rank); /* This might get modified later */
     }
     
   }
@@ -587,6 +588,7 @@ extern "C" {
 	mf = MESH_Face(mesh, i);
 	MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
         MF_Set_GlobalID(mf,elem_map[i]);
+        MF_Set_MasterParID(mf,rank);
       }
       
     }
@@ -1136,6 +1138,7 @@ extern "C" {
 	  mr = MESH_Region(mesh, i);
 	  MEnt_Set_AttVal(mr, nmapatt, elem_map[i], 0.0, NULL);
           MR_Set_GlobalID(mr,elem_map[i]);
+          MR_Set_MasterParID(mr,rank);
 	}
       }
       else {
@@ -1169,6 +1172,8 @@ extern "C" {
     if (!weavestatus)
       MSTK_Report(funcname,"Could not weave distributed meshes correctly together",
                   MSTK_FATAL);
+
+    int parallel_check = MESH_Parallel_Check(mesh, rank, numprocs, MSTK_Comm());
   }
 
   return 1;
