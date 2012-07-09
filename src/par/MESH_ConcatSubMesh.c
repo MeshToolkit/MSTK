@@ -505,7 +505,29 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 	  else 
 	    new_mf = (MFace_ptr)entity_on_list(sub_mf,&added_faces); /* check if it is already added */
 	  
-	  if(!new_mf) {
+          if (new_mf) {
+            List_ptr mfverts = MF_Vertices(sub_mf,1,0);
+            int fvgid0[2];
+            fvgid0[0] = MF_GlobalID(List_Entry(mfverts,0));
+            fvgid0[1] = MF_GlobalID(List_Entry(mfverts,1));
+            List_Delete(mfverts);
+
+            mfverts = MF_Vertices(new_mf,1,0);
+            int nfv = List_Num_Entries(mfverts);
+            int fvgid1[MAXPV2];
+            for (j = 0; j < nfv; j++)
+              fvgid1[j] = MF_GlobalID(List_Entry(mfverts,j));
+            List_Delete(mfverts);
+
+            for (j = 0; j < nfv; j++) {
+              if (fvgid1[j] == fvgid0[0]) {
+                if (fvgid1[(j+nfv-1)%nfv] == fvgid0[1]) /* reverse dir */
+                  rfdirs[i] = !rfdirs[i];
+                break;
+              }
+            }                  
+          }
+	  else {
 	    new_mf = MF_New(mesh); /* add face */
 	    MF_Set_GEntDim(new_mf,MF_GEntDim(sub_mf));
 	    MF_Set_GEntID(new_mf,MF_GEntID(sub_mf));
