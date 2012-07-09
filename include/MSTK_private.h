@@ -272,7 +272,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* build processor boundary */
   int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
-  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
+  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int have_GIDs, int rank, int num,  MPI_Comm comm);
   int        MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
   int        MESH_BuildSubMesh(Mesh_ptr mesh, Mesh_ptr submesh);
   int        MESH_ConcatSubMesh(Mesh_ptr mesh, int num, Mesh_ptr *submeshes);
