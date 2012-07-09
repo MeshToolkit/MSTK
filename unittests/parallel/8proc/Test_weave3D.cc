@@ -124,7 +124,7 @@
                                                                               
 
 SUITE(Parallel) {
-TEST(Weave3D) {
+TEST(Weave3D_from_MSTK) {
 
   int i, idx;
   int nr, nv, ngr, nor, ngv, nov;
@@ -331,7 +331,10 @@ TEST(Weave3D) {
 
   free(overtexids);
 
+  CHECK_EQUAL(1,MESH_Parallel_Check(mesh,rank,nproc,MSTK_Comm()));
 
   return;
 }
+
+
 }
