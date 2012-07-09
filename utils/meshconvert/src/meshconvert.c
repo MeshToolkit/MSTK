@@ -218,5 +218,7 @@ int main(int argc, char *argv[]) {
 
   MESH_Delete(mesh);
 
+  MPI_Finalize();
+
   return 1;
 }
