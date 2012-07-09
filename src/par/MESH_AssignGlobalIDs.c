@@ -460,7 +460,6 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
       ME_Set_PType(me,POVERLAP);
       noe++;
   }
-  printf("num of ghost edges %d, overlap edges %d on rank %d\n", nge, noe, rank);  
 
   /* this time only global id are sent */
   for(i = 0; i < nbe; i++) {
