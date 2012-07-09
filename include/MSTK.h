@@ -278,6 +278,8 @@ extern "C" {
   int         MF_GEntDim(MFace_ptr mface);
   int         MF_GEntID(MFace_ptr mface);
   GEntity_ptr MF_GEntity(MFace_ptr mface);
+
+  MFType MF_ElementType(MFace_ptr mf);
   int         MF_Num_Vertices(MFace_ptr mface);
   int         MF_Num_Edges(MFace_ptr mface);
   int         MF_Num_AdjFaces(MFace_ptr mface);
@@ -345,6 +347,7 @@ extern "C" {
   int         MR_GEntID(MRegion_ptr mregion);
   GEntity_ptr MR_GEntity(MRegion_ptr mregion);
 
+  MRType MR_ElementType(MRegion_ptr mregion);
   int         MR_Num_Vertices(MRegion_ptr mregion);
   int         MR_Num_Edges(MRegion_ptr mregion);
   int         MR_Num_Faces(MRegion_ptr mregion);

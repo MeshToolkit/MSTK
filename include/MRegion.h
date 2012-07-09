@@ -24,6 +24,9 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
     /* Specific to mesh regions */
     void *adj;
 
+    /* Element type of region */
+    MRType mrtype;
+
   } MRegion, *MRegion_ptr;
 
   /*----- Adjacency definitions --------*/

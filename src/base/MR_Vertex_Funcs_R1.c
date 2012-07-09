@@ -89,6 +89,80 @@ extern "C" {
 	for (j = 0; j < nfv; j++)
 	  adj->fvtemplate[i][j+1] = rfvtemplate[i][j+1];
       }
+
+      switch (nf) {
+      case 4: {
+        int alltri = 1;
+        for (i = 0; i < nf; i++) 
+          if (rfvtemplate[i][0] != 3) {
+            alltri = 0;
+            break;
+          }
+        if (alltri)
+          r->mrtype = TET;
+        else
+          r->mrtype = POLYHED;
+        break;
+      }
+      case 5: {
+        int nquads = 0; 
+        int ntris = 0;
+        for (i = 0; i < nf; i++)
+          if (rfvtemplate[i][0] == 3)
+            ntris++;
+          else if (rfvtemplate[i][1] == 4)
+            nquads++;
+
+        if (nquads == 3 && ntris == 2)
+          r->mrtype = PRISM;
+        else if (nquads == 1 && ntris == 4)
+          r->mrtype = PYRAMID;
+        else
+          r->mrtype = POLYHED;
+        break;
+      }
+      case 6: {
+        int allquad = 1;
+        for (i = 0; i < nf; i++)
+          if (rfvtemplate[i][0] != 4) {
+            allquad = 0;
+            break;
+          }
+        if (allquad)
+          r->mrtype = HEX;
+        else
+          r->mrtype = POLYHED;
+        break;
+      }
+      default:
+        r->mrtype = POLYHED;
+      }
+    }
+    else {
+      switch (nv) {
+      case 4:
+	r->mrtype = TET;
+	nf = 4;
+	break;
+      case 5:
+	r->mrtype = PYRAMID;
+	nf = 5;
+	break;
+      case 6:
+	r->mrtype = PRISM;
+	nf = 5;
+	break;
+      case 8:
+	r->mrtype = HEX;
+	nf = 6;
+	break;
+      default:
+	MSTK_Report("MR_Set_Vertices",
+		    "Polyhedron: Need number of faces and vertex template",
+		    MSTK_FATAL);
+	r->mrtype = RUNKNOWN;
+	break;
+      }
     }
   }
 

@@ -26,6 +26,7 @@ extern "C" {
     MEnt_Set_GEntID((MEntity_ptr) r,0);
 
     r->adj = (void *) NULL;
+    r->mrtype = RUNKNOWN;
 
     RTYPE = mesh ? MESH_RepType(mesh) : F1;
     MR_Set_RepType(r,RTYPE);
@@ -151,39 +152,10 @@ extern "C" {
     return NULL;
   }
 
-  
-/*   MRType MR_ElementType(MRegion_ptr r) { */
-/*     int nt, i; */
-/*     MFace_ptr face; */
-/*     MRegion_DownAdj_FN *downadj; */
 
-/*     /\* SHOULDN'T THIS BE IN A SPECIFIC REPRESENTATION RATHER THAN HERE ?? *\/ */
-
-/*     downadj = (MRegion_DownAdj_FN *) r->downadj; */
-/*     switch (downadj->nf) { */
-/*     case 4: */
-/*       return TET; */
-/*     case 5: */
-/*       /\* it could be a pyramid or a triangular prism *\/ */
-/*       nt = 0; */
-/*       for (i = 0; i < downadj->nf; i++) { */
-/* 	face = List_Entry(downadj->rfaces,i); */
-/* 	if (MF_Num_Edges(face) == 3) */
-/* 	  nt++; */
-/*       } */
-/*       if (nt == 2) */
-/* 	return PRISM; */
-/*       else  */
-/* 	return PYRAMID;  */
-/*     case 6: */
-/*       return HEX; */
-/*     default: */
-/*       if (downadj->nf > 6) */
-/* 	return POLYHED; */
-/*       else */
-/* 	return RUNKNOWN; */
-/*     } */
-/*   } */
+  MRType MR_ElementType(MRegion_ptr r) {
+    return r->mrtype;
+  }
 
 
   int MR_Num_Vertices(MRegion_ptr r) {

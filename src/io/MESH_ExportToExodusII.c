@@ -27,8 +27,8 @@ extern "C" {
 
 
   /* this function get the local side number */
-  int Get_Local_Face_Number(MFace_ptr mf, List_ptr mrvertices);
-  int Get_Local_Edge_Number(MEdge_ptr me, List_ptr mfvertices);
+  int MF_LocalID_in_Region(MFace_ptr mf, MRegion_ptr mr);
+  int ME_LocalID_in_Face(MEdge_ptr me, MFace_ptr mf);
   void itoa(int n, char s[]);
   void reverse(char s[]);
 
@@ -624,45 +624,13 @@ extern "C" {
 	    }
 	  }
 	  
-	  List_ptr rfaces = MR_Faces(mr);
-	  int nrf = List_Num_Entries(rfaces);
-	  int nrv = MR_Num_Vertices(mr);
+          int lid = MF_LocalID_in_Region(mf,mr);
+          MRType mrtype = MR_ElementType(mr);
+          if (mrtype == TET || mrtype == PRISM || mrtype == HEX)
+            side_list[j] = mstk2exo_facemap[mrtype][lid];
+          else
+            side_list[j] = lid+1;
 
-	  if (nrv == 4) { /* Tet */
-	    for (k = 0; k < 4; k++) {
-	      if (List_Entry(rfaces,k) == mf) {
-		side_list[j] = mstk2exo_facemap[TET][k];
-		break;
-	      }
-	    }
-	  }
-	  else if (nrv == 6 && nrf == 5) { /* Triangular prism */
-	    fprintf(stderr,"PRISM VERTEX/FACE ORDERING NOT GUARANTEED\n");
-	    for (k = 0; k < 5; k++) {
-	      if (List_Entry(rfaces,k) == mf) {
-		side_list[j] = mstk2exo_facemap[PRISM][k];
-		break;
-	      }
-	    }
-	  }
-	  else if (nrv == 8 && nrf == 6) { /* Hexahedron */
-	    for (k = 0; k < 6; k++) {
-	      if (List_Entry(rfaces,k) == mf) {
-		side_list[j] = mstk2exo_facemap[HEX][k];
-		break;
-	      }
-	    }
-	  }
-	  else { /* POLYHEDRON */
-	    for (k = 0; k < 6; k++) {
-	      if (List_Entry(rfaces,k) == mf) {
-		side_list[j] = k+1;
-		break;
-	      }
-	    }
-	  }	  
-
-	  List_Delete(rfaces);
 	  List_Delete(fregs);
 	  j++;
 	}
@@ -703,17 +671,9 @@ extern "C" {
 	    }
 	  }
 	  
-	  List_ptr fedges = MF_Edges(mf,1,0);
-	  int nfe = List_Num_Entries(fedges);
+          int lid = ME_LocalID_in_Face(me,mf);
+          side_list[j] = lid+1;
 
-	  for (k = 0; k < nfe; k++) {
-	    if (List_Entry(fedges,k) == me) {
-	      side_list[j] = k+1;
-	      break;
-	    }
-	  }
-
-	  List_Delete(fedges);
 	  List_Delete(efaces);
 	  j++;
 	}
@@ -782,8 +742,9 @@ extern "C" {
       while ((mr = MESH_Next_Region(mesh, &idx))) {
 	int nrv = MR_Num_Vertices(mr);
 	int nrf = MR_Num_Faces(mr);
+        MRType mrtype = MR_ElementType(mr);
 
-	if ((nrv == 4) || (nrv == 6 && nrf == 5) || (nrv == 8 && nrf == 6))
+	if (mrtype == TET || mrtype == PRISM || mrtype == HEX)
 	  bid = (MEnt_GEntID(mr)<<16) | nrv<<8 | nrf;
 	else
 	  bid = MEnt_GEntID(mr)<<16;
@@ -812,19 +773,17 @@ extern "C" {
 	  (*element_block_ids)[nb] = bid;
 	  (*element_blocks)[nb] = List_New(10);
 	  (*element_block_types)[nb] = (char *) malloc(16*sizeof(char));
-	  if (nrv > 8)
-	    strcpy((*element_block_types)[nb],"NFACED");
-	  else {
-	    if (nrv == 8 && nrf == 6)
-	      strcpy((*element_block_types)[nb],"HEX");
-	    else if (nrv == 6 && nrf == 5)
-	      strcpy((*element_block_types)[nb],"WEDGE");
-	    else if (nrv == 4)
-	      strcpy((*element_block_types)[nb],"TETRA");
-	    else
-	      strcpy((*element_block_types)[nb],"NFACED");
-	  }
-	  List_Add((*element_blocks)[i],mr);
+
+          if (mrtype == TET)
+            strcpy((*element_block_types)[nb],"TETRA");
+          else if (mrtype == PRISM)
+            strcpy((*element_block_types)[nb],"WEDGE");
+          else if (mrtype == HEX)
+            strcpy((*element_block_types)[nb],"HEX");
+          else
+            strcpy((*element_block_types)[nb],"NFACED");
+
+	  List_Add((*element_blocks)[nb],mr);
 	  nb++;
 	}
       }
@@ -871,7 +830,7 @@ extern "C" {
 	    else if (nfv == 3)
 	      strcpy((*element_block_types)[nb],"TRIANGLE");
 	  }
-	  List_Add((*element_blocks)[i],mf);
+	  List_Add((*element_blocks)[nb],mf);
 	  nb++;
 	}
       }
@@ -904,12 +863,11 @@ extern "C" {
 	  (*element_blocks)[nb] = List_New(10);
 	  (*element_block_types)[nb] = (char *) malloc(16*sizeof(char));
 	  strcpy((*element_block_types)[nb],"BEAM");
-	  List_Add((*element_blocks)[i],me);
+	  List_Add((*element_blocks)[nb],me);
 	  nb++;
 	}
       }
     }
-
 
     *num_element_block = nb;
   }	
@@ -1236,147 +1194,97 @@ extern "C" {
   }
 
 
+  /* Local ID of face in region according to MSTK conventions - Zero based */
 
-  int Get_Local_Face_Number(MEdge_ptr mf, List_ptr mrvertices) {
-    List_ptr mfvertices = MF_Vertices(mf,1,0);
-    int i,j;
-    MVertex_ptr mv;
-    int num_node_per_element = List_Num_Entries(mrvertices);
-    /* for tetra element */
-    if (num_node_per_element == 4) {
-      int v2l[4]={2,3,1,4};
-      int svid[3], evid[4];
-      for (i = 0; i < 3; i++) {
-	mv = List_Entry(mfvertices,i);
-	svid[i] = MEnt_ID(mv);
-      }
-      for (i = 0; i < 4; i++) {
-	mv = List_Entry(mrvertices,i);
-	evid[i] = MEnt_ID(mv);
-      }
-      for (i = 0; i < 4; i++) 
-	for(j = 0; j < 3; j++) {
-	  if (evid[i] == svid[j])
-	    break;
-	  if (j==2) {
-	    return v2l[i];
-	  }
-	}
-    }
-    /*for hex element*/
-    if (num_node_per_element == 8) {
-      int svid[4], evid[8];
-      int local_id[4];
-      /*local_id stores the index of the face with respect to the region vertex index */
-      for (i = 0; i < 4; i++) {
-	mv = List_Entry(mfvertices,i);
-	svid[i] = MEnt_ID(mv);
-      }
-      for (i = 0; i < 8; i++) {
-	mv = List_Entry(mrvertices,i);
-	evid[i] = MEnt_ID(mv);
-      }
-      /* for hex, need the first 3 local index of the face */
-      int index = 0;
-      for (i = 0; i < 8; i++) 
-	for(j = 0; j < 4; j++) {
-	  if (evid[i] == svid[j]) {
-	    local_id[index++] = i+1;
-	    break;
-	  }
-	  if(index>3)
-	    break;
-	}
-      int sum = 0;
-      for (i = 0; i < 3; i++)
-	sum += local_id[i];
-      switch (sum) {
-      case 8:
-	return 1;
-      case 11:
-	return 2;
-      case 14:
-	return 3;
-      case 10:
-	return 4;
-      case 6:
-	return 5;
-      case 18:
-	return 6;
-      default:
-	fprintf(stdout,"Error:no side index found on Hex\n");
-	return 1;
-      }
-    }
-    return 1;
+  int MF_LocalID_in_Region(MFace_ptr mf, MRegion_ptr mr) {
+    MRType mrtype = MR_ElementType(mr);
 
+    switch (mrtype) {
+    case TET: case PYRAMID: case PRISM: case HEX: {
+      int i, j;
+      int allfound = 0;
+
+      List_ptr rverts = MR_Vertices(mr);
+      List_ptr fverts = MF_Vertices(mf,1,0);
+
+      int nrf = MSTK_nrf_template[mrtype];
+      for (i = 0; i < nrf; i++) {
+        int nrfv = MSTK_rfv_template[mrtype][i][0];
+
+        allfound = 1;
+        for (j = 0; j < nrfv; j++) {
+          MVertex_ptr rv = List_Entry(rverts,MSTK_rfv_template[mrtype][i][j+1]);
+          if (!List_Contains(fverts,rv)) {
+            allfound = 0;
+            break;
+          }
+        }
+        if (allfound)
+          break;
+      }
+      
+      List_Delete(rverts);
+      List_Delete(fverts);
+
+      if (allfound)
+        return i;
+      else {
+        MSTK_Report("MF_LocalID_in_Region","Face not found in region",MSTK_ERROR);
+        return -1;
+      }
+      break;
+    }
+    case POLYHED: case RUNKNOWN: {
+      List_ptr rfaces = MR_Faces(mr);
+      int i, found = 0;
+      for (i = 0; i < List_Num_Entries(rfaces); i++) {
+        if (mf == List_Entry(rfaces,i)) { /* will this work for reduced representations? */
+          found = 1;
+          break;
+        }
+      }
+      List_Delete(rfaces);
+      if (found)
+        return i;
+      else {
+        MSTK_Report("MF_LocalID_in_Region","Face not found in region",MSTK_ERROR);
+        return -1;
+      }
+      break;
+    }
+    case RDELETED: default:
+      return -1;
+    }
   }
 	    
-  int Get_Local_Edge_Number(MEdge_ptr me, List_ptr mfvertices) {
-    int i,j;
-    MVertex_ptr mv;
-    int num_node_per_element = List_Num_Entries(mfvertices);
-    /* for tri element */
-    if (num_node_per_element == 3) {
-      /* see the cubit mannual appendix for 3d TRI side numbering */
-      int v2l[3]={4,5,3};
-      int svid[2], evid[3];
-      for (i = 0; i < 2; i++) {
-	mv = ME_Vertex(me,i);
-	svid[i] = MEnt_ID(mv);
+
+  /* Local ID of edge in face according to MSTK conventions - Zero based */
+
+  int ME_LocalID_in_Face(MEdge_ptr me, MFace_ptr mf) {
+    MFType mftype = MF_ElementType(mf);
+    
+    switch (mftype) {
+    case TRI: case QUAD: case POLYGON: case FUNKNOWN: {
+      List_ptr fedges = MF_Edges(me,1,0);
+      int i, found = 0;
+      for (i = 0; i < List_Num_Entries(fedges); i++) {
+        if (me == List_Entry(fedges,i)) { /* will this work for reduced representations? */
+          found = 1;
+          break;
+        }
       }
-      for (i = 0; i < 3; i++) {
-	mv = List_Entry(mfvertices,i);
-	evid[i] = MEnt_ID(mv);
+      List_Delete(fedges);
+      if (found)
+        return i;
+      else {
+        MSTK_Report("ME_LocalID_in_Face","Edge not found in face",MSTK_ERROR);
+        return -1;
       }
-      for (i = 0; i < 3; i++) 
-	for(j = 0; j < 2; j++) {
-	  if (evid[i] == svid[j])
-	    break;
-	  if (j==1) {
-	    return v2l[i];
-	  }
-	}
+      break;
     }
-    /*for quad element*/
-    if (num_node_per_element == 4) {
-      int svid[2], evid[4];
-      for (i = 0; i < 2; i++) {
-	mv = ME_Vertex(me,i);
-	svid[i] = MEnt_ID(mv);
-      }
-      for (i = 0; i < 4; i++) {
-	mv = List_Entry(mfvertices,i);
-	evid[i] = MEnt_ID(mv);
-      }
-      int index = 0;
-      int local_id[2];
-      for (i = 0; i < 4; i++) 
-	for(j = 0; j < 2; j++) {
-	  if (evid[i] == svid[j]) {
-	    local_id[index++] = i+1;
-	    break;
-	  }
-	  if(index>2)
-	    break;
-	}
-      /* Use the product of the two local id number to distinguishi*/
-      int product = local_id[0]*local_id[1];
-      switch (product) {
-      case 2:
-	return 1;
-      case 6:
-	return 2;
-      case 12:
-	return 3;
-      case 4:
-	return 4;
-      default:
-	fprintf(stdout,"Error:no side index found on Face\n");
-	return 1;
-      }
-    } 
-    return 1;
+    case FDELETED: default:
+      return -1;
+    }
   }
 
 

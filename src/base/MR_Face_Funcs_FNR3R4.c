@@ -86,9 +86,71 @@ extern "C" {
       if (MEnt_RepType((MEntity_ptr) r) != F4) 
 	MF_Add_Region(rfaces[i],r,!dirs[i]);
     }
+
+
+    /* Figure out which type of element it is and set it */
+
+    if (r->mrtype == RUNKNOWN) {
+      switch (nf) {
+      case 4: {
+        int alltri = 1;
+        for (i = 0; i < nf; i++) {
+          if (MF_Num_Vertices(rfaces[i]) != 3) {
+            alltri = 0;
+            break;
+          }
+        }
+        
+        if (alltri) 
+          r->mrtype = TET;
+        else
+          r->mrtype = POLYHED;        
+        break;
+      }
+      case 5: {
+        int nquads = 0; 
+        int ntris = 0;
+        
+        for (i = 0; i < nf; i++) {
+          int nv = MF_Num_Vertices(rfaces[i]);
+          if (nv == 3)
+            ntris++;
+          else if (nv == 4)
+            nquads++;
+        }
+        
+        if (nquads == 3 && ntris == 2)
+          r->mrtype = PRISM;
+        else if (nquads == 1 && ntris == 4)
+          r->mrtype = PYRAMID;
+        else
+          r->mrtype = POLYHED;        
+        break;
+      }
+      case 6: {
+        int allquad = 1;
+        for (i = 0; i < nf; i++) {
+          if (MF_Num_Vertices(rfaces[i]) != 4) {
+            allquad = 0;
+            break;
+          }
+        }
+        
+        if (allquad)
+          r->mrtype = HEX;
+        else
+          r->mrtype = POLYHED;        
+        break;
+      }
+      default: 
+        r->mrtype = POLYHED;
+        break;
+      }
+    }
   }
 
-  void MR_Set_Vertices_FNR3R4(MRegion_ptr r, int nv, MVertex_ptr *mvertices, int nf, int **rfvtemplate) {
+  void MR_Set_Vertices_FNR3R4(MRegion_ptr r, int nv, MVertex_ptr *mvertices, 
+                              int nf, int **rfvtemplate) {
     MVertex_ptr verts[MAXPV2], everts[2];
     MEdge_ptr redges[12], fedges[4]; /* will be used for std. elements only */
     MFace_ptr rfaces[MAXPF3];
@@ -99,7 +161,6 @@ extern "C" {
     List_ptr fverts, fregs;
     Mesh_ptr mesh = MEnt_Mesh((MEntity_ptr) r);
     MRType regtype;
-
 
 
     for (i = 0; i < nv; i++) {
@@ -114,6 +175,54 @@ extern "C" {
     }
 
     if (rfvtemplate) {
+      switch (nf) {
+      case 4: {
+        int alltri = 1;
+        for (i = 0; i < nf; i++) 
+          if (rfvtemplate[i][0] != 3) {
+            alltri = 0;
+            break;
+          }
+        if (alltri)
+          r->mrtype = TET;
+        else
+          r->mrtype = POLYHED;
+        break;
+      }
+      case 5: {
+        int nquads = 0; 
+        int ntris = 0;
+        for (i = 0; i < nf; i++)
+          if (rfvtemplate[i][0] == 3)
+            ntris++;
+          else if (rfvtemplate[i][1] == 4)
+            nquads++;
+
+        if (nquads == 3 && ntris == 2)
+          r->mrtype = PRISM;
+        else if (nquads == 1 && ntris == 4)
+          r->mrtype = PYRAMID;
+        else
+          r->mrtype = POLYHED;
+        break;
+      }
+      case 6: {
+        int allquad = 1;
+        for (i = 0; i < nf; i++)
+          if (rfvtemplate[i][0] != 4) {
+            allquad = 0;
+            break;
+          }
+        if (allquad)
+          r->mrtype = HEX;
+        else
+          r->mrtype = POLYHED;
+        break;
+      }
+      default:
+        r->mrtype = POLYHED;
+      }
+        
       for (i = 0; i < nf; i++) {
 	fgdim = 4;
 	fgid = 0;
@@ -179,41 +288,41 @@ extern "C" {
     else {
       switch (nv) {
       case 4:
-	regtype = TET;
+	r->mrtype = TET;
 	nf = 4;
 	break;
       case 5:
-	regtype = PYRAMID;
+	r->mrtype = PYRAMID;
 	nf = 5;
 	break;
       case 6:
-	regtype = PRISM;
+	r->mrtype = PRISM;
 	nf = 5;
 	break;
       case 8:
-	regtype = HEX;
+	r->mrtype = HEX;
 	nf = 6;
 	break;
       default:
 	MSTK_Report("MR_Set_Vertices",
 		    "Polyhedron: Need number of faces and vertex template",
 		    MSTK_FATAL);
-	regtype = RUNKNOWN;
+	r->mrtype = RUNKNOWN;
 	break;
       }
 
       /* First collect the edges */
-      nre = MSTK_nre_template[regtype];
+      nre = MSTK_nre_template[r->mrtype];
       for (i = 0; i < nre; i++) {
 
 	/* Check if edge exists */
 
-	ind = MSTK_rev_template[regtype][i][0];
+	ind = MSTK_rev_template[r->mrtype][i][0];
 	everts[0] = mvertices[ind];
 	evgdim[0] = MV_GEntDim(everts[0]);
 	evgid[0]  = MV_GEntID(everts[0]);
 	
-	ind = MSTK_rev_template[regtype][i][1];
+	ind = MSTK_rev_template[r->mrtype][i][1];
 	everts[1] = mvertices[ind];
 	evgdim[1] = MV_GEntDim(everts[1]);
 	evgid[1]  = MV_GEntID(everts[1]);
@@ -283,10 +392,10 @@ extern "C" {
 	fgdim = 4;
 	fgid = 0;
 
-	nfe = MSTK_rfe_template[regtype][i][0];
+	nfe = MSTK_rfe_template[r->mrtype][i][0];
 	for (j = 0; j < nfe; j++) {
-	  ind = MSTK_rfe_template[regtype][i][j+1];
-	  sgn = MSTK_rfedir_template[regtype][i][j+1];
+	  ind = MSTK_rfe_template[r->mrtype][i][j+1];
+	  sgn = MSTK_rfedir_template[r->mrtype][i][j+1];
 	  fedges[j] = redges[ind];
 	  fedirs[j] = !(redirs[ind]^sgn);
 
@@ -300,7 +409,7 @@ extern "C" {
 
 	if (!rfaces[i]) {
 	  rfaces[i] = MF_New(mesh);
-	  rfdirs[i] = MSTK_rfdir_template[regtype][i];
+	  rfdirs[i] = MSTK_rfdir_template[r->mrtype][i];
 
 	  MF_Set_Edges(rfaces[i], nfe, fedges, fedirs);
 
@@ -322,15 +431,15 @@ extern "C" {
 	else {
 	  fregs = MF_Regions(rfaces[i]);
 	  if (!fregs) {
-	    ind = MSTK_rfv_template[regtype][i][1];
+	    ind = MSTK_rfv_template[r->mrtype][i][1];
 	    verts[0] = mvertices[ind];
-	    ind = MSTK_rfv_template[regtype][i][2];
+	    ind = MSTK_rfv_template[r->mrtype][i][2];
 	    verts[1] = mvertices[ind];
 
 	    fverts = MF_Vertices(rfaces[i],1,verts[0]);
 	    rfdirs[i] = ((verts[1] == List_Entry(fverts,1)) ? 
-			 MSTK_rfdir_template[regtype][i] : 
-			 !MSTK_rfdir_template[regtype][i]);
+			 MSTK_rfdir_template[r->mrtype][i] : 
+			 !MSTK_rfdir_template[r->mrtype][i]);
 	    List_Delete(fverts);
 	  }
 	  else {
