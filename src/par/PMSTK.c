@@ -348,6 +348,7 @@ extern "C" {
   int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
                                      int input_type, int rank, int num, 
                                      MPI_Comm comm) {
+    int have_GIDs = 0;
 
     if (num_ghost_layers > 1)
       MSTK_Report("MSTK_Weave_DistributedMeshes", "Only 1 ghost layer supported currently", MSTK_FATAL);
@@ -358,14 +359,17 @@ extern "C" {
 
     MESH_Set_Prtn(mesh, rank, num);
     
-    if (input_type == 0) {
-      MESH_AssignGlobalIDs(mesh, rank, num, comm);
+    if (input_type == 0)
+      have_GIDs = 0;
+    else if (input_type == 1)
+      have_GIDs = 1;
+
+    if (input_type == 0 || input_type == 1) {
+      /* MESH_MatchEnts_ParBdry(mesh, have_GIDs, rank, num, comm); */
+      MESH_AssignGlobalIDs(mesh, have_GIDs, rank, num, comm);
       MESH_BuildConnection(mesh, rank, num, comm);
     }
-    if (input_type == 1) 
-      MESH_BuildConnection(mesh, rank, num, comm);
-
-    if (input_type == 2) 
+    else if (input_type == 2) 
       MESH_AssignGlobalIDs_point(mesh, rank, num, comm);
 
     MESH_LabelPType(mesh, rank, num, comm);
