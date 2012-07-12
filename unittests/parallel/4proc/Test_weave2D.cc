@@ -48,14 +48,15 @@ TEST(Weave2D) {
     {6,8,11,12,2,3,5,7,10,0,0,0}};
 
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);
 
 
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
 
   mesh = MESH_New(UNKNOWN_REP);
@@ -71,7 +72,7 @@ TEST(Weave2D) {
 
   int input_type = 0;  /* no parallel info present in meshes */
   int num_ghost_layers = 1; /* always */
-  status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type, rank, nproc, MPI_COMM_WORLD);
+  status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type);
 
   CHECK(status);
 

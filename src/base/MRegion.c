@@ -45,9 +45,11 @@ extern "C" {
     if (MEnt_Dim((MEntity_ptr) r) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) r);
 
+#ifdef MSTK_HAVE_MPI
       if (MR_PType(r) == PGHOST)
 	MESH_Rem_GhostRegion(mesh,r);
       else
+#endif
 	MESH_Rem_Region(mesh,r);
 
       MEnt_Set_DelFlag((MEntity_ptr) r);
@@ -73,9 +75,11 @@ extern "C" {
 
     MEnt_Rem_DelFlag((MEntity_ptr) r);
 
+#ifdef MSTK_HAVE_MPI
     if (MR_PType(r) == PGHOST)
       MESH_Add_GhostRegion(mesh,r);
     else
+#endif
       MESH_Add_Region(mesh,r);
 
     (*MR_Restore_jmp[RTYPE])(r);
@@ -304,6 +308,7 @@ extern "C" {
     return 0;
   }
 
+#ifdef MSTK_HAVE_MPI
 
   PType MR_PType(MRegion_ptr r) {
     return MEnt_PType((MEntity_ptr) r);
@@ -352,6 +357,7 @@ extern "C" {
     return r;
   }
 
+#endif /* MSTK_HAVE_MPI */
   
 #ifdef __cplusplus
 }

@@ -34,10 +34,11 @@ int main(int argc, char *argv[]) {
   
   MPI_Init(&argc,&argv);
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
-  MPI_Comm_size(MPI_COMM_WORLD,&num);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  num = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
   
 
   fprintf(stderr,"On processor %d out of %d processors\n",rank,num);
@@ -119,7 +120,7 @@ int main(int argc, char *argv[]) {
   /* Update attributes across processors */
   
   fprintf(stderr,"Updating attributes on proc %-d...",rank);
-  MSTK_UpdateAttr(mymesh, rank, num, MPI_COMM_WORLD);
+  MSTK_UpdateAttr(mymesh);
   fprintf(stderr,"done\n");
 
 
@@ -202,7 +203,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"done\n");
 
     fprintf(stderr,"Updating attributes on proc %-d...",rank);
-    MSTK_UpdateAttr(mymesh, rank, num, MPI_COMM_WORLD);
+    MSTK_UpdateAttr(mymesh);
     fprintf(stderr,"done\n");
 
     fprintf(fp,"\n\n");

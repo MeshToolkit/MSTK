@@ -32,26 +32,32 @@ extern "C" {
 
   char (*matnames)[256], (*mateos)[256], (*matopc)[256];
 
+  int rank, numprocs;
 
-  int rank = 0;
+#ifdef MSTK_HAVE_MPI
 
-  int numprocs;
-  MPI_Comm_size(MSTK_Comm(),&numprocs);
-  MPI_Comm_rank(MSTK_Comm(),&rank);
+  numprocs = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
-  if (numprocs > 1) {
+  if (numprocs > 1)
     sprintf(modfilename,"%s.%05d",filename,rank);
-    if (!(fp = fopen(modfilename,"r"))) {
-      sprintf(mesg,"Cannot open file %s for reading\n",filename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);
-    }
+  else
+    strcpy(modfilename,filename);
+
+#else
+
+  numprocs = 1;
+  rank = 0;
+
+  strcpy(modfilename,filename);
+
+#endif /* MSTK_HAVE_MPI */
+
+
+  if (!(fp = fopen(modfilename,"r"))) {
+    sprintf(mesg,"Cannot open file %s for reading\n",filename);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
-  else {
-    if (!(fp = fopen(filename,"r"))) {
-      sprintf(mesg,"Cannot open file %s for reading\n",filename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);
-    }
-  }  
 
 
   /* Confirm identifying string */
@@ -93,10 +99,12 @@ extern "C" {
         MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
 
       if (strcmp(keyword,"process") == 0) {
+#ifdef MSTK_HAVE_MPI
 	if (value != rank+1) {
 	  sprintf(mesg,"Reading file for processor %d on processor %d",value-1,rank);
 	  MSTK_Report(funcname,mesg,MSTK_FATAL);
 	}
+#endif
       }
       else if (strcmp(keyword,"numdim") == 0) {
 	ndim = value;
@@ -356,11 +364,16 @@ extern "C" {
           MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
 	pid--;
 
+#ifdef MSTK_HAVE_MPI
+
 	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
 	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
 	if(ndim == 3) {
 	  MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
 	}
+
+#endif
+
       }
     }
     else if (strncmp(keyword,"cell_data",9) == 0) {
@@ -389,20 +402,23 @@ extern "C" {
   free(mateos);
   free(matopc);
 
-  
+
+#ifdef MSTK_HAVE_MPI  
+
   if (numprocs > 1) {
     /* Must weave distributed meshes to create correct ghost links */
   
     int num_ghost_layers = 1;
     int input_type = 2;
   
-    status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type, 
-                                          rank, numprocs, MSTK_Comm());
+    status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type);
   
     if (!status)
       MSTK_Report(funcname,"Could weave distributed meshes together correctly",
                   MSTK_FATAL);
   }
+
+#endif
  
   return 1;
 }

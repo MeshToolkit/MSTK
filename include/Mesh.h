@@ -20,12 +20,15 @@ extern "C" {
     Hash_ptr hedge, hface;
     int autolock;
 
+#ifdef MSTK_HAVE_MPI
     unsigned int mypartn, numpartns;
     unsigned int *par_adj_flags;  /* See note below for explanation */
     unsigned int *par_recv_info;  /* of these two variables */
     List_ptr ghvertex, ghedge, ghface, ghregion;
     int max_ghvid, max_gheid, max_ghfid, max_ghrid;
     List_ptr ovvertex, ovedge, ovface, ovregion;
+#endif
+
   } Mesh, *Mesh_ptr;
 #else
    typedef void *Mesh;
@@ -82,7 +85,7 @@ extern "C" {
   void       MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r);
 
-#ifdef HAVE_MPI
+#ifdef MSTK_HAVE_MPI
   void         MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, 
                              unsigned int numpartitions);
   unsigned int MESH_Prtn(Mesh_ptr mesh);

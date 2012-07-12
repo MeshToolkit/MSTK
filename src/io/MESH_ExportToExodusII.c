@@ -78,10 +78,12 @@ extern "C" {
 			        {4,5,1,2,3,0}, /* PRISM, must verify nums */
 			        {5,6,1,2,3,4}};/* HEX */
 
+#ifdef MSTK_HAVE_MPI
     int rank, numprocs;
-    MPI_Comm_size(MSTK_Comm(),&numprocs);
-    MPI_Comm_rank(MSTK_Comm(),&rank);
-    
+    numprocs = MSTK_Comm_size();
+    rank = MSTK_Comm_rank();
+#endif    
+
     verbose = opts ? opts[0] : 0;
     enable_set = opts ? opts[1] : 1;
 

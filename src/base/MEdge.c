@@ -42,9 +42,11 @@ extern "C" {
     if (MEnt_Dim((MEntity_ptr) e) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) e);
 
+#ifdef MSTK_HAVE_MPI
       if (ME_PType(e) == PGHOST)
 	MESH_Rem_GhostEdge(mesh,e);
       else
+#endif
 	MESH_Rem_Edge(mesh,e);
 
       MEnt_Set_DelFlag((MEntity_ptr) e);
@@ -70,9 +72,11 @@ extern "C" {
 
     MEnt_Rem_DelFlag((MEntity_ptr) e);
 
+#ifdef MSTK_HAVE_MPI
     if (ME_PType(e) == PGHOST)
       MESH_Add_GhostEdge(mesh,e);
     else
+#endif
       MESH_Add_Edge(mesh,e);
 
     (*ME_Restore_jmp[RTYPE])(e);
@@ -417,6 +421,7 @@ extern "C" {
     return ME_IsLocked_jmp[RTYPE](e);
   }
 
+#ifdef MSTK_HAVE_MPI
 
   PType ME_PType(MEdge_ptr e) {
     return MEnt_PType((MEntity_ptr) e);
@@ -469,6 +474,7 @@ extern "C" {
     return e;
   }
 
+#endif /* MSTK_HAVE_MPI */
   
 #ifdef __cplusplus
 }

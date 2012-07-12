@@ -15,11 +15,11 @@ TEST(VertexUpdate2D) {
   char filename[256];
 
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
-
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
 
   //  mesh = MESH_New(UNKNOWN_REP);
@@ -89,8 +89,8 @@ TEST(VertexUpdate2D) {
 
   fprintf(stderr,"Deformed mesh proc %-d\n",rank);
 
-  MESH_UpdateVertexCoords(mesh,rank,nproc,MPI_COMM_WORLD);
-  MSTK_UpdateAttr(mesh,rank,nproc,MPI_COMM_WORLD);
+  MESH_UpdateVertexCoords(mesh);
+  MSTK_UpdateAttr(mesh);
 
   fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
 

@@ -33,10 +33,12 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 		     {4,5,6,7,0,1,2,3}};
   FILE *fp;
 
+#ifdef MSTK_HAVE_MPI
 
-  int rank = 0, numprocs = 1;
-  MPI_Comm_size(MSTK_Comm(),&numprocs);
-  MPI_Comm_rank(MSTK_Comm(),&rank);
+  int numprocs = MSTK_Comm_size();
+  int rank = MSTK_Comm_rank();
+
+#endif
 
 
   /* OPEN FILE */

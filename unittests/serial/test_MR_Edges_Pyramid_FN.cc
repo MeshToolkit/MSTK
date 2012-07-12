@@ -12,7 +12,7 @@ TEST(MR_Edges_Pyramid_FN)
   int exp_ne = 8;
   int exp_eids[8] = {3,4,8,7,5,2,1,6};
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
 

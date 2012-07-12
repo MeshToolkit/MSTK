@@ -16,11 +16,11 @@ TEST(UpdAtt2D_Dist) {
   char filename[256];
 
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
-
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
   if (rank == 0) {
     Mesh_ptr mesh0 = MESH_New(UNKNOWN_REP);
@@ -47,7 +47,7 @@ TEST(UpdAtt2D_Dist) {
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
   MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr, method, rank, nproc, 
-		       MPI_COMM_WORLD);
+		       MSTK_Comm());
 
 
 
@@ -65,7 +65,7 @@ TEST(UpdAtt2D_Dist) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh,rank,nproc,MPI_COMM_WORLD);
+  MSTK_UpdateAttr(mesh);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {
@@ -103,11 +103,12 @@ TEST(UpdAtt2D_Weave) {
   char filename[256];
 
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
 
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
 
    mesh = MESH_New(UNKNOWN_REP);
@@ -123,7 +124,7 @@ TEST(UpdAtt2D_Weave) {
 
    int input_type = 0;  /* no parallel info present in meshes */
    int num_ghost_layers = 1; /* always */
-   status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type, rank, nproc, MPI_COMM_WORLD);
+   status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type);
 
    CHECK(status);
 
@@ -145,7 +146,7 @@ TEST(UpdAtt2D_Weave) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh,rank,nproc,MPI_COMM_WORLD);
+  MSTK_UpdateAttr(mesh);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {

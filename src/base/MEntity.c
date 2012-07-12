@@ -23,8 +23,10 @@ extern "C" {
     ent->entdat.marker = 0;
     ent->entdat.AttInsList = 0;
 
+#ifdef MSTK_HAVE_MPI
     ent->entdat.ptype_masterparid = (0<<2 | PINTERIOR); /* ?? */
     ent->entdat.globalid = 0;
+#endif
   }
 
   void MEnt_Free_CmnData(MEntity_ptr ent) {    
@@ -499,186 +501,6 @@ extern "C" {
   }
 
 
-  /********************************************************************/
-  /* Some functions to emulate parallel functionality for now. We will
-     do this right later on */
-  /********************************************************************/
-
-  /* TIME TO GET RID OF THIS???? */
-
-
-
-  /* Get the number of processors connected to entity */
-
-  int MEnt_NumProcs(MEntity_ptr ent) {
-    int ival;
-    double rval;
-    void *pval;
-    int *plnumdat;
-
-    MEnt_Get_AttVal(ent,plnumatt,&ival,&rval,&pval);
-    plnumdat = (void *) pval;
-
-    if (!plnumdat)
-      return 0;
-    else
-      return plnumdat[0];
-
-  }
-    
-
-
-
-  /* Add processor to list of processors connected to entity (if not
-     already there) */
-
-
-  void MEnt_Set_ProcIDs(MEntity_ptr ent, int np, int *procids) {
-    int ival, i;
-    double rval;
-    void *pval;
-    int *plnumdat;
-
-    MEnt_Get_AttVal(ent,plnumatt,&ival,&rval,&pval);
-    plnumdat = (int *) pval;
-
-    if (!plnumdat) {
-      plnumdat = (int *) malloc((1+2*np)*sizeof(int));
-
-      MEnt_Set_AttVal(ent,plnumatt,0,0.0,(void *)plnumdat);      
-    }
-
-    /* Number of processors connected to this entity */
-
-    plnumdat[0] = np;
-
-    /* Initialize find this processor ID */
-
-    for (i = 0; i < np; i++) {
-      plnumdat[1+2*i] = procids[i];
-      plnumdat[1+2*i+1] = 0;
-    }
-  }
-
-
-
-
-  /* IDs of processors connected to this entity (could be just 1) */
-
-
-  int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids) {
-    int ival, i;
-    double rval;
-    void *pval;
-    int *plnumdat;
-
-    MEnt_Get_AttVal(ent,plnumatt,&ival,&rval,&pval);
-    plnumdat = (int *) pval;
-
-    if (!plnumdat) {
-      MSTK_Report("MEnt_LocalID","No processor specific data. Call MEnt_Set_Num{Procs first",MSTK_WARN);
-      return 0;
-    }
-
-    /* Number of processors connected to this entity */
-
-    *np = plnumdat[0];
-
-    for (i = 0; i < *np; i++)
-      procids[i] = plnumdat[1+2*i];
-
-    return 1;
-  }
-
-
-
-
-  /* Set the local number of an entity on a processor. (Add processor
-     to list of processors connected to entity if it is not already
-     there */
-
-
-  void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum) {
-    int ival, np, i;
-    double rval;
-    void *pval;
-    int *plnumdat;
-
-    MEnt_Get_AttVal(ent,plnumatt,&ival,&rval,&pval);
-    plnumdat = (int *) pval;
-
-    if (!plnumdat) {
-      MSTK_Report("MEnt_Set_LocalID",
-		  "No processor specific data. Call MEnt_Set_ProcIDs first",
-		  MSTK_WARN);
-      return;
-    }
-
-    /* Number of processors connected to this entity */
-
-    np = plnumdat[0];
-
-    /* Search to find this processor ID */
-
-    for (i = 0; i < np; i++) {
-
-      if (plnumdat[1+2*i] == procid) {
-	plnumdat[1+2*i+1] = lnum;
-	return;
-      }      
-      
-    }
-
-    /* This processor ID is not found */
-
-    MSTK_Report("MEnt_Set_LocalID","Processor not connected to entity",MSTK_WARN);
-  }
-
-
-
-
-  /* Local number of the entity on this processor */
-
-
-  int MEnt_LocalID(MEntity_ptr ent, int procid) {
-    int ival, i, np, lnum;
-    double rval;
-    void *pval;
-    int *plnumdat;
-
-    MEnt_Get_AttVal(ent,plnumatt,&ival,&rval,&pval);
-    plnumdat = (int *) pval;
-
-    if (!plnumdat) {
-      MSTK_Report("MEnt_LocalID",
-		  "No processor specific data. Call MEnt_Set_ProcIDs first",
-		  MSTK_WARN);
-      return MEnt_ID(ent);
-    }
-
-    /* Number of processors connected to this entity */
-
-    np = plnumdat[0];
-
-    /* Search to find this processor ID */
-
-    for (i = 0; i < np; i++) {
-
-      if (plnumdat[1+2*i] == procid) {
-	lnum = plnumdat[1+2*i+1];
-	return lnum;
-      }
-      
-    }
-
-    /* Processor ID was not found */
-
-    MSTK_Report("MEnt_LocalID","Processor not connected to entity",MSTK_WARN);
-    return -1;
-  }
-
-
-
   /* Extra functionality for hash-tables */
 
   MEntity_ptr MEnt_NextInHash(MEntity_ptr ent) {
@@ -759,6 +581,7 @@ extern "C" {
   }
 
 
+#ifdef MSTK_HAVE_MPI
 
   PType MEnt_PType(MEntity_ptr ent) {
     unsigned int data = ent->entdat.ptype_masterparid;
@@ -792,6 +615,25 @@ extern "C" {
     ent->entdat.globalid = globalid;
   }
 
+
+  int  MEnt_MasterLocalID(MEntity_ptr ent) {
+    if (ent->entdat.globalid < 0)
+      return -(ent->entdat.globalid);
+    else
+      return -1;
+  }
+
+  void  MEnt_Set_MasterLocalID(MEntity_ptr ent, int localid) {
+
+#ifdef DEBUG
+    if (ent->entdat.globalid > 0)
+      MSTK_Report("MEnt_Set_MasterLocalID","Global ID already set for entity but overwriting with Local ID on master processor",MSTK_WARN);
+#endif
+
+    ent->entdat.globalid = -abs(localid);
+  }
+
+#endif /* MSTK_HAVE_MPI */
 
 #ifdef __cplusplus
 }

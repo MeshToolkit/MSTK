@@ -9,7 +9,9 @@
 #include "MSTK_util.h"
 #include "MSTK_malloc.h"
 
-#include <mpi.h>
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +19,7 @@ extern "C" {
 
 /*******************************************************************/
 
-  void MSTK_Init(MPI_Comm comm);
+  void MSTK_Init();
 
 /********************************************************************/
 /*        MESH OBJECT OPERATORS                                     */
@@ -106,45 +108,60 @@ extern "C" {
   void        MESH_Renumber(Mesh_ptr mesh);
 
 
+#ifdef MSTK_HAVE_MPI
+
+  /* Set the MPI communicator */
+
+  void MSTK_Set_Comm(MPI_Comm comm);
 
   /* What is the communicator being used by MSTK? */
 
   MPI_Comm MSTK_Comm();
 
+  /* Number of processors */
+
+  int MSTK_Comm_size();
+
+  /* Rank of the current process */
+
+  int MSTK_Comm_rank();
+
   /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
+  /* The rank, num, and comm arguments will go away soon                */
 
   int         MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
-				const char* global_mesh_name, 
-				int *dim, int ring, int with_attr, 
-				int method, int rank, int num, MPI_Comm comm);
+                                        const char* global_mesh_name, 
+                                        int *dim, int ring, int with_attr, 
+                                        int method, int rank, int num,
+                                        MPI_Comm comm);
 
   /* Partition an existing mesh and distribute it to 'num' processors */
+  /* The rank, num and comm arguments will go away soon               */
 
   int         MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
-			   int *dim, int ring, int with_attr, 
-			   int method, int rank, int num, MPI_Comm comm);
+                                   int *dim, int ring, int with_attr, 
+                                   int method, int rank, int num,
+                                   MPI_Comm comm);
 
 
   /* 'Weave' a set of distributed meshes by building ghost layers */
 
   int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
-                                           int input_type, int rank, int num, 
-                                           MPI_Comm comm);
+                                           int input_type);
 
   /* Parallel update attribute values for ghost entities */
 
-  int         MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm);
+  int         MSTK_UpdateAttr(Mesh_ptr mesh);
 
 
   /* Update vertex coordinates for ghost vertices */
-  int         MESH_UpdateVertexCoords(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+  int         MESH_UpdateVertexCoords(Mesh_ptr mesh);
 
-  int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+  /* Check parallel consistency */
 
-
-  /* END PRIMARY ROUTINES FOR PARALLEL APPLICATION */
+  int         MESH_Parallel_Check(Mesh_ptr mesh);
 
 
   MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
@@ -152,6 +169,8 @@ extern "C" {
   MFace_ptr   MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id);
   MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
   MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
+
+#endif /* MSTK_HAVE_MPI */
 
 
 
@@ -194,10 +213,13 @@ extern "C" {
   List_ptr    MV_Faces(MVertex_ptr mvertex);
   List_ptr    MV_Regions(MVertex_ptr mvertex);
 
+#ifdef MSTK_HAVE_MPI
+
   PType       MV_PType(MVertex_ptr v);
   int         MV_MasterParID(MVertex_ptr v);
   int         MV_GlobalID(MVertex_ptr v);
 
+#endif
 
 /********************************************************************/
 /*        MESH EDGE OPERATORS                                       */
@@ -241,9 +263,13 @@ extern "C" {
   void        ME_Lock(MEdge_ptr e);
   void        ME_UnLock(MEdge_ptr e);
 
+#ifdef MSTK_HAVE_MPI
+
   PType       ME_PType(MEdge_ptr e);
   int         ME_MasterParID(MEdge_ptr e);
   int         ME_GlobalID(MEdge_ptr e);
+
+#endif
 
 /********************************************************************/
 /*        MESH FACE OPERATORS                                       */
@@ -307,9 +333,13 @@ extern "C" {
   void        MF_Lock(MFace_ptr f);
   void        MF_UnLock(MFace_ptr f);
 
+#ifdef MSTK_HAVE_MPI
+
   PType       MF_PType(MFace_ptr f);  
   int         MF_MasterParID(MFace_ptr f);
   int         MF_GlobalID(MFace_ptr f);
+
+#endif
 
 /********************************************************************/
 /*        MESH REGN OPERATORS                                       */
@@ -366,18 +396,17 @@ extern "C" {
 
   void        MR_Coords(MRegion_ptr mregion, int *n, double (*xyz)[3]);
 
+#ifdef MSTK_HAVE_MPI
+
   PType       MR_PType(MRegion_ptr r);  
   int         MR_MasterParID(MRegion_ptr r);
   int         MR_GlobalID(MRegion_ptr r);
 
+#endif
 
   /************************************************************************/
   /* GENERIC ENTITY OPERATORS                                             */
   /************************************************************************/
-
-  PType       MEnt_PType(MEntity_ptr ent);
-  int         MEnt_MasterParID(MEntity_ptr ent);
-  int         MEnt_GlobalID(MEntity_ptr ent);
 
   void        MEnt_Set_GEntity(MEntity_ptr mentity, GEntity_ptr gent);
   void        MEnt_Set_GEntDim(MEntity_ptr mentity, int gdim);
@@ -405,6 +434,15 @@ extern "C" {
   int         MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);  
   void        MEnt_Rem_AllAttVals(MEntity_ptr);
+
+
+#ifdef MSTK_HAVE_MPI
+
+  PType       MEnt_PType(MEntity_ptr ent);
+  int         MEnt_MasterParID(MEntity_ptr ent);
+  int         MEnt_GlobalID(MEntity_ptr ent);
+
+#endif
 
 
   /************************************************************************/
@@ -512,6 +550,7 @@ extern "C" {
 /* More parallel operators                                            */
 /**********************************************************************/
 
+#ifdef MSTK_HAVE_MPI
 
   /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
   /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */
@@ -549,6 +588,7 @@ extern "C" {
 
   /*end for mpi */
 
+#endif
 
 
 /**********************************************************************/

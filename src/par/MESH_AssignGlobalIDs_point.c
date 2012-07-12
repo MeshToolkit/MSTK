@@ -206,7 +206,7 @@ int MESH_AssignGlobalIDs_point_Vertex(Mesh_ptr submesh, int rank, int num, MPI_C
       }
     }
   }
-  printf("num of ghost vertices %d, overlap vertices %d on rank %d\n", ngv, nov, rank);  
+  /* printf("num of ghost vertices %d, overlap vertices %d on rank %d\n", ngv, nov, rank); */
   mesh_info[9] = ngv;
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
@@ -300,7 +300,7 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
       nbe++;
     }
   }
-  printf("num of boundary edges %d on rank %d\n", nbe, rank);  
+  /* printf("num of boundary edges %d on rank %d\n", nbe, rank); */
   mesh_info[5] = nbe;
 
   List_Sort(boundary_edges,nbe,sizeof(MEdge_ptr),compareEdgeID);
@@ -382,7 +382,7 @@ int MESH_AssignGlobalIDs_point_Edge(Mesh_ptr submesh, int rank, int num, MPI_Com
     }
   }
   
-  printf("num of ghost edges %d, overlap edges %d on rank %d\n", nge, noe, rank);  
+  /* printf("num of ghost edges %d, overlap edges %d on rank %d\n", nge, noe, rank);  */
   mesh_info[9] = nge;
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
@@ -608,7 +608,7 @@ int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_C
     }
   }
   
-  printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank);  
+  /* printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank); */
   mesh_info[9] = ngf;
   global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);

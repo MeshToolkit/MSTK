@@ -47,7 +47,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm
     /* Call the partitioner only on processor zero */
 
     if (rank == 0) {
-#ifdef _MSTK_WITH_METIS
+#ifdef _MSTK_HAVE_METIS
       ok = MESH_PartitionWithMetis(mesh, num, part);
 #else
       MSTK_Report("MESH_Partition","Metis not enabled",MSTK_FATAL);
@@ -60,7 +60,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm
        ask Zoltan to partition the mesh, we have to invoke the 
        Zoltan partitioner on all processors */
 
-#ifdef _MSTK_WITH_ZOLTAN
+#ifdef _MSTK_HAVE_ZOLTAN
     ok = MESH_PartitionWithZoltan(mesh, num, part,rank,comm);
 #else
     MSTK_Report("MESH_Partition","Zoltan not enabled",MSTK_FATAL);

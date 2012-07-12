@@ -16,7 +16,7 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_UpdateVertexCoords(Mesh_ptr mesh, int myrank, int numprocs,  MPI_Comm comm) {
+  int MESH_UpdateVertexCoords(Mesh_ptr mesh) {
     int i, j, k, *loc, count;
     int num_ghost=0, num_ov=0, send_size,recv_size;
     int *gid_list_send, *gid_list_recv, recv_index, num_recv_procs;
@@ -26,6 +26,10 @@ extern "C" {
     MAttType att_type;
     MVertex_ptr mv;
     MPI_Status status;
+
+    MPI_Comm comm = MSTK_Comm();
+    int myrank = MSTK_Comm_rank();
+    int numprocs = MSTK_Comm_size();
 
     MPI_Barrier(comm);
 

@@ -13,7 +13,7 @@ TEST(MR_Edges_Hex_FN)
 		      5,1,2,12,
 		      4,10,9,11};
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
 

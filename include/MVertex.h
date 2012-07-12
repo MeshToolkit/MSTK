@@ -104,6 +104,7 @@ extern "C" {
   void MV_Rem_Face(MVertex_ptr mvertex, MFace_ptr mface);
   void MV_Rem_Region(MVertex_ptr mvertex, MRegion_ptr mregion);
 
+#ifdef MSTK_HAVE_MPI
   PType MV_PType(MVertex_ptr r);  
   void  MV_Set_PType(MVertex_ptr r, PType ptype);
   int   MV_MasterParID(MVertex_ptr r);
@@ -111,6 +112,7 @@ extern "C" {
   int   MV_GlobalID(MVertex_ptr r);
   void  MV_Set_GlobalID(MVertex_ptr r, int globalid);
   MVertex_ptr MV_GhostNew(Mesh_ptr mesh);
+#endif
 
 #ifdef __cplusplus
 }

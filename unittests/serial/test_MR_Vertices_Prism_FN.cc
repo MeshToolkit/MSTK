@@ -12,7 +12,7 @@ TEST(MR_Vertices_Prism_FN)
   int exp_nv = 6;
   int exp_vids[6] = {2,6,3,5,1,4};
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
 

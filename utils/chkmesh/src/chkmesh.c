@@ -3,6 +3,9 @@
 #include <string.h>
 #include "MSTK.h"
 
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+#endif
 
 double Tet_Volume(double (*rxyz)[3]);
 double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
@@ -50,13 +53,21 @@ int main(int argc, char **argv) {
   strcpy(gmvfname,mname);
   strcat(gmvfname,"-chk.gmv");
 
+#ifdef MSTK_HAVE_MPI
   MPI_Init(&argc,&argv);
+#endif
 
-  int rank, numprocs;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+
+
+#ifdef MSTK_HAVE_MPI
+
+  MSTK_Set_Comm(MPI_COMM_WORLD);
+  int rank = MSTK_Comm_rank();
+  int size = MSTK_Comm_size();
+
+#endif
 
   fprintf(stderr,"\n\nChecking mesh %s\n\n",infname);
 
@@ -186,8 +197,10 @@ int main(int argc, char **argv) {
     free(rfverts);
   }  
 
-  if (status)
-     fprintf(stderr,"OK\n");
+
+#ifdef MSTK_HAVE_MPI
+  status = status | MESH_Parallel_Check(mesh);
+#endif
 
   if (status) {
     fprintf(stderr,"\n\n");
@@ -206,10 +219,11 @@ int main(int argc, char **argv) {
   }
 
 
-#ifdef _MSTK_HAVE_MPI
-  status = status | MESH_Parallel_Check(mesh,rank,numprocs,MPI_COMM_WORLD);
+#ifdef MSTK_HAVE_MPI
+  MPI_Finalize();
 #endif
 
+  return 1;
 }
 
 

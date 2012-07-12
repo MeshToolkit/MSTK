@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   /* Initialize MSTK - Always do this even if it does not seem to
      matter in this version of MSTK */
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
 
   /* Load the mesh */
 

@@ -15,8 +15,13 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
-int MESH_Parallel_Check(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+int MESH_Parallel_Check(Mesh_ptr mesh) {
   int valid;
+
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
+  int num = MSTK_Comm_size();
+
   printf("Begin checking parallel information on submesh %d\n",rank);
   valid = MESH_Parallel_Check_Ghost(mesh,rank);
   if(valid)

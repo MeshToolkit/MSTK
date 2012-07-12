@@ -47,14 +47,15 @@ TEST(Partition2D) {
     {35,36,37,38,39,40,41,42,10,0,0,0,0,0}};
 
 
-  MSTK_Init(MPI_COMM_WORLD);
+  MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);
 
 
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
   if (rank == 0) {
 

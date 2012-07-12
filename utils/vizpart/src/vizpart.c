@@ -16,9 +16,6 @@ int main(int argc, char **argv) {
   char basename[256], meshname[256], gmvfilename[256], method[256];
 
 
-  MPI_Init(&argc,&argv);
-  
-
   if (argc == 1) {
     fprintf(stderr,"Usage: %s --num=num_parts --method=Metis/Zoltan (default=Metis) --file=name.mstk\n",argv[0]);
     exit(-1);    
@@ -56,16 +53,20 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
+  MPI_Init(&argc,&argv);
+      
+  MSTK_Init();
+
+  MSTK_Set_Comm(MPI_COMM_WORLD);
+
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
   if (imethod == 1 && nproc != num_parts) {
     fprintf(stderr,"Zoltan based partitioner: Number of processors must equal requested number of partition\n");
     exit(-1);
   }
-
-      
-  MSTK_Init(MPI_COMM_WORLD);
 
   
   strcpy(basename,meshname);
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    sprintf(gmvfilename,"%s_part.gmv",basename,i,0);
+    sprintf(gmvfilename,"%s_part.gmv",basename);
     MESH_ExportToGMV(mesh,gmvfilename,0,NULL,NULL);
     for( i = 0; i < num_parts; i++) {
       sprintf(gmvfilename,"%s_part.%04d.%04d.gmv",basename,i,0);

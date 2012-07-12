@@ -12,7 +12,7 @@ TEST(MR_Vertices_Hex_FN)
   int exp_nv = 8;
   int exp_vids[8] = {6,4,7,3,5,1,8,2};
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
 

@@ -7,6 +7,10 @@
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+#endif
+
 #ifdef   __cplusplus
 extern "C" {
 #endif
@@ -202,6 +206,19 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MEnt_IsLocked(MEntity_ptr ent);
 
 
+  int compareINT(const void *a, const void *b);
+  int compareGlobalID(const void *a, const void *b);
+  int compareVertexCoor(const void *a, const void *b);
+  int compareCoorDouble(const void * a, const void * b);
+  int compareEdgeINT(const void *a, const void *b);
+  int compareEdgeID(const void *a, const void *b);
+  int compareFaceINT(const void *a, const void *b);
+  int compareFaceID(const void *a, const void *b);
+
+
+
+
+#ifdef MSTK_HAVE_MPI
 
   /* If you call the routines to set master partition ID or Global ID
      without knowing what you are doing, you can shoot yourself in the
@@ -303,21 +320,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 			     int num,  MPI_Comm comm);
   int        MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  
 				   MPI_Comm comm);
-  
 
 
-  /* Functions for entity sets */
-
-  int        MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr mset);
-  int        MESH_SendMSet(Mesh_ptr mesh, const char *set_name, int rank, MPI_Comm comm);
-  int        MESH_RecvMSet(Mesh_ptr mesh, const char *set_name, int rank, int recv_rank, MPI_Comm comm);
-
-
-  /**** ????????? ******/
-  /* the following 16 functions is not necessary, 
-     we can operate on the whole list, and then call
-     MESH_BuildGhostList()
-  */
   void       MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v);
   void       MESH_Add_GhostEdge(Mesh_ptr mesh, MEdge_ptr e);
   void       MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f);
@@ -339,15 +343,14 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Rem_OverlapFace(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Rem_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r);
 
-  /*  int compareGlobalID(const void *a, const void *b); */
-  int compareINT(const void *a, const void *b);
-  int compareGlobalID(const void *a, const void *b);
-  int compareVertexCoor(const void *a, const void *b);
-  int compareCoorDouble(const void * a, const void * b);
-  int compareEdgeINT(const void *a, const void *b);
-  int compareEdgeID(const void *a, const void *b);
-  int compareFaceINT(const void *a, const void *b);
-  int compareFaceID(const void *a, const void *b);
+
+  /* Functions for entity sets */
+
+  int        MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr mset);
+  int        MESH_SendMSet(Mesh_ptr mesh, const char *set_name, int rank, MPI_Comm comm);
+  int        MESH_RecvMSet(Mesh_ptr mesh, const char *set_name, int rank, int recv_rank, MPI_Comm comm);
+
+#endif /* MSTK_HAVE_MPI */  
 
 
 

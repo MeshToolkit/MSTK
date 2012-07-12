@@ -20,9 +20,13 @@ add_subdirectory(meshconvert)
 
 add_subdirectory(chkmesh)
 
-#############################################################################
-# Partition visualization
-###############################################################################
 
-add_subdirectory(vizpart)
+if (ENABLE_PARALLEL)
 
+  #############################################################################
+  # Partition visualization
+  ###############################################################################
+
+  add_subdirectory(vizpart)
+
+endif ()

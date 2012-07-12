@@ -71,27 +71,26 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   MAttrib_ptr    vidatt=0,eidatt=0,fidatt=0,ridatt=0;
   char funcname[256] = "MESH_ExportToGMV", mesg[256];
 
-  int rank, numprocs;
-  MPI_Comm_size(MSTK_Comm(),&numprocs);
-  MPI_Comm_rank(MSTK_Comm(),&rank);
-
   gmodel = 1;
-  
 
-  if (numprocs > 1) {
-    char modfilename[256];
+  char modfilename[256];
+
+#ifdef MSTK_HAVE_MPI
+  int rank, numprocs;
+  numprocs = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
+
+  if (numprocs > 1) 
     sprintf(modfilename,"%s.%05d",filename,rank);
-   
-    if (!(fp = fopen(modfilename,"w"))) {
-      sprintf(mesg,"Cannot open file %s for writing",modfilename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);
-    }
-  }
-  else {
-    if (!(fp = fopen(filename,"w"))) {
-      sprintf(mesg,"Cannot open file %s for writing",filename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);      
-    }
+  else
+    strcpy(modfilename,filename);
+#else
+  strcpy(modfilename,filename);
+#endif
+
+  if (!(fp = fopen(modfilename,"w"))) {
+    sprintf(mesg,"Cannot open file %s for writing",modfilename);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
 
 
@@ -949,6 +948,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   }
 
 
+#ifdef MSTK_HAVE_MPI
 
   /* Write out global ID and Master Processor Rank for each node and
      for each element */
@@ -1044,6 +1044,8 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
   }
   if (k%10 != 0) fprintf(fp,"\n");
+
+#endif /* MSTK_HAVE_MPI */
 
   fprintf(fp,"endvars \n");
   

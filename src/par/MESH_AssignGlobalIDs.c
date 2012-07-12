@@ -564,7 +564,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       nbf++;
     }
   }
-  printf("num of boundary faces %d, on rank %d\n", nbf,rank);  
+  /* printf("num of boundary faces %d, on rank %d\n", nbf,rank); */
   mesh_info[6] = nbf;
 
   List_Sort(boundary_faces,nbf,sizeof(MFace_ptr),compareFaceID);
@@ -657,7 +657,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm co
       MF_Set_PType(mf,POVERLAP);
       nof++;
   }
-  printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank);  
+  /* printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank);  */
 
   /* this time only global id are sent */
   for(i = 0; i < nbf; i++) {

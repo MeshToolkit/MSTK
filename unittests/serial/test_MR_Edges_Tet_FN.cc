@@ -12,7 +12,7 @@ TEST(MR_Edges_Tet_FN)
   int exp_ne = 6;
   int exp_eids[6] = {5,3,6,1,2,4};
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
 

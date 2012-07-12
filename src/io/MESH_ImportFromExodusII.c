@@ -72,11 +72,12 @@ extern "C" {
   
   char basename[256], modfilename[256], *ext;
 
+#ifdef MSTK_HAVE_MPI
 
   int rank=0, numprocs=1;
 
-  MPI_Comm_size(MSTK_Comm(),&numprocs);
-  MPI_Comm_rank(MSTK_Comm(),&rank);
+  numprocs = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
   if (numprocs > 1) {
     strcpy(basename,filename);
@@ -129,6 +130,17 @@ extern "C" {
       MSTK_Report(funcname,mesg,MSTK_FATAL);
     }
   }
+
+#else
+
+  exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
+  
+  if (exoid < 0) {
+    sprintf(mesg,"Cannot open/read Exodus II file %s\n",filename);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
+  }
+
+#endif /* MSTK_HAVE_MPI */
   
   
   status = ex_get_init_ext(exoid, &exopar);
@@ -208,8 +220,11 @@ extern "C" {
     for (i = 0; i < nnodes; i++) {
       mv = MESH_Vertex(mesh, i);
       MEnt_Set_AttVal(mv, nmapatt, node_map[i], 0.0, NULL);
+
+#ifdef MSTK_HAVE_MPI
       MV_Set_GlobalID(mv, node_map[i]);
       MV_Set_MasterParID(mv, rank); /* This might get modified later */
+#endif
     }
     
   }
@@ -587,8 +602,11 @@ extern "C" {
       for (i = 0; i < nelems; i++) {
 	mf = MESH_Face(mesh, i);
 	MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+
+#ifdef MSTK_HAVE_MPI
         MF_Set_GlobalID(mf,elem_map[i]);
         MF_Set_MasterParID(mf,rank);
+#endif
       }
       
     }
@@ -1128,7 +1146,10 @@ extern "C" {
 	for (i = 0; i < nelems; i++) {
 	  mf = MESH_Face(mesh, i);
 	  MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+#ifdef MSTK_HAVE_MPI
           MF_Set_GlobalID(mf,elem_map[i]);
+          MF_Set_MasterParID(mf,rank);
+#endif
 	}
       }
       else if (mesh_type == 2) {
@@ -1137,8 +1158,10 @@ extern "C" {
 	for (i = 0; i < nelems; i++) {
 	  mr = MESH_Region(mesh, i);
 	  MEnt_Set_AttVal(mr, nmapatt, elem_map[i], 0.0, NULL);
+#ifdef MSTK_HAVE_MPI
           MR_Set_GlobalID(mr,elem_map[i]);
           MR_Set_MasterParID(mr,rank);
+#endif
 	}
       }
       else {
@@ -1159,6 +1182,7 @@ extern "C" {
   ex_close(exoid);
 
 
+#ifdef MSTK_HAVE_MPI
   if (numprocs > 1) {
     /* Now weave the distributed meshes together so that appropriate ghost links are created */
   
@@ -1166,15 +1190,15 @@ extern "C" {
     int input_type = 1;
   
     int weavestatus = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, 
-                                                   input_type, 
-                                                   rank, numprocs, MSTK_Comm());
+                                                   input_type);
   
     if (!weavestatus)
       MSTK_Report(funcname,"Could not weave distributed meshes correctly together",
                   MSTK_FATAL);
 
-    int parallel_check = MESH_Parallel_Check(mesh, rank, numprocs, MSTK_Comm());
+    int parallel_check = MESH_Parallel_Check(mesh);
   }
+#endif
 
   return 1;
 

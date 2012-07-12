@@ -250,6 +250,7 @@ extern "C" {
     
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
+  /* The rank, num and comm arguments will go away soon                 */
 
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
 				const char* global_mesh_name, 
@@ -279,6 +280,7 @@ extern "C" {
 
 
   /* Partition a given mesh and distribute it to 'num' processors */
+  /* The rank, num and comm arguments will go away soon           */
 
   int MSTK_Mesh_Distribute(Mesh_ptr *mesh, int *dim, 
 			   int ring, int with_attr, 
@@ -346,9 +348,12 @@ extern "C" {
 
 
   int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
-                                     int input_type, int rank, int num, 
-                                     MPI_Comm comm) {
+                                   int input_type) {
+
     int have_GIDs = 0;
+    MPI_Comm comm = MSTK_Comm();
+    int rank = MSTK_Comm_rank();
+    int num = MSTK_Comm_size();
 
     if (num_ghost_layers > 1)
       MSTK_Report("MSTK_Weave_DistributedMeshes", "Only 1 ghost layer supported currently", MSTK_FATAL);
@@ -385,7 +390,11 @@ extern "C" {
 
   /* Update attributes on partitions */
 
-  int MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {  
+  int MSTK_UpdateAttr(Mesh_ptr mesh) {
+    MPI_Comm comm = MSTK_Comm();
+    int rank = MSTK_Comm_rank();
+    int num = MSTK_Comm_size();
+
     int i, natt;
     char attr_name[256];
     MAttrib_ptr attrib;

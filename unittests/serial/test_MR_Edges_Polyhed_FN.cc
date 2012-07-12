@@ -12,7 +12,7 @@ TEST(MR_Edges_polyhed_FN)
   int exp_ne = 15;
   int exp_eids[15] = {6,3,11,5,2,14,15,12,4,7,8,10,13,1,9};
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
 

@@ -95,14 +95,23 @@ int main(int argc, char *argv[]) {
   }
 
 
+#ifdef MSTK_HAVE_MPI
   MPI_Init(&argc,&argv);
+#endif
 
-  int rank, numprocs;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+
+  MSTK_Init();
+
+
+#ifdef MSTK_HAVE_MPI
+
+  MSTK_Set_Comm(MPI_COMM_WORLD);
+
+  int rank = MSTK_Comm_rank();
+  int numprocs = MSTK_Comm_size();
+
+#endif
   
-  MSTK_Init(MPI_COMM_WORLD);
-
   if (inmeshformat == MSTK) {
     mesh = MESH_New(UNKNOWN_REP);
 
@@ -218,7 +227,9 @@ int main(int argc, char *argv[]) {
 
   MESH_Delete(mesh);
 
+#ifdef MSTK_HAVE_MPI
   MPI_Finalize();
+#endif
 
   return 1;
 }

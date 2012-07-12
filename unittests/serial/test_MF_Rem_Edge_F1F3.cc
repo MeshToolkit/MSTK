@@ -22,7 +22,7 @@ TEST(MF_Rem_Edge_F1F3)
   MEdge_ptr fedges[5];
 
 
-  MSTK_Init(NULL);
+  MSTK_Init();
 
   mesh = MESH_New(F1);
 
