@@ -130,11 +130,13 @@ extern "C" {
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
   /* The rank, num, and comm arguments will go away soon                */
+  /* For now we are eliminating the partitioning method argument just   */
+  /* for compatibility with 1.85 but will bring it back soon            */
 
   int         MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
                                         const char* global_mesh_name, 
                                         int *dim, int ring, int with_attr, 
-                                        int method, int rank, int num,
+                                        int rank, int num,
                                         MPI_Comm comm);
 
   /* Partition an existing mesh and distribute it to 'num' processors */
@@ -142,7 +144,7 @@ extern "C" {
 
   int         MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
                                    int *dim, int ring, int with_attr, 
-                                   int method, int rank, int num,
+                                   int rank, int num,
                                    MPI_Comm comm);
 
 

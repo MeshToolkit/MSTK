@@ -64,7 +64,7 @@ TEST(VertexUpdate2D) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr, method, rank, nproc, 
+  MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr, rank, nproc, 
 		       MPI_COMM_WORLD);
 
 

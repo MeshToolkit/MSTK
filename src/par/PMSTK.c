@@ -255,7 +255,7 @@ extern "C" {
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
 				const char* global_mesh_name, 
 				int *dim, int ring, int with_attr, 
-				int method, int rank, int num, 
+				int rank, int num, 
 				MPI_Comm comm) {
     int i, ok;
 
@@ -273,7 +273,7 @@ extern "C" {
       *recv_mesh = mesh;
     }
 
-    MSTK_Mesh_Distribute(recv_mesh, dim, ring, with_attr, method, rank, num, comm);
+    MSTK_Mesh_Distribute(recv_mesh, dim, ring, with_attr, rank, num, comm);
 
     return 1;
   }
@@ -281,13 +281,16 @@ extern "C" {
 
   /* Partition a given mesh and distribute it to 'num' processors */
   /* The rank, num and comm arguments will go away soon           */
+  /* For now we are getting rid of the method argument to keep    */
+  /* compatibility with the 1.85 version. We'll bring it back soon */
 
   int MSTK_Mesh_Distribute(Mesh_ptr *mesh, int *dim, 
 			   int ring, int with_attr, 
-			   int method, int rank, int num, 
+			   int rank, int num, 
 			   MPI_Comm comm) {
     int i, recv_dim=rank+5;
     int *send_dim, *part;
+    int method = 0;
 
     send_dim = (int *) malloc(num*sizeof(int));
     for (i = 0; i < num; i++) send_dim[i] = *dim;
