@@ -445,8 +445,8 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       nre = List_Num_Entries(redges);
       for (j = 0; j < nre; j++) {
 	lme = List_Entry(redges,j);
-	if (ME_PType(lmr) != PBOUNDARY)
-	  MR_Set_PType(lmr,POVERLAP);
+	if (ME_PType(lme) != PBOUNDARY)
+	  ME_Set_PType(lme,POVERLAP);
       }
       List_Delete(redges);
 
