@@ -364,6 +364,11 @@ extern "C" {
     if (input_type > 1) 
       MSTK_Report("MSTK_Weave_DistributedMeshes","Unrecognized input type for meshes", MSTK_WARN);
 
+    // This partition does not have a mesh or has an empty mesh which is ok
+
+    if (mesh == NULL || 
+        (MESH_Num_Regions(mesh) == 0 && MESH_Num_Faces(mesh) == 0))
+      return 1; 
 
     MESH_Set_Prtn(mesh, rank, num);
     
