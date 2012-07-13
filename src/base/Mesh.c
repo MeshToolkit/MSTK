@@ -1032,7 +1032,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
       if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE))
 	ngp++;
     
-    mesh->par_recv_info = (unsigned int *) MSTK_malloc((1+5*ngp)*sizeof(unsigned int));
+    mesh->par_recv_info = (unsigned int *) MSTK_calloc((1+5*ngp),sizeof(unsigned int));
     
     mesh->par_recv_info[0] = ngp;
     
@@ -1042,6 +1042,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 	mesh->par_recv_info[1+ngp] = i;
 	ngp++;
       }
+    
   }
   
   void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
