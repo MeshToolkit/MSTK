@@ -67,6 +67,7 @@ extern "C" {
   MRegion_ptr mr;
   MAttrib_ptr nmapatt, elblockatt, nodesetatt, sidesetatt;
   MSet_ptr faceset, nodeset, sideset, matset;
+  int distributed=0;
   
   ex_init_params exopar;
   
@@ -97,6 +98,8 @@ extern "C" {
     if (fp = fopen(modfilename,"r")) {
       fclose(fp);
 
+        distributed = 1;
+
       exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
       if (exoid < 0) {
         sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
@@ -109,6 +112,8 @@ extern "C" {
       if (fp = fopen(modfilename,"r")) {
         fclose(fp);
 
+        distributed = 1;
+        
         exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
     
         if (exoid < 0) {
@@ -117,14 +122,31 @@ extern "C" {
         }
       }
       else {
-        sprintf(mesg,"Cannot open/read parallel Exodus II file %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,numprocs,rank,basename,numprocs,rank);
-        MSTK_Report(funcname,mesg,MSTK_FATAL);        
+
+        if (fp = fopen(filename,"r")) {
+          fclose(fp);
+
+          distributed = 0;
+
+          exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
+    
+          if (exoid < 0) {
+            sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+            MSTK_Report(funcname,mesg,MSTK_FATAL);
+          }
+        }
+        else {  
+          sprintf(mesg,"Cannot open/read Exodus II file %s.exo, %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,basename,numprocs,rank,basename,numprocs,rank);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);        
+        }
       }
     }  
   }
   else {
     exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
-  
+
+    distributed = 0;
+
     if (exoid < 0) {
       sprintf(mesg,"Cannot open/read Exodus II file %s\n",filename);
       MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -134,7 +156,9 @@ extern "C" {
 #else
 
   exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
-  
+
+  distributed = 0;
+
   if (exoid < 0) {
     sprintf(mesg,"Cannot open/read Exodus II file %s\n",filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -1183,7 +1207,7 @@ extern "C" {
 
 
 #ifdef MSTK_HAVE_MPI
-  if (numprocs > 1) {
+  if (numprocs > 1 && distributed) {
     /* Now weave the distributed meshes together so that appropriate ghost links are created */
   
     int num_ghost_layers = 1;
