@@ -52,7 +52,7 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
   for (i = 0; i < numprtns; i++) {
     local_par_adj[i] = 0;
 
-    for (mtype = MVERTEX; mtype < MREGION; mtype++) {
+    for (mtype = MVERTEX; mtype <= MREGION; mtype++) {
       int j = MESH_Has_Ghosts_From_Prtn(mesh,i,mtype);
       local_par_adj[i] |= j<<(2*mtype);
     }
@@ -73,7 +73,7 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
   unsigned int ovnum = 0;
   unsigned int *prtnums = (unsigned int *) malloc(numprtns*sizeof(unsigned int));
   for (i = 0; i < numprtns; i++) {
-    for (mtype = MVERTEX; mtype < MREGION; mtype++) {
+    for (mtype = MVERTEX; mtype <= MREGION; mtype++) {
 
       int j = global_par_adj[i*numprtns + myprtn] & 1<<(2*mtype);
 
@@ -113,7 +113,7 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
   MESH_Init_Par_Recv_Info(mesh);
   for(i = 0; i < numprtns; i++) {
     if (MESH_Has_Ghosts_From_Prtn(mesh,i,MANYTYPE)) {
-      for (mtype = MVERTEX; mtype < MREGION; mtype++) 
+      for (mtype = MVERTEX; mtype <= MREGION; mtype++) 
         MESH_Set_Num_Recv_From_Prtn(mesh,i,mtype,global_ov_num[4*i+mtype]);
     }
   }
