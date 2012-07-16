@@ -723,60 +723,70 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	  mr = MR_New(mesh);
 	  
 	  /* Exodus II and MSTK node conventions are the same but the
-	     face conventions are not - so instead of using
+	     face conventions are not - so for type R1 we will use
+	     MR_Set_Vertices but for F1 instead of using
 	     MR_Set_Vertices we will create the faces individually and
 	     then do MR_Set_Faces */
 	  
-	  for (k = 0; k < nelnodes; k++)
-	    rverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
+          for (k = 0; k < nelnodes; k++)
+            rverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
+            
+          if (MESH_RepType(mesh) == F1 || MESH_RepType(mesh) == F4) {
+                        
+            for (k = 0; k < exo_nrf[eltype]; k++) {
+              int nfv;
+
+              nfv = exo_nrfverts[eltype][k];
+              for (k1 = 0; k1 < nfv; k1++)
+                fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
+
+              if ((face = MVs_CommonFace(nfv,fverts))) {
+                List_ptr fregs;
+
+                rfarr[k] = face;
+                fregs = MF_Regions(face);
+                if (!fregs || !List_Num_Entries(fregs)) {
+                  rfdirs[k] = 1;
+                }
+                else {
+                  if (List_Num_Entries(fregs) == 1) {
+                    int dir;
+                    MRegion_ptr freg;
+
+                    freg = List_Entry(fregs,0);
+                    dir = MR_FaceDir(freg,face);
+                    rfdirs[k] = !dir;
+                  }
+                  else if (List_Num_Entries(fregs) == 2) {
+                    MSTK_Report("MESH_ImportFromExodusII",
+                                "Face already connected two faces",MSTK_FATAL);
+                  }
+                }
+              }
+              else {
+                face = MF_New(mesh);
+                MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
+                rfarr[k] = face;
+                rfdirs[k] = 1;
+              }
+            }
 	  
+            MR_Set_Faces(mr,nrf,rfarr,rfdirs);
 
-	  for (k = 0; k < exo_nrf[eltype]; k++) {
-	    int nfv;
+          }
+          else if (MESH_RepType(mesh) == R1 || MESH_RepType(mesh) == R2) {
 
-	    nfv = exo_nrfverts[eltype][k];
-	    for (k1 = 0; k1 < nfv; k1++)
-	      fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
+            MR_Set_Vertices(mr,nelnodes,rverts,0,NULL);
 
-	    if ((face = MVs_CommonFace(nfv,fverts))) {
-	      List_ptr fregs;
+          }
 
-	      rfarr[k] = face;
-	      fregs = MF_Regions(face);
-	      if (!fregs || !List_Num_Entries(fregs)) {
-		rfdirs[k] = 1;
-	      }
-	      else {
-		if (List_Num_Entries(fregs) == 1) {
-		  int dir;
-		  MRegion_ptr freg;
-
-		  freg = List_Entry(fregs,0);
-		  dir = MR_FaceDir(freg,face);
-		  rfdirs[k] = !dir;
-		}
-		else if (List_Num_Entries(fregs) == 2) {
-		  MSTK_Report("MESH_ImportFromExodusII",
-			      "Face already connected two faces",MSTK_FATAL);
-		}
-	      }
-	    }
-	    else {
-	      face = MF_New(mesh);
-	      MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
-	      rfarr[k] = face;
-	      rfdirs[k] = 1;
-	    }
-	  }
-	  
-	  MR_Set_Faces(mr,nrf,rfarr,rfdirs);
-
-	  MR_Set_GEntID(mr, elem_blk_ids[i]);
-	  MR_Set_GEntDim(mr, 3);
-
-	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
-	  MSet_Add(matset,mr);
-	}
+          MR_Set_GEntID(mr, elem_blk_ids[i]);
+          MR_Set_GEntDim(mr, 3);
+          
+          MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
+          MSet_Add(matset,mr);
+          
+        }
 	
 	free(rverts);
 
