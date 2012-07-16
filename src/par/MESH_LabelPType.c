@@ -21,13 +21,10 @@ extern "C" {
   int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
   int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
-  int MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
-  int nf, nr;
-  nf = MESH_Num_Faces(submesh);
-  nr = MESH_Num_Regions(submesh);
-  if (nr)
+  int MESH_LabelPType(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm) {
+  if (topodim == 3)
     MESH_LabelPType_Region(submesh, rank, num, comm);
-  else if(nf) 
+  else if (topodim == 2) 
     MESH_LabelPType_Face(submesh, rank, num, comm);
   else {
     MSTK_Report("MESH_LabelPType()","only send volume or surface mesh",MSTK_ERROR);

@@ -76,17 +76,8 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
     for (mtype = MVERTEX; mtype <= MREGION; mtype++) {
 
       int j = global_par_adj[i*numprtns + myprtn] & 1<<(2*mtype);
-
-      if (j) {
+      if (j)
         MESH_Flag_Has_Overlaps_On_Prtn(mesh,i,mtype);
-	/*  this part seems not used
-        if (ovnum == 0 || 
-            (ovnum > 0 && prtnums[ovnum-1] != i)) {
-          prtnums[ovnum] = i;
-          ovnum++;
-        }
-	*/
-      } /* if my partition (myprtn) has ghosts from partition i */
     }
   }
 

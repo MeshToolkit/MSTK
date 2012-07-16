@@ -17,8 +17,6 @@ extern "C" {
 
      It also assign the proper master partition id and ptype
 
-     If global IDs are already given, skip this function, call MESH_BuildConnection()
-
      Author(s): Duo Wang, Rao Garimella
   */
 
@@ -28,21 +26,23 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm
 int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
 
-int MESH_AssignGlobalIDs(Mesh_ptr submesh, int have_GIDs, int rank, int num,  MPI_Comm comm) {
+  int MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, 
+                           int have_GIDs, int rank, int num,  
+                           MPI_Comm comm) {
   int nf, nr;
   RepType rtype;
 
-  /* basic mesh information */
-
-  rtype = MESH_RepType(submesh);
-  nf = MESH_Num_Faces(submesh);
-  nr = MESH_Num_Regions(submesh);
 
   MESH_AssignGlobalIDs_Vertex(submesh, have_GIDs, rank, num, comm);
   MESH_AssignGlobalIDs_Edge(submesh, rank, num, comm);
-  if (nr)
+
+  /* Use topological dimension of mesh to call appropriate function */
+  /* Do not use the presence of mesh regions or faces since the mesh
+     may be an empty mesh on some processors */
+
+  if (topodim == 3)
     MESH_AssignGlobalIDs_Region(submesh, rank, num, comm);
-  else if(nf) 
+  else if (topodim == 2) 
     MESH_AssignGlobalIDs_Face(submesh, rank, num, comm);
   else {
     MSTK_Report("MESH_AssignGlobalIDs()","only assign global id for volume or surface mesh",MSTK_ERROR);

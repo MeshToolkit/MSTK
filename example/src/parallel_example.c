@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
   /* Update attributes across processors */
   
   fprintf(stderr,"Updating attributes on proc %-d...",rank);
-  MSTK_UpdateAttr(mymesh);
+  MSTK_UpdateAttr(mymesh,rank,num,MPI_COMM_WORLD);
   fprintf(stderr,"done\n");
 
 
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"done\n");
 
     fprintf(stderr,"Updating attributes on proc %-d...",rank);
-    MSTK_UpdateAttr(mymesh);
+    MSTK_UpdateAttr(mymesh,rank,num,MPI_COMM_WORLD);
     fprintf(stderr,"done\n");
 
     fprintf(fp,"\n\n");

@@ -415,12 +415,17 @@ extern "C" {
   
   
 
+  int surf_elems=0, solid_elems=0;
+  int mesh_type=0;  /* 1 - Surface, 2 - Solid, 3 - mixed */
+
   if (ndim == 1) {
     
     MSTK_Report(funcname,"Not implemented",MSTK_FATAL);
     
   }
   else if (ndim == 2) {
+
+    mesh_type = 1;
     
     elblockatt = MAttrib_New(mesh, "elemblock", INT, MFACE);
     
@@ -641,9 +646,6 @@ extern "C" {
 
     /* Check if this is a strictly solid mesh, strictly surface mesh
        or mixed */
-
-    int surf_elems=0, solid_elems=0;
-    int mesh_type=0;  /* 1 - Surface, 2 - Solid, 3 - mixed */
 
     for (i = 0; i < nelblock; i++) {
       
@@ -1212,12 +1214,15 @@ extern "C" {
   
     int num_ghost_layers = 1;
     int input_type = 1;
+    int topodim = (mesh_type == 1) ? 2 : 3;
   
-    int weavestatus = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, 
+    int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
+                                                   num_ghost_layers, 
                                                    input_type);
   
     if (!weavestatus)
-      MSTK_Report(funcname,"Could not weave distributed meshes correctly together",
+      MSTK_Report(funcname,
+                  "Could not weave distributed meshes correctly together",
                   MSTK_FATAL);
 
     int parallel_check = MESH_Parallel_Check(mesh);

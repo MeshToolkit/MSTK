@@ -27,7 +27,7 @@ extern "C" {
   int MESH_Surf_Build_GhostLists(Mesh_ptr mesh);
   int MESH_Vol_Build_GhostLists(Mesh_ptr mesh);
   
-  int MESH_Build_GhostLists(Mesh_ptr mesh) {
+  int MESH_Build_GhostLists(Mesh_ptr mesh, int topodim) {
     int nf, nr;
     /* basic mesh information */
     nf = MESH_Num_Faces(mesh);
@@ -68,12 +68,12 @@ extern "C" {
     }
 
 
-    if (nr) 
+    if (topodim == 3) 
       MESH_Vol_Build_GhostLists(mesh);
-    else if (nf)
+    else if (topodim == 2)
       MESH_Surf_Build_GhostLists(mesh);
     else {
-      fprintf(stdout,"\nThis is not a valid mstk file to build ghost list\n");
+      fprintf(stdout,"\nThis is not a valid mesh for building ghost list\n");
       exit(-1);
     }
 

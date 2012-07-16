@@ -19,7 +19,7 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-int MESH_BuildConnection(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
+  int MESH_BuildConnection(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm) {
   int i, j, nv, nr, nbv, mesh_info[10];
   MVertex_ptr mv;
   List_ptr boundary_verts;

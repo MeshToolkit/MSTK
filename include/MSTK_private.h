@@ -271,10 +271,10 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_Sort_GhostLists(Mesh_ptr mesh, 
                            int (*compfunc)(const void*, const void*));
 
-  int MESH_BuildConnection(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
+  int MESH_BuildConnection(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm);
 
-  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
-  int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim, int rank, int num, MPI_Comm comm);
+  int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int topodim, int rank, int num, MPI_Comm comm);
 
 
   /* Mesh Partitioning Routines*/
@@ -289,10 +289,10 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* build processor boundary */
   int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
-  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int have_GIDs, int rank, int num,  MPI_Comm comm);
-  int        MESH_LabelPType(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm);
-  int        MESH_BuildSubMesh(Mesh_ptr mesh, Mesh_ptr submesh);
-  int        MESH_ConcatSubMesh(Mesh_ptr mesh, int num, Mesh_ptr *submeshes);
+  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs, int rank, int num,  MPI_Comm comm);
+  int        MESH_LabelPType(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm);
+  int        MESH_BuildSubMesh(Mesh_ptr mesh, int topodim, Mesh_ptr submesh);
+  int        MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes);
   /* add ghost elements */
   int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
   /* send and receive mesh */
@@ -304,7 +304,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* build ghost list */
-  int        MESH_Build_GhostLists(Mesh_ptr mesh);
+  int        MESH_Build_GhostLists(Mesh_ptr mesh, int topodim);
 
   /* create entity */
   /* no OvEntity create function since they are just pointers to regular Entity */

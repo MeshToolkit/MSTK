@@ -65,7 +65,7 @@ TEST(UpdAtt2D_Dist) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh);
+  MSTK_UpdateAttr(mesh,rank,nproc,MSTK_Comm());
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {
@@ -124,7 +124,9 @@ TEST(UpdAtt2D_Weave) {
 
    int input_type = 0;  /* no parallel info present in meshes */
    int num_ghost_layers = 1; /* always */
-   status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type);
+   int topodim = 2;
+   status = MSTK_Weave_DistributedMeshes(mesh, topodim, 
+                                         num_ghost_layers, input_type);
 
    CHECK(status);
 
@@ -146,7 +148,7 @@ TEST(UpdAtt2D_Weave) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh);
+  MSTK_UpdateAttr(mesh,rank,nproc,MSTK_Comm());
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {

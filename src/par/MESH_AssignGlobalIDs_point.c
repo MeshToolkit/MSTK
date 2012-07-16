@@ -27,15 +27,15 @@ int MESH_AssignGlobalIDs_point_Face(Mesh_ptr submesh, int rank, int num, MPI_Com
 int MESH_AssignGlobalIDs_point_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
 
 
-int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int rank, int num,  MPI_Comm comm) {
+int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm) {
   int nf, nr;
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
   MESH_AssignGlobalIDs_point_Vertex(submesh, rank, num, comm);
   MESH_AssignGlobalIDs_point_Edge(submesh, rank, num, comm);
-  if (nr)
+  if (topodim == 3)
     MESH_AssignGlobalIDs_point_Region(submesh, rank, num, comm);
-  else if(nf) 
+  else if (topodim == 2) 
     MESH_AssignGlobalIDs_point_Face(submesh, rank, num, comm);
   else {
     MSTK_Report("MESH_AssignGlobalIDs()","only assign global id for volume or surface mesh",MSTK_ERROR);

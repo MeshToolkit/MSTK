@@ -410,8 +410,10 @@ extern "C" {
   
     int num_ghost_layers = 1;
     int input_type = 2;
+    int topodim = ndim;
   
-    status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type);
+    status = MSTK_Weave_DistributedMeshes(mesh, topodim,
+                                          num_ghost_layers, input_type);
   
     if (!status)
       MSTK_Report(funcname,"Could weave distributed meshes together correctly",

@@ -221,7 +221,7 @@ extern "C" {
 
     /* Build the sorted lists of ghost and overlap entities */
 
-    MESH_Build_GhostLists(mesh);
+    MESH_Build_GhostLists(mesh,dim);
 
     if(!with_attr)
       return 1;
@@ -314,7 +314,7 @@ extern "C" {
 	MESH_Delete(submeshes[i]);  
       }
       *mesh = submeshes[0];
-      MESH_Build_GhostLists(*mesh);
+      MESH_Build_GhostLists(*mesh,*dim);
      
     }
 
@@ -350,8 +350,8 @@ extern "C" {
      
 
 
-  int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
-                                   int input_type) {
+  int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
+                                   int num_ghost_layers, int input_type) {
 
     int have_GIDs = 0;
     MPI_Comm comm = MSTK_Comm();
@@ -366,9 +366,9 @@ extern "C" {
 
     // This partition does not have a mesh or has an empty mesh which is ok
 
-    if (mesh == NULL || 
-        (MESH_Num_Regions(mesh) == 0 && MESH_Num_Faces(mesh) == 0))
-      return 1; 
+    if (mesh == NULL)
+      MSTK_Report("MSTK_Weave_DistributedMeshes","MESH is null on this processor",MSTK_FATAL);
+
 
     MESH_Set_Prtn(mesh, rank, num);
     
@@ -379,17 +379,17 @@ extern "C" {
 
     if (input_type == 0 || input_type == 1) {
       /* MESH_MatchEnts_ParBdry(mesh, have_GIDs, rank, num, comm); */
-      MESH_AssignGlobalIDs(mesh, have_GIDs, rank, num, comm);
-      MESH_BuildConnection(mesh, rank, num, comm);
+      MESH_AssignGlobalIDs(mesh, topodim, have_GIDs, rank, num, comm);
+      MESH_BuildConnection(mesh, topodim, rank, num, comm);
     }
     else if (input_type == 2) 
-      MESH_AssignGlobalIDs_point(mesh, rank, num, comm);
+      MESH_AssignGlobalIDs_point(mesh, topodim, rank, num, comm);
 
-    MESH_LabelPType(mesh, rank, num, comm);
+    MESH_LabelPType(mesh, topodim, rank, num, comm);
 
-    MESH_Parallel_AddGhost(mesh, rank, num, comm);
+    MESH_Parallel_AddGhost(mesh, topodim, rank, num, comm);
 
-    MESH_Build_GhostLists(mesh);
+    MESH_Build_GhostLists(mesh, topodim);
 
     MESH_Update_ParallelAdj(mesh, rank, num, comm);
     return 1;
@@ -398,10 +398,10 @@ extern "C" {
 
   /* Update attributes on partitions */
 
-  int MSTK_UpdateAttr(Mesh_ptr mesh) {
-    MPI_Comm comm = MSTK_Comm();
-    int rank = MSTK_Comm_rank();
-    int num = MSTK_Comm_size();
+  int MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+//    MPI_Comm comm = MSTK_Comm();
+//    int rank = MSTK_Comm_rank();
+//    int num = MSTK_Comm_size();
 
     int i, natt;
     char attr_name[256];

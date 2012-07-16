@@ -64,16 +64,19 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   nr = MESH_Num_Regions(submesh);
   rtype = MESH_RepType(submesh);
 
-  if (nr)
+  if (nr) {
     (*MESH_Vol_AddGhost_jmp[rtype])(mesh,submesh,part_no,ring);
-  else if(nf) 
+    MESH_Build_GhostLists(submesh,3);
+  }
+  else if(nf) {
     (*MESH_Surf_AddGhost_jmp[rtype])(mesh,submesh,part_no,ring);
+    MESH_Build_GhostLists(submesh,2);
+  }
   else {
     MSTK_Report("MESH_AddGhost()","This is not a valid mstk file",MSTK_ERROR);
     exit(-1);
   }
 
-  MESH_Build_GhostLists(submesh);
 
   return 1;
 }

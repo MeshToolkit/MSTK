@@ -90,7 +90,7 @@ TEST(VertexUpdate2D) {
   fprintf(stderr,"Deformed mesh proc %-d\n",rank);
 
   MESH_UpdateVertexCoords(mesh);
-  MSTK_UpdateAttr(mesh);
+  MSTK_UpdateAttr(mesh,rank,nproc,MSTK_Comm());
 
   fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
 

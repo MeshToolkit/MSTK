@@ -25,15 +25,10 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes);
 int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes);
 
 
-int MESH_ConcatSubMesh(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
-  int nf, nr;
-  RepType rtype;
-  rtype = MESH_RepType(mesh);
-  nf = MESH_Num_Faces(mesh);
-  nr = MESH_Num_Regions(mesh);
-  if (nr)
+  int MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes) {
+  if (topodim == 3)
     MESH_ConcatSubMesh_Region(mesh, num, submeshes);
-  else if(nf) 
+  else if (topodim == 2) 
     MESH_ConcatSubMesh_Face(mesh, num, submeshes);
   else {
     MSTK_Report("MESH_ConcatSubMesh()","only send volume or surface mesh",MSTK_ERROR);

@@ -24,15 +24,10 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh);
 int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh);
 
 
-int MESH_BuildSubMesh(Mesh_ptr mesh, Mesh_ptr submesh) {
-  int nf, nr;
-  RepType rtype;
-  rtype = MESH_RepType(mesh);
-  nf = MESH_Num_Faces(mesh);
-  nr = MESH_Num_Regions(mesh);
-  if (nr)
+  int MESH_BuildSubMesh(Mesh_ptr mesh, int topodim, Mesh_ptr submesh) {
+  if (topodim == 3)
     MESH_BuildSubMesh_Region(mesh, submesh);
-  else if(nf) 
+  else if(topodim == 2) 
     MESH_BuildSubMesh_Face(mesh, submesh);
   else {
     MSTK_Report("MESH_BuildSubMesh()","only send volume or surface mesh",MSTK_ERROR);

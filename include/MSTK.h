@@ -10,7 +10,7 @@
 #include "MSTK_malloc.h"
 
 #ifdef MSTK_HAVE_MPI
-#include "mpi.h"
+#include <mpi.h>
 #endif
 
 #ifdef __cplusplus
@@ -18,8 +18,7 @@ extern "C" {
 #endif
 
 /*******************************************************************/
-
-  void MSTK_Init();
+void MSTK_Init(void);
 
 /********************************************************************/
 /*        MESH OBJECT OPERATORS                                     */
@@ -135,7 +134,7 @@ extern "C" {
 
   int         MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
                                         const char* global_mesh_name, 
-                                        int *dim, int ring, int with_attr, 
+                                        int *topodim, int ring, int with_attr, 
                                         int rank, int num,
                                         MPI_Comm comm);
 
@@ -143,19 +142,20 @@ extern "C" {
   /* The rank, num and comm arguments will go away soon               */
 
   int         MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
-                                   int *dim, int ring, int with_attr, 
+                                   int *topodim, int ring, int with_attr, 
                                    int rank, int num,
                                    MPI_Comm comm);
 
 
   /* 'Weave' a set of distributed meshes by building ghost layers */
 
-  int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int num_ghost_layers,
+  int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
+                                           int num_ghost_layers,
                                            int input_type);
 
   /* Parallel update attribute values for ghost entities */
 
-  int         MSTK_UpdateAttr(Mesh_ptr mesh);
+  int         MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 
 
   /* Update vertex coordinates for ghost vertices */
