@@ -1262,7 +1262,7 @@ extern "C" {
     
     switch (mftype) {
     case TRI: case QUAD: case POLYGON: case FUNKNOWN: {
-      List_ptr fedges = MF_Edges(me,1,0);
+      List_ptr fedges = MF_Edges(mf,1,0);
       int i, found = 0;
       for (i = 0; i < List_Num_Entries(fedges); i++) {
         if (me == List_Entry(fedges,i)) { /* will this work for reduced representations? */
