@@ -279,6 +279,7 @@ extern "C" {
 	  /* Can we go from f0 to f1 in one or two dirs? */
 
 	  fcur = ebf[0];
+          fnxt = NULL;
 	  fregs = MF_Regions(fcur);
 	  if (!fregs) {
 	    fid = MF_ID(fcur);

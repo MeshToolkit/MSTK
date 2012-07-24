@@ -71,6 +71,8 @@ extern "C" {
     List_ptr *element_blocks, *side_sets, *node_sets, face_block;
     List_ptr fverts, rverts;
     MAttrib_ptr fidatt;
+    char modfilename[256], funcname[64]="MESH_ExportToExodusII";
+    int status;
 
     int mstk2exo_facemap[5][6]={{0,0,0,0,0,0},
 				{4,1,2,3,0,0}, /* TET */
@@ -82,6 +84,34 @@ extern "C" {
     int rank, numprocs;
     numprocs = MSTK_Comm_size();
     rank = MSTK_Comm_rank();
+
+    if (numprocs > 1) {
+      char basename[256];
+
+      strcpy(basename,filename);
+      char *ext = strstr(basename,".par");
+      
+      if (!ext) {
+        ext = strstr(basename,".exo");
+        if (!ext)
+          MSTK_Report(funcname,
+                      "Extension for parallel Exodus II output should be .exo or .par",
+                      MSTK_FATAL);
+        else {          
+          ext[0] = '\0';
+          sprintf(modfilename,"%s.exo.%d.%d",basename,numprocs,rank);          
+        }
+      }
+      else {
+        ext[0] = '\0';
+        sprintf(modfilename,"%s.par.%d.%d",basename,numprocs,rank);
+      }
+
+    }
+    else
+      strcpy(modfilename,filename);
+#else
+    strcpy(modfilename,filename);
 #endif    
 
     verbose = opts ? opts[0] : 0;
@@ -163,7 +193,7 @@ extern "C" {
     int CPU_word_size=sizeof(double);
     int IO_word_size=sizeof(double);
     int exoid, err;
-    exoid = ex_create(filename,EX_CLOBBER,&CPU_word_size,&IO_word_size);
+    exoid = ex_create(modfilename,EX_CLOBBER,&CPU_word_size,&IO_word_size);
     if (exoid < 0) {
       fprintf(stderr, "after ex_create, error = %d\n", exoid);
       exit(-1);
@@ -271,10 +301,26 @@ extern "C" {
       par.num_face_sets = 0;
       par.num_side_sets = num_side_set;
       par.num_elem_sets = 0;
+
+#ifdef MSTK_HAVE_MPI
+      if (numprocs > 1) {
+        par.num_node_maps = 1;
+        par.num_edge_maps = 0;
+        par.num_face_maps = 0;
+        par.num_elem_maps = 1;
+      }
+      else {
+        par.num_node_maps = 0;
+        par.num_edge_maps = 0;
+        par.num_face_maps = 0;
+        par.num_elem_maps = 0;
+      }
+#else
       par.num_node_maps = 0;
       par.num_edge_maps = 0;
       par.num_face_maps = 0;
       par.num_elem_maps = 0;
+#endif
     }
     else {
       par.num_edge = 0;
@@ -288,10 +334,26 @@ extern "C" {
       par.num_face_sets = 0;
       par.num_side_sets = num_side_set;
       par.num_elem_sets = 0;
+
+#ifdef MSTK_HAVE_MPI
+      if (numprocs > 1) {
+        par.num_node_maps = 1;
+        par.num_edge_maps = 0;
+        par.num_face_maps = 0;
+        par.num_elem_maps = 1;
+      }
+      else {
+        par.num_node_maps = 0;
+        par.num_edge_maps = 0;
+        par.num_face_maps = 0;
+        par.num_elem_maps = 0;
+      }
+#else
       par.num_node_maps = 0;
       par.num_edge_maps = 0;
       par.num_face_maps = 0;
       par.num_elem_maps = 0;
+#endif
     }
 
     ex_put_init_ext(exoid,&par);
@@ -481,7 +543,7 @@ extern "C" {
       }
       else {
 
-	int nelem, nelnodes;
+	int nelem, nelnodes=0;
 
 	sprintf(block_name,"BLOCK_%-d",block_id);
 	nelem = List_Num_Entries(element_blocks[i]);
@@ -696,6 +758,52 @@ extern "C" {
       fprintf(stdout,"Node sets information written into %s\n", filename);
 
 
+#ifdef MSTK_HAVE_MPI
+
+    if (numprocs > 1) {
+
+      /* Write out node map (global IDs of nodes) */
+
+      int *node_map = (int *) malloc(nv*sizeof(int));
+      
+      idx = 0; i = 0;
+      while ((mv = MESH_Next_Vertex(mesh,&idx)))
+        node_map[i++] = MV_GlobalID(mv);
+
+      status = ex_put_node_num_map(exoid, node_map);
+      if (status < 0)
+        MSTK_Report(funcname,"Error while writing node map in Exodus II file",
+                    MSTK_FATAL);
+
+      free(node_map);
+
+
+      /* Write out element map (global IDs of elements) */
+
+      int *elem_map;
+
+      if (nr) {
+        elem_map = (int *) malloc(nr*sizeof(int));
+        idx = 0; i = 0;
+        while ((mr = MESH_Next_Region(mesh,&idx)))
+          elem_map[i++] = MR_GlobalID(mr);
+      }
+      else { // assume surface mesh
+        elem_map = (int *) malloc(nf*sizeof(int));
+        idx = 0; i = 0;
+        while ((mf = MESH_Next_Face(mesh,&idx)))
+          elem_map[i++] = MF_GlobalID(mf);
+      }
+
+      status = ex_put_elem_num_map(exoid, elem_map);
+      if (status < 0)
+        MSTK_Report(funcname,"Error while writing element map in Exodus II file",
+                    MSTK_FATAL);
+
+      free(elem_map);
+    }
+
+#endif /* MSTK_HAVE_MPI */
 
 
 

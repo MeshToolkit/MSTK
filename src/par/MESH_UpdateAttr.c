@@ -27,7 +27,7 @@ extern "C" {
     double rval;
     void *pval;
     double *rval_arr=NULL;
-    int *list_info_send, *list_info_recv, recv_index, num_recv_procs;
+    int *list_info_send, *list_info_recv, recv_index=0, num_recv_procs;
     int global_id, par_id;
     MType mtype;
     MAttType att_type;

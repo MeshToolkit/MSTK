@@ -75,8 +75,8 @@ int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   MAttType att_type;
   MAttrib_ptr attrib;
   MSet_ptr mset;
-  int *list_attr, *list_mset;
-  char *list_attr_names, *list_mset_names;
+  int *list_attr=NULL, *list_mset=NULL;
+  char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
@@ -248,8 +248,8 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   MAttType att_type;
   MAttrib_ptr attrib;
   MSet_ptr mset;
-  int *list_attr, *list_mset;
-  char *list_attr_names, *list_mset_names;
+  int *list_attr=NULL, *list_mset=NULL;
+  char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;

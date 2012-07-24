@@ -41,7 +41,7 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   if (nr == 0) {
     
     if (nf == 0) {
-      fprintf(stderr,"Cannot write out FLAG X3D files for wire meshes\n");
+      fprintf(stderr,"Cannot partition wire meshes\n");
       exit(-1);
     }
     
@@ -152,7 +152,10 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   else
     METIS_PartGraphKway(&ncells,xadj,adjncy,vwgt,adjwgt,&wtflag,&numflag,
 			&nparts,metisopts,&nedgecut,*part);
-  
+
+  free(xadj);
+  free(adjncy);
+
   return 1;
 
 }

@@ -1882,7 +1882,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   int processed_vertices=0, processed_adjv=0, processed_edges=0;
   int processed_faces=0, processed_regions=0, processed_adjr=0;
   double ver, xyz[3], rval;
-  double *rval_arr;
+  double *rval_arr = NULL;
   MVertex_ptr mv, ev1, ev2, adjv, *fverts, *rverts;
   MEdge_ptr me, *fedges;
   MFace_ptr mf, *rfaces;
@@ -2060,7 +2060,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 		      "Error in reading adjacent vertex data",MSTK_FATAL);
 	
 	for (j = 0; j < nav; j++)
-	  fscanf(fp,"%d",&adjvid);
+	  status = fscanf(fp,"%d",&adjvid);
       }
     }
 
@@ -2616,7 +2616,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 		      "Error in reading adjacent region data",MSTK_FATAL);
 	
 	for (j = 0; j < nar; j++) {
-	  fscanf(fp,"%d",&rid);
+	  status = fscanf(fp,"%d",&rid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading adjacent regions",
@@ -2739,7 +2739,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	attrib = MAttrib_New(mesh,attname,atttype,attent,ncomp);
       
       for (i = 0; i < nent; i++) {
-	fscanf(fp,"%d %d",&dim,&id);
+	status = fscanf(fp,"%d %d",&dim,&id);
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading attributes",MSTK_FATAL);
@@ -2751,22 +2751,22 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report("MESH_InitFromFile",
 		      "Attribute not applicable to this type of entity",MSTK_WARN);
 	  if (atttype == INT)
-	    fscanf(fp,"%d",&ival);
+	    status = fscanf(fp,"%d",&ival);
 	  else
 	    for (j = 0; j < ncomp; j++)
-	      fscanf(fp,"%lf",&rval);
+	      status = fscanf(fp,"%lf",&rval);
 	}
 	else {
 
 	  if (atttype == INT)
-	    fscanf(fp,"%d",&ival);
+	    status = fscanf(fp,"%d",&ival);
 	  else if (atttype == DOUBLE)
-	    fscanf(fp,"%lf",&rval);
+	    status = fscanf(fp,"%lf",&rval);
 	  else if (atttype == VECTOR || atttype == TENSOR) {
 	    ival = ncomp;
 	    rval_arr = (double *) MSTK_malloc(ncomp*sizeof(double));
 	    for (j = 0; j < ncomp; j++) {
-	      fscanf(fp,"%lf",&(rval_arr[j]));
+	      status = fscanf(fp,"%lf",&(rval_arr[j]));
 	    }
 	  }
 

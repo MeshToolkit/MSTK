@@ -31,16 +31,16 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
 
   /* set ghost adjacencies */
   idx = 0;
-  while(mv = MESH_Next_GhostVertex(mesh,&idx))
+  while ((mv = MESH_Next_GhostVertex(mesh,&idx)))
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,MV_MasterParID(mv),MVERTEX);
   idx = 0;
-  while(me = MESH_Next_GhostEdge(mesh,&idx))
+  while ((me = MESH_Next_GhostEdge(mesh,&idx)))
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,ME_MasterParID(me),MEDGE);
   idx = 0;
-  while(mf = MESH_Next_GhostFace(mesh,&idx))
+  while ((mf = MESH_Next_GhostFace(mesh,&idx)))
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,MF_MasterParID(mf),MFACE);
   idx = 0;
-  while(mr = MESH_Next_GhostRegion(mesh,&idx))
+  while ((mr = MESH_Next_GhostRegion(mesh,&idx)))
     MESH_Flag_Has_Ghosts_From_Prtn(mesh,MR_MasterParID(mr),MREGION);
 
 

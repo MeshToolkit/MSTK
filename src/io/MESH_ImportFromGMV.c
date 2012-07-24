@@ -12,6 +12,7 @@ extern "C" {
 
 int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 
+  char funcname[32] = "MESH_ImportFromGMV";
   MRegion_ptr mr;
   MFace_ptr rfaces[MAXPF3], mf, *vface=NULL;
   MEdge_ptr fedges[MAXPV3*2], me, *vedge=NULL;
@@ -24,7 +25,9 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
   int **vface2d_data=NULL, **vface3d_data=NULL, vface2d=0, vface3d=0;
   int cells_present=0, faces_present=0, non_vface_cells=0, nodes_read=0;
   double (*xyzarr)[3], xyz[3];
-  char temp_str[256], cell_str[256], data_type[256], mesg_str[256];;
+  char temp_str[256], cell_str[256], data_type[256], mesg_str[256];
+  char modfilename[256];
+  int distributed=0;
 
   int rtmpl[5][8] = {{0,2,1,3,-1,-1,-1,-1},
 		     {1,2,3,4,0,-1,-1,-1},
@@ -33,20 +36,60 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 		     {4,5,6,7,0,1,2,3}};
   FILE *fp;
 
+  char *ext = strstr(filename,".gmv"); /* Search for the gmv extension */
+  if (!ext)
+    MSTK_Report(funcname,"GMV files must have .gmv extension",MSTK_FATAL);
+
+
 #ifdef MSTK_HAVE_MPI
 
   int numprocs = MSTK_Comm_size();
   int rank = MSTK_Comm_rank();
 
-#endif
+  if (numprocs > 1) {
+    distributed = 1;
 
+    sprintf(modfilename,"%s.%5d",filename,rank);
+    if (!(fp = fopen(modfilename,"r"))) {
+      
+      sprintf(modfilename,"%s.%d",filename,rank);      
+      if (!(fp = fopen(modfilename,"r"))) {
 
-  /* OPEN FILE */
+        distributed = 0;
+
+        if (rank == 0) {          
+          if (!(fp = fopen(filename,"r"))) {            
+            sprintf(mesg_str,"Cannot open parallel file %s.%5d or %s.%d or serial file %s",filename,rank,filename,rank,filename);            
+            MSTK_Report(funcname,mesg_str,MSTK_FATAL);
+          }
+        }
+        else
+          return 1;
+
+      }
+    }
+
+  }
+  else {
+    distributed = 0;
+
+    if (!(fp = fopen(filename,"r"))) {
+      sprintf(mesg_str,"Cannot open GMV file %s",filename);
+      MSTK_Report(funcname,mesg_str,MSTK_FATAL);
+    }
+  }
+
+#else
+
+  distributed = 0;
 
   if (!(fp = fopen(filename,"r"))) {
-    MSTK_Report("MESH_InitFromGMV","Cannot open GMV file",MSTK_ERROR);
-    return 0;
+    sprintf(mesg_str,"Cannot open GMV file %s",filename);
+    MSTK_Report(funcname,mesg_str,MSTK_FATAL);
   }
+
+#endif
+
 
 
 
@@ -101,10 +144,10 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
       while (strcmp(temp_str,"endcomm") != 0);
     }
     else if (strcmp(temp_str,"codename") == 0) { 
-      fscanf(fp,"%s",temp_str);
+      status = fscanf(fp,"%s",temp_str);
     }
     else if (strcmp(temp_str,"simdate") == 0) {
-      fscanf(fp,"%s",temp_str);
+      status = fscanf(fp,"%s",temp_str);
     }
     else if (strcmp(temp_str,"nodes") == 0) {
 
@@ -189,7 +232,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
       }
      
       for (ic = 0; ic < ncells; ic++) {
-	fscanf(fp,"%s",cell_str);
+	status = fscanf(fp,"%s",cell_str);
 	
 	if (strcmp(cell_str,"line") == 0) {  
 
@@ -342,7 +385,7 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 	  }
 
 	  for (j = 0; j < nrf; j++) {
-	    fscanf(fp,"%d",&(rfv_template[j][0]));
+	    status = fscanf(fp,"%d",&(rfv_template[j][0]));
 	  }
 	  
 	  for (j = 0; j < MAXPV3; j++) vtx[j] = NULL;
@@ -1053,6 +1096,33 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
   }
 
   fclose(fp);
+
+
+
+#ifdef MSTK_HAVE_MPI
+  if (distributed) {
+    /* Now weave the distributed meshes together so that appropriate ghost links are created */
+  
+    int num_ghost_layers = 1;
+    int input_type = 0;
+    int topodim = MESH_Num_Regions(mesh) ? 3 : 2; 
+  
+    int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
+                                                   num_ghost_layers, 
+                                                   input_type);
+  
+    if (!weavestatus)
+      MSTK_Report(funcname,
+                  "Could not weave distributed meshes correctly together",
+                  MSTK_FATAL);
+
+    int parallel_check = MESH_Parallel_Check(mesh);
+  }
+#endif
+
+
+
+
   return 1;
 }
 

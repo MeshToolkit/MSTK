@@ -56,7 +56,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   int			i, found, k, nmeshatt, noutatt, ival;
   int                   nalloc, ngent, fnum, fid, vid, nv, icr;
   int                   attentdim, j, ncells, polygons=0, cellmk, idx;
-  int                   ncells1, ncells2, ndup, NFACES, rid0, rid1, rid;
+  int                   ncells1=0, ncells2=0, ndup, NFACES, rid0, rid1, rid;
   int                   oppfid, opprid;
   double		vxyz[3], rval, *xcoord, *ycoord, *zcoord;
   void                 *pval;

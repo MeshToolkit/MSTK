@@ -224,6 +224,7 @@ extern "C" {
 	    List_Add(lmvlist,lmv);
 	  }
 	}
+        List_Delete(fverts);
 
 	fedges = MF_Edges(gmf,1,0);
 	nfe = List_Num_Entries(fedges);
@@ -285,6 +286,7 @@ extern "C" {
 	  lfedges[i] = lme;
 	  lfedirs[i] = MF_EdgeDir_i(gmf,i);	
 	}
+        List_Delete(fedges);
 
 	lmf = MF_New(submeshes[part_no]);
 	MF_Set_GEntID(lmf,MF_GEntID(gmf));
@@ -520,6 +522,7 @@ extern "C" {
 	      lfedges[j] = lme;
 	      lfedirs[j] = MF_EdgeDir_i(gmf,j);
 	    }
+            List_Delete(fedges);
 	    MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
 	  }
 	  lrfaces[i] = lmf;
@@ -527,6 +530,7 @@ extern "C" {
 	  MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
 	  List_Add(lmflist,lmf);
 	}
+        List_Delete(rfaces);
 	
 	
 	lmr = MR_New(submeshes[part_no]);

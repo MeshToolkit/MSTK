@@ -19,7 +19,7 @@ extern "C" {
 
 int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
   int j, num, ncomp, ival;
-  double rval, *pval_arr;
+  double rval, *pval_arr=NULL;
   void *pval;
   MType mtype;
   MEntity_ptr local_ment, global_ment;
@@ -75,6 +75,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
       local_ment = MESH_Region(submesh,j);
       break;
     default:
+      local_ment = NULL;
       MSTK_Report("MESH_CopyAttr()","Invalid entity type",MSTK_FATAL);
     }
     

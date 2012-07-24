@@ -134,14 +134,14 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm)
 
 int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int send_rank, int rank,  MPI_Comm comm) {
   int j, k, count;
-  int num, ncomp, ival;
-  double rval;
-  double *rval_arr;
+  int num, ncomp, ival=0;
+  double rval=0.0;
+  double *rval_arr=NULL;
   int *list_info, *list_value_int;
   double *list_value_double;
   MType mtype;
   MAttType att_type;
-  MEntity_ptr ment;
+  MEntity_ptr ment=NULL;
   MAttrib_ptr attrib;
   MPI_Status status;
   

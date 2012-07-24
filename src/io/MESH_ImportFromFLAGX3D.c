@@ -15,49 +15,80 @@ extern "C" {
 
   int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename) {
 
-  char funcname[256] = "MESH_ImportFromFLAGX3D";
+  char funcname[32] = "MESH_ImportFromFLAGX3D";
   char mesg[256], temp_str[1028], keyword[1028], modfilename[256];
 
   FILE *fp;
 
   int i, j, status, endheader, nfe, nrf, done, value, matid;
-  int ndim, nmats, nverts, nfaces, nelems, num_ghost_nodes, num_slaved_nodes;
-  int nodes_per_slave, nodes_per_face, faces_per_cell, node_data_fields, cell_data_fields;
-  int cellid, nodeid, edgeid, faceid, *medir, *mfdir;
+  int ndim=0, nmats=0, nverts=0, nfaces=0, nelems=0, num_ghost_nodes=0, num_slaved_nodes=0;
+  int nodes_per_slave=0, nodes_per_face=0, faces_per_cell=0, node_data_fields=0, cell_data_fields=0;
+  int cellid, nodeid, edgeid, faceid, *medir=NULL, *mfdir=NULL;
 
-  MVertex_ptr *mv;
-  MEdge_ptr *me;
-  MFace_ptr *mf, mface;
+  MVertex_ptr *mv=NULL;
+  MEdge_ptr *me=NULL;
+  MFace_ptr *mf=NULL, mface;
   MRegion_ptr mregion;
 
-  char (*matnames)[256], (*mateos)[256], (*matopc)[256];
+  char (*matnames)[256]=NULL, (*mateos)[256]=NULL, (*matopc)[256]=NULL;
 
   int rank, numprocs;
+  int distributed = 0;
+
+  char *ext = strstr(filename,".x3d"); /* Search for the x3d extension */
+  if (!ext)
+    MSTK_Report(funcname,"FLAG X3D files must have .x3d extension",MSTK_FATAL);
+
 
 #ifdef MSTK_HAVE_MPI
 
   numprocs = MSTK_Comm_size();
   rank = MSTK_Comm_rank();
 
-  if (numprocs > 1)
+  if (numprocs > 1) {
+
+    distributed = 1;
     sprintf(modfilename,"%s.%05d",filename,rank);
-  else
-    strcpy(modfilename,filename);
+
+    if (!(fp = fopen(modfilename,"r"))) {      
+
+      distributed = 0;
+
+      if (rank == 0) {
+
+        if (!(fp = fopen(filename,"r"))) {
+          sprintf(mesg,"Cannot open parallel file %s or serial file %s",
+                  modfilename,filename);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);
+        }
+
+      }
+      else
+        return 1;
+
+    }
+
+  }
+  else {
+    distributed = 0;
+
+    if (!(fp = fopen(modfilename,"r"))) {
+      sprintf(mesg,"Cannot open file %s for reading\n",filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+  }
 
 #else
 
   numprocs = 1;
   rank = 0;
 
-  strcpy(modfilename,filename);
-
-#endif /* MSTK_HAVE_MPI */
-
-
   if (!(fp = fopen(modfilename,"r"))) {
     sprintf(mesg,"Cannot open file %s for reading\n",filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
+
+#endif /* MSTK_HAVE_MPI */
 
 
   /* Confirm identifying string */
@@ -315,7 +346,7 @@ extern "C" {
             MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
 
           for (j = 0; j < nfe; j++) {
-            fscanf(fp,"%d",&(feids[j]));
+            status = fscanf(fp,"%d",&(feids[j]));
             fedges[j] = me[feids[j]-1];
             fedirs[j] = medir[feids[j]-1];              
           }
@@ -338,7 +369,9 @@ extern "C" {
             MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
 
           for (j = 0; j < nrf; j++) {
-            fscanf(fp,"%d",&(rfids[j]));
+            status = fscanf(fp,"%d",&(rfids[j]));
+            if (status == EOF)
+              MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
             rfaces[j] = mf[rfids[j]-1];
             rfdirs[j] = mfdir[rfids[j]-1];
           }

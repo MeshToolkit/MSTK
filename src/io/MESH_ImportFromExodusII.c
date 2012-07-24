@@ -33,13 +33,13 @@ extern "C" {
 
   int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
-  char mesg[256], funcname[256]="MESH_ImportFromExodusII";
+  char mesg[256], funcname[32]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
   char matsetname[256];
   char **elem_blknames;
   int i, j, k, k1;
   int comp_ws = sizeof(double), io_ws = 0;
-  int exoid, status;
+  int exoid=0, status;
   int ndim, nnodes, nelems, nelblock, nnodesets, nsidesets;
   int nedges, nedge_blk, nfaces, nface_blk, nelemsets;
   int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
@@ -65,12 +65,13 @@ extern "C" {
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
-  MAttrib_ptr nmapatt, elblockatt, nodesetatt, sidesetatt;
-  MSet_ptr faceset, nodeset, sideset, matset;
+  MAttrib_ptr nmapatt=NULL, elblockatt=NULL, nodesetatt=NULL, sidesetatt=NULL;
+  MSet_ptr faceset=NULL, nodeset=NULL, sideset=NULL, matset=NULL;
   int distributed=0;
   
   ex_init_params exopar;
-  
+
+  FILE *fp;
   char basename[256], modfilename[256], *ext;
 
 #ifdef MSTK_HAVE_MPI
@@ -81,67 +82,78 @@ extern "C" {
   rank = MSTK_Comm_rank();
 
   if (numprocs > 1) {
+
+    distributed = 1;
+
     strcpy(basename,filename);
     ext = strstr(basename,".exo"); /* Search for the exodus extension */
-    if (!ext) {
-      ext = strstr(basename,".par"); /* Search for the Nemesis extension */
-      if (!ext)
-        MSTK_Report(funcname,"Exodus II/Nemesis I files must have .exo or .par extension",MSTK_FATAL);
-    }
-    ext[0] = '\0';
-  
-  
-    /* Try opening the file with .exo.N.n extension */
-    sprintf(modfilename,"%s.exo.%-d.%-d",basename,numprocs,rank);
+    if (ext) {
 
-    FILE *fp;
-    if (fp = fopen(modfilename,"r")) {
-      fclose(fp);
+      /* Try opening the file with .exo.N.n extension in the hope that
+       we have a distributed set of files */
 
-        distributed = 1;
-
-      exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
-      if (exoid < 0) {
-        sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
-        MSTK_Report(funcname,mesg,MSTK_FATAL);
-      }
-    }
-    else {
-      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
-    
-      if (fp = fopen(modfilename,"r")) {
+      sprintf(modfilename,"%s.exo.%-d.%-d",basename,numprocs,rank);
+      
+      if ((fp = fopen(modfilename,"r"))) {
         fclose(fp);
-
+        
         distributed = 1;
         
         exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
-    
         if (exoid < 0) {
           sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
           MSTK_Report(funcname,mesg,MSTK_FATAL);
         }
       }
       else {
-
-        if (fp = fopen(filename,"r")) {
-          fclose(fp);
-
-          distributed = 0;
-
-          exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
-    
-          if (exoid < 0) {
-            sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
-            MSTK_Report(funcname,mesg,MSTK_FATAL);
+        
+        distributed = 0;
+        
+        if (rank == 0) {
+          
+          if ((fp = fopen(filename,"r"))) {
+            fclose(fp);
+            
+            exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
+            
+            if (exoid < 0) {
+              sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+              MSTK_Report(funcname,mesg,MSTK_FATAL);
+            }
           }
+          else {  
+            sprintf(mesg,"Cannot open/read Exodus II file %s.exo, %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,basename,numprocs,rank,basename,numprocs,rank);
+            MSTK_Report(funcname,mesg,MSTK_FATAL);        
+          }
+          
         }
-        else {  
-          sprintf(mesg,"Cannot open/read Exodus II file %s.exo, %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,basename,numprocs,rank,basename,numprocs,rank);
-          MSTK_Report(funcname,mesg,MSTK_FATAL);        
+        else
+          return 1;
+      }  
+    }
+    else {
+      ext = strstr(basename,".par"); /* Search for the Nemesis extension */
+      if (!ext)
+        MSTK_Report(funcname,"Exodus II/Nemesis I files must have .exo or .par extension",MSTK_FATAL);
+
+
+      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
+      
+      if ((fp = fopen(modfilename,"r"))) {
+        fclose(fp);
+        
+        distributed = 1;
+        
+        exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
+        
+        if (exoid < 0) {
+          sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);
         }
       }
-    }  
-  }
+    }
+
+  } /* if numprocs > 1 */
   else {
     exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
 
@@ -166,7 +178,13 @@ extern "C" {
 
 #endif /* MSTK_HAVE_MPI */
   
-  
+
+  /* If it is a serial read and this is not processor 0, do not read */
+
+#ifdef MSTK_HAVE_MPI
+#endif
+
+
   status = ex_get_init_ext(exoid, &exopar);
   if (status < 0) {
     sprintf(mesg,"Error while reading Exodus II file %s\n",filename);
@@ -252,6 +270,8 @@ extern "C" {
     }
     
   }
+
+  free(node_map);
   
 
   /* Read node sets */
@@ -639,6 +659,8 @@ extern "C" {
       }
       
     }
+
+    free(elem_map);
     
   }
   else if (ndim == 3) {
@@ -871,7 +893,8 @@ extern "C" {
                   else if (List_Num_Entries(fregs) == 2) {
 		  MSTK_Report(funcname,"Face already connected two faces",MSTK_FATAL);
                   }
-                }
+                  List_Delete(fregs);
+                }                
               }
               else {
                 face = MF_New(mesh);
@@ -1219,7 +1242,7 @@ extern "C" {
 
 
 #ifdef MSTK_HAVE_MPI
-  if (numprocs > 1 && distributed) {
+  if (distributed) {
     /* Now weave the distributed meshes together so that appropriate ghost links are created */
   
     int num_ghost_layers = 1;

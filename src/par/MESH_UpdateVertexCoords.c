@@ -19,7 +19,7 @@ extern "C" {
   int MESH_UpdateVertexCoords(Mesh_ptr mesh) {
     int i, j, k, *loc, count;
     int num_ghost=0, num_ov=0, send_size,recv_size;
-    int *gid_list_send, *gid_list_recv, recv_index, num_recv_procs;
+    int *gid_list_send, *gid_list_recv, recv_index=0, num_recv_procs;
     int global_id, par_id;
     double xyz[3];
     MType mtype;
