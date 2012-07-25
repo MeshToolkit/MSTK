@@ -42,12 +42,14 @@ extern "C" {
     if (MEnt_Dim((MEntity_ptr) v) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) v);
 
+      if (mesh) {
 #ifdef MSTK_HAVE_MPI
       if (MV_PType(v) == PGHOST)
 	MESH_Rem_GhostVertex(mesh,v);
       else
 #endif
 	MESH_Rem_Vertex(mesh,v);
+      }
 
       MEnt_Set_DelFlag((MEntity_ptr) v);
     }
