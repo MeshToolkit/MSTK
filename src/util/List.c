@@ -208,13 +208,22 @@ extern "C" {
 
 
 
-  /* List_sort similar as qsort, except the first parameter is a list
-     pointer, not array */
+  /* Sort list entries using the user/app supplied comparator */
 
   void List_Sort(List_ptr l, size_t num, size_t size, 
 		 int(*comp)(const void *,const void *)) {
     qsort(List_Entries(l),num,size,comp);
   }
+
+  /* Search for key in a list using the user/app supplied comparator */
+
+  void *List_Search(List_ptr l, const void *key, size_t num, size_t size, 
+                    int(*comp)(const void *,const void *)) {
+    void **loc;
+    loc = (void **) bsearch(key,List_Entries(l),num,size,comp);
+    return *loc;
+  }
+
 
   /* Return the value in the raw position 'i' in the list - don't
      count the i'th valid entry like in List_Entry */
