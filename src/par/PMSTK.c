@@ -306,6 +306,10 @@ extern "C" {
       /* Partition the mesh*/
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
       MSTK_Mesh_Partition(*mesh, num, part, ring, with_attr, submeshes);
+
+#ifdef DEBUG
+      fprintf(stderr,"Finished partitioning\n");
+#endif
       
       for(i = 1; i < num; i++) {
 
@@ -314,6 +318,10 @@ extern "C" {
 	MESH_Delete(submeshes[i]);  
       }
       *mesh = submeshes[0];
+
+#ifdef DEBUG
+      fprintf(stderr,"Sent meshes to all partitions\n");
+#endif
       MESH_Build_GhostLists(*mesh,*dim);
      
     }
@@ -321,10 +329,24 @@ extern "C" {
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
+#ifdef DEBUG
+      fprintf(stderr,"Received mesh on partition %d\n",rank);
+#endif
     }
     MESH_Set_Prtn(*mesh,rank,num);
 
     MESH_Update_ParallelAdj(*mesh, rank, num,  comm);
+
+    MESH_Disable_GlobalIDSearch(*mesh);
+
+#ifdef DEBUG
+    fprintf(stderr,"Updated parallel adjacencies. Exiting mesh distribution\n");
+#endif
+
+    /* Put a barrier so that distribution of meshes takes place one at a time 
+       in a simulation that may have multiple mesh objects on each processor */
+
+    MPI_Barrier(comm);
 
     return 1;
   }
