@@ -43,6 +43,8 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->par_recv_info = NULL;
 
   newmesh->max_ghvid = newmesh->max_gheid = newmesh->max_ghfid = newmesh->max_ghrid = 0;
+  newmesh->gid_sorted_mvlist = newmesh->gid_sorted_melist =
+    newmesh->gid_sorted_mflist = newmesh->gid_sorted_mrlist = NULL;
 #endif
 
   newmesh->geom = (GModel_ptr) NULL;
@@ -94,6 +96,14 @@ void MESH_Delete(Mesh_ptr mesh) {
     MSTK_free(mesh->par_adj_flags);
   if (mesh->par_recv_info)
     MSTK_free(mesh->par_recv_info);
+  if (mesh->gid_sorted_mvlist)
+    List_Delete(mesh->gid_sorted_mvlist);
+  if (mesh->gid_sorted_melist)
+    List_Delete(mesh->gid_sorted_melist);
+  if (mesh->gid_sorted_mflist)
+    List_Delete(mesh->gid_sorted_mflist);
+  if (mesh->gid_sorted_mrlist)
+    List_Delete(mesh->gid_sorted_mrlist);
 
 #endif
 
@@ -1108,46 +1118,127 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
     return mesh->par_recv_info[1+ghnum+4*i+mtype];
   }
+
+
+
+void MESH_Enable_GlobalIDSearch(Mesh_ptr mesh) {
+
+  if (mesh->nv) {
+    mesh->gid_sorted_mvlist = List_Copy(mesh->mvertex);
+    List_Sort(mesh->gid_sorted_mvlist,mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
+  }
+
+  if (mesh->ne) {
+    mesh->gid_sorted_melist = List_Copy(mesh->medge);
+    List_Sort(mesh->gid_sorted_melist,mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
+  }
+
+  if (mesh->nf) {
+    mesh->gid_sorted_mflist = List_Copy(mesh->mface);
+    List_Sort(mesh->gid_sorted_mflist,mesh->nf,sizeof(MFace_ptr),compareGlobalID);
+  }
+
+  if (mesh->nr) {
+    mesh->gid_sorted_mrlist = List_Copy(mesh->mregion);
+    List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
+  }
+
+}
+
+
+void MESH_Disable_GlobalIDSearch(Mesh_ptr mesh) {
+
+  if (mesh->gid_sorted_mvlist) {
+    List_Delete(mesh->gid_sorted_mvlist);
+    mesh->gid_sorted_mvlist = NULL;
+  }
+
+  if (mesh->gid_sorted_melist) {
+    List_Delete(mesh->gid_sorted_melist);
+    mesh->gid_sorted_melist = NULL;
+  }
+  if (mesh->gid_sorted_mflist) {
+    List_Delete(mesh->gid_sorted_mflist);
+    mesh->gid_sorted_mflist = NULL;
+  }
+  if (mesh->gid_sorted_mrlist) {
+    List_Delete(mesh->gid_sorted_mrlist);
+    mesh->gid_sorted_mrlist = NULL;
+  }
+
+}
                   
   /* right now using linear search, a hash table should be more efficient */
 MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MVertex_ptr mv;
-  while( (mv = MESH_Next_Vertex(mesh, &idx)) ) {
-      if (MV_GlobalID(mv) == global_id)
-	return mv;
-    }
-    return NULL;
+
+  if (!mesh->gid_sorted_mvlist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MVertex_ptr mv_tmp = MV_New(NULL);
+  MEnt_Set_GlobalID(mv_tmp,global_id);
+
+  mv = (MVertex_ptr) List_Search(mesh->gid_sorted_mvlist,(void *)&mv_tmp,
+                                 mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
+
+  MV_Delete(mv_tmp,0);
+
+  return mv;
 }
 
 MEdge_ptr MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MEdge_ptr me;
-  while( (me = MESH_Next_Edge(mesh, &idx)) ) {
-      if (ME_GlobalID(me) == global_id)
-	return me;
-    }
-    return NULL;
+
+  if (!mesh->gid_sorted_melist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MEdge_ptr me_tmp = ME_New(NULL);
+  MEnt_Set_GlobalID(me_tmp,global_id);
+
+  me = (MEdge_ptr) List_Search(mesh->gid_sorted_melist,(void *)&me_tmp,
+                               mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
+
+  ME_Delete(me_tmp,0);
+  
+  return me;
 }
 
 MFace_ptr MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MFace_ptr mf;
-  while( (mf = MESH_Next_Face(mesh, &idx)) ) {
-      if (MF_GlobalID(mf) == global_id)
-	return mf;
-    }
-    return NULL;
+
+  if (!mesh->gid_sorted_mflist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MFace_ptr mf_tmp = MF_New(NULL);
+  MEnt_Set_GlobalID(mf_tmp,global_id);
+
+  mf = (MFace_ptr) List_Search(mesh->gid_sorted_mflist,(void *)&mf_tmp,
+                               mesh->nf,sizeof(MFace_ptr),compareGlobalID);
+
+  MF_Delete(mf_tmp,0);
+  
+  return mf;
 }
 
 MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MRegion_ptr mr;
-  while( (mr = MESH_Next_Region(mesh, &idx)) ) {
-      if (MR_GlobalID(mr) == global_id)
-	return mr;
-    }
-    return NULL;
+
+  if (!mesh->gid_sorted_mrlist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MRegion_ptr mr_tmp = MR_New(NULL);
+  MEnt_Set_GlobalID(mr_tmp,global_id);
+
+  mr = (MRegion_ptr) List_Search(mesh->gid_sorted_mrlist,(void *)&mr_tmp,
+                                 mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
+
+  MR_Delete(mr_tmp,0);
+
+  return mr;
 }
 
 MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, int mtype, int id) {

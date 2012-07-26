@@ -27,6 +27,7 @@ extern "C" {
     List_ptr ghvertex, ghedge, ghface, ghregion;
     int max_ghvid, max_gheid, max_ghfid, max_ghrid;
     List_ptr ovvertex, ovedge, ovface, ovregion;
+    List_ptr gid_sorted_mvlist, gid_sorted_melist, gid_sorted_mflist, gid_sorted_mrlist;
 #endif
 
   } Mesh, *Mesh_ptr;
@@ -163,6 +164,9 @@ extern "C" {
   void       MESH_Add_OverlapEdge(Mesh_ptr mesh, MEdge_ptr e);
   void       MESH_Add_OverlapFace(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Add_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r);
+
+  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
+  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 
 #endif
 
