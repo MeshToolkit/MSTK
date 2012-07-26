@@ -16,7 +16,7 @@ extern "C" {
   typedef struct List {
     unsigned int nentdat;
     unsigned int *remdat;
-    void **entry;
+    void **entry;    
   } List, *List_ptr;
 
   void pvtList_Get_Pars(List_ptr l, int *nent, int *p, int *nrem, int *rem1);
@@ -49,6 +49,10 @@ extern "C" {
   int      List_Num_Entries(List_ptr l);
   int      List_Num_Entries_Raw(List_ptr l);
   List_ptr List_Cat(List_ptr dest, List_ptr src);
+  void     List_Sort(List_ptr l, size_t num, size_t size,
+		     int(*comp)(const void *,const void *));
+  void    *List_Search(List_ptr l, const void *key, size_t num, size_t size,
+                       int(*comp)(const void *,const void *));
 
 #ifdef DEBUG
   void     List_Print(List_ptr l);

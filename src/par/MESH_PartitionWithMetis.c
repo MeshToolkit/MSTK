@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "MSTK.h"
+
 #include "metis.h"
 
+#include "MSTK.h"
 
-/* Parition a MSTK mesh, and write out a parallel X3D file. Also,
-   write out the map between the serial and parallel mesh cell
-   numbers */
-
+/* Get the partitioning of mesh using Metis - Doesn't actually do 
+   anything to the mesh */
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +41,7 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   if (nr == 0) {
     
     if (nf == 0) {
-      fprintf(stderr,"Cannot write out FLAG X3D files for wire meshes\n");
+      fprintf(stderr,"Cannot partition wire meshes\n");
       exit(-1);
     }
     
@@ -153,8 +152,12 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   else
     METIS_PartGraphKway(&ncells,xadj,adjncy,vwgt,adjwgt,&wtflag,&numflag,
 			&nparts,metisopts,&nedgecut,*part);
-  
+
+  free(xadj);
+  free(adjncy);
+
   return 1;
+
 }
 
 #ifdef __cplusplus

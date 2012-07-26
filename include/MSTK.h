@@ -24,50 +24,48 @@ void MSTK_Init(void);
 /*        MESH OBJECT OPERATORS                                     */
 /********************************************************************/  
 
-  Mesh_ptr   MESH_New(RepType type);
-  void       MESH_Delete(Mesh_ptr mesh);
-  int        MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
-  int        MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3],
+  Mesh_ptr    MESH_New(RepType type);
+  void        MESH_Delete(Mesh_ptr mesh);
+  int         MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
+  int         MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3],
 				  int nf, int *nfv, int **fvids, int nr, 
 				  int *nrv, int **rvids, int *nrf, 
 				  int ***rfvtemplate);
-  int        MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
-				 const char *format);
-  int        MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename);
-  int        MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename);
-  int        MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
-			       const char *format, const int natt, 
-			       const char **attnames, int *opts);
-  int        MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
-			      const int natt, const char **attnames, 
-			      int *opts);
-  int        MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
-			      const int natt, const char **attnames, 
-			      int *opts);
-  int        MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
-				   const int natt, const char **attnames, 
-				   int *opts);
-  int        MESH_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
-				      const int nparts, const int natt, 
-				      const char **attnames, int *opts,
-				      int *procids);
-  int        MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
-  int        MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
-  int        MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
-  int        MESH_BuildClassfn(Mesh_ptr mesh);
-  int        MESH_DelInterior(Mesh_ptr mesh);
-  int        MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
+  int         MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
+                                  const char *format);
+  int         MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename); 
+  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename);
+  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename);
+  int         MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
+                                const char *format, const int natt, 
+                                const char **attnames, const int *opts);
+  int         MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
+                               const int natt, const char **attnames,
+                               const int *opts);
+  int         MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
+                                   const int natt, const char **attnames, 
+                                   const int *opts);
+  int         MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
+                                    const int natt, const char **attnames, 
+                                    const int *opts);
+
+  int         MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
+  int         MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
+  int         MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
+  int         MESH_BuildClassfn(Mesh_ptr mesh);
+  int         MESH_DelInterior(Mesh_ptr mesh);
+  int         MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
 
   /* Check if mesh topology is valid */
-  int        MESH_CheckTopo(Mesh_ptr mesh);
+  int         MESH_CheckTopo(Mesh_ptr mesh);
 
   /* Check if mesh geometry is valid */
   /* int        MESH_CheckGeom(Mesh_ptr mesh); */
 
 
-  GModel_ptr MESH_GModel(Mesh_ptr mesh);
-  RepType    MESH_RepType(Mesh_ptr mesh);
-  char      *MESH_RepType_Str(Mesh_ptr mesh);
+  GModel_ptr  MESH_GModel(Mesh_ptr mesh);
+  RepType     MESH_RepType(Mesh_ptr mesh);
+  char       *MESH_RepType_Str(Mesh_ptr mesh);
 
   int         MESH_Num_Attribs(Mesh_ptr mesh);
   MAttrib_ptr MESH_Attrib(Mesh_ptr mesh, int i);
@@ -79,70 +77,109 @@ void MSTK_Init(void);
   MSet_ptr    MESH_Next_MSet(Mesh_ptr mesh, int *index);
   MSet_ptr    MESH_MSetByName(Mesh_ptr mesh, const char *name);
 
-  int        MESH_Num_Vertices(Mesh_ptr mesh);
-  int        MESH_Num_Edges(Mesh_ptr mesh);
-  int        MESH_Num_Faces(Mesh_ptr mesh);
-  int        MESH_Num_Regions(Mesh_ptr mesh);
+  int         MESH_Num_Vertices(Mesh_ptr mesh);
+  int         MESH_Num_Edges(Mesh_ptr mesh);
+  int         MESH_Num_Faces(Mesh_ptr mesh);
+  int         MESH_Num_Regions(Mesh_ptr mesh);
 
-  MVertex_ptr  MESH_Vertex(Mesh_ptr mesh, int i);
-  MEdge_ptr    MESH_Edge(Mesh_ptr mesh, int i);
-  MFace_ptr    MESH_Face(Mesh_ptr mesh, int i);
-  MRegion_ptr  MESH_Region(Mesh_ptr mesh, int i);
+  MVertex_ptr MESH_Vertex(Mesh_ptr mesh, int i);
+  MEdge_ptr   MESH_Edge(Mesh_ptr mesh, int i);
+  MFace_ptr   MESH_Face(Mesh_ptr mesh, int i);
+  MRegion_ptr MESH_Region(Mesh_ptr mesh, int i);
 
-  MVertex_ptr  MESH_Next_Vertex(Mesh_ptr mesh, int *index);
-  MEdge_ptr    MESH_Next_Edge(Mesh_ptr mesh, int *index);
-  MFace_ptr    MESH_Next_Face(Mesh_ptr mesh, int *index);
-  MRegion_ptr  MESH_Next_Region(Mesh_ptr mesh, int *index);
+  MVertex_ptr MESH_Next_Vertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr   MESH_Next_Edge(Mesh_ptr mesh, int *index);
+  MFace_ptr   MESH_Next_Face(Mesh_ptr mesh, int *index);
+  MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index);
 
 
-  MVertex_ptr  MESH_VertexFromID(Mesh_ptr mesh, int i);
-  MEdge_ptr    MESH_EdgeFromID(Mesh_ptr mesh, int i);
-  MFace_ptr    MESH_FaceFromID(Mesh_ptr mesh, int i);
-  MRegion_ptr  MESH_RegionFromID(Mesh_ptr mesh, int i);
-  MEntity_ptr  MESH_EntityFromID(Mesh_ptr mesh, MType mtype, int i);
+  MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int i);
+  MEdge_ptr   MESH_EdgeFromID(Mesh_ptr mesh, int i);
+  MFace_ptr   MESH_FaceFromID(Mesh_ptr mesh, int i);
+  MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int i);
+  MEntity_ptr MESH_EntityFromID(Mesh_ptr mesh, MType mtype, int i);
 
   
-  int        MESH_SetRepType(Mesh_ptr mesh, RepType type);
-  void       MESH_SetGModel(Mesh_ptr mesh, GModel_ptr geom);
-  int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
+  int         MESH_SetRepType(Mesh_ptr mesh, RepType type);
+  void        MESH_SetGModel(Mesh_ptr mesh, GModel_ptr geom);
+  int         MESH_Change_RepType(Mesh_ptr mesh, int nurep);
 
-  void       MESH_Renumber(Mesh_ptr mesh);
+  void        MESH_Renumber(Mesh_ptr mesh);
 
 
 #ifdef MSTK_HAVE_MPI
 
+  /* Set the MPI communicator */
 
+  void MSTK_Set_Comm(MPI_Comm comm);
 
-  /* parallel wrapper functions for user */
+  /* What is the communicator being used by MSTK? */
+
+  MPI_Comm MSTK_Comm();
+
+  /* Number of processors */
+
+  int MSTK_Comm_size();
+
+  /* Rank of the current process */
+
+  int MSTK_Comm_rank();
 
   /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
+  /* The rank, num, and comm arguments will go away soon                */
+  /* For now we are eliminating the partitioning method argument just   */
+  /* for compatibility with 1.85 but will bring it back soon            */
 
-  int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
-				const char* global_mesh_name, 
-				int *dim, int ring, int with_attr, 
-				int rank, int num, MPI_Comm comm);
+  int         MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
+                                        const char* global_mesh_name, 
+                                        int *topodim, int ring, int with_attr, 
+                                        int rank, int num,
+                                        MPI_Comm comm);
 
   /* Partition an existing mesh and distribute it to 'num' processors */
+  /* The rank, num and comm arguments will go away soon               */
 
-  int MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
-			   int *dim, int ring, int with_attr, 
-			   int rank, int num, MPI_Comm comm);
+  int         MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
+                                   int *topodim, int ring, int with_attr, 
+                                   int rank, int num,
+                                   MPI_Comm comm);
+
+
+  /* 'Weave' a set of distributed meshes by building ghost layers */
+
+  int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
+                                           int num_ghost_layers,
+                                           int input_type);
 
   /* Parallel update attribute values for ghost entities */
 
-  int MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm);
-
-  /* END PRIMARY ROUTINES FOR PARALLEL APPLICATION */
-#endif
+  int         MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
 
 
+  /* Update vertex coordinates for ghost vertices */
+  int         MESH_UpdateVertexCoords(Mesh_ptr mesh);
 
-  Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh);
-  Hash_ptr MESH_Hash_Faces(Mesh_ptr mesh);
-  int MESH_AutoLock(Mesh_ptr mesh);
-  void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);
+  /* Check parallel consistency */
+
+  int         MESH_Parallel_Check(Mesh_ptr mesh);
+
+
+  MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
+  MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);
+  MFace_ptr   MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id);
+  MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
+  MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
+
+#endif /* MSTK_HAVE_MPI */
+
+
+
+  Hash_ptr    MESH_Hash_Edges(Mesh_ptr mesh);
+  Hash_ptr    MESH_Hash_Faces(Mesh_ptr mesh);
+  int         MESH_AutoLock(Mesh_ptr mesh);
+  void        MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);
   
 
 /********************************************************************/
@@ -150,184 +187,160 @@ void MSTK_Init(void);
 /********************************************************************/
 
   MVertex_ptr MV_New(Mesh_ptr mesh);
-  void MV_Delete(MVertex_ptr mvertex, int keep);
-  void MV_Restore(MVertex_ptr mvertex);
-  void MV_Set_RepType(MVertex_ptr mvertex, RepType reptype);
-  void MV_Set_Coords(MVertex_ptr mvertex, double *xyz);
-  void MV_Set_GEntity(MVertex_ptr mvertex, GEntity_ptr gent);
-  void MV_Set_GEntDim(MVertex_ptr mvertex, int gdim);
-  void MV_Set_GEntID(MVertex_ptr mvertex, int gid);
-  void MV_Add_AdjVertex(MVertex_ptr mvertex, MVertex_ptr adjvertex);
-  void MV_Rem_AdjVertex(MVertex_ptr mvertex, MVertex_ptr adjvertex);
-  void MV_Set_ID(MVertex_ptr mvertex, int id);
+  void        MV_Delete(MVertex_ptr mvertex, int keep);
+  void        MV_Restore(MVertex_ptr mvertex);
+  void        MV_Set_RepType(MVertex_ptr mvertex, RepType reptype);
+  void        MV_Set_Coords(MVertex_ptr mvertex, double *xyz);
+  void        MV_Set_GEntity(MVertex_ptr mvertex, GEntity_ptr gent);
+  void        MV_Set_GEntDim(MVertex_ptr mvertex, int gdim);
+  void        MV_Set_GEntID(MVertex_ptr mvertex, int gid);
+  void        MV_Add_AdjVertex(MVertex_ptr mvertex, MVertex_ptr adjvertex);
+  void        MV_Rem_AdjVertex(MVertex_ptr mvertex, MVertex_ptr adjvertex);
+  void        MV_Set_ID(MVertex_ptr mvertex, int id);
 
-  Mesh_ptr MV_Mesh(MVertex_ptr mv);
-  int MV_ID(MVertex_ptr mvertex);
-  int MV_GEntDim(MVertex_ptr mvertex);
-  int MV_GEntID(MVertex_ptr mvertex);
+  Mesh_ptr    MV_Mesh(MVertex_ptr mv);
+  int         MV_ID(MVertex_ptr mvertex);
+  int         MV_GEntDim(MVertex_ptr mvertex);
+  int         MV_GEntID(MVertex_ptr mvertex);
   GEntity_ptr MV_GEntity(MVertex_ptr mvertex);
 
-  void MV_Coords(MVertex_ptr mvertex, double *xyz);
+  void        MV_Coords(MVertex_ptr mvertex, double *xyz);
 
-  int MV_Num_AdjVertices(MVertex_ptr mvertex);
-  int MV_Num_Edges(MVertex_ptr mvertex);
-  int MV_Num_Faces(MVertex_ptr mvertex);
-  int MV_Num_Regions(MVertex_ptr mvertex);
-  List_ptr MV_AdjVertices(MVertex_ptr mvertex);
-  List_ptr MV_Edges(MVertex_ptr mvertex);
-  List_ptr MV_Faces(MVertex_ptr mvertex);
-  List_ptr MV_Regions(MVertex_ptr mvertex);
+  int         MV_Num_AdjVertices(MVertex_ptr mvertex);
+  int         MV_Num_Edges(MVertex_ptr mvertex);
+  int         MV_Num_Faces(MVertex_ptr mvertex);
+  int         MV_Num_Regions(MVertex_ptr mvertex);
+  List_ptr    MV_AdjVertices(MVertex_ptr mvertex);
+  List_ptr    MV_Edges(MVertex_ptr mvertex);
+  List_ptr    MV_Faces(MVertex_ptr mvertex);
+  List_ptr    MV_Regions(MVertex_ptr mvertex);
 
 #ifdef MSTK_HAVE_MPI
 
-  /* If you call the routines to set master partition ID or Global ID
-     without knowing what you are doing, you can shoot yourself in the
-     foot. So if you are casual MSTK user, you are strongly advised
-     against calling the Set_MasterParID and Set_GlobalID routines */  
+  PType       MV_PType(MVertex_ptr v);
+  int         MV_MasterParID(MVertex_ptr v);
+  int         MV_GlobalID(MVertex_ptr v);
 
-  PType MV_PType(MVertex_ptr v);
-  void  MV_Set_PType(MVertex_ptr v, PType ptype);
-  int   MV_MasterParID(MVertex_ptr v);
-  void  MV_Set_MasterParID(MVertex_ptr v, int masterparid);
-  int   MV_GlobalID(MVertex_ptr v);
-  void  MV_Set_GlobalID(MVertex_ptr v, int globalid);
 #endif
-
 
 /********************************************************************/
 /*        MESH EDGE OPERATORS                                       */
 /********************************************************************/
 
-  MEdge_ptr ME_New(Mesh_ptr mesh);
-  void ME_Delete(MEdge_ptr medge, int keep);
-  void ME_Restore(MEdge_ptr medge);
-  void ME_Set_RepType(MEdge_ptr medge, RepType reptype);
-  void ME_Set_GEntity(MEdge_ptr medge, GEntity_ptr gent);
-  void ME_Set_GEntDim(MEdge_ptr medge, int gdim);
-  void ME_Set_GEntID(MEdge_ptr medge, int gid);
-  int  ME_Set_GInfo_Auto(MEdge_ptr medge);
-  void ME_Set_ID(MEdge_ptr medge, int id);
+  MEdge_ptr   ME_New(Mesh_ptr mesh);
+  void        ME_Delete(MEdge_ptr medge, int keep);
+  void        ME_Restore(MEdge_ptr medge);
+  void        ME_Set_RepType(MEdge_ptr medge, RepType reptype);
+  void        ME_Set_GEntity(MEdge_ptr medge, GEntity_ptr gent);
+  void        ME_Set_GEntDim(MEdge_ptr medge, int gdim);
+  void        ME_Set_GEntID(MEdge_ptr medge, int gid);
+  int         ME_Set_GInfo_Auto(MEdge_ptr medge);
+  void        ME_Set_ID(MEdge_ptr medge, int id);
 
-  void ME_Set_Vertex(MEdge_ptr medge, int i, MVertex_ptr vertex);
-  void ME_Replace_Vertex(MEdge_ptr medge, MVertex_ptr vert, MVertex_ptr nuvert);
+  void        ME_Set_Vertex(MEdge_ptr medge, int i, MVertex_ptr vertex);
+  void        ME_Replace_Vertex(MEdge_ptr medge, MVertex_ptr vert, MVertex_ptr nuvert);
 
-  Mesh_ptr ME_Mesh(MEdge_ptr medge);
-  int ME_ID(MEdge_ptr medge);
-  int ME_GEntDim(MEdge_ptr medge);
-  int ME_GEntID(MEdge_ptr medge);
+  Mesh_ptr    ME_Mesh(MEdge_ptr medge);
+  int         ME_ID(MEdge_ptr medge);
+  int         ME_GEntDim(MEdge_ptr medge);
+  int         ME_GEntID(MEdge_ptr medge);
   GEntity_ptr ME_GEntity(MEdge_ptr medge);
-  int ME_Num_Faces(MEdge_ptr medge);
-  int ME_Num_Regions(MEdge_ptr medge);
+  int         ME_Num_Faces(MEdge_ptr medge);
+  int         ME_Num_Regions(MEdge_ptr medge);
   MVertex_ptr ME_Vertex(MEdge_ptr medge, int i);
   MVertex_ptr ME_OppVertex(MEdge_ptr medge, MVertex_ptr ov);
-  int ME_UsesEntity(MEdge_ptr medge, MEntity_ptr mentity, int etype);
-  List_ptr ME_Faces(MEdge_ptr medge);
-  List_ptr ME_Regions(MEdge_ptr medge);
+  int         ME_UsesEntity(MEdge_ptr medge, MEntity_ptr mentity, int etype);
+  List_ptr    ME_Faces(MEdge_ptr medge);
+  List_ptr    ME_Regions(MEdge_ptr medge);
 
 
-  MEdge_ptr MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2);  
+  MEdge_ptr   MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2);  
 
-  double ME_Len(MEdge_ptr e);
-  double ME_LenSqr(MEdge_ptr e);
-  void   ME_Vec(MEdge_ptr e, double *evec);
+  double      ME_Len(MEdge_ptr e);
+  double      ME_LenSqr(MEdge_ptr e);
+  void        ME_Vec(MEdge_ptr e, double *evec);
 
-  int MEs_AreSame(MEdge_ptr e1, MEdge_ptr e2);
+  int         MEs_AreSame(MEdge_ptr e1, MEdge_ptr e2);
 
-  void ME_Lock(MEdge_ptr e);
-  void ME_UnLock(MEdge_ptr e);
+  void        ME_Lock(MEdge_ptr e);
+  void        ME_UnLock(MEdge_ptr e);
 
 #ifdef MSTK_HAVE_MPI
- /*for mpi*/
-  /* If you call the routines to set master partition ID or Global ID
-     without knowing what you are doing, you can shoot yourself in the
-     foot. So if you are casual MSTK user, you are strongly advised
-     against calling the Set_MasterParID and Set_GlobalID routines */  
 
-  PType ME_PType(MEdge_ptr e);
-  void  ME_Set_PType(MEdge_ptr e, PType ptype);
-  int   ME_MasterParID(MEdge_ptr e);
-  void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
-  int   ME_GlobalID(MEdge_ptr e);
-  void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
-  /*end for mpi*/
+  PType       ME_PType(MEdge_ptr e);
+  int         ME_MasterParID(MEdge_ptr e);
+  int         ME_GlobalID(MEdge_ptr e);
+
 #endif
 
 /********************************************************************/
 /*        MESH FACE OPERATORS                                       */
 /********************************************************************/
-  MFace_ptr MF_New(Mesh_ptr mesh);
-  void MF_Delete(MFace_ptr mface, int keep);
-  void MF_Restore(MFace_ptr mface);
-  void MF_Set_RepType(MFace_ptr mface, RepType reptype);
-  void MF_Set_GEntity(MFace_ptr mface, GEntity_ptr gent);
-  void MF_Set_GEntDim(MFace_ptr mface, int gdim);
-  void MF_Set_GEntID(MFace_ptr mface, int gid);
-  int  MF_Set_GInfo_Auto(MFace_ptr mface);
-  void MF_Set_ID(MFace_ptr mface, int id);
+  MFace_ptr   MF_New(Mesh_ptr mesh);
+  void        MF_Delete(MFace_ptr mface, int keep);
+  void        MF_Restore(MFace_ptr mface);
+  void        MF_Set_RepType(MFace_ptr mface, RepType reptype);
+  void        MF_Set_GEntity(MFace_ptr mface, GEntity_ptr gent);
+  void        MF_Set_GEntDim(MFace_ptr mface, int gdim);
+  void        MF_Set_GEntID(MFace_ptr mface, int gid);
+  int         MF_Set_GInfo_Auto(MFace_ptr mface);
+  void        MF_Set_ID(MFace_ptr mface, int id);
 
   /* These can be called by a user/application after calling MF_New() */
-  void MF_Set_Edges(MFace_ptr mface, int n, MEdge_ptr *edges, int *dirs);
-  void MF_Set_Vertices(MFace_ptr mface, int n, MVertex_ptr *verts);
+  void        MF_Set_Edges(MFace_ptr mface, int n, MEdge_ptr *edges, int *dirs);
+  void        MF_Set_Vertices(MFace_ptr mface, int n, MVertex_ptr *verts);
 
   /* Can be called by higher level mesh modification operators */
-  void MF_Replace_Edges(MFace_ptr mface, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
-  void MF_Replace_Vertex(MFace_ptr mface, MVertex_ptr mvertex, MVertex_ptr nuvertex);
-  void MF_Replace_Edges_i(MFace_ptr mface, int nold, int i, int nnu, MEdge_ptr *nuedge);
+  void        MF_Replace_Edges(MFace_ptr mface, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
+  void        MF_Replace_Vertex(MFace_ptr mface, MVertex_ptr mvertex, MVertex_ptr nuvertex);
+  void        MF_Replace_Edges_i(MFace_ptr mface, int nold, int i, int nnu, MEdge_ptr *nuedge);
   void MF_Rem_Edge(MFace_ptr mface, MEdge_ptr medge);
-  void MF_Replace_Vertex_i(MFace_ptr mface, int i, MVertex_ptr nuvertex);
-  void MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
-  void MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
-  int MF_Rev_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
-  int MF_Rev_EdgeDir_i(MFace_ptr mface, int i);
+  void        MF_Replace_Vertex_i(MFace_ptr mface, int i, MVertex_ptr nuvertex);
+  void        MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
+  void        MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
+  int         MF_Rev_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
+  int         MF_Rev_EdgeDir_i(MFace_ptr mface, int i);
 
-  Mesh_ptr MF_Mesh(MFace_ptr mf);
-  int MF_ID(MFace_ptr mface);
-  int MF_GEntDim(MFace_ptr mface);
-  int MF_GEntID(MFace_ptr mface);
+  Mesh_ptr    MF_Mesh(MFace_ptr mf);
+  int         MF_ID(MFace_ptr mface);
+  int         MF_GEntDim(MFace_ptr mface);
+  int         MF_GEntID(MFace_ptr mface);
   GEntity_ptr MF_GEntity(MFace_ptr mface);
 
   MFType MF_ElementType(MFace_ptr mf);
-  int MF_Num_Vertices(MFace_ptr mface);
-  int MF_Num_Edges(MFace_ptr mface);
-  int MF_Num_AdjFaces(MFace_ptr mface);
-  List_ptr MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr mvert);
-  List_ptr MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
-  List_ptr MF_AdjFaces(MFace_ptr mface);
+  int         MF_Num_Vertices(MFace_ptr mface);
+  int         MF_Num_Edges(MFace_ptr mface);
+  int         MF_Num_AdjFaces(MFace_ptr mface);
+  List_ptr    MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr mvert);
+  List_ptr    MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
+  List_ptr    MF_AdjFaces(MFace_ptr mface);
 
   /* Returns 1 or 0 */
-  int MF_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
-  int MF_EdgeDir_i(MFace_ptr mface, int i);
+  int         MF_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
+  int         MF_EdgeDir_i(MFace_ptr mface, int i);
 
 
-  int MF_UsesEntity(MFace_ptr mface, MEntity_ptr mentity, int type);
-  List_ptr MF_Regions(MFace_ptr mface);
+  int         MF_UsesEntity(MFace_ptr mface, MEntity_ptr mentity, int type);
+  List_ptr    MF_Regions(MFace_ptr mface);
   MRegion_ptr MF_Region(MFace_ptr mface, int side);
 
-  MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts);
-  MFace_ptr MEs_CommonFace(int ne, MEdge_ptr *fedges);
+  MFace_ptr   MVs_CommonFace(int nv, MVertex_ptr *fverts);
+  MFace_ptr   MEs_CommonFace(int ne, MEdge_ptr *fedges);
 
-  int MFs_AreSame(MFace_ptr f1, MFace_ptr f2);
+  int         MFs_AreSame(MFace_ptr f1, MFace_ptr f2);
 
 
-  void MF_Coords(MFace_ptr mface, int *n, double (*xyz)[3]);
-
-  void MF_Lock(MFace_ptr f);
-  void MF_UnLock(MFace_ptr f);
+  void        MF_Coords(MFace_ptr mface, int *n, double (*xyz)[3]);
+       
+  void        MF_Lock(MFace_ptr f);
+  void        MF_UnLock(MFace_ptr f);
 
 #ifdef MSTK_HAVE_MPI
- /*for mpi*/
-  /* If you call the routines to set master partition ID or Global ID
-     without knowing what you are doing, you can shoot yourself in the
-     foot. So if you are casual MSTK user, you are strongly advised
-     against calling the Set_MasterParID and Set_GlobalID routines */  
 
-  PType MF_PType(MFace_ptr f);  
-  void  MF_Set_PType(MFace_ptr f, PType ptype);
-  int   MF_MasterParID(MFace_ptr f);
-  void  MF_Set_MasterParID(MFace_ptr f, int masterparid);
-  int   MF_GlobalID(MFace_ptr f);
-  void  MF_Set_GlobalID(MFace_ptr f, int globalid);
-  /*end for mpi*/
+  PType       MF_PType(MFace_ptr f);  
+  int         MF_MasterParID(MFace_ptr f);
+  int         MF_GlobalID(MFace_ptr f);
+
 #endif
 
 /********************************************************************/
@@ -335,100 +348,73 @@ void MSTK_Init(void);
 /********************************************************************/
 
   MRegion_ptr MR_New(Mesh_ptr mesh);
-  void MR_Delete(MRegion_ptr mregion, int keep);
-  void MR_Restore(MRegion_ptr mregion);
-  void MR_Set_RepType(MRegion_ptr mregion, RepType reptype);
-  void MR_Set_GEntity(MRegion_ptr mregion, GEntity_ptr gent);
-  void MR_Set_GEntDim(MRegion_ptr mregion, int gdim);
-  void MR_Set_GEntID(MRegion_ptr mregion, int gid);
-  int  MR_Set_GInfo_Auto(MRegion_ptr mregion);
-  void MR_Set_ID(MRegion_ptr mregion, int id);
+  void        MR_Delete(MRegion_ptr mregion, int keep);
+  void        MR_Restore(MRegion_ptr mregion);
+  void        MR_Set_RepType(MRegion_ptr mregion, RepType reptype);
+  void        MR_Set_GEntity(MRegion_ptr mregion, GEntity_ptr gent);
+  void        MR_Set_GEntDim(MRegion_ptr mregion, int gdim);
+  void        MR_Set_GEntID(MRegion_ptr mregion, int gid);
+  int         MR_Set_GInfo_Auto(MRegion_ptr mregion);
+  void        MR_Set_ID(MRegion_ptr mregion, int id);
 
   /* Can be called by user/application after creating region by MR_New(); */
-  void MR_Set_Faces(MRegion_ptr mregion, int nf, MFace_ptr *mfaces, int *dirs);
-  void MR_Set_Vertices(MRegion_ptr mregion, int nv, MVertex_ptr *mvertices, 
+  void        MR_Set_Faces(MRegion_ptr mregion, int nf, MFace_ptr *mfaces, int *dirs);
+  void        MR_Set_Vertices(MRegion_ptr mregion, int nv, MVertex_ptr *mvertices, 
 		       int nf, int **rfvtemplate);
 
   /* Can be called by mesh modification routines */
-  void MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
-  void MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
-  void MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
+  void        MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
+  void        MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
+  void        MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
   void MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
-  void MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
-  int MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
-  int MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
+  void        MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
+  int         MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
+  int         MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
   
 
 
-  Mesh_ptr MR_Mesh(MRegion_ptr mregion);
-  int MR_ID(MRegion_ptr mregion);
-  int MR_GEntDim(MRegion_ptr mregion);
-  int MR_GEntID(MRegion_ptr mregion);
+  Mesh_ptr    MR_Mesh(MRegion_ptr mregion);
+  int         MR_ID(MRegion_ptr mregion);
+  int         MR_GEntDim(MRegion_ptr mregion);
+  int         MR_GEntID(MRegion_ptr mregion);
   GEntity_ptr MR_GEntity(MRegion_ptr mregion);
 
   MRType MR_ElementType(MRegion_ptr mregion);
-  int MR_Num_Vertices(MRegion_ptr mregion);
-  int MR_Num_Edges(MRegion_ptr mregion);
-  int MR_Num_Faces(MRegion_ptr mregion);
-  int MR_Num_AdjRegions(MRegion_ptr mregion);
-  List_ptr MR_Vertices(MRegion_ptr mregion);
-  List_ptr MR_Edges(MRegion_ptr mregion);
-  List_ptr MR_Faces(MRegion_ptr mregion);
-  List_ptr MR_AdjRegions(MRegion_ptr mregion);
+  int         MR_Num_Vertices(MRegion_ptr mregion);
+  int         MR_Num_Edges(MRegion_ptr mregion);
+  int         MR_Num_Faces(MRegion_ptr mregion);
+  int         MR_Num_AdjRegions(MRegion_ptr mregion);
+  List_ptr    MR_Vertices(MRegion_ptr mregion);
+  List_ptr    MR_Edges(MRegion_ptr mregion);
+  List_ptr    MR_Faces(MRegion_ptr mregion);
+  List_ptr    MR_AdjRegions(MRegion_ptr mregion);
 
   /* Returns 1 or 0 */
-  int MR_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
-  int MR_FaceDir_i(MRegion_ptr mregion, int i);
+  int         MR_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
+  int         MR_FaceDir_i(MRegion_ptr mregion, int i);
 
-  int MR_UsesEntity(MRegion_ptr mregion, MEntity_ptr ment, int type);
+  int         MR_UsesEntity(MRegion_ptr mregion, MEntity_ptr ment, int type);
 
 
-  void MR_Coords(MRegion_ptr mregion, int *n, double (*xyz)[3]);
+  void        MR_Coords(MRegion_ptr mregion, int *n, double (*xyz)[3]);
 
 #ifdef MSTK_HAVE_MPI
 
-  /* If you call the routines to set master partition ID or Global ID
-     without knowing what you are doing, you can shoot yourself in the
-     foot. So if you are casual MSTK user, you are strongly advised
-     against calling the Set_MasterParID and Set_GlobalID routines */  
-
-  PType MR_PType(MRegion_ptr r);  
-  void  MR_Set_PType(MRegion_ptr r, PType ptype);
-  int   MR_MasterParID(MRegion_ptr r);
-  void  MR_Set_MasterParID(MRegion_ptr r, int masterparid);
-  int   MR_GlobalID(MRegion_ptr r);
-  void  MR_Set_GlobalID(MRegion_ptr r, int globalid);
+  PType       MR_PType(MRegion_ptr r);  
+  int         MR_MasterParID(MRegion_ptr r);
+  int         MR_GlobalID(MRegion_ptr r);
 
 #endif
-
 
   /************************************************************************/
   /* GENERIC ENTITY OPERATORS                                             */
   /************************************************************************/
 
-#ifdef MSTK_HAVE_MPI
-
-  /* If you call the routines to set master partition ID or Global ID
-     without knowing what you are doing, you can shoot yourself in the
-     foot. So if you are casual MSTK user, you are strongly advised
-     against calling the Set_MasterParID and Set_GlobalID routines */  
-
-  PType MEnt_PType(MEntity_ptr ent);
-  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
-
-  int   MEnt_MasterParID(MEntity_ptr ent);
-  void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid);
-
-  int   MEnt_GlobalID(MEntity_ptr ent);
-  void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
-
-#endif
-
-  void MEnt_Set_GEntity(MEntity_ptr mentity, GEntity_ptr gent);
-  void MEnt_Set_GEntDim(MEntity_ptr mentity, int gdim);
-  void MEnt_Set_GEntID(MEntity_ptr mentity, int gid);
-  void MEnt_Set_ID(MEntity_ptr mentity, int id);
-  void MEnt_Set_RepType(MEntity_ptr mentity, RepType rtype);
+  void        MEnt_Set_GEntity(MEntity_ptr mentity, GEntity_ptr gent);
+  void        MEnt_Set_GEntDim(MEntity_ptr mentity, int gdim);
+  void        MEnt_Set_GEntID(MEntity_ptr mentity, int gid);
+  void        MEnt_Set_ID(MEntity_ptr mentity, int id);
+  void        MEnt_Set_RepType(MEntity_ptr mentity, RepType rtype);
 
   int         MEnt_ID(MEntity_ptr mentity);
   MType       MEnt_Dim(MEntity_ptr mentity);
@@ -440,16 +426,25 @@ void MSTK_Init(void);
   GEntity_ptr MEnt_GEntity(MEntity_ptr mentity);
   RepType     MEnt_RepType(MEntity_ptr mentity);
   
-  void  MEnt_Delete(MEntity_ptr mentity, int keep);
+  void        MEnt_Delete(MEntity_ptr mentity, int keep);
 
   /* Attributes on entities */
   
-  void  MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
+  void        MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
 			double lval, void *pval);
-  void  MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
-  int   MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
+  void        MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  int         MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);  
-  void  MEnt_Rem_AllAttVals(MEntity_ptr);
+  void        MEnt_Rem_AllAttVals(MEntity_ptr);
+
+
+#ifdef MSTK_HAVE_MPI
+
+  PType       MEnt_PType(MEntity_ptr ent);
+  int         MEnt_MasterParID(MEntity_ptr ent);
+  int         MEnt_GlobalID(MEntity_ptr ent);
+
+#endif
 
 
   /************************************************************************/
@@ -492,15 +487,15 @@ void MSTK_Init(void);
   /* ENTITY MARKING                                                       */
   /************************************************************************/
 
-  int  MSTK_GetMarker(void);
-  void MSTK_FreeMarker(int mkr);
-  void MEnt_Mark(MEntity_ptr ent, int mkr);
-  int  MEnt_IsMarked(MEntity_ptr ent, int mkr);
-  void MEnt_Unmark(MEntity_ptr ent, int mkr);
-  void List_Mark(List_ptr list, int mkr);
-  void List_Unmark(List_ptr list, int mkr);
-  void MSet_Mark(MSet_ptr set, int mkr);
-  void MSet_Unmark(MSet_ptr set, int mkr);
+  int         MSTK_GetMarker(void);
+  void        MSTK_FreeMarker(int mkr);
+  void        MEnt_Mark(MEntity_ptr ent, int mkr);
+  int         MEnt_IsMarked(MEntity_ptr ent, int mkr);
+  void        MEnt_Unmark(MEntity_ptr ent, int mkr);
+  void        List_Mark(List_ptr list, int mkr);
+  void        List_Unmark(List_ptr list, int mkr);
+  void        MSet_Mark(MSet_ptr set, int mkr);
+  void        MSet_Unmark(MSet_ptr set, int mkr);
 
 
   /************************************************************************/
@@ -545,18 +540,17 @@ void MSTK_Init(void);
 /* Mesh Modification Operators                                         */
 /***********************************************************************/
 
-  int ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
+  int         ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
   MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
-  MEdge_ptr MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
-  MFace_ptr MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
-  MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
+  MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
+  MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
+  MFace_ptr   MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
   MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag);
   
 
 /**********************************************************************/
-/* Higher level Mesh Operators                                  */
+/* More parallel operators                                            */
 /**********************************************************************/
-
 
 #ifdef MSTK_HAVE_MPI
 
@@ -564,132 +558,102 @@ void MSTK_Init(void);
   /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */
   /* YOU WILL GET WHAT YOU DESERVE                                   */
 
-  int MSTK_SendMesh(Mesh_ptr mesh, int rank, int with_attr, MPI_Comm comm);
-  int MSTK_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, 
-		    int with_attr, MPI_Comm comm);
+  int         MESH_Num_GhostVertices(Mesh_ptr mesh);
+  int         MESH_Num_GhostEdges(Mesh_ptr mesh);
+  int         MESH_Num_GhostFaces(Mesh_ptr mesh);
+  int         MESH_Num_GhostRegions(Mesh_ptr mesh);
 
+  int         MESH_Num_OverlapVertices(Mesh_ptr mesh);
+  int         MESH_Num_OverlapEdges(Mesh_ptr mesh);
+  int         MESH_Num_OverlapFaces(Mesh_ptr mesh);
+  int         MESH_Num_OverlapRegions(Mesh_ptr mesh);
 
-  /* Mesh Partition Routines*/
+  MVertex_ptr MESH_GhostVertex(Mesh_ptr mesh, int i);
+  MEdge_ptr   MESH_GhostEdge(Mesh_ptr mesh, int i);
+  MFace_ptr   MESH_GhostFace(Mesh_ptr mesh, int i);
+  MRegion_ptr MESH_GhostRegion(Mesh_ptr mesh, int i);
 
-  int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
-  int        MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, 
-				 int ring, int with_attr);
-  int        MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num);
-  int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
+  MVertex_ptr MESH_OverlapVertex(Mesh_ptr mesh, int i);
+  MEdge_ptr   MESH_OverlapEdge(Mesh_ptr mesh, int i);
+  MFace_ptr   MESH_OverlapFace(Mesh_ptr mesh, int i);
+  MRegion_ptr MESH_OverlapRegion(Mesh_ptr mesh, int i);
 
-  /* build processor boundary */
-  int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
+  MVertex_ptr MESH_Next_GhostVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr   MESH_Next_GhostEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr   MESH_Next_GhostFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr MESH_Next_GhostRegion(Mesh_ptr mesh, int *index);
 
-  /* add ghost elements */
-  int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
-  /* send and receive mesh */
-  int        MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm);
-  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm);
-  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, MPI_Comm comm);
-  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int rank, int recv_rank, MPI_Comm comm);
-
-  int        MESH_Num_GhostVertices(Mesh_ptr mesh);
-  int        MESH_Num_GhostEdges(Mesh_ptr mesh);
-  int        MESH_Num_GhostFaces(Mesh_ptr mesh);
-  int        MESH_Num_GhostRegions(Mesh_ptr mesh);
-
-  int        MESH_Num_OverlapVertices(Mesh_ptr mesh);
-  int        MESH_Num_OverlapEdges(Mesh_ptr mesh);
-  int        MESH_Num_OverlapFaces(Mesh_ptr mesh);
-  int        MESH_Num_OverlapRegions(Mesh_ptr mesh);
-
-  int        MESH_Num_InteriorVertices(Mesh_ptr mesh);
-  int        MESH_Num_InteriorEdges(Mesh_ptr mesh);
-  int        MESH_Num_InteriorFaces(Mesh_ptr mesh);
-  int        MESH_Num_InteriorRegions(Mesh_ptr mesh);
-  
-  MVertex_ptr  MESH_GhostVertex(Mesh_ptr mesh, int i);
-  MEdge_ptr    MESH_GhostEdge(Mesh_ptr mesh, int i);
-  MFace_ptr    MESH_GhostFace(Mesh_ptr mesh, int i);
-  MRegion_ptr  MESH_GhostRegion(Mesh_ptr mesh, int i);
-
-  MVertex_ptr  MESH_OverlapVertex(Mesh_ptr mesh, int i);
-  MEdge_ptr    MESH_OverlapEdge(Mesh_ptr mesh, int i);
-  MFace_ptr    MESH_OverlapFace(Mesh_ptr mesh, int i);
-  MRegion_ptr  MESH_OverlapRegion(Mesh_ptr mesh, int i);
-
-  MVertex_ptr  MESH_Next_GhostVertex(Mesh_ptr mesh, int *index);
-  MEdge_ptr    MESH_Next_GhostEdge(Mesh_ptr mesh, int *index);
-  MFace_ptr    MESH_Next_GhostFace(Mesh_ptr mesh, int *index);
-  MRegion_ptr  MESH_Next_GhostRegion(Mesh_ptr mesh, int *index);
-
-  MVertex_ptr  MESH_Next_OverlapVertex(Mesh_ptr mesh, int *index);
-  MEdge_ptr    MESH_Next_OverlapEdge(Mesh_ptr mesh, int *index);
-  MFace_ptr    MESH_Next_OverlapFace(Mesh_ptr mesh, int *index);
-  MRegion_ptr  MESH_Next_OverlapRegion(Mesh_ptr mesh, int *index);
-
-  MVertex_ptr  MESH_Next_InteriorVertex(Mesh_ptr mesh, int *index);
-  MEdge_ptr    MESH_Next_InteriorEdge(Mesh_ptr mesh, int *index);
-  MFace_ptr    MESH_Next_InteriorFace(Mesh_ptr mesh, int *index);
-  MRegion_ptr  MESH_Next_InteriorRegion(Mesh_ptr mesh, int *index);
+  MVertex_ptr MESH_Next_OverlapVertex(Mesh_ptr mesh, int *index);
+  MEdge_ptr   MESH_Next_OverlapEdge(Mesh_ptr mesh, int *index);
+  MFace_ptr   MESH_Next_OverlapFace(Mesh_ptr mesh, int *index);
+  MRegion_ptr MESH_Next_OverlapRegion(Mesh_ptr mesh, int *index);
 
   /*end for mpi */
-#endif
 
+#endif
 
 
 /**********************************************************************/
 /* Element quality evaluation                                         */
 /**********************************************************************/
 
-  void MF_CondNums(MFace_ptr f, int *nfv, double *condnums);
-  void MR_CondNums(MRegion_ptr r, int *nrv, double *condnums);
+  void        MF_CondNums(MFace_ptr f, int *nfv, double *condnums);
+  void        MR_CondNums(MRegion_ptr r, int *nrv, double *condnums);
 
 
 /**********************************************************************/
 /* MESH + GEOMETRY                                                    */
 /**********************************************************************/
 
-  double MFs_DihedralAngle(MFace_ptr face1, MFace_ptr face2, MEdge_ptr edge);
-  double MEs_Angle(MEdge_ptr e1, MEdge_ptr e2);
+  double      MFs_DihedralAngle(MFace_ptr face1, MFace_ptr face2, MEdge_ptr edge);
+  double      MEs_Angle(MEdge_ptr e1, MEdge_ptr e2);
 
 
 /*******************************************/
 /* UTILITIES                               */
 /*******************************************/
 
-  void MSTK_Report(const char *module, const char *message, ErrType severity);
+  void        MSTK_Report(const char *module, const char *message, ErrType severity);
 
 
 /*******************************************/
 /* LISTS                                   */
 /*******************************************/
 
-  List_ptr List_New(int inisize);
-  void List_Delete(List_ptr list);
-  List_ptr List_Compress(List_ptr list);
-  List_ptr List_Copy(List_ptr list);
+  List_ptr    List_New(int inisize);
+  void        List_Delete(List_ptr list);
+  List_ptr    List_Compress(List_ptr list);
+  List_ptr    List_Copy(List_ptr list);
   
-  List_ptr List_Add(List_ptr l, void *entry);
-  List_ptr List_ChknAdd(List_ptr l, void *entry);
-  List_ptr List_Insert(List_ptr l, void *nuentry, void *b4entry);
-  List_ptr List_Inserti(List_ptr l, void *nuentry, int i);
-  int      List_Rem(List_ptr l, void *entry);
-  int      List_Remi(List_ptr l, int i);
-  int      List_RemSorted(List_ptr l, void *entry, int (*entry2int)(void *));
-  int      List_Replace(List_ptr l, void *entry, void *nuentry);
-  int      List_Replacei(List_ptr l, int i, void *nuentry);
-  int      List_Contains(List_ptr l, void *entry);
-  int      List_Locate(List_ptr l, void *entry);
-  void    *List_Entry(List_ptr l, int i);
-  void    *List_Next_Entry(List_ptr l, int *i);
-  int      List_Num_Entries(List_ptr l);
-  List_ptr List_Cat(List_ptr dest, List_ptr src);
+  List_ptr    List_Add(List_ptr l, void *entry);
+  List_ptr    List_ChknAdd(List_ptr l, void *entry);
+  List_ptr    List_Insert(List_ptr l, void *nuentry, void *b4entry);
+  List_ptr    List_Inserti(List_ptr l, void *nuentry, int i);
+  int         List_Rem(List_ptr l, void *entry);
+  int         List_Remi(List_ptr l, int i);
+  int         List_RemSorted(List_ptr l, void *entry, int (*entry2int)(void *));
+  int         List_Replace(List_ptr l, void *entry, void *nuentry);
+  int         List_Replacei(List_ptr l, int i, void *nuentry);
+  int         List_Contains(List_ptr l, void *entry);
+  int         List_Locate(List_ptr l, void *entry);
+  void       *List_Entry(List_ptr l, int i);
+  void       *List_Next_Entry(List_ptr l, int *i);
+  int         List_Num_Entries(List_ptr l);
+  List_ptr    List_Cat(List_ptr dest, List_ptr src);
   /* Sort a list based on a user/application supplied comparison function */
-  void     List_Sort(List_ptr l, size_t num, size_t size,
+  void        List_Sort(List_ptr l, size_t num, size_t size,
 		     int(*comp)(const void *,const void *));
+  /* Search a sorted list for a key based on a user/application supplied
+     comparison function - unpredictable results for unsorted list */
+  void       *List_Search(List_ptr l, const void *key, size_t num, size_t size,
+                          int(*comp)(const void *,const void *));
 #ifdef DEBUG
-  void     List_Print(List_ptr l);
+  void        List_Print(List_ptr l);
 #endif
 
   /* Extra functionality for hash-tables */
 
-  void*   *List_Entries(List_ptr l);
+  void*      *List_Entries(List_ptr l);
 
 
   /* Functions to print information about mesh entities. The argument
@@ -699,10 +663,10 @@ void MSTK_Init(void);
    printed for the entity to the extent available. If it is 2 or
    higher, then adjacency information is printed for the entity */
 
-  void MV_Print(MVertex_ptr v, int level);
-  void ME_Print(MEdge_ptr e, int level);
-  void MF_Print(MFace_ptr f, int level);
-  void MR_Print(MRegion_ptr, int level);
+  void        MV_Print(MVertex_ptr v, int level);
+  void        ME_Print(MEdge_ptr e, int level);
+  void        MF_Print(MFace_ptr f, int level);
+  void        MR_Print(MRegion_ptr, int level);
 
   /* Mesh Statistics. If 'level' is 1, only entity counts are
      printed. If 'level' is 2 or more, then element quality numbers
@@ -710,7 +674,7 @@ void MSTK_Init(void);
      worst quality element is printed. The routine returns silently,
      if 'level' is less than 1 */
 
-  void MESH_PrintStats(Mesh_ptr mesh, int level);
+  void        MESH_PrintStats(Mesh_ptr mesh, int level);
   
 
 #ifdef __cplusplus

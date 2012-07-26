@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 
 #ifdef __cplusplus
@@ -50,9 +51,9 @@ extern "C" {
   {MESH_Vol_Partition_FN, MESH_Vol_Partition_FN, MESH_Vol_Partition_R1R2,
    MESH_Vol_Partition_R1R2, MESH_Vol_Partition_R4};
 
-
-  int MESH_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num) {
-    int i, j, ok, nf, nr, idx, idx2, found, natt, ncomp, *part;
+    
+  int MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
+    int i, j, ok, nf, nr, idx, idx2, found, natt, ncomp;
     MVertex_ptr gmv;
     MEdge_ptr gme;
     MFace_ptr gmf;
@@ -73,14 +74,10 @@ extern "C" {
     }
 
     if (nr) {
-      part = (int *) MSTK_malloc(nr*sizeof(int));
-      ok = MESH_PartitionWithMetis(mesh, num, &part);
-      ok &= MESH_Vol_Partition(mesh,num,part,submeshes);
+      ok = MESH_Vol_Partition(mesh,num,part,submeshes);
     }
     else if (nf) {
-      part = (int *) MSTK_malloc(nf*sizeof(int));
-      ok = MESH_PartitionWithMetis(mesh, num, &part);
-      ok &= MESH_Surf_Partition(mesh,num,part,submeshes);
+      ok = MESH_Surf_Partition(mesh,num,part,submeshes);
     }
     else {
       MSTK_Report("MESH_Partition",
@@ -116,18 +113,24 @@ extern "C" {
     RepType rtype = MESH_RepType(mesh);
     int i;
 
-    for (i = 0; i < num; i++) submeshes[i] = MESH_New(rtype);
+    for (i = 0; i < num; i++) {
+      submeshes[i] = MESH_New(rtype);
+      MESH_Set_Prtn(submeshes[i],i,num);
+    }
 
-    (*MESH_Surf_Partition_jmp[rtype])(mesh, num, part, submeshes);
+    return (*MESH_Surf_Partition_jmp[rtype])(mesh, num, part, submeshes);
   }
 
   int MESH_Vol_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     RepType rtype = MESH_RepType(mesh);
     int i;
 
-    for (i = 0; i < num; i++) submeshes[i] = MESH_New(rtype);
+    for (i = 0; i < num; i++) {
+      submeshes[i] = MESH_New(rtype);
+      MESH_Set_Prtn(submeshes[i],i,num);
+    }
 
-    (*MESH_Vol_Partition_jmp[rtype])(mesh, num, part, submeshes);
+    return (*MESH_Vol_Partition_jmp[rtype])(mesh, num, part, submeshes);
   }
 
 
@@ -221,6 +224,7 @@ extern "C" {
 	    List_Add(lmvlist,lmv);
 	  }
 	}
+        List_Delete(fverts);
 
 	fedges = MF_Edges(gmf,1,0);
 	nfe = List_Num_Entries(fedges);
@@ -282,6 +286,7 @@ extern "C" {
 	  lfedges[i] = lme;
 	  lfedirs[i] = MF_EdgeDir_i(gmf,i);	
 	}
+        List_Delete(fedges);
 
 	lmf = MF_New(submeshes[part_no]);
 	MF_Set_GEntID(lmf,MF_GEntID(gmf));
@@ -517,6 +522,7 @@ extern "C" {
 	      lfedges[j] = lme;
 	      lfedirs[j] = MF_EdgeDir_i(gmf,j);
 	    }
+            List_Delete(fedges);
 	    MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
 	  }
 	  lrfaces[i] = lmf;
@@ -524,6 +530,7 @@ extern "C" {
 	  MEnt_Set_AttVal(lmf,l2gatt,0,0,gmf);
 	  List_Add(lmflist,lmf);
 	}
+        List_Delete(rfaces);
 	
 	
 	lmr = MR_New(submeshes[part_no]);
@@ -573,16 +580,19 @@ extern "C" {
 
   int MESH_Surf_Partition_R1R2R4(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     MSTK_Report("MESH_Surf_Partition_R1R2R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
     
   int MESH_Vol_Partition_R1R2(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     MSTK_Report("MESH_Vol_Partition_R1R2","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 
   int MESH_Vol_Partition_R4(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes) {
     MSTK_Report("MESH_Vol_Partition_R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 

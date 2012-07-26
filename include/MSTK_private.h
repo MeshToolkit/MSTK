@@ -7,6 +7,10 @@
 #include "MSTK_malloc.h"
 #include "MSTK.h"
 
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+#endif
+
 #ifdef   __cplusplus
 extern "C" {
 #endif
@@ -142,7 +146,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* Export */
-
+  /*
   int MESH_Surf_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename, 
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
@@ -151,18 +155,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 				      const int nparts, const int natt, 
 				      const char **attnames, int *opts,
 				      int *procids);
-
+  */
   int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
-
-  /* Adhoc routines for parallel output of MSTK files */
-
-  int MESH_Init_ParAtts(Mesh_ptr mesh);
-
-  int MEnt_NumProcs(MEntity_ptr ent);
-  void MEnt_Set_ProcIDs(MEntity_ptr ent, int np, int *procids);
-  int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids);
-  void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
-  int MEnt_LocalID(MEntity_ptr ent, int procid);
 
 
   /* Extra functionality for List manipulation - risky for uninformed users */
@@ -212,10 +206,105 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MEnt_IsLocked(MEntity_ptr ent);
 
 
+  int compareINT(const void *a, const void *b);
+  int compareGlobalID(const void *a, const void *b);
+  int compareVertexCoor(const void *a, const void *b);
+  int compareCoorDouble(const void * a, const void * b);
+  int compareEdgeINT(const void *a, const void *b);
+  int compareEdgeID(const void *a, const void *b);
+  int compareFaceINT(const void *a, const void *b);
+  int compareFaceID(const void *a, const void *b);
+
+
+
 
 #ifdef MSTK_HAVE_MPI
+
+  /* If you call the routines to set master partition ID or Global ID
+     without knowing what you are doing, you can shoot yourself in the
+     foot. So if you are casual MSTK user, you are strongly advised
+     against calling the Set_MasterParID and Set_GlobalID routines */  
+
+  void  MV_Set_PType(MVertex_ptr v, PType ptype);
+  void  MV_Set_MasterParID(MVertex_ptr v, int masterpartid);
+  void  MV_Set_GlobalID(MVertex_ptr v, int globalid);
+
+  void  ME_Set_PType(MEdge_ptr e, PType ptype);
+  void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
+  void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
+
+  void  MF_Set_PType(MFace_ptr f, PType ptype);
+  void  MF_Set_MasterParID(MFace_ptr f, int masterpartid);
+  void  MF_Set_GlobalID(MFace_ptr f, int globalid);
+
+  void  MR_Set_PType(MRegion_ptr r, PType ptype);
+  void  MR_Set_MasterParID(MRegion_ptr r, int masterpartid);
+  void  MR_Set_GlobalID(MRegion_ptr r, int globalid);
+
+  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
+  void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterpartid);
+  void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
+
+
+  void         MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, 
+                             unsigned int numpartitions);
+  unsigned int MESH_Prtn(Mesh_ptr mesh);
+
+  void         MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn,
+                                              MType mtype);  
+  unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                         MType mtype);
+  void         MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                              MType mtype);
+  unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                         MType mtype);
+
+  unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh);
+  void         MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums);
+
+  void         MESH_Init_Par_Recv_Info(Mesh_ptr mesh);
+  void         MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, 
+                                           MType mtype, unsigned int numrecv);
+  unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn,
+                                       MType mtype);
+
+  int MESH_Sort_GhostLists(Mesh_ptr mesh, 
+                           int (*compfunc)(const void*, const void*));
+
+  int MESH_BuildConnection(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm);
+
+  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim, int rank, int num, MPI_Comm comm);
+  int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int topodim, int rank, int num, MPI_Comm comm);
+
+
+  /* Mesh Partitioning Routines*/
+
+  int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
+  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm);
+  int        MESH_Get_Partitioning(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm comm, int **part);
+  int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, 
+				 int *part, int ring, int with_attr, Mesh_ptr *submeshes);
+  int        MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes);
+  int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
+
+  /* build processor boundary */
+  int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
+  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs, int rank, int num,  MPI_Comm comm);
+  int        MESH_LabelPType(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm);
+  int        MESH_BuildSubMesh(Mesh_ptr mesh, int topodim, Mesh_ptr submesh);
+  int        MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes);
+  /* add ghost elements */
+  int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
+  /* send and receive mesh */
+  int        MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm);
+  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm);
+  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, MPI_Comm comm);
+  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int rank, int recv_rank, MPI_Comm comm);
+
+
+
   /* build ghost list */
-  int        MESH_Build_GhostLists(Mesh_ptr mesh);
+  int        MESH_Build_GhostLists(Mesh_ptr mesh, int topodim);
 
   /* create entity */
   /* no OvEntity create function since they are just pointers to regular Entity */
@@ -226,29 +315,13 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* functions to update ghost info and attributes */
-  /* Must be preceded by MESH_UpdateGlobalInfo - Not recommended for users */
+  /* Must be preceded by MESH_Update_ProcessorRel - Not recommended for users */
   int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int rank, 
 			     int num,  MPI_Comm comm);
-  int        MESH_UpdateGlobalInfo(Mesh_ptr mesh, int rank, int num,  
+  int        MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  
 				   MPI_Comm comm);
-  int*       MESH_GlobalInfo(Mesh_ptr mesh);
-  int*       MESH_LocalInfo(Mesh_ptr mesh);
-  void       MESH_Set_GlobalInfo(Mesh_ptr mesh, int *global_info);
-  void       MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info);
 
 
-  /* Functions for entity sets */
-
-  int        MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr mset);
-  int        MESH_SendMSet(Mesh_ptr mesh, const char *set_name, int rank, MPI_Comm comm);
-  int        MESH_RecvMSet(Mesh_ptr mesh, const char *set_name, int rank, int recv_rank, MPI_Comm comm);
-
-
-  /**** ????????? ******/
-  /* the following 16 functions is not necessary, 
-     we can operate on the whole list, and then call
-     MESH_BuildGhostList()
-  */
   void       MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v);
   void       MESH_Add_GhostEdge(Mesh_ptr mesh, MEdge_ptr e);
   void       MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f);
@@ -270,8 +343,18 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Rem_OverlapFace(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Rem_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r);
 
-  int compareGlobalID(MEntity_ptr *a, MEntity_ptr *b);
-#endif
+
+  /* Functions for entity sets */
+
+  int        MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr mset);
+  int        MESH_SendMSet(Mesh_ptr mesh, const char *set_name, int rank, MPI_Comm comm);
+  int        MESH_RecvMSet(Mesh_ptr mesh, const char *set_name, int rank, int recv_rank, MPI_Comm comm);
+
+
+  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
+  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
+#endif /* MSTK_HAVE_MPI */  
+
 
 
 #ifdef __cplusplus

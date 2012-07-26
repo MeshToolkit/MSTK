@@ -29,6 +29,8 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->mregion = (List_ptr) NULL;
 
 #ifdef MSTK_HAVE_MPI
+  newmesh->mypartn  = 0;
+  newmesh->numpartns = 0;
   newmesh->ghvertex = (List_ptr) NULL;
   newmesh->ghedge = (List_ptr) NULL;
   newmesh->ghface = (List_ptr) NULL;
@@ -37,8 +39,12 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->ovedge = (List_ptr) NULL;
   newmesh->ovface = (List_ptr) NULL;
   newmesh->ovregion = (List_ptr) NULL;
-  newmesh->global_info = NULL;
-  newmesh->local_info = NULL;
+  newmesh->par_adj_flags = NULL;
+  newmesh->par_recv_info = NULL;
+
+  newmesh->max_ghvid = newmesh->max_gheid = newmesh->max_ghfid = newmesh->max_ghrid = 0;
+  newmesh->gid_sorted_mvlist = newmesh->gid_sorted_melist =
+    newmesh->gid_sorted_mflist = newmesh->gid_sorted_mrlist = NULL;
 #endif
 
   newmesh->geom = (GModel_ptr) NULL;
@@ -54,30 +60,9 @@ Mesh_ptr MESH_New(RepType type) {
 
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
 
-#ifdef MSTK_HAVE_MPI
-  newmesh->max_ghvid = newmesh->max_gheid = newmesh->max_ghfid = newmesh->max_ghrid = 0;
-#endif
 
   return newmesh;
 }
-
-#ifdef MSTK_HAVE_MPI
-int* MESH_GlobalInfo(Mesh_ptr mesh) {
-  return mesh->global_info;
-}
-
-int* MESH_LocalInfo(Mesh_ptr mesh) {
-  return mesh->local_info;
-}
-
-void MESH_Set_GlobalInfo(Mesh_ptr mesh, int *global_info) {
-  mesh->global_info = global_info;
-}
-
-void MESH_Set_LocalInfo(Mesh_ptr mesh, int *local_info) {
-  mesh->local_info = local_info;
-}
-#endif
 
 void MESH_Delete(Mesh_ptr mesh) {
   int i, nv, ne, nf, nr;
@@ -98,6 +83,7 @@ void MESH_Delete(Mesh_ptr mesh) {
 #endif 
 
 #ifdef MSTK_HAVE_MPI
+
   if(mesh->ovvertex)
     List_Delete(mesh->ovvertex);
   if(mesh->ovedge)
@@ -106,6 +92,19 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->ovface);
   if(mesh->ovregion)
     List_Delete(mesh->ovregion);
+  if (mesh->par_adj_flags)
+    MSTK_free(mesh->par_adj_flags);
+  if (mesh->par_recv_info)
+    MSTK_free(mesh->par_recv_info);
+  if (mesh->gid_sorted_mvlist)
+    List_Delete(mesh->gid_sorted_mvlist);
+  if (mesh->gid_sorted_melist)
+    List_Delete(mesh->gid_sorted_melist);
+  if (mesh->gid_sorted_mflist)
+    List_Delete(mesh->gid_sorted_mflist);
+  if (mesh->gid_sorted_mrlist)
+    List_Delete(mesh->gid_sorted_mrlist);
+
 #endif
 
   if (mesh->mregion) {
@@ -157,7 +156,6 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->mvertex);
   }
 
-#ifdef MSTK_HAVE_MPI
   /*
     FOR NOW IT SEEMS THAT GHOST REGIONS ARE ALSO ENCOUNTERED WHEN
     GOING THROUGH THE REGULAR MESH AND SO WE DON'T NEED TO DELETE THEM
@@ -193,7 +191,6 @@ void MESH_Delete(Mesh_ptr mesh) {
     List_Delete(mesh->ghvertex);
   }
   */
-#endif /* MSTK_HAVE_MPI */
   
   if (mesh->AttribList) {
     i = 0;
@@ -701,6 +698,7 @@ MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
   return NULL;
 }
 
+ 
 MEntity_ptr MESH_EntityFromID(Mesh_ptr mesh, int mtype, int id) {
 
   switch (mtype) {
@@ -742,7 +740,6 @@ void MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e){
 
   mesh->medge = List_Add(mesh->medge, (void *) e);
   mesh->ne = List_Num_Entries(mesh->medge);
-
   if (ME_ID(e) == 0) { /* New edge */
     (mesh->max_eid)++;
     ME_Set_ID(e,mesh->max_eid);
@@ -770,6 +767,7 @@ void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
   if (MF_ID(f) == 0) { /* New face */
     (mesh->max_fid)++;
     MF_Set_ID(f,mesh->max_fid);
+
   }
 }    
      
@@ -929,29 +927,362 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 }
 
 
+
 #ifdef MSTK_HAVE_MPI
 
-  int MESH_Sort_GhostLists(Mesh_ptr mesh, 
-	       int (*compfunc)(MEntity_ptr, MEntity_ptr)) {
+  /* Even though some of these routine names are uncharacteristically
+     long, they describe exactly what they do, so use them */
 
-    if (mesh->ghvertex)
-      List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
-    if (mesh->ghedge)
-      List_Sort(mesh->ghedge,List_Num_Entries(mesh->ghedge),sizeof(MEdge_ptr),compfunc);
-    if (mesh->ghface)
+
+  /* Also, for an explanation of the fields of par_adj_flags and
+     par_adj_info see the note at the in Mesh.h file */
+
+  void MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, unsigned int numpartitions) {
+    mesh->mypartn = partition;
+    mesh->numpartns = numpartitions;
+
+    if (!mesh->par_adj_flags)
+      mesh->par_adj_flags = (unsigned int *)
+        MSTK_calloc(numpartitions,sizeof(unsigned int));
+  }
+
+  unsigned int MESH_Prtn(Mesh_ptr mesh) {
+    return mesh->mypartn;
+  }
+
+  void MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+
+    if (prtn == mesh->mypartn) return;
+
+    if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
+      return;
+    else if (mtype == MALLTYPE) {
+      mesh->par_adj_flags[prtn] |= 1;
+      mesh->par_adj_flags[prtn] |= 1<<2;
+      mesh->par_adj_flags[prtn] |= 1<<4;
+      mesh->par_adj_flags[prtn] |= 1<<6;
+    }
+    else
+      mesh->par_adj_flags[prtn] |= 1<<(2*mtype);
+  }
+  
+  unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+    if (mtype == MUNKNOWNTYPE)
+      return 0;
+    else if (mtype == MANYTYPE)
+      return ((mesh->par_adj_flags[prtn] & 1) |
+              (mesh->par_adj_flags[prtn]>>2 & 1) |
+              (mesh->par_adj_flags[prtn]>>4 & 1) |
+              (mesh->par_adj_flags[prtn]>>6 & 1));
+
+    else if (mtype == MALLTYPE)
+      return ((mesh->par_adj_flags[prtn] & 1) &
+              (mesh->par_adj_flags[prtn]>>2 & 1) &
+              (mesh->par_adj_flags[prtn]>>4 & 1) &
+              (mesh->par_adj_flags[prtn]>>6 & 1));
+    else      
+      return ((mesh->par_adj_flags[prtn])>>(2*mtype) & 1);
+  }
+  
+  void MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+    if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
+      return;
+    else if (mtype == MALLTYPE) {
+      mesh->par_adj_flags[prtn] |= 1<<1;
+      mesh->par_adj_flags[prtn] |= 1<<3;
+      mesh->par_adj_flags[prtn] |= 1<<5;
+      mesh->par_adj_flags[prtn] |= 1<<7;
+    }
+    else
+      mesh->par_adj_flags[prtn] |= 1<<(2*mtype+1);
+  }
+  
+  unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+    if (mtype == MUNKNOWNTYPE) 
+      return 0;
+    else if (mtype == MANYTYPE)
+      return ((mesh->par_adj_flags[prtn]>>1 & 1) |
+              (mesh->par_adj_flags[prtn]>>3 & 1) |
+              (mesh->par_adj_flags[prtn]>>5 & 1) |
+              (mesh->par_adj_flags[prtn]>>7 & 1));
+
+    else if (mtype == MALLTYPE)
+      return ((mesh->par_adj_flags[prtn]>>1 & 1) &
+              (mesh->par_adj_flags[prtn]>>3 & 1) &
+              (mesh->par_adj_flags[prtn]>>5 & 1) &
+              (mesh->par_adj_flags[prtn]>>7 & 1));
+    else      
+      return ((mesh->par_adj_flags[prtn])>>(2*mtype+1) & 1);
+  }
+
+
+  unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh) {
+    if (!mesh->par_recv_info) MESH_Init_Par_Recv_Info(mesh);
+    return (unsigned int) mesh->par_recv_info[0];
+  }
+
+
+  void MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums) {
+    unsigned int ghnum = mesh->par_recv_info[0];
+    memcpy(pnums,mesh->par_recv_info+1,ghnum*sizeof(unsigned int));
+  }
+
+
+  void MESH_Init_Par_Recv_Info(Mesh_ptr mesh) {
+    int i;
+
+    if (mesh->par_recv_info) { /* delete old information */
+      free(mesh->par_recv_info);
+    }
+    int ngp = 0;
+      
+    /* count the number of ghost processor on this processor */
+    
+    for (i = 0; i < mesh->numpartns; i++)
+      if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE))
+	ngp++;
+    
+    mesh->par_recv_info = (unsigned int *) MSTK_calloc((1+5*ngp),sizeof(unsigned int));
+    
+    mesh->par_recv_info[0] = ngp;
+    
+    ngp = 0;
+    for (i = 0; i < mesh->numpartns; i++)
+      if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE)) {
+	mesh->par_recv_info[1+ngp] = i;
+	ngp++;
+      }
+    
+  }
+  
+  void MESH_Set_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype, unsigned int numrecv) {
+    int found, i, ghnum;
+
+    if (!mesh->par_recv_info) 
+      MESH_Init_Par_Recv_Info(mesh);
+ 
+    if (mtype < MVERTEX || mtype > MREGION) {
+      MSTK_Report("MESH_Set_Num_RecvEnts_On_Prtn","Invalid entity type",MSTK_ERROR);
+      return;
+    }
+
+    found = 0;
+    ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
+    /*    printf("set rank %d has %d processors to receive type %d\n",prtn,ghnum,mtype); */
+    for (i = 0; i < ghnum; i++) {
+      /* printf("   par_recv_info[%d]=%d\n",i,mesh->par_recv_info[i]); */
+      if (mesh->par_recv_info[1+i] == prtn) {
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      char mesg[256];
+      sprintf(mesg,"This partition (%-d) does not have ghost entities %d from partition %-d",mesh->mypartn,mtype,prtn);
+      MSTK_Report("MESH_Set_Num_Recv_From_Prtn",mesg,MSTK_ERROR);
+      return;
+    }
+
+    mesh->par_recv_info[1+ghnum+4*i+mtype] = numrecv;
+  }
+
+  unsigned int MESH_Num_Recv_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+    int found, i, ghnum;
+
+    if (mtype < MVERTEX || mtype > MREGION) {
+      MSTK_Report("MESH_Num_Recv_From_Prtn","Invalid entity type",MSTK_ERROR);
+      return 0;
+    }
+
+    if (!mesh->par_recv_info) {
+      MSTK_Report("MESH_Num_Recv_From_Prtn","Coding error. Data not initialized",MSTK_FATAL);
+    }
+
+    if (prtn == mesh->mypartn) return 0;
+    
+
+    found = 0;
+    ghnum = mesh->par_recv_info[0]; /* Number of ghost procs */
+    for (i = 0; i < ghnum; i++) 
+      if (mesh->par_recv_info[1+i] == prtn) {
+        found = 1;
+        break;
+      }
+
+    if (!found) {
+      char mesg[256];
+      sprintf(mesg,"This partition (%-d) does not have ghost entities from partition %-d",mesh->mypartn,prtn);
+      MSTK_Report("MESH_Num_Recv_From_Prtn",mesg,MSTK_ERROR);
+      return 0;
+    }
+
+    return mesh->par_recv_info[1+ghnum+4*i+mtype];
+  }
+
+
+
+void MESH_Enable_GlobalIDSearch(Mesh_ptr mesh) {
+
+  if (mesh->nv) {
+    mesh->gid_sorted_mvlist = List_Copy(mesh->mvertex);
+    List_Sort(mesh->gid_sorted_mvlist,mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
+  }
+
+  if (mesh->ne) {
+    mesh->gid_sorted_melist = List_Copy(mesh->medge);
+    List_Sort(mesh->gid_sorted_melist,mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
+  }
+
+  if (mesh->nf) {
+    mesh->gid_sorted_mflist = List_Copy(mesh->mface);
+    List_Sort(mesh->gid_sorted_mflist,mesh->nf,sizeof(MFace_ptr),compareGlobalID);
+  }
+
+  if (mesh->nr) {
+    mesh->gid_sorted_mrlist = List_Copy(mesh->mregion);
+    List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
+  }
+
+}
+
+
+void MESH_Disable_GlobalIDSearch(Mesh_ptr mesh) {
+
+  if (mesh->gid_sorted_mvlist) {
+    List_Delete(mesh->gid_sorted_mvlist);
+    mesh->gid_sorted_mvlist = NULL;
+  }
+
+  if (mesh->gid_sorted_melist) {
+    List_Delete(mesh->gid_sorted_melist);
+    mesh->gid_sorted_melist = NULL;
+  }
+  if (mesh->gid_sorted_mflist) {
+    List_Delete(mesh->gid_sorted_mflist);
+    mesh->gid_sorted_mflist = NULL;
+  }
+  if (mesh->gid_sorted_mrlist) {
+    List_Delete(mesh->gid_sorted_mrlist);
+    mesh->gid_sorted_mrlist = NULL;
+  }
+
+}
+                  
+  /* right now using linear search, a hash table should be more efficient */
+MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MVertex_ptr mv;
+
+  if (!mesh->gid_sorted_mvlist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MVertex_ptr mv_tmp = MV_New(NULL);
+  MEnt_Set_GlobalID(mv_tmp,global_id);
+
+  mv = (MVertex_ptr) List_Search(mesh->gid_sorted_mvlist,(void *)&mv_tmp,
+                                 mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
+
+  MV_Delete(mv_tmp,0);
+
+  return mv;
+}
+
+MEdge_ptr MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MEdge_ptr me;
+
+  if (!mesh->gid_sorted_melist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MEdge_ptr me_tmp = ME_New(NULL);
+  MEnt_Set_GlobalID(me_tmp,global_id);
+
+  me = (MEdge_ptr) List_Search(mesh->gid_sorted_melist,(void *)&me_tmp,
+                               mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
+
+  ME_Delete(me_tmp,0);
+  
+  return me;
+}
+
+MFace_ptr MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MFace_ptr mf;
+
+  if (!mesh->gid_sorted_mflist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MFace_ptr mf_tmp = MF_New(NULL);
+  MEnt_Set_GlobalID(mf_tmp,global_id);
+
+  mf = (MFace_ptr) List_Search(mesh->gid_sorted_mflist,(void *)&mf_tmp,
+                               mesh->nf,sizeof(MFace_ptr),compareGlobalID);
+
+  MF_Delete(mf_tmp,0);
+  
+  return mf;
+}
+
+MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id) {
+  int idx;
+  MRegion_ptr mr;
+
+  if (!mesh->gid_sorted_mrlist)
+    MESH_Enable_GlobalIDSearch(mesh);
+
+  MRegion_ptr mr_tmp = MR_New(NULL);
+  MEnt_Set_GlobalID(mr_tmp,global_id);
+
+  mr = (MRegion_ptr) List_Search(mesh->gid_sorted_mrlist,(void *)&mr_tmp,
+                                 mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
+
+  MR_Delete(mr_tmp,0);
+
+  return mr;
+}
+
+MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, int mtype, int id) {
+
+  switch (mtype) {
+  case 0:
+    return MESH_VertexFromGlobalID(mesh,id);
+  case 1:
+    return MESH_EdgeFromGlobalID(mesh,id);
+  case 2:
+    return MESH_FaceFromGlobalID(mesh,id);
+  case 3:
+    return MESH_RegionFromGlobalID(mesh,id);
+  default:
+    MSTK_Report("MESH_EntityFromGlobalID","Unrecognized entity type",MSTK_ERROR);
+    return NULL;
+  }
+
+}
+
+
+int MESH_Sort_GhostLists(Mesh_ptr mesh, 
+                         int (*compfunc)(const void*, const void*)) {
+
+  if (mesh->ghvertex)
+    List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
+  if (mesh->ghedge)
+    List_Sort(mesh->ghedge,List_Num_Entries(mesh->ghedge),sizeof(MEdge_ptr),compfunc);
+  if (mesh->ghface)
       List_Sort(mesh->ghface,List_Num_Entries(mesh->ghface),sizeof(MFace_ptr),compfunc);
-    if (mesh->ghregion)
+  if (mesh->ghregion)
       List_Sort(mesh->ghregion,List_Num_Entries(mesh->ghregion),sizeof(MRegion_ptr),compfunc);
 
-    if (mesh->ovvertex)
-      List_Sort(mesh->ovvertex,List_Num_Entries(mesh->ovvertex),sizeof(MVertex_ptr),compfunc);
-    if (mesh->ovedge)
-      List_Sort(mesh->ovedge,List_Num_Entries(mesh->ovedge),sizeof(MEdge_ptr),compfunc);
-    if (mesh->ovface)
+  if (mesh->ovvertex)
+    List_Sort(mesh->ovvertex,List_Num_Entries(mesh->ovvertex),sizeof(MVertex_ptr),compfunc);
+  if (mesh->ovedge)
+    List_Sort(mesh->ovedge,List_Num_Entries(mesh->ovedge),sizeof(MEdge_ptr),compfunc);
+  if (mesh->ovface)
       List_Sort(mesh->ovface,List_Num_Entries(mesh->ovface),sizeof(MFace_ptr),compfunc);
-    if (mesh->ovregion)
+  if (mesh->ovregion)
       List_Sort(mesh->ovregion,List_Num_Entries(mesh->ovregion),sizeof(MRegion_ptr),compfunc);
-  }
+
+  return 1;
+}
 
 int MESH_Num_GhostVertices(Mesh_ptr mesh) {
   if(mesh->ghvertex)
@@ -973,6 +1304,13 @@ int MESH_Num_InteriorVertices(Mesh_ptr mesh) {
       List_Num_Entries(mesh->ghvertex);
   else
     return 0;
+}
+
+List_ptr MESH_GhostVertex_List(Mesh_ptr mesh) {
+  return (mesh->ghvertex);
+}
+List_ptr MESH_OverlapVertex_List(Mesh_ptr mesh) {
+  return (mesh->ovvertex);
 }
 
 int MESH_Num_GhostEdges(Mesh_ptr mesh) {
@@ -1016,6 +1354,14 @@ int MESH_Num_InteriorEdges(Mesh_ptr mesh) {
       List_Num_Entries(mesh->ovedge)- \
       List_Num_Entries(mesh->ghedge);
 }
+
+List_ptr MESH_GhostEdge_List(Mesh_ptr mesh) {
+  return (mesh->ghedge);
+}
+List_ptr MESH_OverlapEdge_List(Mesh_ptr mesh) {
+  return (mesh->ovedge);
+}
+
 
 int MESH_Num_GhostFaces(Mesh_ptr mesh) {
   RepType rtype;
@@ -1077,6 +1423,13 @@ int MESH_Num_InteriorFaces(Mesh_ptr mesh) {
     return 0;
 }
 
+List_ptr MESH_GhostFace_List(Mesh_ptr mesh) {
+  return (mesh->ghface);
+}
+List_ptr MESH_OverlapFace_List(Mesh_ptr mesh) {
+  return (mesh->ovface);
+}
+
 int MESH_Num_GhostRegions(Mesh_ptr mesh) {
   if (mesh->ghregion)
     return List_Num_Entries(mesh->ghregion);
@@ -1096,6 +1449,12 @@ int MESH_Num_InteriorRegions(Mesh_ptr mesh) {
       -List_Num_Entries(mesh->ghregion);
   else
     return 0;
+}
+List_ptr MESH_GhostRegion_List(Mesh_ptr mesh) {
+  return (mesh->ghregion);
+}
+List_ptr MESH_OverlapRegion_List(Mesh_ptr mesh) {
+  return (mesh->ovregion);
 }
 
 
@@ -1414,7 +1773,6 @@ void MESH_Add_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
 void MESH_Add_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r){
   if (mesh->ovregion == (List_ptr) NULL)
     mesh->ovregion = List_New(10);
-
   mesh->ovregion = List_Add(mesh->ovregion, (void *) r);
 }    
      
@@ -1541,7 +1899,43 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
   return;
 }    
 
+
+/* using binary search to find vertex on ghost list based on global_id */
+  MVertex_ptr MESH_GhostVertexFromGlobalID(Mesh_ptr mesh, int global_id) {
+    MVertex_ptr mv;
+    int idx = 0;
+    while(  (mv = MESH_Next_GhostVertex(mesh,&idx)) ){
+	if (MV_GlobalID(mv) == global_id)
+	  return mv;
+    }
+    idx = 0;
+    while(  (mv = MESH_Next_OverlapVertex(mesh,&idx)) ){
+	if (MV_GlobalID(mv) == global_id)
+	  return mv;
+    }
+
+    /*
+    MVertex_ptr *loc_mv, mv = MV_New(NULL);
+    int iloc;
+    MV_Set_GlobalID(mv,global_id);
+    //    printf("global id %d, num of gh vertex %d\n",global_id, MESH_Num_GhostVertices(mesh));
+    loc_mv = (MVertex_ptr *)bsearch(&mv,
+				    List_Entries(mesh->ghvertex),
+				    MESH_Num_GhostVertices(mesh),
+				    sizeof(MVertex_ptr),
+				    compareGlobalID);
+    if(loc_mv) {
+      // printf("found global id %d\n",MV_GlobalID(*loc_mv));
+    return *loc_mv;
+    }
+    //      MV_Delete(mv,0);
+    */
+    return NULL;
+  }
+
+
 #endif /* MSTK_HAVE_MPI */
+
 
      
 void MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom){
@@ -1579,7 +1973,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
   int processed_vertices=0, processed_adjv=0, processed_edges=0;
   int processed_faces=0, processed_regions=0, processed_adjr=0;
   double ver, xyz[3], rval;
-  double *rval_arr;
+  double *rval_arr = NULL;
   MVertex_ptr mv, ev1, ev2, adjv, *fverts, *rverts;
   MEdge_ptr me, *fedges;
   MFace_ptr mf, *rfaces;
@@ -1757,7 +2151,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 		      "Error in reading adjacent vertex data",MSTK_FATAL);
 	
 	for (j = 0; j < nav; j++)
-	  fscanf(fp,"%d",&adjvid);
+	  status = fscanf(fp,"%d",&adjvid);
       }
     }
 
@@ -2313,7 +2707,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 		      "Error in reading adjacent region data",MSTK_FATAL);
 	
 	for (j = 0; j < nar; j++) {
-	  fscanf(fp,"%d",&rid);
+	  status = fscanf(fp,"%d",&rid);
 	  if (status == EOF)
 	    MSTK_Report("MESH_InitFromFile",
 			"Premature end of file while reading adjacent regions",
@@ -2436,7 +2830,7 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	attrib = MAttrib_New(mesh,attname,atttype,attent,ncomp);
       
       for (i = 0; i < nent; i++) {
-	fscanf(fp,"%d %d",&dim,&id);
+	status = fscanf(fp,"%d %d",&dim,&id);
 	if (status == EOF)
 	  MSTK_Report("MESH_InitFromFile",
 		      "Premature end of file while reading attributes",MSTK_FATAL);
@@ -2448,22 +2842,22 @@ int MESH_InitFromFile(Mesh_ptr mesh, const char *filename) {
 	  MSTK_Report("MESH_InitFromFile",
 		      "Attribute not applicable to this type of entity",MSTK_WARN);
 	  if (atttype == INT)
-	    fscanf(fp,"%d",&ival);
+	    status = fscanf(fp,"%d",&ival);
 	  else
 	    for (j = 0; j < ncomp; j++)
-	      fscanf(fp,"%lf",&rval);
+	      status = fscanf(fp,"%lf",&rval);
 	}
 	else {
 
 	  if (atttype == INT)
-	    fscanf(fp,"%d",&ival);
+	    status = fscanf(fp,"%d",&ival);
 	  else if (atttype == DOUBLE)
-	    fscanf(fp,"%lf",&rval);
+	    status = fscanf(fp,"%lf",&rval);
 	  else if (atttype == VECTOR || atttype == TENSOR) {
 	    ival = ncomp;
 	    rval_arr = (double *) MSTK_malloc(ncomp*sizeof(double));
 	    for (j = 0; j < ncomp; j++) {
-	      fscanf(fp,"%lf",&(rval_arr[j]));
+	      status = fscanf(fp,"%lf",&(rval_arr[j]));
 	    }
 	  }
 
@@ -3175,19 +3569,6 @@ Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
 
   */
 
-
-  /* Time for this function to go */
-
-
-  int MESH_Init_ParAtts(Mesh_ptr mesh) {
-    
-    plnumatt = MAttrib_New(mesh,"paratts",POINTER,MALLTYPE);
-
-    if (plnumatt)
-      return 1;
-    else
-      return 0;
-  }
 
   /* Extra functionality for hash-tables */
 

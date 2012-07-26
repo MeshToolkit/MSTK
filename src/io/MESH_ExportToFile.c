@@ -8,12 +8,15 @@ extern "C" {
 #endif
 
 int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
-		      const int natt, const char **attnames, int *opts) {
+		      const int natt, const char **attnames, const int *opts) {
 
-  if (strncmp(format,"gmv",3) == 0) {
+  if (strncmp(format,"mstk",4) == 0) {
+    return MESH_WriteToFile(mesh,filename,MESH_RepType(mesh));
+  }
+  else if (strncmp(format,"gmv",3) == 0) {
     return MESH_ExportToGMV(mesh,filename,natt,attnames,opts);
   }
-  else if (strncmp(format,"flag",4) == 0) {
+  else if (strncmp(format,"x3d",4) == 0) {
     return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts);
   }
   else if (strncmp(format,"exodusii",8) == 0) {
@@ -26,10 +29,10 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
   else if (strncmp(format, "stl", 3) == 0) {
     return MESH_ExportToSTL(mesh,filename);
   }
-  else {
-    MSTK_Report("MESH_ExportFromFile","Unsupported export format",MSTK_ERROR);
-    return 0;
-  }
+
+
+  MSTK_Report("MESH_ExportFromFile","Unsupported export format",MSTK_ERROR);
+  return 0;
 
 }
 

@@ -1,7 +1,12 @@
+
+#define _H_Mesh_Private
+#include "Mesh.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 
 #include "MSTK.h"
 #include "MSTK_private.h"
@@ -13,6 +18,8 @@ extern "C" {
   /*
     Build ghost and overlap entity lists and sort them by global id
 
+    If the lists are not empty, delete them first
+
     Author(s): Duo Wang, Rao Garimella
   */
 
@@ -20,18 +27,53 @@ extern "C" {
   int MESH_Surf_Build_GhostLists(Mesh_ptr mesh);
   int MESH_Vol_Build_GhostLists(Mesh_ptr mesh);
   
-  int MESH_Build_GhostLists(Mesh_ptr mesh) {
+  int MESH_Build_GhostLists(Mesh_ptr mesh, int topodim) {
     int nf, nr;
     /* basic mesh information */
     nf = MESH_Num_Faces(mesh);
     nr = MESH_Num_Regions(mesh);
 
-    if (nr) 
+    /* first delete the old GHOST or OVERLAP Lists */
+    if ( mesh->ghvertex != (List_ptr)NULL ) {
+      List_Delete(mesh->ghvertex);
+      mesh->ghvertex = (List_ptr)NULL;
+    }
+    if ( mesh->ghedge != (List_ptr)NULL ) {
+      List_Delete(mesh->ghedge);
+      mesh->ghedge = (List_ptr)NULL;
+    }
+    if ( mesh->ghface != (List_ptr)NULL ) {
+      List_Delete(mesh->ghface);
+      mesh->ghface = (List_ptr)NULL;
+    }
+    if ( mesh->ghregion != (List_ptr)NULL ) {
+      List_Delete(mesh->ghregion);
+      mesh->ghregion = (List_ptr)NULL;
+    }
+    if ( mesh->ovvertex != (List_ptr)NULL ) {
+      List_Delete(mesh->ovvertex);
+      mesh->ovvertex = (List_ptr)NULL;
+    }
+    if ( mesh->ovedge != (List_ptr)NULL ) {
+      List_Delete(mesh->ovedge);
+      mesh->ovedge = (List_ptr)NULL;
+    }
+    if ( mesh->ovface != (List_ptr)NULL ) {
+      List_Delete(mesh->ovface);
+      mesh->ovface = (List_ptr)NULL;
+    }
+    if ( mesh->ovregion != (List_ptr)NULL ) {
+      List_Delete(mesh->ovregion);
+      mesh->ovregion = (List_ptr)NULL;
+    }
+
+
+    if (topodim == 3) 
       MESH_Vol_Build_GhostLists(mesh);
-    else if (nf)
+    else if (topodim == 2)
       MESH_Surf_Build_GhostLists(mesh);
     else {
-      fprintf(stdout,"\nThis is not a valid mstk file to build ghost list\n");
+      fprintf(stdout,"\nThis is not a valid mesh for building ghost list\n");
       exit(-1);
     }
 
@@ -57,6 +99,7 @@ extern "C" {
     
     /* build vertex */
     idx = 0; count_ghost = 0; count_ov = 0;
+
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
       if (MV_PType(mv) == PGHOST) {
 	count_ghost++;
@@ -206,4 +249,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
 

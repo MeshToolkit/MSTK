@@ -26,7 +26,7 @@ extern "C" {
      Currently, it is a dummy argument
   */
 
-
+  /*
 int MESH_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,  
 			     const int nparts, const int natt, 
 			     const char **attnames, int *opts, int *procids) {
@@ -55,6 +55,7 @@ int MESH_ExportToFLAGX3D_Par(Mesh_ptr mesh, const char *filename,
 
   return 1;
 }
+  */
 
 #ifdef __cplusplus
   }

@@ -27,9 +27,11 @@ extern "C" {
 
     if (MEnt_Dim((MEntity_ptr) r) != MDELETED) { /* if regn hasnt been temporarily deleted */
       if (adj) {
-	idx = 0;
-	while ((v = List_Next_Entry(adj->rvertices,&idx)))
-	  MV_Rem_Region(v,r);
+        if (adj->rvertices) {
+          idx = 0;
+          while ((v = List_Next_Entry(adj->rvertices,&idx)))
+            MV_Rem_Region(v,r);
+        }
       }
     }
     

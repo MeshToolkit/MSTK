@@ -83,7 +83,7 @@ extern "C" {
   int ME_IsLocked(MEdge_ptr e);
 
 #ifdef MSTK_HAVE_MPI
- /*for mpi*/
+
   PType ME_PType(MEdge_ptr e);
   void  ME_Set_PType(MEdge_ptr e, PType ptype);
   int   ME_MasterParID(MEdge_ptr e);
@@ -91,7 +91,7 @@ extern "C" {
   int   ME_GlobalID(MEdge_ptr e);
   void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
   MEdge_ptr ME_GhostNew(Mesh_ptr mesh);
-  /*end for mpi*/
+
 #endif
 
 #ifdef __cplusplus

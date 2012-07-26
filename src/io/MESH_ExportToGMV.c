@@ -40,7 +40,7 @@ extern "C" {
 
 
 int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt, 
-		     const char **attnames, int *opts) {
+		     const char **attnames, const int *opts) {
   int			gentid, *gentities;
   MFType		ftype;
   MRType                rtype;
@@ -56,7 +56,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   int			i, found, k, nmeshatt, noutatt, ival;
   int                   nalloc, ngent, fnum, fid, vid, nv, icr;
   int                   attentdim, j, ncells, polygons=0, cellmk, idx;
-  int                   ncells1, ncells2, ndup, NFACES, rid0, rid1, rid;
+  int                   ncells1=0, ncells2=0, ndup, NFACES, rid0, rid1, rid;
   int                   oppfid, opprid;
   double		vxyz[3], rval, *xcoord, *ycoord, *zcoord;
   void                 *pval;
@@ -69,13 +69,28 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 					 {-1,-1,-1,-1,-1,-1,-1,-1},
 					 {4,5,6,7,0,1,2,3}};
   MAttrib_ptr    vidatt=0,eidatt=0,fidatt=0,ridatt=0;
-
+  char funcname[256] = "MESH_ExportToGMV", mesg[256];
 
   gmodel = 1;
-  
-  if (!(fp = fopen(filename,"w"))) {
-    fprintf(stderr,"mstk2gmv: Couldn't open output file %s\n",filename);
-    exit(2);
+
+  char modfilename[256];
+
+#ifdef MSTK_HAVE_MPI
+  int rank, numprocs;
+  numprocs = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
+
+  if (numprocs > 1) 
+    sprintf(modfilename,"%s.%05d",filename,rank);
+  else
+    strcpy(modfilename,filename);
+#else
+  strcpy(modfilename,filename);
+#endif
+
+  if (!(fp = fopen(modfilename,"w"))) {
+    sprintf(mesg,"Cannot open file %s for writing",modfilename);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
 
 
@@ -528,7 +543,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   
   if (ncells2) {
     if (opts && opts[1] == 1) {
-      fprintf(stderr,"vface2d not yet implemented\n");
+      MSTK_Report(funcname,"vface2d not yet implemented",MSTK_WARN);
       return 0;
     }
 
@@ -1030,8 +1045,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   }
   if (k%10 != 0) fprintf(fp,"\n");
 
-
-#endif
+#endif /* MSTK_HAVE_MPI */
 
   fprintf(fp,"endvars \n");
   

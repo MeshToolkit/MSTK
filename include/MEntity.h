@@ -18,10 +18,8 @@ extern "C" {
     List_ptr AttInsList;
 
 #ifdef MSTK_HAVE_MPI
-    /*for mpi*/
     unsigned int ptype_masterparid;
-    unsigned int globalid;
-    /*end for mpi*/
+    unsigned int globalid;  /* if -ve, it represents local id on master proc */
 #endif
 
   } MEntity_Data, *MEntity_Data_ptr;
@@ -35,7 +33,6 @@ extern "C" {
 #endif
 
 #ifdef MSTK_HAVE_MPI
-  /*for mpi*/
   PType MEnt_PType(MEntity_ptr ent);
   void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
 
@@ -44,7 +41,10 @@ extern "C" {
 
   int   MEnt_GlobalID(MEntity_ptr ent);
   void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
-  /*end for mpi*/
+
+  /* local id of owning entity on master processor */
+  int   MEnt_MasterLocalID(MEntity_ptr ent);
+  void   MEnt_Set_MasterLocalID(MEntity_ptr ent, int localid);
 #endif
 
   void MEnt_Init_CmnData(MEntity_ptr ent);
@@ -99,14 +99,6 @@ extern "C" {
   void  MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
   int   MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);
-
-  /* Adhoc routines for output of parallel FLAG X3D files */
-
-  int MEnt_NumProcs(MEntity_ptr ent);
-  void MEnt_Set_ProcIDs(MEntity_ptr ent, int np, int *procids);
-  int MEnt_ProcIDs(MEntity_ptr ent, int *np, int *procids);
-  void MEnt_Set_LocalID(MEntity_ptr ent, int procid, int lnum);
-  int MEnt_LocalID(MEntity_ptr ent, int procid);
 
 #ifdef __cplusplus
 }

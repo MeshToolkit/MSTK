@@ -48,13 +48,14 @@ TEST(Partition2D) {
 
 
   MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);
 
 
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  nproc = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
 
   if (rank == 0) {
 
@@ -71,6 +72,7 @@ TEST(Partition2D) {
     
   }
     
+  int method = 0; /* with Metis */ /* this arg temporarily eliminated */
   status = MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, rank, nproc, MPI_COMM_WORLD);
 
   CHECK(status);

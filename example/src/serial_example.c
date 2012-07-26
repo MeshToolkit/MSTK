@@ -3,6 +3,7 @@
 #include <string.h>
 #include "MSTK.h"
 
+#include "mpi.h"
 
 /* Example program to read a mesh and print out some information about it */
 

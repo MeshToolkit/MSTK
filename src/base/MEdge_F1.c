@@ -20,8 +20,8 @@ extern "C" {
     MEdge_Adj_F1 *adj;
 
     if (MEnt_Dim((MEntity_ptr) e) != MDELETED) { /* if edge hasnt been temporarily deleted */
-      MV_Rem_Edge(e->vertex[0],e);
-      MV_Rem_Edge(e->vertex[1],e);
+      if (e->vertex[0]) MV_Rem_Edge(e->vertex[0],e);
+      if (e->vertex[1]) MV_Rem_Edge(e->vertex[1],e);
     }
 
     if (!keep) {

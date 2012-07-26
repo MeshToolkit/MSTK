@@ -45,12 +45,14 @@ extern "C" {
     if (MEnt_Dim((MEntity_ptr) r) != MDELETED) {
       mesh = MEnt_Mesh((MEntity_ptr) r);
 
+      if (mesh) {
 #ifdef MSTK_HAVE_MPI
       if (MR_PType(r) == PGHOST)
 	MESH_Rem_GhostRegion(mesh,r);
       else
 #endif
 	MESH_Rem_Region(mesh,r);
+      }
 
       MEnt_Set_DelFlag((MEntity_ptr) r);
     }
@@ -358,7 +360,6 @@ extern "C" {
   }
 
 #endif /* MSTK_HAVE_MPI */
-
   
 #ifdef __cplusplus
 }

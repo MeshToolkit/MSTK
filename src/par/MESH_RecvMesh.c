@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 
 #ifdef __cplusplus
@@ -264,7 +266,7 @@ extern "C" {
     nrfs = mesh_info[7];
     natt = mesh_info[8];
     nset = mesh_info[9];
-
+    
     MESH_SetRepType(mesh,rtype);
 
     /* allocate receive buffer */
@@ -445,16 +447,19 @@ extern "C" {
 
   int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
     MSTK_Report("MESH_Surf_RecvMesh_R1R2R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
   int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
     MSTK_Report("MESH_Vol_RecvMesh_R1R2","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 
   int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
 
     MSTK_Report("MESH_Vol_RecvMesh_R4","Not implemented",MSTK_FATAL);
+    return 0;
   }
 
 

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 #include "exodusII.h"
 #ifdef EXODUSII_4
@@ -14,21 +15,31 @@ extern "C" {
 #endif
 
 
+  /* Read an Exodus II (or Nemesis) file into MSTK */
+  /* Nemesis files are the distributed versions of Exodus II files
+     with the global IDs of elements and nodes encoded as element maps
+     and node maps. Nemesis files also contain some additional info
+     that can be read by the Nemesis API but we are choosing to ignore
+     that for now. While Nemesis tools that produce distributed meshes
+     from a single Exodus II file use the extension .par.N.n where N
+     is the total number of processors and n is the rank of the
+     particular process we will also accept .exo.N.n */
+
   /* Right now we are creating an attribute for material sets, side
      sets and node sets. We are ALSO creating meshsets for each of
      these entity sets. We are also setting mesh geometric entity IDs
      - Should we pick one of the first two? */
 
 
-int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
+  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
-  char mesg[256], funcname[256]="MESH_ImportFromExodusII";
+  char mesg[256], funcname[32]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
   char matsetname[256];
   char **elem_blknames;
   int i, j, k, k1;
   int comp_ws = sizeof(double), io_ws = 0;
-  int exoid, status;
+  int exoid=0, status;
   int ndim, nnodes, nelems, nelblock, nnodesets, nsidesets;
   int nedges, nedge_blk, nfaces, nface_blk, nelemsets;
   int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
@@ -54,20 +65,126 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   MEdge_ptr me;
   MFace_ptr mf;
   MRegion_ptr mr;
-  MAttrib_ptr nmapatt, elblockatt, nodesetatt, sidesetatt;
-  MSet_ptr faceset, nodeset, sideset, matset;
+  MAttrib_ptr nmapatt=NULL, elblockatt=NULL, nodesetatt=NULL, sidesetatt=NULL;
+  MSet_ptr faceset=NULL, nodeset=NULL, sideset=NULL, matset=NULL;
+  int distributed=0;
   
   ex_init_params exopar;
-  
-  
+
+  FILE *fp;
+  char basename[256], modfilename[256], *ext;
+
+#ifdef MSTK_HAVE_MPI
+
+  int rank=0, numprocs=1;
+
+  numprocs = MSTK_Comm_size();
+  rank = MSTK_Comm_rank();
+
+  if (numprocs > 1) {
+
+    distributed = 1;
+
+    strcpy(basename,filename);
+    ext = strstr(basename,".exo"); /* Search for the exodus extension */
+    if (ext) {
+
+      /* Try opening the file with .exo.N.n extension in the hope that
+       we have a distributed set of files */
+
+      sprintf(modfilename,"%s.exo.%-d.%-d",basename,numprocs,rank);
+      
+      if ((fp = fopen(modfilename,"r"))) {
+        fclose(fp);
+        
+        distributed = 1;
+        
+        exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
+        if (exoid < 0) {
+          sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);
+        }
+      }
+      else {
+        
+        distributed = 0;
+        
+        if (rank == 0) {
+          
+          if ((fp = fopen(filename,"r"))) {
+            fclose(fp);
+            
+            exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
+            
+            if (exoid < 0) {
+              sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+              MSTK_Report(funcname,mesg,MSTK_FATAL);
+            }
+          }
+          else {  
+            sprintf(mesg,"Cannot open/read Exodus II file %s.exo, %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,basename,numprocs,rank,basename,numprocs,rank);
+            MSTK_Report(funcname,mesg,MSTK_FATAL);        
+          }
+          
+        }
+        else
+          return 1;
+      }  
+    }
+    else {
+      ext = strstr(basename,".par"); /* Search for the Nemesis extension */
+      if (!ext)
+        MSTK_Report(funcname,"Exodus II/Nemesis I files must have .exo or .par extension",MSTK_FATAL);
+
+
+      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
+      
+      if ((fp = fopen(modfilename,"r"))) {
+        fclose(fp);
+        
+        distributed = 1;
+        
+        exoid = ex_open(modfilename, EX_READ, &comp_ws, &io_ws, &version);
+        
+        if (exoid < 0) {
+          sprintf(mesg,"Exodus II file %s exists but could not be read on processor %-d",modfilename,rank);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);
+        }
+      }
+    }
+
+  } /* if numprocs > 1 */
+  else {
+    exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
+
+    distributed = 0;
+
+    if (exoid < 0) {
+      sprintf(mesg,"Cannot open/read Exodus II file %s\n",filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+  }
+
+#else
+
   exoid = ex_open(filename, EX_READ, &comp_ws, &io_ws, &version);
-  
+
+  distributed = 0;
+
   if (exoid < 0) {
     sprintf(mesg,"Cannot open/read Exodus II file %s\n",filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
+
+#endif /* MSTK_HAVE_MPI */
   
-  
+
+  /* If it is a serial read and this is not processor 0, do not read */
+
+#ifdef MSTK_HAVE_MPI
+#endif
+
+
   status = ex_get_init_ext(exoid, &exopar);
   if (status < 0) {
     sprintf(mesg,"Error while reading Exodus II file %s\n",filename);
@@ -145,9 +262,16 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     for (i = 0; i < nnodes; i++) {
       mv = MESH_Vertex(mesh, i);
       MEnt_Set_AttVal(mv, nmapatt, node_map[i], 0.0, NULL);
+
+#ifdef MSTK_HAVE_MPI
+      MV_Set_GlobalID(mv, node_map[i]);
+      MV_Set_MasterParID(mv, rank); /* This might get modified later */
+#endif
     }
     
   }
+
+  free(node_map);
   
 
   /* Read node sets */
@@ -311,12 +435,17 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
   
   
 
+  int surf_elems=0, solid_elems=0;
+  int mesh_type=0;  /* 1 - Surface, 2 - Solid, 3 - mixed */
+
   if (ndim == 1) {
     
-    MSTK_Report("MESH_ImportFromExodusII","Not implemented",MSTK_FATAL);
+    MSTK_Report(funcname,"Not implemented",MSTK_FATAL);
     
   }
   else if (ndim == 2) {
+
+    mesh_type = 1;
     
     elblockatt = MAttrib_New(mesh, "elemblock", INT, MFACE);
     
@@ -504,8 +633,8 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     }
     
     
-    /* read element number map - store it as an attribute to spit out
-       later if necessary */
+    /* read element number map - interpret it as the GLOBAL ID of the element 
+       for multi-processor runs */
     
     elem_map = (int *) malloc(nelems*sizeof(int));
     
@@ -522,9 +651,16 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
       for (i = 0; i < nelems; i++) {
 	mf = MESH_Face(mesh, i);
 	MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+
+#ifdef MSTK_HAVE_MPI
+        MF_Set_GlobalID(mf,elem_map[i]);
+        MF_Set_MasterParID(mf,rank);
+#endif
       }
       
     }
+
+    free(elem_map);
     
   }
   else if (ndim == 3) {
@@ -532,9 +668,6 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
     /* Check if this is a strictly solid mesh, strictly surface mesh
        or mixed */
-
-    int surf_elems=0, solid_elems=0;
-    int mesh_type=0;  /* 1 - Surface, 2 - Solid, 3 - mixed */
 
     for (i = 0; i < nelblock; i++) {
       
@@ -758,10 +891,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
                     rfdirs[k] = !dir;
                   }
                   else if (List_Num_Entries(fregs) == 2) {
-                    MSTK_Report("MESH_ImportFromExodusII",
-                                "Face already connected two faces",MSTK_FATAL);
+		  MSTK_Report(funcname,"Face already connected two faces",MSTK_FATAL);
                   }
-                }
+                  List_Delete(fregs);
+                }                
               }
               else {
                 face = MF_New(mesh);
@@ -907,7 +1040,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
     if (nsidesets) {
 
       if (mesh_type == 3)
-        MSTK_Report("MESH_ImportFromExodusII.c","Cannot handle sidesets in meshes with surface and solid elements",MSTK_FATAL);
+        MSTK_Report(funcname,"Cannot handle sidesets in meshes with surface and solid elements",MSTK_FATAL);
 
       sideset_ids = (int *) malloc(nsidesets*sizeof(int));
 
@@ -968,7 +1101,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
               List_ptr efaces;
               efaces = ME_Faces(me);
               if (List_Num_Entries(efaces) != 1) {
-                MSTK_Report("MESH_ImportFromExodusII",
+                MSTK_Report(funcname,
                             "Interior edge identified as being on the boundary",
                             MSTK_ERROR);
               }
@@ -1020,7 +1153,7 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
               List_ptr fregs;
               fregs = MF_Regions(mf);
               if (List_Num_Entries(fregs) != 1) {
-                MSTK_Report("MESH_ImportFromExodusII",
+                MSTK_Report(funcname,
                             "Interior face identified as being on the boundary",
                             MSTK_ERROR);
               }
@@ -1072,6 +1205,10 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	for (i = 0; i < nelems; i++) {
 	  mf = MESH_Face(mesh, i);
 	  MEnt_Set_AttVal(mf, nmapatt, elem_map[i], 0.0, NULL);
+#ifdef MSTK_HAVE_MPI
+          MF_Set_GlobalID(mf,elem_map[i]);
+          MF_Set_MasterParID(mf,rank);
+#endif
 	}
       }
       else if (mesh_type == 2) {
@@ -1080,10 +1217,14 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 	for (i = 0; i < nelems; i++) {
 	  mr = MESH_Region(mesh, i);
 	  MEnt_Set_AttVal(mr, nmapatt, elem_map[i], 0.0, NULL);
+#ifdef MSTK_HAVE_MPI
+          MR_Set_GlobalID(mr,elem_map[i]);
+          MR_Set_MasterParID(mr,rank);
+#endif
 	}
       }
       else {
-	MSTK_Report("MESH_ImportFromExodusII",
+	MSTK_Report(funcname,
 	       "Element maps not supported for mixed surface-solid meshes",
 		    MSTK_WARN);
       }
@@ -1098,6 +1239,28 @@ int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
 
 
   ex_close(exoid);
+
+
+#ifdef MSTK_HAVE_MPI
+  if (distributed) {
+    /* Now weave the distributed meshes together so that appropriate ghost links are created */
+  
+    int num_ghost_layers = 1;
+    int input_type = 1;
+    int topodim = (mesh_type == 1) ? 2 : 3;
+  
+    int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
+                                                   num_ghost_layers, 
+                                                   input_type);
+  
+    if (!weavestatus)
+      MSTK_Report(funcname,
+                  "Could not weave distributed meshes correctly together",
+                  MSTK_FATAL);
+
+    int parallel_check = MESH_Parallel_Check(mesh);
+  }
+#endif
 
   return 1;
 

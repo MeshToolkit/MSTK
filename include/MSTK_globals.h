@@ -1,10 +1,18 @@
 #ifndef _H_MSTK_GLOBALVARS
 #define _H_MSTK_GLOBALVARS
 
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+#endif
+
 #include "MSTK_types.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifdef MSTK_HAVE_MPI
+  MPI_Comm MSTK_communicator = MPI_COMM_WORLD;    /* Global */
 #endif
 
 /* Templates for TETS, PYRAMIDS, PRISMS and HEXS (move to global file?) */

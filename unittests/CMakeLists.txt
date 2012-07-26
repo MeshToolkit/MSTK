@@ -15,16 +15,18 @@ if (BUILD_TESTS)
   target_link_libraries(mstk_serial_unit_tests ${MSTKLIB} ${UNITTEST_LIBRARY} m)
   add_test(NAME serial_unittests COMMAND mstk_serial_unit_tests)
 
-  if (ENABLE_PARALLEL) 
+  if (ENABLE_PARALLEL)
+
     file (GLOB FILES parallel/4proc/*.cc)
     add_executable(mstk_parallel_4proc_unit_tests ${FILES})
-    target_link_libraries(mstk_parallel_4proc_unit_tests ${MSTKLIB} ${METIS_LIBRARY} ${UNITTEST_LIBRARY})
+    target_link_libraries(mstk_parallel_4proc_unit_tests ${MSTKLIB} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} ${UNITTEST_LIBRARY})
     add_test(NAME parallel_unittests_4proc COMMAND mpirun -n 4 mstk_parallel_4proc_unit_tests)
-
+    
     file (GLOB FILES parallel/8proc/*.cc)
     add_executable(mstk_parallel_8proc_unit_tests ${FILES})
-    target_link_libraries(mstk_parallel_8proc_unit_tests ${MSTKLIB} ${METIS_LIBRARY} ${UNITTEST_LIBRARY})
+    target_link_libraries(mstk_parallel_8proc_unit_tests ${MSTKLIB} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} ${UNITTEST_LIBRARY})
     add_test(NAME parallel_unittests_8proc COMMAND mpirun -n 8 mstk_parallel_8proc_unit_tests)
-  endif ()
+
+    endif ()
 
 endif ()

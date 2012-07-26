@@ -4,7 +4,7 @@
 #include <assert.h>
 
 #include "MSTK.h"
-
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {

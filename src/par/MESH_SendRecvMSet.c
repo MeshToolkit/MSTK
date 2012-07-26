@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,10 +77,11 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
      set_name: name of the entity set
      send_rank: rank of the send processor
      rank: rank of the receiving processor
-     
+
   */
 
-int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int send_rank, int rank,  MPI_Comm comm) {
+  int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, 
+                    int send_rank, int rank,  MPI_Comm comm) {
   int i, idx, gid, count;
   int num, nent;
   int *list_info, *list_value_int;
@@ -91,6 +93,8 @@ int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int send_rank, int rank,
   MRegion_ptr rgn;
   MSet_ptr mset;
   MPI_Status status;
+
+  MESH_Enable_GlobalIDSearch(mesh); /* no harm in calling repeatedly */
   
   mset = MESH_MSetByName(mesh,mset_name);
 
@@ -123,46 +127,28 @@ int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int send_rank, int rank,
   MPI_Get_count(&status,MPI_INT,&count);
   assert(num==count);
 
+
   for (i = 0; i < nent; i++) {
     enttype = list_value_int[2*i];
     gid = list_value_int[2*i+1];
-
-    /* Terribly inefficient way to do this. Can we improve it? */
 
     ment = 0;
     idx = 0;
     switch (enttype) {
     case MVERTEX:
-      while ((vtx = MESH_Next_Vertex(mesh,&idx))) {
-	if (MV_GlobalID(vtx) == gid) {
-	  ment = vtx;
-	  break;
-	}
-      }
+      ment = MESH_VertexFromGlobalID(mesh,gid);
       break;
     case MEDGE:
-      while ((edge = MESH_Next_Edge(mesh,&idx))) {
-	if (ME_GlobalID(edge) == gid) {
-	  ment = edge;
-	  break;
-	}
-      }
+      ment = MESH_EdgeFromGlobalID(mesh,gid);
       break;
     case MFACE:
-      while ((face = MESH_Next_Face(mesh,&idx))) {
-	if (MF_GlobalID(face) == gid) {
-	  ment = face;
-	  break;
-	}
-      }
+      ment = MESH_FaceFromGlobalID(mesh,gid);
       break;
     case MREGION:
-      while ((rgn = MESH_Next_Region(mesh,&idx))) {
-	if (MR_GlobalID(rgn) == gid) {
-	  ment = rgn;
-	  break;
-	}
-      }
+      ment = MESH_RegionFromGlobalID(mesh,gid);
+      break;
+    case MALLTYPE:
+      MSTK_Report("MESH_RecvMSet","An entity cannot be of type MALLTYPE",MSTK_ERROR);
       break;
     default:
       MSTK_Report("MESH_RecvMSet","Unrecognized entity type",MSTK_ERROR);

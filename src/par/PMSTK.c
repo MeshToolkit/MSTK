@@ -17,13 +17,14 @@ extern "C" {
 
   */
 
+
   /* Partition a given mesh into 'num' submeshes, adding a 'ring'
      layers of ghost elements around each partition. If 'with_attr' is
      1, attributes from the mesh are copied onto the submeshes. This
      routine does not send the meshes to other partitions */
 
-  int MSTK_Mesh_Partition(Mesh_ptr mesh, Mesh_ptr *submeshes, int num, int ring, 
-			  int with_attr) {
+  int MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
+			  int with_attr, Mesh_ptr *submeshes) {
     int i, j, natt, nset, idx;
     char attr_name[256];
     MAttrib_ptr attrib, g2latt, l2gatt;
@@ -42,18 +43,12 @@ extern "C" {
 
     /* Split the mesh into 'num' submeshes */
 
-    MESH_Partition(mesh, submeshes, num);
+    MESH_Partition(mesh, num, part, submeshes);
 
     for(i = 0; i < num; i++) {
-
-      /* */
-
       MESH_BuildPBoundary(mesh,submeshes[i]);
-
       /* Add ghost layers */
-
       MESH_AddGhost(mesh,submeshes[i],i,ring);
-
     }
 
     if (with_attr) {
@@ -226,7 +221,7 @@ extern "C" {
 
     /* Build the sorted lists of ghost and overlap entities */
 
-    MESH_Build_GhostLists(mesh);
+    MESH_Build_GhostLists(mesh,dim);
 
     if(!with_attr)
       return 1;
@@ -255,12 +250,13 @@ extern "C" {
     
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
+  /* The rank, num and comm arguments will go away soon                 */
 
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
-				    const char* global_mesh_name, 
-				    int *dim, int ring, int with_attr, 
-				    int rank, int num, 
-				    MPI_Comm comm) {
+				const char* global_mesh_name, 
+				int *dim, int ring, int with_attr, 
+				int rank, int num, 
+				MPI_Comm comm) {
     int i, ok;
 
     if(rank == 0) {
@@ -284,13 +280,17 @@ extern "C" {
 
 
   /* Partition a given mesh and distribute it to 'num' processors */
+  /* The rank, num and comm arguments will go away soon           */
+  /* For now we are getting rid of the method argument to keep    */
+  /* compatibility with the 1.85 version. We'll bring it back soon */
 
   int MSTK_Mesh_Distribute(Mesh_ptr *mesh, int *dim, 
 			   int ring, int with_attr, 
 			   int rank, int num, 
 			   MPI_Comm comm) {
     int i, recv_dim=rank+5;
-    int *send_dim;
+    int *send_dim, *part;
+    int method = 0;
 
     send_dim = (int *) malloc(num*sizeof(int));
     for (i = 0; i < num; i++) send_dim[i] = *dim;
@@ -299,42 +299,135 @@ extern "C" {
 
     if (rank != 0)
       *dim = recv_dim;
+    MESH_Get_Partitioning(*mesh, num, method, rank, comm, &part);
 
     if(rank == 0) {    
 
       /* Partition the mesh*/
-
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
-      MSTK_Mesh_Partition(*mesh, submeshes, num, ring, with_attr);
+      MSTK_Mesh_Partition(*mesh, num, part, ring, with_attr, submeshes);
 
+#ifdef DEBUG
+      fprintf(stderr,"Finished partitioning\n");
+#endif
       
-      *mesh = submeshes[0];
       for(i = 1; i < num; i++) {
 
 	MSTK_SendMesh(submeshes[i],i,with_attr,comm);
 
 	MESH_Delete(submeshes[i]);  
       }
+      *mesh = submeshes[0];
 
+#ifdef DEBUG
+      fprintf(stderr,"Sent meshes to all partitions\n");
+#endif
+      MESH_Build_GhostLists(*mesh,*dim);
+     
     }
+
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
+#ifdef DEBUG
+      fprintf(stderr,"Received mesh on partition %d\n",rank);
+#endif
     }
+    MESH_Set_Prtn(*mesh,rank,num);
+
+    MESH_Update_ParallelAdj(*mesh, rank, num,  comm);
+
+    MESH_Disable_GlobalIDSearch(*mesh);
+
+#ifdef DEBUG
+    fprintf(stderr,"Updated parallel adjacencies. Exiting mesh distribution\n");
+#endif
+
+    /* Put a barrier so that distribution of meshes takes place one at a time 
+       in a simulation that may have multiple mesh objects on each processor */
+
+    MPI_Barrier(comm);
+
     return 1;
   }
 
 
+  /* Weave a set of distributed mesh partitions together to build the
+     parallel connections and ghost info.
+
+     input_type indicates what info is already present on the mesh
+     
+     0 -- we are given NO information about how these meshes are connected
+          other than the knowledge that they come from the partitioning of
+          a single mesh
+
+     1 -- we are given partitioned meshes with a unique global ID on 
+          each mesh vertex
+
+     2 -- we are given parallel neighbor information, but no global ID on 
+          each mesh vertex
+
+
+  */
+     
+
+
+  int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
+                                   int num_ghost_layers, int input_type) {
+
+    int have_GIDs = 0;
+    MPI_Comm comm = MSTK_Comm();
+    int rank = MSTK_Comm_rank();
+    int num = MSTK_Comm_size();
+
+    if (num_ghost_layers > 1)
+      MSTK_Report("MSTK_Weave_DistributedMeshes", "Only 1 ghost layer supported currently", MSTK_FATAL);
+
+    if (input_type > 1) 
+      MSTK_Report("MSTK_Weave_DistributedMeshes","Unrecognized input type for meshes", MSTK_WARN);
+
+    // This partition does not have a mesh or has an empty mesh which is ok
+
+    if (mesh == NULL)
+      MSTK_Report("MSTK_Weave_DistributedMeshes","MESH is null on this processor",MSTK_FATAL);
+
+
+    MESH_Set_Prtn(mesh, rank, num);
+    
+    if (input_type == 0)
+      have_GIDs = 0;
+    else if (input_type == 1)
+      have_GIDs = 1;
+
+    if (input_type == 0 || input_type == 1) {
+      /* MESH_MatchEnts_ParBdry(mesh, have_GIDs, rank, num, comm); */
+      MESH_AssignGlobalIDs(mesh, topodim, have_GIDs, rank, num, comm);
+      MESH_BuildConnection(mesh, topodim, rank, num, comm);
+    }
+    else if (input_type == 2) 
+      MESH_AssignGlobalIDs_point(mesh, topodim, rank, num, comm);
+
+    MESH_LabelPType(mesh, topodim, rank, num, comm);
+
+    MESH_Parallel_AddGhost(mesh, topodim, rank, num, comm);
+
+    MESH_Build_GhostLists(mesh, topodim);
+
+    MESH_Update_ParallelAdj(mesh, rank, num, comm);
+    return 1;
+  }
+
 
   /* Update attributes on partitions */
 
-  int MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num,  MPI_Comm comm) {  
+  int MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+//    MPI_Comm comm = MSTK_Comm();
+//    int rank = MSTK_Comm_rank();
+//    int num = MSTK_Comm_size();
+
     int i, natt;
     char attr_name[256];
     MAttrib_ptr attrib;
-
-    MESH_UpdateGlobalInfo(mesh, rank, num,  comm);
-
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {
       attrib = MESH_Attrib(mesh,i);
@@ -343,9 +436,9 @@ extern "C" {
       MESH_UpdateAttr(mesh,attr_name,rank,num,comm);
     }
 
+
     return 1;
   }
-
 
 #ifdef __cplusplus
 }

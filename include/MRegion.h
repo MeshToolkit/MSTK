@@ -104,7 +104,6 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
   void MR_Rem_AdjRegion(MRegion_ptr r, MRegion_ptr ar);
 
 #ifdef MSTK_HAVE_MPI
-  /*for mpi*/
   PType MR_PType(MRegion_ptr r);  
   void  MR_Set_PType(MRegion_ptr r, PType ptype);
   int   MR_MasterParID(MRegion_ptr r);
@@ -112,7 +111,6 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
   int   MR_GlobalID(MRegion_ptr r);
   void  MR_Set_GlobalID(MRegion_ptr r, int globalid);
   MRegion_ptr MR_GhostNew(Mesh_ptr mesh);
-  /*end for mpi*/
 #endif
 
 #ifdef __cplusplus

@@ -37,8 +37,6 @@ extern const int MSTK_rfedir_template[5][6][5];
 /* Edge-vertex templates for standard regions */
 extern const int MSTK_rev_template[5][12][2];
 
-extern MAttrib_ptr plnumatt;
-
 #ifdef __cplusplus
 }
 #endif

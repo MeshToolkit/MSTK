@@ -5,32 +5,66 @@
 #include "MSTK_globals.h"
 #include "MSTK_malloc.h"
 
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
+
+
   void MSTK_Init() {
 
 #ifdef MSTK_HAVE_MPI
+
     int initstatus;
     MPI_Initialized(&initstatus);
     if (initstatus == 0) {
       int loc_argc=1;
       char **loc_argv=NULL;
-
+      
       MPI_Init(&loc_argc,&loc_argv);
     }
-#endif
 
+#endif /* MSTK_HAVE_MPI */
+
+    /* Make some dummy calls so that the symbols get defined */
+    
     MV_Print(0,0);
     ME_Print(0,0);
     MF_Print(0,0);
     MR_Print(0,0);
     {
-     int n = MSTK_rev_template[0][0][0];
+      int n = MSTK_rev_template[0][0][0];
     }
+    
   }
+
+
+#ifdef MSTK_HAVE_MPI
+  void MSTK_Set_Comm(MPI_Comm comm) {
+    MSTK_communicator = comm;
+  }
+
+  MPI_Comm MSTK_Comm() {
+    return MSTK_communicator;
+  }
+
+  int MSTK_Comm_size() {
+    int size;
+    MPI_Comm_size(MSTK_Comm(),&size);
+    return size;
+  }
+
+  int MSTK_Comm_rank() {
+    int rank;
+    MPI_Comm_rank(MSTK_Comm(),&rank);
+    return rank;
+  }
+#endif /* MSTK_HAVE_MPI */
 
 
   /* MARKERS */

@@ -49,20 +49,23 @@ typedef enum RepType {UNKNOWN_REP=-1, F1=0, F4, R1, R2, R4} RepType;
 typedef enum MFType {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
 typedef enum MRType {RDELETED=-1, RUNKNOWN=0, TET, PYRAMID, PRISM, HEX, POLYHED} MRType;
 
-typedef enum MType {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOWNTYPE=4, MALLTYPE=5} MType;
-  
-#ifdef MSTK_HAVE_MPI
-/* PINTERIOR is the interior in a submesh, no need to get broadcast 
-   POVERLAP also belongs to this submesh, but may be used as ghost entities of another processor
-   PBOUNDARY indicates processor boundary
-   PGHOST indicates ghost elements;
-*/
-typedef enum PType {PINTERIOR=0, POVERLAP=1, PBOUNDARY=2, PGHOST=3} PType;
-#endif
+  typedef enum MType {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOWNTYPE=4, MALLTYPE=5, MANYTYPE=6} MType;
 
 /* typedefs needed for attributes */
 typedef enum MAttType {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
 
+
+#ifdef MSTK_HAVE_MPI  
+
+/* PINTERIOR is the interior in a submesh, no need to get broadcast 
+   POVERLAP also belongs to this submesh, but may be used as ghost entities 
+   of another processor
+   PBOUNDARY indicates processor boundary
+   PGHOST indicates ghost elements;
+*/
+typedef enum PType {PINTERIOR=0, POVERLAP=1, PBOUNDARY=2, PGHOST=3} PType;
+
+#endif
 
 #ifdef __cplusplus
 	   }

@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _MSTK_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include "MSTK.h" 
 
 typedef enum {MSTK,GMV,EXODUSII,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
@@ -11,7 +15,7 @@ typedef enum {MSTK,GMV,EXODUSII,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;
-  int len, ok, build_classfn=1;
+  int len, ok, build_classfn=1, partition=0;
   MshFmt inmeshformat, outmeshformat;
   
 
@@ -21,14 +25,22 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc > 3) {
-    if (strncmp(argv[1],"--classify",10) == 0) {
-      if (strncmp(argv[1],"--classify=y",12) == 0) 
-	build_classfn = 1;
-      else if (strncmp(argv[1],"--classify=n",12) == 0)
-	build_classfn = 0;
-    }
-    else
-      fprintf(stderr,"Unrecognized option...Ignoring\n");
+    int i;
+    for (i = 1; i < argc-2; i++)
+      if (strncmp(argv[i],"--classify",10) == 0) {
+        if (strncmp(argv[i],"--classify=y",12) == 0) 
+          build_classfn = 1;
+        else if (strncmp(argv[i],"--classify=n",12) == 0)
+          build_classfn = 0;
+      }
+      else if (strncmp(argv[i],"--partition",11) == 0) {
+        if (strncmp(argv[i],"--partition=y",13) == 0)
+          partition = 1;
+        else if (strncmp(argv[i],"--partition=n",13) == 0) 
+          partition = 0;
+      }
+      else
+        fprintf(stderr,"Unrecognized option...Ignoring\n");
   }
 
   strcpy(infname,argv[argc-2]);
@@ -47,7 +59,8 @@ int main(int argc, char *argv[]) {
     inmeshformat = GMV;
   else if ((len > 4 && strncmp(&(infname[len-4]),".exo",4) == 0) ||
 	   (len > 2 && strncmp(&(infname[len-2]),".g",2) == 0) ||
-	   (len > 2 && strncmp(&(infname[len-2]),".e",2) == 0))
+	   (len > 2 && strncmp(&(infname[len-2]),".e",2) == 0) ||
+           (len > 4 && strncmp(&(infname[len-4]),".par",4) == 0)) 
     inmeshformat = EXODUSII;
   else if (len > 4 && strncmp(&(infname[len-4]),".vtk",4) == 0)
     inmeshformat = VTK;
@@ -71,7 +84,8 @@ int main(int argc, char *argv[]) {
     outmeshformat = GMV;
   else if ((len > 4 && strncmp(&(outfname[len-4]),".exo",4) == 0) ||
 	   (len > 2 && strncmp(&(outfname[len-2]),".g",2) == 0) ||
-	   (len > 2 && strncmp(&(outfname[len-2]),".e",2) == 0))
+	   (len > 2 && strncmp(&(outfname[len-2]),".e",2) == 0) ||
+           (len > 4 && strncmp(&(outfname[len-4]),".par",4) == 0)) 
     outmeshformat = EXODUSII;
   else if (len > 4 && strncmp(&(outfname[len-4]),".vtk",4) == 0)
     outmeshformat = VTK;
@@ -91,9 +105,23 @@ int main(int argc, char *argv[]) {
   }
 
 
+#ifdef MSTK_HAVE_MPI
+  MPI_Init(&argc,&argv);
+#endif
+
+
   MSTK_Init();
 
 
+#ifdef MSTK_HAVE_MPI
+
+  MSTK_Set_Comm(MPI_COMM_WORLD);
+
+  int rank = MSTK_Comm_rank();
+  int numprocs = MSTK_Comm_size();
+
+#endif
+  
   if (inmeshformat == MSTK) {
     mesh = MESH_New(UNKNOWN_REP);
 
@@ -125,7 +153,8 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"Cannot import mesh from AVS format. ");
       break;
     case X3D:
-      fprintf(stderr,"Cannot import mesh from X3D format. ");
+      fprintf(stderr,"Importing mesh from X3D format...");
+      ok = MESH_ImportFromFile(mesh,infname,"x3d");
       break;
     default:
       fprintf(stderr,"Cannot import from unrecognized format. ");
@@ -154,6 +183,55 @@ int main(int argc, char *argv[]) {
       exit(-1);
     }
   }
+
+
+#ifdef MSTK_HAVE_MPI
+
+  if (partition) {
+
+    /* Need to make sure that we have a mesh only on processor 0 */
+    /* For now we cannot repartition                             */
+
+    int dim = 3;
+    if (rank > 0) {
+      if (mesh && MESH_Num_Vertices(mesh) != 0) {
+        fprintf(stderr,"Mesh is already distributed - cannot repartition\n");
+        MPI_Finalize();
+        exit(-1);
+      }
+    }
+
+    if (rank == 0) {
+      fprintf(stderr,"Partitioning mesh into %d parts...",numprocs);
+
+      if (MESH_Num_Regions(mesh))
+        dim = 3;
+      else if (MESH_Num_Faces(mesh))
+        dim = 2;
+      else {
+        fprintf(stderr,"Partitioning possible only for 2D or 3D meshes\n");
+        exit(-1);
+      }
+    }
+     
+    int ring = 0; /* No ghost ring of elements */
+    int with_attr = 1; /* Do allow exchange of attributes */
+    int method = 0; /* Use Metis as the partitioner */
+        
+    int ok = MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr,
+                                  rank, numprocs, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+      if (ok)
+        fprintf(stderr,"done\n");
+      else {
+        fprintf(stderr,"failed\n");
+        exit(-1);
+      }
+    }
+  }
+
+#endif /* MSTK_HAVE_MPI */
 
 
 
@@ -207,6 +285,10 @@ int main(int argc, char *argv[]) {
 
 
   MESH_Delete(mesh);
+
+#ifdef MSTK_HAVE_MPI
+  MPI_Finalize();
+#endif
 
   return 1;
 }
