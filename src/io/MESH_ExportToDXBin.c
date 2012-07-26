@@ -223,7 +223,7 @@ void MESH_ExportToDXBin(Mesh_ptr mesh, const char *fname) {
     index = 0; i = 0; ntets = nprisms = npyrs = nhexes = 0;
     while ((reg = MESH_Next_Region(mesh,&index))) {
 
-      for (k = 0; k < 8; k++) lvert[8]=0;
+      for (k = 0; k < 8; k++) lvert[k]=0;
 
       nrf = MR_Num_Faces(reg);
       switch(nrf) {
