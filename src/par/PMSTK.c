@@ -327,7 +327,7 @@ extern "C" {
     }
 
     if( rank > 0) {
-      *mesh = MESH_New(UNKNOWN_REP);
+      if (!(*mesh)) *mesh = MESH_New(UNKNOWN_REP);
       MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
 #ifdef DEBUG
       fprintf(stderr,"Received mesh on partition %d\n",rank);
