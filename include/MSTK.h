@@ -643,6 +643,10 @@ void MSTK_Init(void);
   /* Sort a list based on a user/application supplied comparison function */
   void        List_Sort(List_ptr l, size_t num, size_t size,
 		     int(*comp)(const void *,const void *));
+  /* Search a sorted list for a key based on a user/application supplied
+     comparison function - unpredictable results for unsorted list */
+  void       *List_Search(List_ptr l, const void *key, size_t num, size_t size,
+                          int(*comp)(const void *,const void *));
 #ifdef DEBUG
   void        List_Print(List_ptr l);
 #endif

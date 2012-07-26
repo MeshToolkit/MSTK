@@ -350,6 +350,9 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int        MESH_SendMSet(Mesh_ptr mesh, const char *set_name, int rank, MPI_Comm comm);
   int        MESH_RecvMSet(Mesh_ptr mesh, const char *set_name, int rank, int recv_rank, MPI_Comm comm);
 
+
+  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
+  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 #endif /* MSTK_HAVE_MPI */  
 
 
