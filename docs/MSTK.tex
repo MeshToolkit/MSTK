@@ -528,9 +528,10 @@ are derived.
   imports any attributes that are into the mesh.
 
 \item[]{\bf {\em int} MESH\_InitFromGenDesc({\em Mesh\_ptr} mesh, {\em
-      int} nv, {\em double} (*xyz)[3], {\em int} *nfv, {\em int}
-    **fvids, {\em int} nr, {\em int} *nrv, {\em int} **rvids, {\em
-      int} *nrf, {\em int} ***rfvtemplate):} Initialize a mesh from a
+      int} nv, {\em double} (*xyz)[3], {\em int} nf, {\em int} *nfv, 
+    {\em int} **fvids, {\em int} nr, {\em int} *nrv, {\em int}
+    **rvids, {\em int} *nrf, {\em int} ***rfvtemplate):} Initialize a
+  mesh from a
   minimal description of the mesh passed into the routine. In the
   routine, {\bf nv} is the number of vertices or nodes and {\bf xyz}
   is the array of node coordinates. If the mesh is a surface mesh,
