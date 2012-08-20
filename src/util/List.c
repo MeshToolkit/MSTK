@@ -713,7 +713,7 @@ extern "C" {
       /* Search for the the last valid entry */
       fnd1 = 0;
       while (!fnd1 && imax >= imin)
-	if (l->entry[--imin]) fnd1 = 1;
+	if (l->entry[--imax]) fnd1 = 1;
       if (!fnd1)
 	MSTK_Report("List_RemSorted","Cannot find valid entry",MSTK_WARN);
 
