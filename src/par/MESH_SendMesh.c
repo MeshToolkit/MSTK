@@ -13,7 +13,7 @@ extern "C" {
 
 
   /* 
-     This function send mesh to processor rank in communicator comm
+     This function send mesh to processor torank in communicator comm
      attr list is sent but no attribute value is sent.
      call MESH_SendAttr() to send attribute values of entities
 
@@ -21,23 +21,21 @@ extern "C" {
   */
 
 
-  int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm);
-  int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm);
-  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int rank, MPI_Comm comm);
-  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int rank, MPI_Comm comm);
-  int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int rank, MPI_Comm comm);
+  int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank);
+  int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank);
+  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int torank);
+  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int torank);
+  int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int torank);
 
-  static int (*MESH_Vol_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int rank, 
-						   MPI_Comm comm) = 
+  static int (*MESH_Vol_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int torank) = 
   {MESH_Vol_SendMesh_FN, MESH_Vol_SendMesh_FN, MESH_Vol_SendMesh_R1R2, 
    MESH_Vol_SendMesh_R1R2, MESH_Vol_SendMesh_R4};
-  static int (*MESH_Surf_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int rank, 
-						    MPI_Comm comm) = 
+  static int (*MESH_Surf_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int torank) =
   {MESH_Surf_SendMesh_FN, MESH_Surf_SendMesh_FN, MESH_Surf_SendMesh_R1R2R4, 
    MESH_Surf_SendMesh_R1R2R4, MESH_Surf_SendMesh_R1R2R4};
 
 
-int MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm) {
+int MESH_SendMesh(Mesh_ptr mesh, int torank) {
   int nf, nr;
   RepType rtype;
 
@@ -46,9 +44,9 @@ int MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
   if (nr)
-    (*MESH_Vol_SendMesh_jmp[rtype])(mesh,rank,comm);
+    (*MESH_Vol_SendMesh_jmp[rtype])(mesh,torank);
   else if(nf) 
-    (*MESH_Surf_SendMesh_jmp[rtype])(mesh,rank,comm);
+    (*MESH_Surf_SendMesh_jmp[rtype])(mesh,torank);
   else {
     MSTK_Report("MESH_SendMesh()","only send volume or surface mesh",MSTK_ERROR);
     exit(-1);
@@ -62,7 +60,7 @@ int MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 
 
 
-int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
+int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank) {
   int i, j, nv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
   int nfe;
   MVertex_ptr mv;
@@ -78,6 +76,8 @@ int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   int *list_attr=NULL, *list_mset=NULL;
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
+
+  MPI_Comm comm = MSTK_Comm();
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -195,33 +195,33 @@ int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   }
 
   /* send mesh_info */
-  MPI_Send(mesh_info,10,MPI_INT,rank,rank,comm);
+  MPI_Send(mesh_info,10,MPI_INT,torank,torank,comm);
 
   /* send vertices */
-  /* printf("%d vertices sent to rank %d\n",nv,rank); */
-  MPI_Send(list_vertex,3*nv,MPI_INT,rank,rank,comm);
-  MPI_Send(list_coor,3*nv,MPI_DOUBLE,rank,rank,comm);
+  /* printf("%d vertices sent to torank %d\n",nv,torank); */
+  MPI_Send(list_vertex,3*nv,MPI_INT,torank,torank,comm);
+  MPI_Send(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm);
 
   /* send edges */
-  MPI_Send(list_edge,nevs,MPI_INT,rank,rank,comm);
+  MPI_Send(list_edge,nevs,MPI_INT,torank,torank,comm);
 
   /* send faces */
-  /* printf("%d faces sent to rank %d\n",nf,rank); */
-  MPI_Send(list_face,nfes,MPI_INT,rank,rank,comm);
+  /* printf("%d faces sent to torank %d\n",nf,torank); */
+  MPI_Send(list_face,nfes,MPI_INT,torank,torank,comm);
   
   /* send attr */
-  /* printf("%d attrs sent to rank %d\n",natt,rank); */
+  /* printf("%d attrs sent to torank %d\n",natt,torank); */
   if(natt) {
-    MPI_Send(list_attr,natt,MPI_INT,rank,rank,comm);
-    MPI_Send(list_attr_names,natt*256,MPI_CHAR,rank,rank,comm);
+    MPI_Send(list_attr,natt,MPI_INT,torank,torank,comm);
+    MPI_Send(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm);
     MSTK_free(list_attr);
     MSTK_free(list_attr_names);
   }
 
   /* send sets */
   if (nset) {
-    MPI_Send(list_mset,nset,MPI_INT,rank,rank,comm);
-    MPI_Send(list_mset_names,nset*256,MPI_CHAR,rank,rank,comm);
+    MPI_Send(list_mset,nset,MPI_INT,torank,torank,comm);
+    MPI_Send(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm);
     MSTK_free(list_mset);
     MSTK_free(list_mset_names);
   }
@@ -234,7 +234,7 @@ int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 }
 
 
-int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
+int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank) {
   int i, j, nv, ne, nf, nr, mesh_info[10];
   int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
   MVertex_ptr mv;
@@ -251,6 +251,8 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
   int *list_attr=NULL, *list_mset=NULL;
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
+
+  MPI_Comm comm = MSTK_Comm();
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -381,28 +383,28 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 
 
   /* send mesh_info */
-  MPI_Send(mesh_info,10,MPI_INT,rank,rank,comm);
+  MPI_Send(mesh_info,10,MPI_INT,torank,torank,comm);
 
   /* send vertices */
-  /* printf("%d vertices sent to rank %d\n",nv,rank); */
-  MPI_Send(list_vertex,3*nv,MPI_INT,rank,rank,comm);
-  MPI_Send(list_coor,3*nv,MPI_DOUBLE,rank,rank,comm);
+  /* printf("%d vertices sent to torank %d\n",nv,torank); */
+  MPI_Send(list_vertex,3*nv,MPI_INT,torank,torank,comm);
+  MPI_Send(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm);
 
   /* send edges */
-  MPI_Send(list_edge,nevs,MPI_INT,rank,rank,comm);
+  MPI_Send(list_edge,nevs,MPI_INT,torank,torank,comm);
   
   /* send faces */
-  MPI_Send(list_face,nfes,MPI_INT,rank,rank,comm);
+  MPI_Send(list_face,nfes,MPI_INT,torank,torank,comm);
 
   /* send regions */
-  /* printf("%d regions sent to rank %d\n",nr,rank); */
-  MPI_Send(list_region,nrfs,MPI_INT,rank,rank,comm);
+  /* printf("%d regions sent to torank %d\n",nr,torank); */
+  MPI_Send(list_region,nrfs,MPI_INT,torank,torank,comm);
 
   /* send attr */
-  /* printf("%d attr sent to rank %d\n",natt,rank); */
+  /* printf("%d attr sent to torank %d\n",natt,torank); */
   if(natt) {
-    MPI_Send(list_attr,natt,MPI_INT,rank,rank,comm);
-    MPI_Send(list_attr_names,natt*256,MPI_CHAR,rank,rank,comm);
+    MPI_Send(list_attr,natt,MPI_INT,torank,torank,comm);
+    MPI_Send(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm);
     MSTK_free(list_attr);
     MSTK_free(list_attr_names);
   }
@@ -410,8 +412,8 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 
   /* send sets */
   if (nset) {
-    MPI_Send(list_mset,nset,MPI_INT,rank,rank,comm);
-    MPI_Send(list_mset_names,nset*256,MPI_CHAR,rank,rank,comm);
+    MPI_Send(list_mset,nset,MPI_INT,torank,torank,comm);
+    MPI_Send(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm);
     MSTK_free(list_mset);
     MSTK_free(list_mset_names);
   }
@@ -427,19 +429,19 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int rank, MPI_Comm comm) {
 
 
 
-int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int rank, MPI_Comm comm) {
+int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int torank) {
   MSTK_Report("MESH_Surf_SendMesh_R1R2R4","Not implemented",MSTK_FATAL);
   return 0;
 }
 
 
-int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int rank, MPI_Comm comm) {
+  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int torank) {
   MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
   return 0;
 }
 
 
-int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int rank, MPI_Comm comm) {
+  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int torank) {
   MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
   return 0;
 }

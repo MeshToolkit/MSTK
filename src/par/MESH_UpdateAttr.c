@@ -21,7 +21,7 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int myrank, int numprocs,  MPI_Comm comm) {
+  int MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name) {
     int i, j, k, *loc, ebit, count;
     int num_ghost=0, num_ov=0, ncomp, ival,send_size,recv_size;
     double rval;
@@ -34,6 +34,11 @@ extern "C" {
     MEntity_ptr ment=NULL;
     MAttrib_ptr attrib;
     MPI_Status status;
+
+    MPI_Comm comm = MSTK_Comm();
+    int myrank = MSTK_Comm_rank();
+    int numprocs = MSTK_Comm_size();
+
 
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */

@@ -62,6 +62,10 @@ void MSTK_Init(void);
   /* Check if mesh geometry is valid */
   /* int        MESH_CheckGeom(Mesh_ptr mesh); */
 
+  /* Duplicate a mesh optionally with attributes and mesh sets */
+  int         MESH_Copy(Mesh_ptr srcmesh, Mesh_ptr dstmesh, int with_attr, 
+                        int with_sets);
+
 
   GModel_ptr  MESH_GModel(Mesh_ptr mesh);
   RepType     MESH_RepType(Mesh_ptr mesh);
@@ -128,23 +132,24 @@ void MSTK_Init(void);
   /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
-  /* The rank, num, and comm arguments will go away soon                */
-  /* For now we are eliminating the partitioning method argument just   */
-  /* for compatibility with 1.85 but will bring it back soon            */
+  /* 'ring' indicates the number of ghost layers (can only do 1 for now)*/
+  /* 'with_attr' distribute attributes to submeshes                     */
+  /* 'method' indicates the partitioning method (0 - metis, 1 - zoltan) */  
 
   int         MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
                                         const char* global_mesh_name, 
                                         int *topodim, int ring, int with_attr, 
-                                        int rank, int num,
-                                        MPI_Comm comm);
+                                        int method);
 
-  /* Partition an existing mesh and distribute it to 'num' processors */
-  /* The rank, num and comm arguments will go away soon               */
+  /* Partition an existing mesh (globalmesh) on processor 0 and
+     distribute it to 'num' processors. The resulting mesh on my
+     partition is in mymesh. If mymesh is already initialized, that
+     mesh pointer is used as is and the information filled in */
 
-  int         MSTK_Mesh_Distribute(Mesh_ptr *mesh, 
+  int         MSTK_Mesh_Distribute(Mesh_ptr globalmesh, Mesh_ptr *mymesh, 
                                    int *topodim, int ring, int with_attr, 
-                                   int rank, int num,
-                                   MPI_Comm comm);
+                                   int method);
+
 
 
   /* 'Weave' a set of distributed meshes by building ghost layers */
@@ -155,7 +160,7 @@ void MSTK_Init(void);
 
   /* Parallel update attribute values for ghost entities */
 
-  int         MSTK_UpdateAttr(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
+  int         MSTK_UpdateAttr(Mesh_ptr mesh);
 
 
   /* Update vertex coordinates for ghost vertices */
@@ -366,7 +371,7 @@ void MSTK_Init(void);
   void        MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
   void        MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void        MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
-  void MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
+  void        MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
   void        MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
   int         MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int         MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
@@ -553,6 +558,13 @@ void MSTK_Init(void);
 /**********************************************************************/
 
 #ifdef MSTK_HAVE_MPI
+
+  int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part);
+
+  /* Typically called only on processor 0 */
+
+  int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part, int ring, 
+                                 int with_attr, Mesh_ptr *submeshes);
 
   /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
   /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */

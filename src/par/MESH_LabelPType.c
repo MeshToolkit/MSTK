@@ -18,14 +18,14 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
-  int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm);
+  int MESH_LabelPType_Face(Mesh_ptr submesh);
+  int MESH_LabelPType_Region(Mesh_ptr submesh);
 
-  int MESH_LabelPType(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm) {
+  int MESH_LabelPType(Mesh_ptr submesh, int topodim) {
   if (topodim == 3)
-    MESH_LabelPType_Region(submesh, rank, num, comm);
+    MESH_LabelPType_Region(submesh);
   else if (topodim == 2) 
-    MESH_LabelPType_Face(submesh, rank, num, comm);
+    MESH_LabelPType_Face(submesh);
   else {
     MSTK_Report("MESH_LabelPType()","only send volume or surface mesh",MSTK_ERROR);
     exit(-1);
@@ -33,12 +33,16 @@ extern "C" {
   return 1;
 }
 
-int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+int MESH_LabelPType_Face(Mesh_ptr submesh) {
   int i, idx;
   MVertex_ptr mv;
   MEdge_ptr me;
   MFace_ptr mf;
   List_ptr fverts, fedges;
+
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
+  int size = MSTK_Comm_size();
 
   /* label 1-ring boundary face as POVERLAP */
   idx = 0;
@@ -85,15 +89,18 @@ int MESH_LabelPType_Face(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
      Label the region that has OVERLAP vertex as OVERLAP
   */
 
-int MESH_LabelPType_Region(Mesh_ptr submesh, int rank, int num, MPI_Comm comm) {
+int MESH_LabelPType_Region(Mesh_ptr submesh) {
   int i, idx;
   MRegion_ptr mr;
   MFace_ptr mf;
   MVertex_ptr me;
   MVertex_ptr mv;
   List_ptr rverts, redges, rfaces;
-  idx = 0;
   
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
+  int size = MSTK_Comm_size();
+
   /* label 1-ring boundary region as POVERLAP */
   idx = 0;
   while( (mr = MESH_Next_Region(submesh,&idx)) ) {

@@ -47,10 +47,10 @@ int main(int argc, char *argv[]) {
   strcpy(basename,argv[1]);
   basename[strlen(basename)-5] = '\0';
 
-
-  mesh = MESH_New(UNKNOWN_REP);
-
+  mesh = NULL;
   if (rank == 0) {
+    mesh = MESH_New(UNKNOWN_REP);
+
     MESH_InitFromFile(mesh, filename);
     
     if (MESH_Num_Regions(mesh) > 0) {
@@ -62,7 +62,6 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
       exit(-1);
     }
-    mymesh = mesh;
   }
 
   DebugWait=0;
@@ -71,8 +70,10 @@ int main(int argc, char *argv[]) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(&mymesh, &dim, ring, with_attr, 
-                       rank, num, MPI_COMM_WORLD);
+  MSTK_Mesh_Distribute(mesh, &mymesh, &dim, ring, with_attr, method); 
+
+  if (rank == 0)
+    MESH_Delete(mesh);
 
   /* Can just do this too */
 
@@ -120,7 +121,7 @@ int main(int argc, char *argv[]) {
   /* Update attributes across processors */
   
   fprintf(stderr,"Updating attributes on proc %-d...",rank);
-  MSTK_UpdateAttr(mymesh,rank,num,MPI_COMM_WORLD);
+  MSTK_UpdateAttr(mymesh);
   fprintf(stderr,"done\n");
 
 
@@ -203,7 +204,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"done\n");
 
     fprintf(stderr,"Updating attributes on proc %-d...",rank);
-    MSTK_UpdateAttr(mymesh,rank,num,MPI_COMM_WORLD);
+    MSTK_UpdateAttr(mymesh);
     fprintf(stderr,"done\n");
 
     fprintf(fp,"\n\n");

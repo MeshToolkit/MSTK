@@ -15,49 +15,50 @@ extern "C" {
      This function receives mesh from processor rank in communicator comm
      attrib list is received, but no attrib values.
      call MESH_RecvAttr() to update entity attribute values
-     send_rank: the rank of sending processor
+     fromrank: the rank of sending processor
      rank: the rank of receiving processor
 
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm);
-  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm);
-  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm);
-  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm);
-  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm);
+  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank);
+  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank);
+  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int fromrank);
+  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int fromrank);
+  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int fromrank);
 
   static int (*MESH_Vol_RecvMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, 
 						   int *mesh_info, 
-						   int send_rank, int rank, 
-						   MPI_Comm comm) = 
+						   int fromrank) =
   {MESH_Vol_RecvMesh_FN, MESH_Vol_RecvMesh_FN, MESH_Vol_RecvMesh_R1R2, 
    MESH_Vol_RecvMesh_R1R2, MESH_Vol_RecvMesh_R4};
   static int (*MESH_Surf_RecvMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, 
 						    int *mesh_info, 
-						    int send_rank, int rank, 
-						    MPI_Comm comm) = 
+						    int fromrank) =
   {MESH_Surf_RecvMesh_FN, MESH_Surf_RecvMesh_FN, MESH_Surf_RecvMesh_R1R2R4, 
    MESH_Surf_RecvMesh_R1R2R4, MESH_Surf_RecvMesh_R1R2R4};
 
 
 
-  int MESH_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, MPI_Comm comm) {
+  int MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank) {
     int mesh_info[10], count;
     MPI_Status status;
     RepType rtype;
-    
+
+    MPI_Comm comm = MSTK_Comm();
+    int rank = MSTK_Comm_rank();
+
     /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
     /* receive mesh_info */
-    MPI_Recv(mesh_info,10,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(mesh_info,10,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
     
     rtype = mesh_info[0];
     
     if (dim == 3)
-      (*MESH_Vol_RecvMesh_jmp[rtype])(mesh,mesh_info,send_rank,rank,comm);
+      (*MESH_Vol_RecvMesh_jmp[rtype])(mesh,mesh_info,fromrank);
     else if(dim == 2) 
-      (*MESH_Surf_RecvMesh_jmp[rtype])(mesh,mesh_info,send_rank,rank,comm);
+      (*MESH_Surf_RecvMesh_jmp[rtype])(mesh,mesh_info,fromrank);
     else {
       MSTK_Report("MESH_RecvMesh()","only receive volume or surface mesh",MSTK_ERROR);
       exit(-1);
@@ -70,7 +71,7 @@ extern "C" {
 
 
 
-  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
+  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank) {
     int i, j, nevs, nevs_local, nfe, nfes, nfes_local, natt, nset, count, ncomp;
     int nv, ne, nf, *fedirs;
     MVertex_ptr *verts, *fverts;
@@ -87,6 +88,8 @@ extern "C" {
     char *list_attr_names, *list_mset_names;
     double coor[3];
 
+    MPI_Comm comm = MSTK_Comm();
+    int rank = MSTK_Comm_rank();
 
     /* basic mesh information */
     rtype = mesh_info[0];
@@ -105,10 +108,10 @@ extern "C" {
     double *list_coor = (double *) malloc(3*nv*sizeof(double));
 
     /* receive vertex */
-    MPI_Recv(list_vertex,3*nv,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_vertex,3*nv,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
     /* printf("num of vertex received %d on rank %d\n",nv,rank); */
-    MPI_Recv(list_coor,3*nv,MPI_DOUBLE,send_rank,rank,comm,&status);
+    MPI_Recv(list_coor,3*nv,MPI_DOUBLE,fromrank,rank,comm,&status);
     verts = (MVertex_ptr *) malloc(nv*sizeof(MVertex_ptr));
     for(i = 0; i < nv; i++) {
       verts[i] = MV_New(mesh);
@@ -128,7 +131,7 @@ extern "C" {
 
     int *list_edge = (int *) malloc(nevs*sizeof(int));
 
-    MPI_Recv(list_edge,nevs,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_edge,nevs,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
 
     edges = (MEdge_ptr *) malloc(ne*sizeof(MEdge_ptr));
@@ -153,7 +156,7 @@ extern "C" {
 
     int *list_face = (int *) malloc(nfes*sizeof(int));
 
-    MPI_Recv(list_face,nfes,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_face,nfes,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
 
     fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
@@ -184,8 +187,8 @@ extern "C" {
     if(natt) {
       list_attr = (int *) malloc(natt*sizeof(int));
       list_attr_names = (char *) malloc((natt)*256*sizeof(char));
-      MPI_Recv(list_attr,natt,MPI_INT,send_rank,rank,comm,&status);
-      MPI_Recv(list_attr_names,natt*256,MPI_CHAR,send_rank,rank,comm,&status);
+      MPI_Recv(list_attr,natt,MPI_INT,fromrank,rank,comm,&status);
+      MPI_Recv(list_attr_names,natt*256,MPI_CHAR,fromrank,rank,comm,&status);
       MPI_Get_count(&status,MPI_INT,&count);
       for(i = 0; i < natt; i++) {
 	strcpy(attname,&list_attr_names[i*256]);
@@ -210,8 +213,8 @@ extern "C" {
       list_mset = (int *) malloc(nset*sizeof(int));
       list_mset_names = (char *) malloc((nset)*256*sizeof(char));
     
-      MPI_Recv(list_mset,nset,MPI_INT,send_rank,rank,comm,&status);
-      MPI_Recv(list_mset_names,nset*256,MPI_CHAR,send_rank,rank,comm,&status);
+      MPI_Recv(list_mset,nset,MPI_INT,fromrank,rank,comm,&status);
+      MPI_Recv(list_mset_names,nset*256,MPI_CHAR,fromrank,rank,comm,&status);
       MPI_Get_count(&status,MPI_INT,&count);
 
       for(i = 0; i < nset; i++) {
@@ -233,7 +236,7 @@ extern "C" {
     return 1;
   }
 
-  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
+  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank) {
     int i, j, nevs, nevs_local, nfes, nfes_local, nrv, nrfs, nrfs_local;
     int count, natt, nset, ncomp, nv, ne, nf, nr, nfe, nrf, *fedirs, *rfdirs;
     MVertex_ptr *verts, *rverts;
@@ -251,6 +254,8 @@ extern "C" {
     char *list_attr_names, *list_mset_names;
     double coor[3];
    
+    MPI_Comm comm = MSTK_Comm();
+    int rank = MSTK_Comm_rank();
 
     /* mesh_info store the mesh reptype, nv, nr, nrvs and natt */
     MPI_Get_count(&status,MPI_INT,&count);
@@ -274,12 +279,12 @@ extern "C" {
     double *list_coor = (double *) malloc(3*nv*sizeof(double));
 
     /* receive vertex */
-    MPI_Recv(list_vertex,3*nv,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_vertex,3*nv,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
 
     /* printf("num of vertex received %d on rank %d\n",nv,rank); */
 
-    MPI_Recv(list_coor,3*nv,MPI_DOUBLE,send_rank,rank,comm,&status);
+    MPI_Recv(list_coor,3*nv,MPI_DOUBLE,fromrank,rank,comm,&status);
     verts = (MVertex_ptr *) malloc(nv*sizeof(MVertex_ptr));
     for(i = 0; i < nv; i++) {
       verts[i] = MV_New(mesh);
@@ -299,7 +304,7 @@ extern "C" {
 
     int *list_edge = (int *) malloc(nevs*sizeof(int));
 
-    MPI_Recv(list_edge,nevs,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_edge,nevs,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
 
     edges = (MEdge_ptr *) malloc(ne*sizeof(MEdge_ptr));
@@ -324,7 +329,7 @@ extern "C" {
 
     int *list_face = (int *) malloc(nfes*sizeof(int));
 
-    MPI_Recv(list_face,nfes,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_face,nfes,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
 
     fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
@@ -358,7 +363,7 @@ extern "C" {
 
     int *list_region = (int *) malloc(nrfs*sizeof(int));
 
-    MPI_Recv(list_region,nrfs,MPI_INT,send_rank,rank,comm,&status);
+    MPI_Recv(list_region,nrfs,MPI_INT,fromrank,rank,comm,&status);
     MPI_Get_count(&status,MPI_INT,&count);
 
     rfaces = (MFace_ptr *) malloc(MAXPF3*sizeof(MFace_ptr));
@@ -389,8 +394,8 @@ extern "C" {
       list_attr = (int *) malloc(natt*sizeof(int));
       list_attr_names = (char *) malloc((natt)*256*sizeof(char));
     
-      MPI_Recv(list_attr,natt,MPI_INT,send_rank,rank,comm,&status);
-      MPI_Recv(list_attr_names,natt*256,MPI_CHAR,send_rank,rank,comm,&status);
+      MPI_Recv(list_attr,natt,MPI_INT,fromrank,rank,comm,&status);
+      MPI_Recv(list_attr_names,natt*256,MPI_CHAR,fromrank,rank,comm,&status);
       MPI_Get_count(&status,MPI_INT,&count);
 
       for(i = 0; i < natt; i++) {
@@ -417,8 +422,8 @@ extern "C" {
       list_mset = (int *) malloc(nset*sizeof(int));
       list_mset_names = (char *) malloc((nset)*256*sizeof(char));
     
-      MPI_Recv(list_mset,nset,MPI_INT,send_rank,rank,comm,&status);
-      MPI_Recv(list_mset_names,nset*256,MPI_CHAR,send_rank,rank,comm,&status);
+      MPI_Recv(list_mset,nset,MPI_INT,fromrank,rank,comm,&status);
+      MPI_Recv(list_mset_names,nset*256,MPI_CHAR,fromrank,rank,comm,&status);
       MPI_Get_count(&status,MPI_INT,&count);
 
       for(i = 0; i < nset; i++) {
@@ -445,19 +450,18 @@ extern "C" {
 
 
 
-  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
+  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int fromrank) {
     MSTK_Report("MESH_Surf_RecvMesh_R1R2R4","Not implemented",MSTK_FATAL);
     return 0;
   }
 
-  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
+  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int fromrank) {
     MSTK_Report("MESH_Vol_RecvMesh_R1R2","Not implemented",MSTK_FATAL);
     return 0;
   }
 
 
-  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int send_rank, int rank, MPI_Comm comm) {
-
+  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int fromrank) {
     MSTK_Report("MESH_Vol_RecvMesh_R4","Not implemented",MSTK_FATAL);
     return 0;
   }

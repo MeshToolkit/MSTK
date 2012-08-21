@@ -39,9 +39,9 @@ TEST(VertexUpdate2D) {
 
   //  CHECK(status);
 
-
+  Mesh_ptr mesh0;
   if (rank == 0) {
-    Mesh_ptr mesh0 = MESH_New(UNKNOWN_REP);
+    mesh0 = MESH_New(UNKNOWN_REP);
 
     sprintf(filename,"parallel/4proc/quad10x10.mstk");
     MESH_InitFromFile(mesh0, filename);
@@ -55,7 +55,6 @@ TEST(VertexUpdate2D) {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
       exit(-1);
     }
-    mesh = mesh0;
   }
 
 //  DebugWait=1;
@@ -64,10 +63,9 @@ TEST(VertexUpdate2D) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr, rank, nproc, 
-		       MPI_COMM_WORLD);
+  MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
 
-
+  if (rank == 0) MESH_Delete(mesh0);
 
   MAttrib_ptr xyzatt;
   xyzatt = MAttrib_New(mesh,"xyzatt",VECTOR,MVERTEX,3);
@@ -90,7 +88,7 @@ TEST(VertexUpdate2D) {
   fprintf(stderr,"Deformed mesh proc %-d\n",rank);
 
   MESH_UpdateVertexCoords(mesh);
-  MSTK_UpdateAttr(mesh,rank,nproc,MSTK_Comm());
+  MSTK_UpdateAttr(mesh);
 
   fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
 

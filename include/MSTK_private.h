@@ -157,6 +157,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 				      int *procids);
   */
   int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
+  int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank);
 
 
   /* Extra functionality for List manipulation - risky for uninformed users */
@@ -271,35 +272,34 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_Sort_GhostLists(Mesh_ptr mesh, 
                            int (*compfunc)(const void*, const void*));
 
-  int MESH_BuildConnection(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm);
+  int MESH_BuildConnection(Mesh_ptr submesh, int topodim);
 
-  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim, int rank, int num, MPI_Comm comm);
-  int MESH_AssignGlobalIDs_point(Mesh_ptr submesh, int topodim, int rank, int num, MPI_Comm comm);
+  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim);
+  int MESH_AssignGlobalIDs_p2p(Mesh_ptr submesh, int topodim);
 
 
   /* Mesh Partitioning Routines*/
 
   int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
-  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm);
-  int        MESH_Get_Partitioning(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm comm, int **part);
-  int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, 
-				 int *part, int ring, int with_attr, Mesh_ptr *submeshes);
+  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part);
   int        MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes);
   int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
 
   /* build processor boundary */
   int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
-  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs, int rank, int num,  MPI_Comm comm);
-  int        MESH_LabelPType(Mesh_ptr submesh, int topodim, int rank, int num,  MPI_Comm comm);
+  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs);
+  int        MESH_LabelPType(Mesh_ptr submesh, int topodim);
   int        MESH_BuildSubMesh(Mesh_ptr mesh, int topodim, Mesh_ptr submesh);
   int        MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes);
   /* add ghost elements */
   int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
   /* send and receive mesh */
-  int        MESH_SendMesh(Mesh_ptr mesh, int rank, MPI_Comm comm);
-  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm);
-  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int send_rank, int rank, MPI_Comm comm);
-  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int rank, int recv_rank, MPI_Comm comm);
+  int        MESH_SendMesh(Mesh_ptr mesh, int torank);
+  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank);
+  int        MESH_SendMSet(Mesh_ptr mesh, const char *attr_name, int torank);
+  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank);
+  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank);
+  int        MESH_RecvMSet(Mesh_ptr mesh, const char *attr_name, int fromrank);
 
 
 
@@ -316,10 +316,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* functions to update ghost info and attributes */
   /* Must be preceded by MESH_Update_ProcessorRel - Not recommended for users */
-  int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, int rank, 
-			     int num,  MPI_Comm comm);
-  int        MESH_Update_ParallelAdj(Mesh_ptr mesh, int rank, int num,  
-				   MPI_Comm comm);
+  int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name);
+  int        MESH_Update_ParallelAdj(Mesh_ptr mesh);
 
 
   void       MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v);
@@ -347,9 +345,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   /* Functions for entity sets */
 
   int        MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr mset);
-  int        MESH_SendMSet(Mesh_ptr mesh, const char *set_name, int rank, MPI_Comm comm);
-  int        MESH_RecvMSet(Mesh_ptr mesh, const char *set_name, int rank, int recv_rank, MPI_Comm comm);
 
+  /* Functions for improving searching for entities by global ID */
 
   void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
   void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);

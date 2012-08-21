@@ -174,6 +174,7 @@ extern "C" {
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
   
   void       MESH_Renumber(Mesh_ptr mesh);
+  int        MESH_Copy(Mesh_ptr srcmesh, Mesh_ptr dstmesh, int with_attr, int with_sets);
 
   int MESH_AutoLock(Mesh_ptr mesh);
   void MESH_Set_AutoLock(Mesh_ptr mesh, int autolock);

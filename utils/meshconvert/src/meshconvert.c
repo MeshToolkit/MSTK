@@ -201,6 +201,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    Mesh_ptr mesh0;
     if (rank == 0) {
       fprintf(stderr,"Partitioning mesh into %d parts...",numprocs);
 
@@ -212,14 +213,16 @@ int main(int argc, char *argv[]) {
         fprintf(stderr,"Partitioning possible only for 2D or 3D meshes\n");
         exit(-1);
       }
+
+      mesh0 = mesh;
     }
      
     int ring = 0; /* No ghost ring of elements */
     int with_attr = 1; /* Do allow exchange of attributes */
     int method = 0; /* Use Metis as the partitioner */
         
-    int ok = MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr,
-                                  rank, numprocs, MPI_COMM_WORLD);
+    int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
+                                  method);
 
     if (rank == 0) {
       if (ok)

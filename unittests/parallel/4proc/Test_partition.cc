@@ -10,7 +10,7 @@ TEST(Partition2D) {
   int nproc, rank, status, dim;
   int *faceids, *gfaceids, *ofaceids;
   int *vertexids, *gvertexids, *overtexids;
-  Mesh_ptr mesh, mymesh;
+  Mesh_ptr mymesh;
   MFace_ptr mf;
   MVertex_ptr mv;
 
@@ -57,23 +57,32 @@ TEST(Partition2D) {
   nproc = MSTK_Comm_size();
   rank = MSTK_Comm_rank();
 
+  Mesh_ptr globalmesh=NULL;
+
   if (rank == 0) {
 
-    mesh = MESH_New(UNKNOWN_REP);
-    status = MESH_InitFromFile(mesh,"parallel/4proc/quad6x5.mstk");
+    globalmesh = MESH_New(UNKNOWN_REP);
+    status = MESH_InitFromFile(globalmesh,"parallel/4proc/quad6x5.mstk");
 
     CHECK(status);
 
-    CHECK(!MESH_Num_Regions(mesh));
-    CHECK(MESH_Num_Faces(mesh));
+    CHECK(!MESH_Num_Regions(globalmesh));
+    CHECK(MESH_Num_Faces(globalmesh));
 
     dim = 2;
-    mymesh = mesh;
-    
   }
     
-  int method = 0; /* with Metis */ /* this arg temporarily eliminated */
-  status = MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, rank, nproc, MPI_COMM_WORLD);
+  int method = 0; /* with Metis */
+  status = MSTK_Mesh_Distribute(globalmesh,&mymesh, &dim, 1, 1, method);
+
+  CHECK(status);
+
+
+  if (rank == 0)
+    MESH_Delete(globalmesh);
+
+
+  status = MESH_Parallel_Check(mymesh);
 
   CHECK(status);
 

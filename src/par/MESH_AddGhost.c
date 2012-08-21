@@ -684,8 +684,8 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
 
     lmr = MR_New(submesh);
-    MR_Set_GEntID(lmr,MR_GEntID(gmf));
-    MR_Set_GEntDim(lmr,MR_GEntDim(gmf));
+    MR_Set_GEntID(lmr,MR_GEntID(gmr));
+    MR_Set_GEntDim(lmr,MR_GEntDim(gmr));
     MR_Set_PType(lmr,PGHOST);
     MR_Set_Faces(lmr,nrf,lrfaces,lrfdirs);
     MR_Set_GlobalID(lmr,MR_GlobalID(gmr));

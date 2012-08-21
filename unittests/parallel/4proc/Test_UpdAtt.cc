@@ -22,8 +22,9 @@ TEST(UpdAtt2D_Dist) {
   nproc = MSTK_Comm_size();
   rank = MSTK_Comm_rank();
 
+  Mesh_ptr mesh0;
   if (rank == 0) {
-    Mesh_ptr mesh0 = MESH_New(UNKNOWN_REP);
+    mesh0 = MESH_New(UNKNOWN_REP);
 
     sprintf(filename,"parallel/4proc/quad10x10.mstk");
     MESH_InitFromFile(mesh0, filename);
@@ -37,7 +38,6 @@ TEST(UpdAtt2D_Dist) {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
       exit(-1);
     }
-    mesh = mesh0;
   }
 
 //  DebugWait=1;
@@ -46,10 +46,9 @@ TEST(UpdAtt2D_Dist) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(&mesh, &dim, ring, with_attr, rank, nproc, 
-		       MSTK_Comm());
+  MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
 
-
+  if (rank == 0) MESH_Delete(mesh0);
 
   MAttrib_ptr vcolatt, fcolatt;
   vcolatt = MAttrib_New(mesh,"vcolatt",INT,MVERTEX);
@@ -65,7 +64,7 @@ TEST(UpdAtt2D_Dist) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh,rank,nproc,MSTK_Comm());
+  MSTK_UpdateAttr(mesh);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {
@@ -148,7 +147,7 @@ TEST(UpdAtt2D_Weave) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh,rank,nproc,MSTK_Comm());
+  MSTK_UpdateAttr(mesh);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {

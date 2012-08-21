@@ -21,7 +21,7 @@ extern "C" {
   */
 
 
-int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm comm) {
+int MESH_Update_ParallelAdj(Mesh_ptr mesh) {
   int i, idx, nv, ne, nf, nr, local_ov_num[4];
   MVertex_ptr mv;
   MEdge_ptr me;
@@ -29,6 +29,10 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
   MRegion_ptr mr;
   MType mtype;
 
+  MPI_Comm comm = MSTK_Comm();
+  int myprtn = MSTK_Comm_rank();
+  int numprtns = MSTK_Comm_size();
+  
   /* set ghost adjacencies */
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx)))

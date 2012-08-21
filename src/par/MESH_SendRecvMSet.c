@@ -19,7 +19,7 @@ extern "C" {
      set_name: the name of the attribute 
   */
 
-int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm) {
+  int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int torank) {
   int i, idx;
   int num, nent;
   int *list_info, *list_value_int;
@@ -27,6 +27,8 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
   MType mtype;
   MEntity_ptr ment;
   MSet_ptr mset;
+
+  MPI_Comm comm = MSTK_Comm();
 
   mset = MESH_MSetByName(mesh,mset_name);
   if(!mset) {
@@ -40,7 +42,7 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
   list_info = (int *)MSTK_malloc(sizeof(int));
   list_info[0] = nent;
 
-  MPI_Send(list_info,1,MPI_INT,rank,rank,comm);
+  MPI_Send(list_info,1,MPI_INT,torank,torank,comm);
 
   if (!nent) {
     MSTK_free(list_info);
@@ -59,7 +61,7 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
   
 
   /* send info */
-  MPI_Send(list_value_int,num,MPI_INT,rank,rank,comm);
+  MPI_Send(list_value_int,num,MPI_INT,torank,torank,comm);
 
   /* release the send buffer */
   MSTK_free(list_info);
@@ -75,13 +77,12 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
      Called by slave processor.
 
      set_name: name of the entity set
-     send_rank: rank of the send processor
+     fromrank: rank of the send processor
      rank: rank of the receiving processor
 
   */
 
-  int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, 
-                    int send_rank, int rank,  MPI_Comm comm) {
+  int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int fromrank) {
   int i, idx, gid, count;
   int num, nent;
   int *list_info, *list_value_int;
@@ -93,6 +94,10 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
   MRegion_ptr rgn;
   MSet_ptr mset;
   MPI_Status status;
+
+
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
 
   MESH_Enable_GlobalIDSearch(mesh); /* no harm in calling repeatedly */
   
@@ -108,7 +113,7 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
 
   /* receive info */
   list_info = (int *)MSTK_malloc(sizeof(int));
-  MPI_Recv(list_info,1,MPI_INT,send_rank,rank,comm,&status);
+  MPI_Recv(list_info,1,MPI_INT,fromrank,rank,comm,&status);
   MPI_Get_count(&status,MPI_INT,&count);
 
   assert(1==count);
@@ -123,7 +128,7 @@ int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int rank, MPI_Comm comm)
   num = 2*nent;
   list_value_int = (int *)MSTK_malloc(num*sizeof(int));
 
-  MPI_Recv(list_value_int,num,MPI_INT,send_rank,rank,comm, &status);
+  MPI_Recv(list_value_int,num,MPI_INT,fromrank,rank,comm, &status);
   MPI_Get_count(&status,MPI_INT,&count);
   assert(num==count);
 

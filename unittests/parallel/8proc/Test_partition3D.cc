@@ -50,6 +50,7 @@ TEST(Partition3D_sym) {
 
 
   MSTK_Init();
+  MSTK_Set_Comm(MPI_COMM_WORLD);
 
   int debugwait=0;
   while (debugwait);
@@ -58,24 +59,25 @@ TEST(Partition3D_sym) {
   MPI_Comm_size(MPI_COMM_WORLD,&nproc);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
+  Mesh_ptr globalmesh=NULL;
   if (rank == 0) {
 
-    mesh = MESH_New(UNKNOWN_REP);
-    status = MESH_InitFromFile(mesh,"parallel/8proc/hex2x2x2.mstk");
+    globalmesh = MESH_New(UNKNOWN_REP);
+    status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex2x2x2.mstk");
 
     CHECK(status);
 
-    CHECK(MESH_Num_Regions(mesh));
+    CHECK(MESH_Num_Regions(globalmesh));
 
     dim = 3;
-    mymesh = mesh;
-    
   }
     
-  status = MSTK_Mesh_Distribute(&mymesh, &dim, 1, 1, rank, nproc, MPI_COMM_WORLD);
+  int method = 0; /* partition method is METIS */
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, 1, 1, method);
 
   CHECK(status);
 
+  if (rank == 0) MESH_Delete(globalmesh);
 
   double centroid[3] = {0.0,0.0,0.0};
   double rxyz[8][3];

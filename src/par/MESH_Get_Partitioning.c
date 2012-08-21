@@ -19,9 +19,13 @@ extern "C" {
   */
 
 
-int MESH_Get_Partitioning(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm comm, int **part) {
+int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part) {
   int ok = 1, nf, nr, ncells;
-  
+
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
+  int num = MSTK_Comm_size();
+
   /* basic mesh information */
   
   if ( rank == 0 ) {
@@ -62,7 +66,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int num, int method, int rank, MPI_Comm
        Zoltan partitioner on all processors */
 
 #ifdef _MSTK_HAVE_ZOLTAN
-    ok = MESH_PartitionWithZoltan(mesh, num, part,rank,comm);
+    ok = MESH_PartitionWithZoltan(mesh, num, part);
 #else
     MSTK_Report("MESH_Partition","Zoltan not enabled",MSTK_FATAL);
 #endif

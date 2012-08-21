@@ -39,7 +39,7 @@ typedef struct{
 			    int wgt_dim, float *ewgts, int *ierr);     
 
   
-  int MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, int rank, MPI_Comm mpi_comm) { 
+  int MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part) { 
 
   MEdge_ptr fedge;
   MFace_ptr mf, oppf, rface;
@@ -57,6 +57,9 @@ typedef struct{
   int changes, numGidEntries, numLidEntries, numImport, numExport;
    ZOLTAN_ID_PTR importGlobalGids, importLocalGids, exportGlobalGids, exportLocalGids;
   int *importProcs, *importToPart, *exportProcs, *exportToPart;
+
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
  
   printf("zoltan on processor %d\n",rank);
   rc = Zoltan_Initialize(0, NULL, &ver);

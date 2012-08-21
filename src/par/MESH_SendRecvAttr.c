@@ -19,7 +19,7 @@ extern "C" {
 
      Author(s): Rao Garimella
   */
-int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm) {
+int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank) {
   int j, k;
   int num, ncomp, ival;
   double rval;
@@ -31,6 +31,8 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm)
   MAttType att_type;
   MEntity_ptr ment;
   MAttrib_ptr attrib;
+
+  MPI_Comm comm = MSTK_Comm();
 
   attrib = MESH_AttribByName(mesh,attr_name);
   /* if there is no such attribute */
@@ -107,12 +109,12 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm)
   }
   
   /* send info */
-  MPI_Send(list_info,num,MPI_INT,rank,rank,comm);
+  MPI_Send(list_info,num,MPI_INT,torank,torank,comm);
   /* send value */
   if (att_type == INT)
-    MPI_Send(list_value_int,num*ncomp,MPI_INT,rank,rank,comm);
+    MPI_Send(list_value_int,num*ncomp,MPI_INT,torank,torank,comm);
   else
-    MPI_Send(list_value_double,num*ncomp,MPI_DOUBLE,rank,rank,comm);
+    MPI_Send(list_value_double,num*ncomp,MPI_DOUBLE,torank,torank,comm);
 
   /* release the send buffer */
   MSTK_free(list_info);
@@ -127,12 +129,12 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int rank, MPI_Comm comm)
      this function receive attribute
      called by slave processor.
      attr_name: name of the attribute
-     send_rank: rank of the send processor
+     fromrank: rank of the send processor
      rank: rank of the receiving processor
      
   */
 
-int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int send_rank, int rank,  MPI_Comm comm) {
+int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank) {
   int j, k, count;
   int num, ncomp, ival=0;
   double rval=0.0;
@@ -145,6 +147,9 @@ int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int send_rank, int rank,
   MAttrib_ptr attrib;
   MPI_Status status;
   
+  MPI_Comm comm = MSTK_Comm();
+  int rank = MSTK_Comm_rank();
+
   attrib = MESH_AttribByName(mesh,attr_name);
 
   /* get attribute properties */
@@ -178,22 +183,22 @@ int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int send_rank, int rank,
 
   /* receive info */
   list_info = (int *)MSTK_malloc((num)*sizeof(int));
-  MPI_Recv(list_info,num,MPI_INT,send_rank,rank,comm,&status);
+  MPI_Recv(list_info,num,MPI_INT,fromrank,rank,comm,&status);
   MPI_Get_count(&status,MPI_INT,&count);
 
   assert((num)==count);
-  /* printf("received %d attributes of attribute index %d in MESH_RecvAttr() from rank %d on rank %d\n",count,attr_index,send_rank,rank); */
+  /* printf("received %d attributes of attribute index %d in MESH_RecvAttr() from rank %d on rank %d\n",count,attr_index,fromrank,rank); */
 
   list_value_int = (int *)MSTK_malloc((num)*ncomp*sizeof(int));
   list_value_double = (double *)MSTK_malloc(num*ncomp*sizeof(double));
   /* reveive value */
   if (att_type == INT) {
-    MPI_Recv(list_value_int,(num)*ncomp,MPI_INT,send_rank,rank,comm, &status);
+    MPI_Recv(list_value_int,(num)*ncomp,MPI_INT,fromrank,rank,comm, &status);
     MPI_Get_count(&status,MPI_INT,&count);
     assert(num*ncomp==count);
   }
   else {
-    MPI_Recv(list_value_double,num*ncomp,MPI_DOUBLE,send_rank,rank,comm, &status);
+    MPI_Recv(list_value_double,num*ncomp,MPI_DOUBLE,fromrank,rank,comm, &status);
     MPI_Get_count(&status,MPI_DOUBLE,&count);
     assert(ncomp*num==count);
   }

@@ -3551,23 +3551,7 @@ void MESH_Renumber(Mesh_ptr mesh) {
   return;
 }
 
-  /*
 
-Mesh_ptr MESH_Copy(Mesh_ptr oldmesh) {
-  MVertex_ptr mv;
-  MEdge_ptr me;
-  MFace_ptr mf;
-  MRegion_ptr mr;
-  int idx, n;
-
-  newmesh = MESH_New(oldmesh->repType);
-
-  newmesh->nv = oldmesh->nv;
-
-  return;
-}
-
-  */
 
 
   /* Extra functionality for hash-tables */
