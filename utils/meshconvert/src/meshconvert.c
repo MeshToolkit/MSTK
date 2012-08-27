@@ -192,45 +192,51 @@ int main(int argc, char *argv[]) {
     /* Need to make sure that we have a mesh only on processor 0 */
     /* For now we cannot repartition                             */
 
+    int prepartitioned = 0, mesh_present = 0;
+
     int dim = 3;
     if (rank > 0) {
-      if (mesh && MESH_Num_Vertices(mesh) != 0) {
-        fprintf(stderr,"Mesh is already distributed - cannot repartition\n");
-        MPI_Finalize();
-        exit(-1);
-      }
+      if (mesh && MESH_Num_Vertices(mesh) != 0)
+        mesh_present = 1;
     }
+    
+    MPI_Reduce(&mesh_present,&prepartitioned,1,MPI_INT,MPI_MAX,0,MPI_COMM_WORLD);
+    MPI_Bcast(&prepartitioned,1,MPI_INT,0,MPI_COMM_WORLD);
 
-    Mesh_ptr mesh0;
-    if (rank == 0) {
-      fprintf(stderr,"Partitioning mesh into %d parts...",numprocs);
-
-      if (MESH_Num_Regions(mesh))
-        dim = 3;
-      else if (MESH_Num_Faces(mesh))
-        dim = 2;
-      else {
-        fprintf(stderr,"Partitioning possible only for 2D or 3D meshes\n");
-        exit(-1);
-      }
-
-      mesh0 = mesh;
-    }
-     
-    int ring = 0; /* No ghost ring of elements */
-    int with_attr = 1; /* Do allow exchange of attributes */
-    int method = 0; /* Use Metis as the partitioner */
+    if (!prepartitioned) {
+    
+      Mesh_ptr mesh0;
+      if (rank == 0) {
+        fprintf(stderr,"Partitioning mesh into %d parts...",numprocs);
         
-    int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
-                                  method);
-
-    if (rank == 0) {
-      if (ok)
-        fprintf(stderr,"done\n");
-      else {
-        fprintf(stderr,"failed\n");
-        exit(-1);
+        if (MESH_Num_Regions(mesh))
+          dim = 3;
+        else if (MESH_Num_Faces(mesh))
+          dim = 2;
+        else {
+          fprintf(stderr,"Partitioning possible only for 2D or 3D meshes\n");
+          exit(-1);
+        }
+        
+        mesh0 = mesh;
       }
+      
+      int ring = 0; /* No ghost ring of elements */
+      int with_attr = 1; /* Do allow exchange of attributes */
+      int method = 0; /* Use Metis as the partitioner */
+      
+      int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
+                                    method);
+      
+      if (rank == 0) {
+        if (ok)
+          fprintf(stderr,"done\n");
+        else {
+          fprintf(stderr,"failed\n");
+          exit(-1);
+        }
+      }
+
     }
   }
 
