@@ -36,6 +36,9 @@ extern "C" {
   /*this defines the maximum number of side set per element block*/
 
   /* Function to export MSTK mesh to EXODUSII format               
+
+     Export only owned not ghost elements in distributed meshes
+
      Global Parameter information:                                     
      num_node, num_elem, num_elem_blk, num_node_set, num_side_set  
      Quality assurance information(optional)                       
@@ -45,26 +48,28 @@ extern "C" {
      opts[1] = 1 --- enable_set (sidesets, nodesets based on GEntID, GEntDim)
   */
 
+#ifdef MSTK_HAVE_MPI
+  int ownedmk;
+#endif
+
   int MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
 			    const int natt, const char **attnames, 
 			    const int *opts) {
 
     int enable_set, verbose;
     int i, j, k, idx, idx2;
-    int nv, ne, nf, nr;
+    int nv, ne, nf, nr, nvall, neall, nfall, nrall;
     int num_element_block, num_side_set, num_node_set;
-    int nvfblock, mkid, block_id, *connect, *nnpe;
+    int nvfblock, block_id, *connect, *nnpe;
     MVertex_ptr mv,  vertex;
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
     RepType reptype;
     char MESH_rtype_str[5][3] = {"F1\0","F4\0","R1\0","R2\0","R4\0"};
-    /*For pure 2D mesh, boundary_dim is 1, for surface mesh, it is 2 */
     int jv;
     double xyz_coord[3];
-    int boundary_dim;
-    reptype = MESH_RepType(mesh);
+    int boundary_dim;  /* For pure 2D mesh, boundary_dim is 1, for surface mesh, it is 2 */
     int *element_block_ids, *side_set_ids, *node_set_ids;
     int num_face_block;
     char **element_block_types, block_name[256];
@@ -79,6 +84,10 @@ extern "C" {
 				{0,0,0,0,0,0}, /* PYRAMID, no support in exo*/
 			        {4,5,1,2,3,0}, /* PRISM, must verify nums */
 			        {5,6,1,2,3,4}};/* HEX */
+
+
+    reptype = MESH_RepType(mesh);
+
 
 #ifdef MSTK_HAVE_MPI
     int rank, numprocs;
@@ -114,55 +123,135 @@ extern "C" {
     strcpy(modfilename,filename);
 #endif    
 
+
+
     verbose = opts ? opts[0] : 0;
     enable_set = opts ? opts[1] : 1;
 
     if (verbose)
       fprintf(stdout,"\nMesh representation type is %s\n", 
 	      MESH_rtype_str[reptype]);
-    nv = MESH_Num_Vertices(mesh);
-    ne = MESH_Num_Edges(mesh);
-    nf = MESH_Num_Faces(mesh);
-    nr = MESH_Num_Regions(mesh);
+    nv = nvall = MESH_Num_Vertices(mesh);
+    ne = neall = MESH_Num_Edges(mesh);
+    nf = nfall = MESH_Num_Faces(mesh);
+    nr = nrall = MESH_Num_Regions(mesh);
     
     if (nv == 0) {
       fprintf(stdout,"No vertices information \n");
       exit(-1);
     }
-    
+
+
     int element_dim = -1, side_dim = -1;
     int num_element = 0, num_side = 0;
-    if (nr) {
+
+    if (nrall) {
       element_dim = 3; side_dim = 2; boundary_dim = 2;
+
+#ifdef MSTK_HAVE_MPI
+
+      /* Mark only the owned regions */
+
+      ownedmk = MSTK_GetMarker();
+
+      nr = 0; nf = 0; ne = 0; nv = 0;
+      idx = 0;
+      while ((mr = MESH_Next_Region(mesh,&idx))) {
+        if (MR_PType(mr) != PGHOST) {
+          MEnt_Mark(mr,ownedmk);
+          nr++;
+
+          List_ptr rfaces = MR_Faces(mr);
+          idx2 = 0;
+          while ((mf = (MFace_ptr) List_Next_Entry(rfaces,&idx2))) {
+            if (!MEnt_IsMarked(mf,ownedmk)) {
+              MEnt_Mark(mf,ownedmk);
+              nf++;
+
+              List_ptr fedges = MF_Edges(mf,1,0);
+              int idx3 = 0;
+              while ((me = (MEdge_ptr) List_Next_Entry(fedges,&idx3))) {
+                if (!MEnt_IsMarked(me,ownedmk)) {
+                  MEnt_Mark(me,ownedmk);
+                  ne++;
+
+                  int kk;
+                  for (kk = 0; kk < 2; kk++) {
+                    mv = ME_Vertex(me,kk);
+                    if (!MEnt_IsMarked(mv,ownedmk)) {
+                      MEnt_Mark(mv,ownedmk);
+                      nv++;
+                    }
+                  }
+                }
+              } /* while (me...) */
+              List_Delete(fedges);
+            }
+          } /* while (mf...) */
+          List_Delete(rfaces);
+        }
+      }
+
+#endif
+        
+      
       num_element = nr; num_side = nf;
+
       if(verbose)
 	fprintf(stdout,"\nThis is a 3D volume mesh with %d Vertices, %d Edges, %d Faces and %d Regions\n",\
 		nv,ne,nf,nr);
+
     }
-    else if(nf) {
+    else if (nfall) {
+
       element_dim = 2; side_dim = 1; boundary_dim = 1;
+
+#ifdef MSTK_HAVE_MPI
+
+      /* Mark only the owned faces */
+
+      ownedmk = MSTK_GetMarker();
+
+      nr = 0; nf = 0; ne = 0; nv = 0;
+      idx2 = 0;
+      while ((mf = (MFace_ptr) MESH_Next_Face(mesh,&idx2))) {
+        if (MF_PType(mf) != PGHOST) {
+          MEnt_Mark(mf,ownedmk);
+          nf++;
+          
+          List_ptr fedges = MF_Edges(mf,1,0);
+          int idx3 = 0;
+          while ((me = (MEdge_ptr) List_Next_Entry(fedges,&idx3))) {
+            if (!MEnt_IsMarked(me,ownedmk)) {
+              MEnt_Mark(me,ownedmk);
+              ne++;
+              
+              int kk;
+              for (kk = 0; kk < 2; kk++) {
+                mv = ME_Vertex(me,kk);
+                if (!MEnt_IsMarked(mv,ownedmk)) {
+                  MEnt_Mark(mv,ownedmk);
+                  nv++;
+                }
+              }
+            }
+          } /* while (me...) */
+          List_Delete(fedges);
+        }
+      } /* while (mf...) */
+
+#endif
+
       num_element = nf; num_side = ne;
+
       if(verbose)
       fprintf(stdout,"\nThis is a 3D surface mesh with %d Vertices, %d Edges and %d Faces\n", nv,ne,nf);
-    }
-    else if(ne) {
-      element_dim = 1; side_dim = 0;
-      num_element = ne; num_side = nv;
-      if(verbose)
-      fprintf(stdout,"\nThis is a 3D curve mesh with %d Vertices and %d Edges\n", nv,ne);
-      exit(-1);
-    }
-    else if(nv) {
-      element_dim = 0; side_dim = 0;
-      num_element = nv; num_side = 0;
-      if(verbose)
-      fprintf(stdout,"\nThis is a 3D mesh with %d Vertices\n", nv);
-      exit(-1);
+
     }
     else {
-      fprintf(stdout,"\nThis is an empty mstk file\n");
+      MSTK_Report(funcname,"Writing of wire meshes or point clouds not supported",MSTK_ERROR);
       exit(-1);
-    }  
+    }
     
     /* decide if it is 2d planar mesh or 3D surface mesh */
 
@@ -201,6 +290,16 @@ extern "C" {
 
 
     
+    if(verbose) {
+      if (enable_set)
+	fprintf(stdout,"\nElement block and side set based on geometric id is enabled.\n");
+      else
+	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
+    }
+
+
+    /* COLLECT ELEMENT BLOCK INFO */
+
     /* Get element block information(based on element type, and
        geometric entity id) 
        In 3D,
@@ -210,37 +309,138 @@ extern "C" {
 
     */
 
-    if(verbose) {
-      if (enable_set)
-	fprintf(stdout,"\nElement block and side set based on geometric id is enabled.\n");
-      else
-	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
-    }
 
 
     MESH_Get_Element_Block_Info(mesh, &num_element_block, &element_blocks,
 				 &element_block_ids, &element_block_types);
+
+
+    int num_element_block_glob;
+    int *element_block_ids_glob;
+    char **element_block_types_glob;
+    List_ptr *element_blocks_glob;
+
+#ifdef MSTK_HAVE_MPI
     
+    int maxnum=0, maxnum1=0;
+    MPI_Allreduce(&num_element_block,&maxnum,1,MPI_INT,MPI_MAX,MSTK_Comm());
+
+    int *ebids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
+
+    for (i = 0; i < num_element_block; i++)
+      ebids_array_loc[i] = element_block_ids[i];
+
+    int *ebids_array_glob;
+    ebids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
+    
+    MPI_Gather(ebids_array_loc,maxnum,MPI_INT,ebids_array_glob,maxnum,MPI_INT,0,MSTK_Comm());
+
+    if (rank == 0) {
+
+      /* Make a unique list of block IDs */
+
+      maxnum1 = num_element_block;
+
+      for (i = 1; i < numprocs; i++) {
+
+        int offset = maxnum*i;
+        for (j = 0; j < maxnum; j++) {
+          if (ebids_array_glob[offset+j] == 0) continue;
+
+          /* Is this element block ID in the list of global element
+             block IDs being collected at the head of the
+             ebids_array_glob? */
+
+          int found = 0;
+          for (k = 0; k < maxnum1; k++) {
+            if (ebids_array_glob[offset+j] == ebids_array_glob[k]) {
+              found = 1;
+              break;
+            }
+          }
+
+          if (!found) {
+            
+            /* Found element block ID on processor i that is not in
+               the global list. Put it in. */
+
+            ebids_array_glob[maxnum1] = ebids_array_glob[offset+j];
+            maxnum1++;
+
+          }
+        }
+      } /* for (i = 1; ....) */
+
+      num_element_block_glob = maxnum1;
+
+    } /* if (rank == 0) */
+
+    /* Tell everyone how many element blocks there really are */
+
+    MPI_Bcast(&num_element_block_glob,1,MPI_INT,0,MSTK_Comm());
+
+    /* Send everyone the IDs of these element blocks */
+
+    element_block_ids_glob = (int *) MSTK_malloc(num_element_block_glob*sizeof(int));
+    if (rank == 0)
+      for (i = 0; i < num_element_block_glob; i++)
+        element_block_ids_glob[i] = ebids_array_glob[i];
+
+    MPI_Bcast(element_block_ids_glob,num_element_block_glob,MPI_INT,
+              0,MSTK_Comm());
+
+    /* Populate the global element block data on each processor */
+
+    element_blocks_glob = (List_ptr *) MSTK_calloc(num_element_block_glob,
+                                                   sizeof(List_ptr));
+    element_block_types_glob = (char **) MSTK_calloc(num_element_block_glob,
+                                                   sizeof(char *));
+    for (i = 0; i < num_element_block_glob; i++)
+      element_block_types_glob[i] = (char *) MSTK_malloc(16*sizeof(char));
+
+    for (i = 0; i < num_element_block_glob; i++) {
+      int found = 0;
+      for (j = 0; j < num_element_block; j++) {
+        if (element_block_ids[j] == element_block_ids_glob[i]) {
+          element_blocks_glob[i] = element_blocks[j];
+          strcpy(element_block_types_glob[i],element_block_types[j]);
+          found = 1;
+          break;
+        }        
+      }      
+      if (!found) {
+        element_blocks_glob[i] = List_New(1); /* dummy list */
+        strcpy(element_block_types_glob[i],"HEX");
+      }
+    }
+
     if (verbose) {
-      fprintf(stdout,"\nElemen1t block information:\n");
+      fprintf(stdout,"\nElement block information:\n");
       fprintf(stdout,"total %d elements\n", num_element); 
       fprintf(stdout,"total %d element blocks:\n\n", num_element_block);
     }
 
-    
+    MSTK_free(ebids_array_loc);
+    MSTK_free(ebids_array_glob);
 
-    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
+#else
+
+    num_element_block_glob = num_element_block;
+    element_block_ids_glob = element_block_ids;
+    element_blocks_glob = element_blocks;
+    element_block_types_glob = element_block_types;
+
+#endif
 
 
-    MESH_Get_Node_Set_Info(mesh, &num_node_set, &node_sets, &node_set_ids);
-
+    /* COLLECT FACE BLOCK FOR POLYHEDRAL MESHES */
 
     /* Put all faces of polyhedral elements in one block */
 
     face_block = List_New(10);
     num_face_block = 1;
     nvfblock = 0;
-    mkid = MSTK_GetMarker();
+    int mkid1 = MSTK_GetMarker();
     fidatt = MAttrib_New(mesh,"local_face_ids",INT,MFACE);
     
 
@@ -255,9 +455,9 @@ extern "C" {
 
 	  idx2 = 0;
 	  while ((rf = List_Next_Entry(rfaces,&idx2))) {
-	    if (!MEnt_IsMarked(rf,mkid)) {
+	    if (!MEnt_IsMarked(rf,mkid1)) {
 	      List_Add(face_block,rf);
-	      MEnt_Mark(rf,mkid);
+	      MEnt_Mark(rf,mkid1);
 	      MEnt_Set_AttVal(rf,fidatt,++j,0.0,NULL);
 	      nvfblock += MF_Num_Vertices(rf);
 	    }
@@ -268,8 +468,8 @@ extern "C" {
       }
     }
 
-    List_Unmark(face_block,mkid);
-    MSTK_FreeMarker(mkid);
+    List_Unmark(face_block,mkid1);
+    MSTK_FreeMarker(mkid1);
    
     if (List_Num_Entries(face_block) == 0) {
       List_Delete(face_block);
@@ -277,6 +477,241 @@ extern "C" {
       num_face_block = 0;
     }
     
+
+
+    /* COLLECT SIDE SET INFO */
+
+    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
+
+
+    int num_side_set_glob;
+    int *side_set_ids_glob;
+    List_ptr *side_sets_glob;
+
+#ifdef MSTK_HAVE_MPI
+    
+    maxnum=0, maxnum1=0;
+    MPI_Allreduce(&num_side_set,&maxnum,1,MPI_INT,MPI_MAX,MSTK_Comm());
+
+    int *ssids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
+
+    for (i = 0; i < num_side_set; i++)
+      ssids_array_loc[i] = side_set_ids[i];
+
+    int *ssids_array_glob = NULL;
+    ssids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
+    
+    MPI_Gather(ssids_array_loc,maxnum,MPI_INT,ssids_array_glob,maxnum,MPI_INT,0,MSTK_Comm());
+
+    if (rank == 0) {
+
+      /* Make a unique list of block IDs */
+
+      maxnum1 = num_side_set;
+
+      for (i = 1; i < numprocs; i++) {
+
+        int offset = maxnum*i;
+        for (j = 0; j < maxnum; j++) {
+          if (ssids_array_glob[offset+j] == 0) continue;
+
+          /* Is this element block ID in the list of global element
+             block IDs being collected at the head of the
+             ssids_array_glob? */
+
+          int found = 0;
+          for (k = 0; k < maxnum1; k++) {
+            if (ssids_array_glob[offset+j] == ssids_array_glob[k]) {
+              found = 1;
+              break;
+            }
+          }
+
+          if (!found) {
+            
+            /* Found element block ID on processor i that is not in
+               the global list. Put it in. */
+
+            ssids_array_glob[maxnum1] = ssids_array_glob[offset+j];
+            maxnum1++;
+
+          }
+        }
+      } /* for (i = 1; ....) */
+
+      num_side_set_glob = maxnum1;
+      
+    } /* if (rank == 0) */
+
+    /* Tell everyone how many element blocks there really are */
+
+    MPI_Bcast(&num_side_set_glob,1,MPI_INT,0,MSTK_Comm());
+
+    /* Send everyone the IDs of these element blocks */
+
+    side_set_ids_glob = (int *) MSTK_malloc(num_side_set_glob*sizeof(int));
+    if (rank == 0)
+      for (i = 0; i < num_side_set_glob; i++)
+        side_set_ids_glob[i] = ssids_array_glob[i];
+
+    MPI_Bcast(side_set_ids_glob,num_side_set_glob,MPI_INT,0,MSTK_Comm());
+
+    /* Populate the global element block data on each processor */
+
+    side_sets_glob = (List_ptr *) MSTK_calloc(num_side_set_glob,
+                                                   sizeof(List_ptr));
+
+    for (i = 0; i < num_side_set_glob; i++) {
+      int found = 0;
+      for (j = 0; j < num_side_set; j++) {
+        if (side_set_ids[j] == side_set_ids_glob[i]) {
+          side_sets_glob[i] = side_sets[j];
+          found = 1;
+          break;
+        }
+      }      
+      if (!found)
+        side_sets_glob[i] = List_New(1); /* dummy list */
+    }
+
+    if (verbose) {
+      fprintf(stdout,"\nSide set information:\n");
+      fprintf(stdout,"total %d side sets:\n\n", num_side_set);
+    }
+
+    MSTK_free(ssids_array_loc);
+    MSTK_free(ssids_array_glob);
+
+#else
+
+    num_side_set_glob = num_side_set;
+    side_set_ids_glob = side_set_ids;
+    side_sets_glob = side_sets;
+
+#endif
+
+
+
+
+
+    /* COLLECT NODE SET INFO */
+
+    MESH_Get_Node_Set_Info(mesh, &num_node_set, &node_sets, &node_set_ids);
+
+
+    int num_node_set_glob;
+    int *node_set_ids_glob;
+    char **node_set_types_glob;
+    List_ptr *node_sets_glob;
+
+#ifdef MSTK_HAVE_MPI
+    
+    maxnum=0, maxnum1=0;
+    MPI_Allreduce(&num_node_set,&maxnum,1,MPI_INT,MPI_MAX,MSTK_Comm());
+
+    int *nsids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
+
+    for (i = 0; i < num_node_set; i++)
+      nsids_array_loc[i] = node_set_ids[i];
+
+    int *nsids_array_glob = NULL;
+    nsids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
+    
+    MPI_Gather(nsids_array_loc,maxnum,MPI_INT,nsids_array_glob,maxnum,MPI_INT,0,MSTK_Comm());
+
+    if (rank == 0) {
+
+      /* Make a unique list of block IDs */
+
+      maxnum1 = num_node_set;
+
+      for (i = 1; i < numprocs; i++) {
+
+        int offset = maxnum*i;
+        for (j = 0; j < maxnum; j++) {
+          if (nsids_array_glob[offset+j] == 0) continue;
+
+          /* Is this element block ID in the list of global element
+             block IDs being collected at the head of the
+             nsids_array_glob? */
+
+          int found = 0;
+          for (k = 0; k < maxnum1; k++) {
+            if (nsids_array_glob[offset+j] == nsids_array_glob[k]) {
+              found = 1;
+              break;
+            }
+          }
+
+          if (!found) {
+            
+            /* Found element block ID on processor i that is not in
+               the global list. Put it in. */
+
+            nsids_array_glob[maxnum1] = nsids_array_glob[offset+j];
+            maxnum1++;
+
+          }
+        }
+      } /* for (i = 1; ....) */
+
+      num_node_set_glob = maxnum1;
+
+    } /* if (rank == 0) */
+
+    /* Tell everyone how many element blocks there really are */
+
+    MPI_Bcast(&num_node_set_glob,1,MPI_INT,0,MSTK_Comm());
+
+    /* Send everyone the IDs of these element blocks */
+
+    node_set_ids_glob = (int *) MSTK_malloc(num_node_set_glob*sizeof(int));
+    if (rank == 0)
+      for (i = 0; i < num_node_set_glob; i++)
+        node_set_ids_glob[i] = nsids_array_glob[i];
+  
+
+    MPI_Bcast(node_set_ids_glob,num_node_set_glob,MPI_INT,
+              0,MSTK_Comm());
+
+    /* Populate the global element block data on each processor */
+
+    node_sets_glob = (List_ptr *) MSTK_calloc(num_node_set_glob,
+                                                   sizeof(List_ptr));
+
+    for (i = 0; i < num_node_set_glob; i++) {
+      int found = 0;
+      for (j = 0; j < num_node_set; j++) {
+        if (node_set_ids[j] == node_set_ids_glob[i]) {
+          node_sets_glob[i] = node_sets[j];
+          found = 1;
+          break;
+        }
+      }      
+      if (!found)
+        node_sets_glob[i] = List_New(1); /* dummy list */
+    }
+
+    if (verbose) {
+      fprintf(stdout,"\nNode set information:\n");
+      fprintf(stdout,"total %d node sets:\n\n", num_node_set);
+    }
+
+    MSTK_free(nsids_array_loc);
+    MSTK_free(nsids_array_glob);
+
+#else
+
+    num_node_set_glob = num_node_set;
+    node_set_ids_glob = node_set_ids;
+    node_sets_glob = node_sets;
+
+#endif
+
+
+
+
+
 
     /* write global parameters */
     
@@ -295,11 +730,11 @@ extern "C" {
       par.num_face_blk = num_face_block;
       par.num_edge_blk = 0;
       par.num_elem = nr;
-      par.num_elem_blk = num_element_block;  
-      par.num_node_sets = num_node_set;
+      par.num_elem_blk = num_element_block_glob;  
+      par.num_node_sets = num_node_set_glob;
       par.num_edge_sets = 0;
       par.num_face_sets = 0;
-      par.num_side_sets = num_side_set;
+      par.num_side_sets = num_side_set_glob;
       par.num_elem_sets = 0;
 
 #ifdef MSTK_HAVE_MPI
@@ -328,11 +763,11 @@ extern "C" {
       par.num_face_blk = 0;
       par.num_edge_blk = 0;
       par.num_elem = nf;
-      par.num_elem_blk = num_element_block;  
-      par.num_node_sets = num_node_set;
+      par.num_elem_blk = num_element_block_glob;  
+      par.num_node_sets = num_node_set_glob;
       par.num_edge_sets = 0;
       par.num_face_sets = 0;
-      par.num_side_sets = num_side_set;
+      par.num_side_sets = num_side_set_glob;
       par.num_elem_sets = 0;
 
 #ifdef MSTK_HAVE_MPI
@@ -370,6 +805,13 @@ extern "C" {
     zcoord = (double *) MSTK_malloc(nv*sizeof(double));
     for (jv = 0; jv < nv; jv++) {
       vertex = MESH_Vertex(mesh,jv);
+
+#ifdef MSTK_HAVE_MPI 
+      if (!MEnt_IsMarked(vertex,ownedmk)) 
+        MSTK_Report(funcname,
+                    "Unexpected ghost vertex in output node list",MSTK_ERROR);
+#endif
+
       MV_Coords(vertex,vxyz);
       xcoord[jv] = vxyz[0];
       ycoord[jv] = vxyz[1];
@@ -441,20 +883,20 @@ extern "C" {
       fprintf(stdout,"total %d side sets:\n",num_side_set);
     }
     
-    for (i = 0; i < num_element_block; i++) { 
+    for (i = 0; i < num_element_block_glob; i++) { 
 
       char block_name[256];
 
-      block_id = element_block_ids[i];
+      block_id = element_block_ids_glob[i];
 
-      if (strncasecmp(element_block_types[i],"NFACED",6) == 0) {
+      if (strncasecmp(element_block_types_glob[i],"NFACED",6) == 0) {
 	
 	int nfrblock = 0;
 
-	nnpe = (int *) MSTK_calloc(List_Num_Entries(element_blocks[i]),
+	nnpe = (int *) MSTK_calloc(List_Num_Entries(element_blocks_glob[i]),
 				   sizeof(int));	
 	idx = 0; j = 0;
-	while ((mr = List_Next_Entry(element_blocks[i],&idx))) {	  
+	while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {	  
 	  nnpe[j] = MR_Num_Faces(mr);
 	  nfrblock += nnpe[j];
 	  j++;
@@ -462,7 +904,7 @@ extern "C" {
 
 	connect = (int *) MSTK_calloc(nfrblock,sizeof(int));
 	idx = 0; j = 0;
-	while ((mr = List_Next_Entry(element_blocks[i],&idx))) {
+	while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	  List_ptr rfaces = MR_Faces(mr);
 	  MFace_ptr rf;
 	  idx2 = 0;
@@ -478,7 +920,7 @@ extern "C" {
 	sprintf(block_name,"POLYHEDRA_BLOCK_%-d",block_id);
 	
 	ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "NFACED",
-		     List_Num_Entries(element_blocks[i]),
+		     List_Num_Entries(element_blocks_glob[i]),
 		     0, /* nodes */
 		     0, /* edges */
 		     nfrblock, /* faces */
@@ -495,14 +937,14 @@ extern "C" {
 	MSTK_free(connect);
 
       }
-      else if (strncasecmp(element_block_types[i],"NSIDED",6) == 0) {
+      else if (strncasecmp(element_block_types_glob[i],"NSIDED",6) == 0) {
 
 	int nvfblock = 0;
 
-	nnpe = (int *) MSTK_calloc(List_Num_Entries(element_blocks[i]),
+	nnpe = (int *) MSTK_calloc(List_Num_Entries(element_blocks_glob[i]),
 				   sizeof(int));	
 	idx = 0; j = 0;
-	while ((mf = List_Next_Entry(element_blocks[i],&idx))) {	  
+	while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {	  
 	  nnpe[j] = MF_Num_Vertices(mf);
 	  nvfblock += nnpe[j];
 	  j++;
@@ -510,7 +952,7 @@ extern "C" {
 
 	connect = (int *) MSTK_calloc(nvfblock,sizeof(int));
 	idx = 0; j = 0;
-	while ((mf = List_Next_Entry(element_blocks[i],&idx))) {
+	while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	  List_ptr fverts = MF_Vertices(mf,1,0);
 	  MVertex_ptr fv;
 	  idx2 = 0;
@@ -523,7 +965,7 @@ extern "C" {
 	sprintf(block_name,"POLYGON_BLOCK_%-d",block_id);
 	
 	ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "NSIDED",
-		     List_Num_Entries(element_blocks[i]),
+		     List_Num_Entries(element_blocks_glob[i]),
 		     nvfblock, /* nodes */
 		     0, /* edges */
 		     0, /* faces */
@@ -546,18 +988,18 @@ extern "C" {
 	int nelem, nelnodes=0;
 
 	sprintf(block_name,"BLOCK_%-d",block_id);
-	nelem = List_Num_Entries(element_blocks[i]);
+	nelem = List_Num_Entries(element_blocks_glob[i]);
 	
 	if (MESH_Num_Regions(mesh)) {
-	  if (strncasecmp(element_block_types[i],"TETRA",5) == 0) {
+	  if (strncasecmp(element_block_types_glob[i],"TETRA",5) == 0) {
 	    nelnodes = 4;
 	    ex_put_elem_block(exoid, block_id, "TETRA", nelem, nelnodes, 1);
 	  }
-	  else if (strncasecmp(element_block_types[i],"WEDGE",5) == 0) {
+	  else if (strncasecmp(element_block_types_glob[i],"WEDGE",5) == 0) {
 	    nelnodes = 6;
 	    ex_put_elem_block(exoid, block_id, "WEDGE", nelem, nelnodes, 1);
 	  }
-	  else if (strncasecmp(element_block_types[i],"HEX",3) == 0) {
+	  else if (strncasecmp(element_block_types_glob[i],"HEX",3) == 0) {
 	    nelnodes = 8;
 	    ex_put_elem_block(exoid, block_id, "HEX", nelem, nelnodes, 1);
 	  }
@@ -569,7 +1011,7 @@ extern "C" {
 	  connect = (int *) MSTK_malloc(nelnodes*nelem*sizeof(int));
 	  
 	  idx = 0; k = 0;
-	  while ((mr = List_Next_Entry(element_blocks[i],&idx))) {
+	  while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	    rverts = MR_Vertices(mr);
 	    for (j = 0; j < nelnodes; j++) 
 	      connect[nelnodes*k+j] = MV_ID(List_Entry(rverts,j));
@@ -583,11 +1025,11 @@ extern "C" {
 	  
 	}
 	else if (MESH_Num_Faces(mesh)) {
-	  if (strncasecmp(element_block_types[i],"TRIANGLE",8) == 0) {
+	  if (strncasecmp(element_block_types_glob[i],"TRIANGLE",8) == 0) {
 	    nelnodes = 3;
 	    ex_put_elem_block(exoid, block_id, "TRIANGLE", nelem, nelnodes, 1);
 	  }
-	  else if (strncasecmp(element_block_types[i],"QUAD",4) == 0) {
+	  else if (strncasecmp(element_block_types_glob[i],"QUAD",4) == 0) {
 	    nelnodes = 4;
 	    ex_put_elem_block(exoid, block_id, "QUAD", nelem, nelnodes, 1);
 	  }
@@ -598,7 +1040,7 @@ extern "C" {
 	  connect = (int *) MSTK_malloc(nelnodes*nelem*sizeof(int));
 
 	  idx = 0; k = 0;
-	  while ((mf = List_Next_Entry(element_blocks[i],&idx))) {
+	  while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	    fverts = MF_Vertices(mf,1,0);
 	    for (j = 0; j < nelnodes; j++) 
 	      connect[nelnodes*k+j] = MV_ID(List_Entry(fverts,j));	    
@@ -623,17 +1065,17 @@ extern "C" {
     /* Write out the node set information */
 
    
-    for (i = 0; i < num_node_set; i++) {
-      int nnodes = List_Num_Entries(node_sets[i]);
-      ex_put_node_set_param(exoid, node_set_ids[i], nnodes, 0);
+    for (i = 0; i < num_node_set_glob; i++) {
+      int nnodes = List_Num_Entries(node_sets_glob[i]);
+      ex_put_node_set_param(exoid, node_set_ids_glob[i], nnodes, 0);
 
       int *node_list = (int *) MSTK_malloc(nnodes*sizeof(int));
 
       idx = 0; j = 0;
-      while ((mv = List_Next_Entry(node_sets[i],&idx)))
+      while ((mv = List_Next_Entry(node_sets_glob[i],&idx)))
 	node_list[j++] = MV_ID(mv);
 
-      ex_put_node_set(exoid, node_set_ids[i], node_list);
+      ex_put_node_set(exoid, node_set_ids_glob[i], node_list);
 
       MSTK_free(node_list);
     }
@@ -647,17 +1089,17 @@ extern "C" {
     /* Write out the side set information */
 
 
-    for (i = 0; i < num_side_set; i++) {
+    for (i = 0; i < num_side_set_glob; i++) {
 
-      int nsides = List_Num_Entries(side_sets[i]);
-      ex_put_side_set_param(exoid, side_set_ids[i], nsides, 0);
+      int nsides = List_Num_Entries(side_sets_glob[i]);
+      ex_put_side_set_param(exoid, side_set_ids_glob[i], nsides, 0);
 
       int *elem_list = (int *) MSTK_malloc(nsides*sizeof(int));
       int *side_list = (int *) MSTK_malloc(nsides*sizeof(int));
 
       if (nr) {
 	idx = 0; j = 0;
-	while ((mf = List_Next_Entry(side_sets[i],&idx))) {
+	while ((mf = List_Next_Entry(side_sets_glob[i],&idx))) {
 
 	  List_ptr fregs = MF_Regions(mf);
 
@@ -667,6 +1109,11 @@ extern "C" {
 			MSTK_FATAL);
 	  mr = List_Entry(fregs,0);
 
+#ifdef MSTK_HAVE_MPI
+          if (MR_PType(mr) == PGHOST)
+            mr = List_Entry(fregs,1);  /* at least 1 region should be owned */
+#endif
+
 	  /* Since elements will be read back from the Exodus II file
 	     element block by element block, we have to jump through
 	     hoops to determine what the element number will be when
@@ -675,11 +1122,11 @@ extern "C" {
 	  int offset = 0;
 	  int found = 0;
 	  k = 0;
-	  while (!found && k < num_element_block) {
-	    int loc = List_Locate(element_blocks[k],mr);
+	  while (!found && k < num_element_block_glob) {
+	    int loc = List_Locate(element_blocks_glob[k],mr);
 	    if (loc == -1) {
 	      /* This element block does not contain the element */
-	      offset = List_Num_Entries(element_blocks[k]);
+	      offset += List_Num_Entries(element_blocks_glob[k]);
 	      k++;
 	    }
 	    else {
@@ -687,6 +1134,10 @@ extern "C" {
 	      found = 1;
 	    }
 	  }
+          if (!found)
+            MSTK_Report(funcname,"Could not find element in element blocks while writing out side sets",
+                        MSTK_FATAL);
+                        
 	  
           int lid = MF_LocalID_in_Region(mf,mr);
           MRType mrtype = MR_ElementType(mr);
@@ -699,13 +1150,13 @@ extern "C" {
 	  j++;
 	}
 
-	ex_put_side_set(exoid, side_set_ids[i], elem_list, side_list);
+	ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
 
       }
       else {
 
 	idx = 0; j = 0;
-	while ((me = List_Next_Entry(side_sets[i],&idx))) {
+	while ((me = List_Next_Entry(side_sets_glob[i],&idx))) {
 	  List_ptr efaces = ME_Faces(me);
 
 	  if (!efaces || List_Num_Entries(efaces) == 0)
@@ -713,6 +1164,11 @@ extern "C" {
 			"Standalone edge with no faces in side set",
 			MSTK_FATAL);
 	  mf = List_Entry(efaces,0);
+
+#ifdef MSTK_HAVE_MPI
+          if (MF_PType(mf) == PGHOST)
+            mf = List_Entry(efaces,1);  /* at least 1 face should be owned */
+#endif
 
 	  /* Since elements will be read back from the Exodus II file
 	     element block by element block, we have to jump through
@@ -722,11 +1178,11 @@ extern "C" {
 	  int offset = 0;
 	  int found = 0;
 	  k = 0;
-	  while (!found && k < num_element_block) {
-	    int loc = List_Locate(element_blocks[k],mf);
+	  while (!found && k < num_element_block_glob) {
+	    int loc = List_Locate(element_blocks_glob[k],mf);
 	    if (loc == -1) {
 	      /* This element block does not contain the element */
-	      offset = List_Num_Entries(element_blocks[k]);
+	      offset = List_Num_Entries(element_blocks_glob[k]);
 	      k++;
 	    }
 	    else {
@@ -734,6 +1190,10 @@ extern "C" {
 	      found = 1;
 	    }
 	  }
+          if (!found)
+            MSTK_Report(funcname,"Could not find element in element blocks while writing out side sets",
+                        MSTK_FATAL);
+                        
 	  
           int lid = ME_LocalID_in_Face(me,mf);
           side_list[j] = lid+1;
@@ -768,7 +1228,8 @@ extern "C" {
       
       idx = 0; i = 0;
       while ((mv = MESH_Next_Vertex(mesh,&idx)))
-        node_map[i++] = MV_GlobalID(mv);
+        if (MEnt_IsMarked(mv,ownedmk))
+          node_map[i++] = MV_GlobalID(mv);
 
       status = ex_put_node_num_map(exoid, node_map);
       if (status < 0)
@@ -786,13 +1247,15 @@ extern "C" {
         elem_map = (int *) malloc(nr*sizeof(int));
         idx = 0; i = 0;
         while ((mr = MESH_Next_Region(mesh,&idx)))
-          elem_map[i++] = MR_GlobalID(mr);
+          if (MEnt_IsMarked(mr,ownedmk))
+            elem_map[i++] = MR_GlobalID(mr);
       }
       else { // assume surface mesh
         elem_map = (int *) malloc(nf*sizeof(int));
         idx = 0; i = 0;
         while ((mf = MESH_Next_Face(mesh,&idx)))
-          elem_map[i++] = MF_GlobalID(mf);
+          if (MEnt_IsMarked(mf,ownedmk))
+            elem_map[i++] = MF_GlobalID(mf);
       }
 
       status = ex_put_elem_num_map(exoid, elem_map);
@@ -826,6 +1289,71 @@ extern "C" {
       fprintf(stdout,"Quality assurance information wrote into %s\n", filename);
 
     ex_close(exoid);
+
+
+
+
+    MSTK_free(element_block_ids_glob);
+    for (i = 0; i < num_element_block_glob; i++)
+      List_Delete(element_blocks_glob[i]);
+    MSTK_free(element_blocks_glob);
+    for (i = 0; i < num_element_block_glob; i++)
+      MSTK_free(element_block_types_glob[i]);
+    MSTK_free(element_block_types_glob);
+
+
+    MSTK_free(side_set_ids_glob);
+    for (i = 0; i < num_side_set_glob; i++)
+      List_Delete(side_sets_glob[i]);
+    MSTK_free(side_sets_glob);
+      
+    
+    MSTK_free(node_set_ids_glob);
+    for (i = 0; i < num_node_set_glob; i++)
+      List_Delete(node_sets_glob[i]);
+    MSTK_free(node_sets_glob);
+
+
+#ifdef MSTK_HAVE_MPI
+
+    idx = 0;
+    while ((mr = MESH_Next_Region(mesh,&idx)))
+      MEnt_Unmark(mr,ownedmk);
+    idx = 0;
+    while ((mf = MESH_Next_Face(mesh,&idx)))
+      MEnt_Unmark(mf,ownedmk);
+    idx = 0;
+    while ((me = MESH_Next_Edge(mesh,&idx)))
+      MEnt_Unmark(me,ownedmk);
+    idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh,&idx)))
+      MEnt_Unmark(mv,ownedmk);
+
+    MSTK_FreeMarker(ownedmk);
+
+
+    /* In parallel case, free the local lists also */
+    /* No need to delete the lists because they are not duplicated */
+
+    MSTK_free(element_block_ids);
+    MSTK_free(element_blocks);
+    for (i = 0; i < num_element_block; i++)
+      MSTK_free(element_block_types[i]);
+    MSTK_free(element_block_types);
+
+
+    MSTK_free(side_set_ids);
+    MSTK_free(side_sets);
+      
+    
+    MSTK_free(node_set_ids);
+    MSTK_free(node_sets);    
+
+#endif
+
+
+
+
     return 1;
 
   }
@@ -850,6 +1378,11 @@ extern "C" {
     
     if (MESH_Num_Regions(mesh)) {
       while ((mr = MESH_Next_Region(mesh, &idx))) {
+
+#ifdef MSTK_HAVE_MPI
+        if (!MEnt_IsMarked(mr,ownedmk)) continue;  /* Ghost element */
+#endif
+
 	int nrv = MR_Num_Vertices(mr);
 	int nrf = MR_Num_Faces(mr);
         MRType mrtype = MR_ElementType(mr);
@@ -902,6 +1435,10 @@ extern "C" {
 
       while ((mf = MESH_Next_Face(mesh,&idx))) {
 
+#ifdef MSTK_HAVE_MPI
+        if (!MEnt_IsMarked(mf,ownedmk)) continue; /* Ghost element */
+#endif
+
 	int nfv = MF_Num_Vertices(mf);
 
 	if (nfv == 3 || nfv == 4)
@@ -945,39 +1482,6 @@ extern "C" {
 	}
       }
     }
-    else if (MESH_Num_Edges(mesh)) {
-      while ((me = MESH_Next_Edge(mesh, &idx))) {
-	bid = (MEnt_GEntID(me)<<16) | 2;
-
-	found = 0; i = 0;
-	while (!found && i < nb) {
-	  if (bid == (*element_block_ids)[i]) {
-	    found = 1;
-	    List_Add((*element_blocks)[i],me);    
-	    break;
-	  }
-	  i++;
-	}
-
-	if (!found) {
-	  /* New element block */
-
-	  if (nballoc == nb) {
-	    nballoc *= 2;
-	    *element_block_ids = (int *) realloc(*element_block_ids,nballoc*sizeof(int));
-	    *element_blocks = (List_ptr *) realloc(*element_blocks,nballoc*sizeof(List_ptr));
-	    *element_block_types = (char **) realloc(*element_block_types,nballoc*sizeof(char *));
-	  }
-
-	  (*element_block_ids)[nb] = bid;
-	  (*element_blocks)[nb] = List_New(10);
-	  (*element_block_types)[nb] = (char *) malloc(16*sizeof(char));
-	  strcpy((*element_block_types)[nb],"BEAM");
-	  List_Add((*element_blocks)[nb],me);
-	  nb++;
-	}
-      }
-    }
 
     *num_element_block = nb;
   }	
@@ -1003,7 +1507,11 @@ extern "C" {
 
     if (nr) {
       while ((mf = MESH_Next_Face(mesh,&idx))) {
-	if (MF_GEntDim(mf) == 3) continue;
+	if (MF_GEntDim(mf) == 3) continue; /* Internal face */
+
+#ifdef MSTK_HAVE_MPI
+        if (!MEnt_IsMarked(mf,ownedmk)) continue; /* Face cnctd to only ghost elements */
+#endif
 
 	sid = MF_GEntID(mf);
 
@@ -1034,6 +1542,10 @@ extern "C" {
     else if (nf) {
       while ((me = MESH_Next_Edge(mesh,&idx))) {
 	if (ME_GEntDim(me) != 1) continue;
+
+#ifdef MSTK_HAVE_MPI
+        if (!MEnt_IsMarked(me,ownedmk)) continue; /* Edge cnctd to only ghost elements */
+#endif
 
 	sid = ME_GEntID(me);
 
@@ -1090,6 +1602,11 @@ extern "C" {
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
       if (MV_GEntDim(mv) != 0) continue;
       
+
+#ifdef MSTK_HAVE_MPI
+      if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
+#endif
+
       nid = MV_GEntID(mv)<<4;
       
       found = 0;
@@ -1173,6 +1690,10 @@ extern "C" {
       while ((me2 = List_Next_Entry(elist,&idx2))) {
 	for (i = 0; i < 2; i++) {
 	  mv = ME_Vertex(me2,i);
+
+#ifdef MSTK_HAVE_MPI
+          if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
+#endif
 	  if (!MEnt_IsMarked(mv,mkid2)) {
 	    MEnt_Mark(mv,mkid2);
 	    List_Add(vlist,mv);
@@ -1184,6 +1705,10 @@ extern "C" {
       List_Unmark(elist,mkid2);
       List_Delete(elist);
 
+      if (List_Num_Entries(vlist) == 0) {
+        List_Delete(vlist);
+        continue;
+      }
 
       /* Make a nodeset from the vertices on the closure of this model edge */
 
@@ -1264,6 +1789,11 @@ extern "C" {
 	  fverts = MF_Vertices(mf2,1,0);
 	  idx3 = 0;
 	  while ((mv = List_Next_Entry(fverts,&idx3))) {
+
+#ifdef MSTK_HAVE_MPI
+            if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
+#endif
+
 	    if (!MEnt_IsMarked(mv,mkid2)) {
 	      MEnt_Mark(mv,mkid2);
 	      List_Add(vlist,mv);
@@ -1277,6 +1807,11 @@ extern "C" {
 	List_Delete(flist);
 	
 	
+        if (List_Num_Entries(vlist) == 0) {
+          List_Delete(vlist);
+          continue;
+        }
+
 	/* Make a nodeset from the vertices on the closure of this model edge */
 	
 	if (nn == nnalloc) {
