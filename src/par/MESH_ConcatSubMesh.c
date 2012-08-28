@@ -55,7 +55,7 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_ptr edges, verts, added_edges, added_verts;
   List_ptr boundary_edges, boundary_verts;
   int add_face, idx, *fedirs, global_id, iloc, *loc;
-  int mkvid, mkeid, mkvid2, mkeid2, mkfid;
+  int mkvid, mkeid, mkvid2, mkeid2;
   double coor[3];
   Mesh_ptr submesh;
   int *MV_to_list_id, *ME_to_list_id, *MV_global_id, *ME_global_id;  
@@ -77,7 +77,6 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   mkvid2 = MSTK_GetMarker(); /* mark the vertices on mesh boundary, used to decide whether to add a face  */
   mkeid2 = MSTK_GetMarker(); /* mark the edges in on mesh boundary, used to decide whether to add a face  */
 
-  mkfid = MSTK_GetMarker();
   edges = List_New(10);          
   verts = List_New(10);
   added_edges = List_New(10);          
@@ -266,6 +265,11 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_Unmark(verts,mkvid);
   List_Unmark(edges,mkeid2);
   List_Unmark(verts,mkvid2);
+  MSTK_FreeMarker(mkeid);
+  MSTK_FreeMarker(mkeid2);
+  MSTK_FreeMarker(mkvid);
+  MSTK_FreeMarker(mkvid2);
+
   List_Delete(boundary_edges);
   List_Delete(boundary_verts);
   List_Delete(added_edges);
@@ -602,9 +606,16 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_Unmark(faces,mkfid);
   List_Unmark(edges,mkeid);
   List_Unmark(verts,mkvid);
-  List_Unmark(faces,mkeid2);
+  List_Unmark(faces,mkfid2);
   List_Unmark(edges,mkeid2);
   List_Unmark(verts,mkvid2);
+  MSTK_FreeMarker(mkfid);
+  MSTK_FreeMarker(mkeid);
+  MSTK_FreeMarker(mkvid);
+  MSTK_FreeMarker(mkfid2);
+  MSTK_FreeMarker(mkeid2);
+  MSTK_FreeMarker(mkvid2);
+
   List_Delete(boundary_faces);
   List_Delete(boundary_edges);
   List_Delete(boundary_verts);

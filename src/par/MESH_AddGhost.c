@@ -209,7 +209,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
     }
 
-    List_Unmark(gbverts,mkvid2);
+    List_Unmark(gbverts,mkvid2);    
     List_Delete(gbverts);
     
     List_Mark(gbverts2,mkvid2);

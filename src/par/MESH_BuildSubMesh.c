@@ -128,6 +128,10 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
   List_Unmark(faces,mkfid);
   List_Unmark(edges,mkeid);
   List_Unmark(verts,mkvid);
+  MSTK_FreeMarker(mkfid);
+  MSTK_FreeMarker(mkeid);
+  MSTK_FreeMarker(mkvid);
+
   List_Delete(faces);
   List_Delete(edges);
   List_Delete(verts);
@@ -250,6 +254,10 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
   List_Unmark(faces,mkfid);
   List_Unmark(edges,mkeid);
   List_Unmark(verts,mkvid);
+  MSTK_FreeMarker(mkfid);
+  MSTK_FreeMarker(mkeid);
+  MSTK_FreeMarker(mkvid);
+
   List_Delete(faces);
   List_Delete(edges);
   List_Delete(verts);
