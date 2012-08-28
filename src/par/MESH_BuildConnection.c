@@ -58,7 +58,7 @@ extern "C" {
     if(max_nbv < global_mesh_info[10*i+4])
       max_nbv = global_mesh_info[10*i+4];
 
-  list_boundary_vertex = (int *)MSTK_malloc(nbv*sizeof(int));
+  list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
   recv_list_vertex = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
 
   /* only global ID are sent */
