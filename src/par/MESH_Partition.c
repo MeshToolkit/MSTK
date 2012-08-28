@@ -153,9 +153,6 @@ extern "C" {
 
     int part_no;
 
-    /* each face belongs only to one partition, so no need to mark  */
-    int mkvid = MSTK_GetMarker();
-
     g2latt = MESH_AttribByName(mesh,"Global2Local");
 
 
