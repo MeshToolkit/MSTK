@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "MSTK_private.h"
 #include "MSTK_globals.h"
 #include "MSTK_malloc.h"
@@ -115,6 +116,22 @@ extern "C" {
     MSTK_marker = MSTK_marker & ~(1<<(mkr-1));
     if (mkr-1 == MSTK_lastbit)
       MSTK_lastbit--;
+
+    if (MSTK_marker != (int) pow(2,MSTK_lastbit+1)-1) {
+
+      /* Check what the last free bit is - may not be the one that was
+         just freed if multiple markers were allocated and freed in
+         random order */
+
+      MSTK_lastbit = -1;
+      int i = 0;       
+      while (i <= MSTK_MAXBITS-1) {
+        if (MSTK_marker & 1<<i)
+          MSTK_lastbit = i;
+        i++;
+      }
+
+    }
   }
 
 
