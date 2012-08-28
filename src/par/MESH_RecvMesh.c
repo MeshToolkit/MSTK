@@ -258,7 +258,6 @@ extern "C" {
     int rank = MSTK_Comm_rank();
 
     /* mesh_info store the mesh reptype, nv, nr, nrvs and natt */
-    MPI_Get_count(&status,MPI_INT,&count);
 
     /* basic mesh information */
     rtype = mesh_info[0];
