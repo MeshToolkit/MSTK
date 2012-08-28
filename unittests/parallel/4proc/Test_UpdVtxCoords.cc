@@ -21,24 +21,6 @@ TEST(VertexUpdate2D) {
   nproc = MSTK_Comm_size();
   rank = MSTK_Comm_rank();
 
-
-  //  mesh = MESH_New(UNKNOWN_REP);
-
-  //  sprintf(filename,"parallel/4proc/quad3x2.mstk.%-1d",rank);
-  //  status = MESH_InitFromFile(mesh,filename);
-
-  //  CHECK(status);
-
-  //  CHECK(!MESH_Num_Regions(mesh));
-  //  CHECK(MESH_Num_Faces(mesh));
-
-
-  //  int input_type = 0;  /* no parallel info present in meshes */
-  //  int num_ghost_layers = 1; /* always */
-  //  status = MSTK_Weave_DistributedMeshes(mesh, num_ghost_layers, input_type, rank, nproc, MPI_COMM_WORLD);
-
-  //  CHECK(status);
-
   Mesh_ptr mesh0;
   if (rank == 0) {
     mesh0 = MESH_New(UNKNOWN_REP);
@@ -48,22 +30,32 @@ TEST(VertexUpdate2D) {
     
     if (MESH_Num_Regions(mesh0) > 0) {
       fprintf(stderr,"Code is for surface meshes only. Exiting...\n");
+      status = 0;
+      CHECK(status);
     }
     else if (MESH_Num_Faces(mesh0) > 0)
       dim = 2;
     else {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
-      exit(-1);
+      status = 0;
+      CHECK(status);
     }
   }
 
-//  DebugWait=1;
-//  while (DebugWait);
-
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
-  int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
+  int method;
+#if defined (_MSTK_HAVE_METIS)
+  method = 0;
+#elif defined (_MSTK_HAVE_ZOLTAN)
+  method = 1;
+#else
+  fprintf(stderr,"Cannot find partitioner\n");
+  status = 0;
+  CHECK(status);
+#endif
+
+  status = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
 
   if (rank == 0) MESH_Delete(mesh0);
 
@@ -85,12 +77,12 @@ TEST(VertexUpdate2D) {
     i++;
   }
 
-  fprintf(stderr,"Deformed mesh proc %-d\n",rank);
+  //  fprintf(stderr,"Deformed mesh proc %-d\n",rank);
 
   MESH_UpdateVertexCoords(mesh);
   MSTK_UpdateAttr(mesh);
 
-  fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
+  //  fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
 
   nv = MESH_Num_Vertices(mesh); /* includes ghost vertices */
 

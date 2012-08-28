@@ -72,7 +72,18 @@ TEST(Partition3D_sym) {
     dim = 3;
   }
     
-  int method = 0; /* partition method is METIS */
+  int method;
+
+#if defined (_MSTK_HAVE_METIS)
+  method = 0;
+#elif defined (_MSTK_HAVE_ZOLTAN)
+  method = 1;
+#else
+  fprintf(stderr,"No partitioner found");
+  status = 0;
+  CHECK(status);
+#endif
+
   status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, 1, 1, method);
 
   CHECK(status);

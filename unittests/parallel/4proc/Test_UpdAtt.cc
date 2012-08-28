@@ -45,7 +45,18 @@ TEST(UpdAtt2D_Dist) {
 
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
-  int method = 0; /* Use Metis as the partitioner */
+  int method;
+
+#if defined (_MSTK_HAVE_METIS)
+  method = 0;
+#elif defined (_MSTK_HAVE_ZOLTAN)
+  method = 1;
+#else
+  fprintf(stderr,"Cannot find partitioner\n");
+  int status = 0;
+  CHECK(status);
+#endif
+
   MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
 
   if (rank == 0) MESH_Delete(mesh0);

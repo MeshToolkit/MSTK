@@ -14,6 +14,7 @@ TEST(Partition2D) {
   MFace_ptr mf;
   MVertex_ptr mv;
 
+#if defined (_MSTK_HAVE_METIS)
 
   int expnf[4]={7,8,7,8};
   int expngf[4]={8,7,8,7};
@@ -46,6 +47,41 @@ TEST(Partition2D) {
     {25,26,27,28,29,30,31,32,33,34,0,0,0,0},
     {35,36,37,38,39,40,41,42,10,0,0,0,0,0}};
 
+#elif defined (_MSTK_HAVE_ZOLTAN)
+
+
+  int expnf[4]={7,8,7,8};
+  int expngf[4]={8,7,8,7};
+  int expnof[4]={5,5,5,5};
+
+  int expfaceids[4][8]={
+    {1,2,3,4,5,6,7,0},
+    {8,9,10,11,12,13,14,15},
+    {16,17,18,19,20,21,22,0},
+    {23,24,25,26,27,28,29,30}};
+
+  int expgfaceids[4][8]={
+    {8,10,11,13,20,21,29,30},
+    {2,3,5,7,20,21,22,0},
+    {2,3,8,9,25,27,28,30},
+    {1,2,3,16,18,20,21,0}};
+
+  int expofaceids[4][5]={
+    {1,2,3,5,7},
+    {8,9,10,11,13},
+    {16,18,20,21,22},
+    {25,27,28,29,30}};
+
+
+  int expnv[4] = {14,10,10,8};
+
+  int expvertexids[4][14]={
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {15,16,17,18,19,20,21,22,23,24,0,0,0,0},
+    {25,26,27,28,29,30,31,32,33,34,0,0,0,0},
+    {35,36,37,38,39,40,41,42,10,0,0,0,0,0}};  
+
+#endif
 
   MSTK_Init();
   MSTK_Set_Comm(MPI_COMM_WORLD);
@@ -71,8 +107,19 @@ TEST(Partition2D) {
 
     dim = 2;
   }
-    
-  int method = 0; /* with Metis */
+
+  int method;
+
+#if defined (_MSTK_HAVE_METIS)    
+  method = 0;
+#elif defined (_MSTK_HAVE_ZOLTAN)
+  method = 1;
+#else
+  fprintf(stderr,"Cannot find partitioner");
+  status = 0;
+  CHECK(status);
+#endif
+
   status = MSTK_Mesh_Distribute(globalmesh,&mymesh, &dim, 1, 1, method);
 
   CHECK(status);
