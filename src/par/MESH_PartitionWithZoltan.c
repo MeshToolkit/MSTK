@@ -73,7 +73,7 @@ typedef struct{
   /******************************************************************
   ** Create a Zoltan library structure for this instance of partition 
   ********************************************************************/
-  zz = Zoltan_Create(mpi_comm);
+  zz = Zoltan_Create(comm);
 
   if(rank == 0) {
     nv = MESH_Num_Vertices(mesh);
