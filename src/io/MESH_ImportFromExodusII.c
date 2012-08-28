@@ -197,8 +197,17 @@ extern "C" {
       else
         globalmesh = NULL;
 
-      int with_attr = 1;
-      int method = 0; /* partition with METIS */
+      int with_attr = 1;      
+      int method=0;
+
+#if defined (_MSTK_HAVE_ZOLTAN)
+      method = 1;
+#elif defined (_MSTK_HAVE_METIS)
+      method = 0;
+#else
+      MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
+#endif
+
       int dist_status = MSTK_Mesh_Distribute(globalmesh, &mesh, &topodim, 
                                              num_ghost_layers,
                                              with_attr, method);
