@@ -397,7 +397,7 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh) {
     if(max_nbe < global_mesh_info[10*i+6])
       max_nbe = global_mesh_info[10*i+6];
 
-  list_edge = (int *)MSTK_malloc(nbe*2*sizeof(int));
+  list_edge = (int *)MSTK_malloc(max_nbe*2*sizeof(int));
   recv_list_edge = (int *)MSTK_malloc(num*max_nbe*2*sizeof(int));
 
   /* indicate if a edge is overlapped */
@@ -596,7 +596,7 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh) {
     if(max_nbf < global_mesh_info[10*i+6])
       max_nbf = global_mesh_info[10*i+6];
 
-  list_face = (int *)MSTK_malloc(nbf*(MAXPV2+1)*sizeof(int));
+  list_face = (int *)MSTK_malloc(max_nbf*(MAXPV2+1)*sizeof(int));
   recv_list_face = (int *)MSTK_malloc(num*max_nbf*(MAXPV2+1)*sizeof(int));
 
   /* indicate if a face is overlapped */

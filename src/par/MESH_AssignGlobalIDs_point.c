@@ -141,8 +141,8 @@ int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh) {
     if(max_nbv < global_mesh_info[10*i+5])
       max_nbv = global_mesh_info[10*i+5];
 
-  list_vertex = (int *)MSTK_malloc(nbv*sizeof(int));
-  list_coor = (double *)MSTK_malloc(3*nbv*sizeof(double));
+  list_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
+  list_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
   recv_list_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
   recv_list_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
 
@@ -323,7 +323,7 @@ int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh) {
     if(max_nbe < global_mesh_info[10*i+5])
       max_nbe = global_mesh_info[10*i+5];
 
-  list_edge = (int *)MSTK_malloc(4*nbe*sizeof(int));
+  list_edge = (int *)MSTK_malloc(4*max_nbe*sizeof(int));
   recv_list_edge = (int *)MSTK_malloc(4*max_nbe*sizeof(int));
 
   index_nbe = 0;
@@ -340,7 +340,7 @@ int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh) {
      used to store list id on incoming buffer of ghost edge 
      No need to store processor id, already stored in master partition id
   */
-  me_remote_info = (int *)MSTK_malloc(nbe*sizeof(int));
+  me_remote_info = (int *)MSTK_malloc(max_nbe*sizeof(int));
   /* lable if a edge is overlap */
   me_ov_label = (int *)MSTK_malloc(max_nbe*sizeof(int));
   nge = 0; noe = 0;
@@ -551,7 +551,7 @@ int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh) {
     if(max_nbf < global_mesh_info[10*i+5])
       max_nbf = global_mesh_info[10*i+5];
 
-  list_face = (int *)MSTK_malloc((MAXPV2+3)*nbf*sizeof(int));
+  list_face = (int *)MSTK_malloc((MAXPV2+3)*max_nbf*sizeof(int));
   recv_list_face = (int *)MSTK_malloc((MAXPV2+3)*max_nbf*sizeof(int));
 
   index_nbf = 0;
@@ -572,7 +572,7 @@ int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh) {
      used to store list id on incoming buffer of ghost edge 
      No need to store processor id, already stored in master partition id
   */
-  mf_remote_info = (int *)MSTK_malloc(nbf*sizeof(int));
+  mf_remote_info = (int *)MSTK_malloc(max_nbf*sizeof(int));
   /* lable if a edge is overlap */
   mf_ov_label = (int *)MSTK_malloc(max_nbf*sizeof(int));
   ngf = 0; nof = 0;
