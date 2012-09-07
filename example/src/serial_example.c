@@ -3,7 +3,6 @@
 #include <string.h>
 #include "MSTK.h"
 
-#include "mpi.h"
 
 /* Example program to read a mesh and print out some information about it */
 
@@ -58,7 +57,7 @@ int main(int argc, char *argv[]) {
   strcat(filename,".mstk");
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_InitFromFile(mesh,filename);
+  ok = MESH_InitFromFile(mesh,filename,NULL);
   if (!ok) {
     fprintf(stderr,"Cannot open input file %s\n\n\n",filename);
     exit(-1);
@@ -243,7 +242,7 @@ int main(int argc, char *argv[]) {
 
   strcpy(filename,mname);
   strcat(filename,"-copy.mstk");
-  MESH_WriteToFile(mesh,filename,F1);
+  MESH_WriteToFile(mesh,filename,F1,NULL);
 
   
   /* Deleting of mesh is not necessary if this the end of the program */

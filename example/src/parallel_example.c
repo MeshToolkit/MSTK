@@ -35,10 +35,10 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc,&argv);
 
   MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
 
-  num = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&num);
+  MPI_Comm_rank(comm,&rank);
   
 
   fprintf(stderr,"On processor %d out of %d processors\n",rank,num);
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   if (rank == 0) {
     mesh = MESH_New(UNKNOWN_REP);
 
-    MESH_InitFromFile(mesh, filename);
+    MESH_InitFromFile(mesh, filename, comm);
     
     if (MESH_Num_Regions(mesh) > 0) {
       fprintf(stderr,"Code is for surface meshes only. Exiting...\n");
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(mesh, &mymesh, &dim, ring, with_attr, method); 
+  MSTK_Mesh_Distribute(mesh, &mymesh, &dim, ring, with_attr, method, comm); 
 
   if (rank == 0)
     MESH_Delete(mesh);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 
   sprintf(gmvfilename,"%s.gmv.%04d.%04d",basename,rank,0);
 
-  MESH_ExportToGMV(mymesh,gmvfilename,0,NULL,NULL);
+  MESH_ExportToGMV(mymesh,gmvfilename,0,NULL,NULL,comm);
 
 
 
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
   /* Update attributes across processors */
   
   fprintf(stderr,"Updating attributes on proc %-d...",rank);
-  MSTK_UpdateAttr(mymesh);
+  MSTK_UpdateAttr(mymesh,comm);
   fprintf(stderr,"done\n");
 
 
@@ -200,11 +200,11 @@ int main(int argc, char *argv[]) {
     sprintf(gmvfilename,"%s.gmv.%04d.%04d",basename,rank,i+1);
 
     fprintf(stderr,"Exported %s on proc %-d...",gmvfilename,rank);
-    MESH_ExportToGMV(mymesh,gmvfilename,0,NULL,NULL);
+    MESH_ExportToGMV(mymesh,gmvfilename,0,NULL,NULL,comm);
     fprintf(stderr,"done\n");
 
     fprintf(stderr,"Updating attributes on proc %-d...",rank);
-    MSTK_UpdateAttr(mymesh);
+    MSTK_UpdateAttr(mymesh,comm);
     fprintf(stderr,"done\n");
 
     fprintf(fp,"\n\n");
