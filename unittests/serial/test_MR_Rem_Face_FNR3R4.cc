@@ -19,7 +19,7 @@ TEST(MR_Rem_Face_FNR3R4)
 
   mesh = MESH_New(UNKNOWN_REP);
 
-  ok = MESH_InitFromFile(mesh,"serial/onehex.mstk");
+  ok = MESH_InitFromFile(mesh,"serial/onehex.mstk",NULL);
   CHECK_EQUAL(1,ok);
 
   mr = MESH_Region(mesh,0);

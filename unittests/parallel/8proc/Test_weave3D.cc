@@ -213,20 +213,20 @@ TEST(Weave3D_from_MSTK) {
 
 
   MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
 
   int debugwait=0;
   while (debugwait);
 
 
-  nproc = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm, &nproc);
+  MPI_Comm_rank(comm, &rank);
 
 
   mesh = MESH_New(UNKNOWN_REP);
 
   sprintf(filename,"parallel/8proc/hex3x2x2.mstk.%-1d",rank);
-  status = MESH_InitFromFile(mesh,filename);
+  status = MESH_InitFromFile(mesh,filename,comm);
 
   CHECK(status);
 
@@ -236,7 +236,7 @@ TEST(Weave3D_from_MSTK) {
   int input_type = 0;  /* no parallel info present in meshes */
   int num_ghost_layers = 1; /* always */
   int topodim = 3;
-  status = MSTK_Weave_DistributedMeshes(mesh, topodim, num_ghost_layers, input_type);
+  status = MSTK_Weave_DistributedMeshes(mesh, topodim, num_ghost_layers, input_type, comm);
 
   CHECK(status);
 
@@ -333,7 +333,7 @@ TEST(Weave3D_from_MSTK) {
 
   free(overtexids);
 
-  CHECK_EQUAL(1,MESH_Parallel_Check(mesh));
+  CHECK_EQUAL(1,MESH_Parallel_Check(mesh,comm));
 
   return;
 }

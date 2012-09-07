@@ -84,21 +84,21 @@ TEST(Partition2D) {
 #endif
 
   MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
 
   int debugwait=0;
   while (debugwait);
 
 
-  nproc = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_rank(comm,&rank);
 
   Mesh_ptr globalmesh=NULL;
 
   if (rank == 0) {
 
     globalmesh = MESH_New(UNKNOWN_REP);
-    status = MESH_InitFromFile(globalmesh,"parallel/4proc/quad6x5.mstk");
+    status = MESH_InitFromFile(globalmesh,"parallel/4proc/quad6x5.mstk", comm);
 
     CHECK(status);
 
@@ -120,7 +120,8 @@ TEST(Partition2D) {
   CHECK(status);
 #endif
 
-  status = MSTK_Mesh_Distribute(globalmesh,&mymesh, &dim, 1, 1, method);
+  mymesh = NULL;
+  status = MSTK_Mesh_Distribute(globalmesh,&mymesh, &dim, 1, 1, method, comm);
 
   CHECK(status);
 
@@ -129,7 +130,7 @@ TEST(Partition2D) {
     MESH_Delete(globalmesh);
 
 
-  status = MESH_Parallel_Check(mymesh);
+  status = MESH_Parallel_Check(mymesh, comm);
 
   CHECK(status);
 

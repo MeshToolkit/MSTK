@@ -16,7 +16,7 @@ TEST(MR_Vertices_Pyramid_FN)
 
   mesh = MESH_New(UNKNOWN_REP);
 
-  ok = MESH_InitFromFile(mesh,"serial/onepyramid.mstk");
+  ok = MESH_InitFromFile(mesh,"serial/onepyramid.mstk",NULL);
   CHECK_EQUAL(1,ok);
 
   CHECK_EQUAL(F1,MESH_RepType(mesh));

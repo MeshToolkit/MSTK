@@ -16,17 +16,17 @@ TEST(VertexUpdate2D) {
 
 
   MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
 
-  nproc = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_rank(comm,&rank);
 
   Mesh_ptr mesh0;
   if (rank == 0) {
     mesh0 = MESH_New(UNKNOWN_REP);
 
     sprintf(filename,"parallel/4proc/quad10x10.mstk");
-    MESH_InitFromFile(mesh0, filename);
+    MESH_InitFromFile(mesh0, filename, comm);
     
     if (MESH_Num_Regions(mesh0) > 0) {
       fprintf(stderr,"Code is for surface meshes only. Exiting...\n");
@@ -55,7 +55,8 @@ TEST(VertexUpdate2D) {
   CHECK(status);
 #endif
 
-  status = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
+  mesh = NULL;
+  status = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method, comm);
 
   if (rank == 0) MESH_Delete(mesh0);
 
@@ -79,8 +80,8 @@ TEST(VertexUpdate2D) {
 
   //  fprintf(stderr,"Deformed mesh proc %-d\n",rank);
 
-  MESH_UpdateVertexCoords(mesh);
-  MSTK_UpdateAttr(mesh);
+  MESH_UpdateVertexCoords(mesh, comm);
+  MSTK_UpdateAttr(mesh, comm);
 
   //  fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
 

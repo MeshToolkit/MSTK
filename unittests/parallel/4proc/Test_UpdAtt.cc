@@ -17,17 +17,17 @@ TEST(UpdAtt2D_Dist) {
 
 
   MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
 
-  nproc = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MSTK_Comm comm = MPI_COMM_WORLD;
+  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_rank(comm,&rank);
 
   Mesh_ptr mesh0;
   if (rank == 0) {
     mesh0 = MESH_New(UNKNOWN_REP);
 
     sprintf(filename,"parallel/4proc/quad10x10.mstk");
-    MESH_InitFromFile(mesh0, filename);
+    MESH_InitFromFile(mesh0, filename, comm);
     
     if (MESH_Num_Regions(mesh0) > 0) {
       fprintf(stderr,"Code is for surface meshes only. Exiting...\n");
@@ -57,7 +57,8 @@ TEST(UpdAtt2D_Dist) {
   CHECK(status);
 #endif
 
-  MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method);
+  mesh = NULL;
+  MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method, comm);
 
   if (rank == 0) MESH_Delete(mesh0);
 
@@ -75,7 +76,7 @@ TEST(UpdAtt2D_Dist) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh);
+  MSTK_UpdateAttr(mesh, comm);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {
@@ -114,17 +115,17 @@ TEST(UpdAtt2D_Weave) {
 
 
   MSTK_Init();
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
 
 
-  nproc = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_rank(comm,&rank);
 
 
-   mesh = MESH_New(UNKNOWN_REP);
+  mesh = MESH_New(UNKNOWN_REP);
 
    sprintf(filename,"parallel/4proc/quad3x2.mstk.%-1d",rank);
-   status = MESH_InitFromFile(mesh,filename);
+   status = MESH_InitFromFile(mesh,filename,comm);
 
    CHECK(status);
 
@@ -136,7 +137,7 @@ TEST(UpdAtt2D_Weave) {
    int num_ghost_layers = 1; /* always */
    int topodim = 2;
    status = MSTK_Weave_DistributedMeshes(mesh, topodim, 
-                                         num_ghost_layers, input_type);
+                                         num_ghost_layers, input_type, comm);
 
    CHECK(status);
 
@@ -158,7 +159,7 @@ TEST(UpdAtt2D_Weave) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh);
+  MSTK_UpdateAttr(mesh,comm);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {

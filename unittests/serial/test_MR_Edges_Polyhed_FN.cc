@@ -16,7 +16,7 @@ TEST(MR_Edges_polyhed_FN)
 
   mesh = MESH_New(UNKNOWN_REP);
 
-  ok = MESH_InitFromFile(mesh,"serial/onepolyhed.mstk");
+  ok = MESH_InitFromFile(mesh,"serial/onepolyhed.mstk",NULL);
   CHECK_EQUAL(1,ok);
 
   CHECK_EQUAL(F1,MESH_RepType(mesh));

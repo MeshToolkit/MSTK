@@ -18,7 +18,7 @@ TEST(MR_Edges_Prism_FN)
 
   mesh = MESH_New(UNKNOWN_REP);
 
-  ok = MESH_InitFromFile(mesh,"serial/oneprism.mstk");
+  ok = MESH_InitFromFile(mesh,"serial/oneprism.mstk",NULL);
   CHECK_EQUAL(1,ok);
 
   CHECK_EQUAL(F1,MESH_RepType(mesh));
