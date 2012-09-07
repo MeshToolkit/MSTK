@@ -44,25 +44,16 @@ extern "C" {
     
   }
 
-
 #ifdef MSTK_HAVE_MPI
-  void MSTK_Set_Comm(MPI_Comm comm) {
-    MSTK_communicator = comm;
-  }
-
-  MPI_Comm MSTK_Comm() {
-    return MSTK_communicator;
-  }
-
-  int MSTK_Comm_size() {
+  int MSTK_Comm_size(MSTK_Comm comm) {
     int size;
-    MPI_Comm_size(MSTK_Comm(),&size);
+    MPI_Comm_size(comm,&size);
     return size;
   }
 
-  int MSTK_Comm_rank() {
+  int MSTK_Comm_rank(MSTK_Comm comm) {
     int rank;
-    MPI_Comm_rank(MSTK_Comm(),&rank);
+    MPI_Comm_rank(comm,&rank);
     return rank;
   }
 #endif /* MSTK_HAVE_MPI */
