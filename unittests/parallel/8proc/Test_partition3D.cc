@@ -19,17 +19,6 @@ TEST(Partition3D_sym) {
   MVertex_ptr mv;
 
   
-  /* Expected centroids - to verify that the eight cells got assigned
-     to the processors we expected */
-  double exp_centroid[9][3] = {{0.75,0.75,0.75},
-                               {0.75,0.75,0.25},
-                               {0.25,0.75,0.75},
-                               {0.25,0.75,0.25},
-                               {0.75,0.25,0.25},
-                               {0.75,0.25,0.75},
-                               {0.25,0.25,0.75},
-                               {0.25,0.25,0.25}};
-
   /* Total number of entities - ghost + owned */
   int expnr[8]={8,8,8,8,8,8,8,8};
   int expnf[8]={36,36,36,36,36,36,36,36};
@@ -89,26 +78,6 @@ TEST(Partition3D_sym) {
   CHECK(status);
 
   if (rank == 0) MESH_Delete(globalmesh);
-
-  double centroid[3] = {0.0,0.0,0.0};
-  double rxyz[8][3];
-  int nrv;
-
-  idx = 0; nr = 0;
-  while (mr = MESH_Next_Region(mymesh,&idx)) {
-    if (MR_PType(mr) != PGHOST) {
-      MR_Coords(mr,&nrv,rxyz);
-      for (i = 0; i < nrv; i++) {
-        for (j = 0; j < 3; j++)
-          centroid[j] += rxyz[i][j];
-      }
-      for (j = 0; j < 3; j++)
-        centroid[j] /= nrv;
-      nr++;
-    }
-  }
-  CHECK_EQUAL(1,nr);
-  CHECK_ARRAY_EQUAL(exp_centroid[rank],centroid,3);
 
   ngr = MESH_Num_GhostRegions(mymesh);
   CHECK_EQUAL(expngr[rank],ngr);
