@@ -25,9 +25,8 @@ extern "C" {
   */
 
 
-
 int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt, 
-			 const char **attnames, const int *opts) {
+			 const char **attnames, const int *opts, MSTK_Comm comm) {
   int			gentid, *gentities;
   List_ptr	        fverts, rfaces, fregs, efaces, fedges;
   MVertex_ptr           vertex;
@@ -53,8 +52,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
 #ifdef MSTK_HAVE_MPI
   int rank, numprocs;
-  numprocs = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&numprocs);
+  MPI_Comm_rank(comm,&rank);
 #endif
 
   vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);

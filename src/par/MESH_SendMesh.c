@@ -21,21 +21,21 @@ extern "C" {
   */
 
 
-  int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank);
-  int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank);
-  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int torank);
-  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int torank);
-  int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int torank);
+  int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank, MSTK_Comm comm);
+  int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank, MSTK_Comm comm);
+  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int torank, MSTK_Comm comm);
+  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int torank, MSTK_Comm comm);
+  int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int torank, MSTK_Comm comm);
 
-  static int (*MESH_Vol_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int torank) = 
+  static int (*MESH_Vol_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int torank, MSTK_Comm comm) = 
   {MESH_Vol_SendMesh_FN, MESH_Vol_SendMesh_FN, MESH_Vol_SendMesh_R1R2, 
    MESH_Vol_SendMesh_R1R2, MESH_Vol_SendMesh_R4};
-  static int (*MESH_Surf_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int torank) =
+  static int (*MESH_Surf_SendMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, int torank, MSTK_Comm comm) =
   {MESH_Surf_SendMesh_FN, MESH_Surf_SendMesh_FN, MESH_Surf_SendMesh_R1R2R4, 
    MESH_Surf_SendMesh_R1R2R4, MESH_Surf_SendMesh_R1R2R4};
 
 
-int MESH_SendMesh(Mesh_ptr mesh, int torank) {
+  int MESH_SendMesh(Mesh_ptr mesh, int torank, MSTK_Comm comm) {
   int nf, nr;
   RepType rtype;
 
@@ -44,9 +44,9 @@ int MESH_SendMesh(Mesh_ptr mesh, int torank) {
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
   if (nr)
-    (*MESH_Vol_SendMesh_jmp[rtype])(mesh,torank);
+    (*MESH_Vol_SendMesh_jmp[rtype])(mesh,torank,comm);
   else if(nf) 
-    (*MESH_Surf_SendMesh_jmp[rtype])(mesh,torank);
+    (*MESH_Surf_SendMesh_jmp[rtype])(mesh,torank,comm);
   else {
     MSTK_Report("MESH_SendMesh()","only send volume or surface mesh",MSTK_ERROR);
     exit(-1);
@@ -60,7 +60,7 @@ int MESH_SendMesh(Mesh_ptr mesh, int torank) {
 
 
 
-int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank) {
+  int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank, MSTK_Comm comm) {
   int i, j, nv, ne, nf, mesh_info[10], nevs, nfes, nfv, natt, nset, ncomp, dir;
   int nfe;
   MVertex_ptr mv;
@@ -76,8 +76,6 @@ int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank) {
   int *list_attr=NULL, *list_mset=NULL;
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
-
-  MPI_Comm comm = MSTK_Comm();
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -234,7 +232,7 @@ int MESH_Surf_SendMesh_FN(Mesh_ptr mesh, int torank) {
 }
 
 
-int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank) {
+  int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank, MSTK_Comm comm) {
   int i, j, nv, ne, nf, nr, mesh_info[10];
   int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
   MVertex_ptr mv;
@@ -251,8 +249,6 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank) {
   int *list_attr=NULL, *list_mset=NULL;
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
-
-  MPI_Comm comm = MSTK_Comm();
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -429,19 +425,19 @@ int MESH_Vol_SendMesh_FN(Mesh_ptr mesh, int torank) {
 
 
 
-int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int torank) {
+  int MESH_Surf_SendMesh_R1R2R4(Mesh_ptr mesh, int torank, MSTK_Comm comm) {
   MSTK_Report("MESH_Surf_SendMesh_R1R2R4","Not implemented",MSTK_FATAL);
   return 0;
 }
 
 
-  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int torank) {
+  int MESH_Vol_SendMesh_R1R2(Mesh_ptr mesh, int torank, MSTK_Comm comm) {
   MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
   return 0;
 }
 
 
-  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int torank) {
+  int MESH_Vol_SendMesh_R4(Mesh_ptr mesh, int torank, MSTK_Comm comm) {
   MSTK_Report("MESH_Vol_SendMesh_R4","Not implemented",MSTK_FATAL);
   return 0;
 }

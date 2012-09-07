@@ -20,29 +20,29 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int have_GIDs);
-  int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh);
-  int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh);
-  int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh);
+  int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int have_GIDs, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, MSTK_Comm comm);
 
 
-int MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs) {
+  int MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs, MSTK_Comm comm) {
 
   int nf, nr;
   RepType rtype;
 
 
-  MESH_AssignGlobalIDs_Vertex(submesh, have_GIDs);
-  MESH_AssignGlobalIDs_Edge(submesh);
+  MESH_AssignGlobalIDs_Vertex(submesh, have_GIDs, comm);
+  MESH_AssignGlobalIDs_Edge(submesh,comm);
 
   /* Use topological dimension of mesh to call appropriate function */
   /* Do not use the presence of mesh regions or faces since the mesh
      may be an empty mesh on some processors */
 
   if (topodim == 3)
-    MESH_AssignGlobalIDs_Region(submesh);
+    MESH_AssignGlobalIDs_Region(submesh,comm);
   else if (topodim == 2) 
-    MESH_AssignGlobalIDs_Face(submesh);
+    MESH_AssignGlobalIDs_Face(submesh,comm);
   else {
     MSTK_Report("MESH_AssignGlobalIDs()","only assign global id for volume or surface mesh",MSTK_ERROR);
     exit(-1);
@@ -94,7 +94,7 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
     so that user can call MESH_LabelPType() directly when global IDs are given
  */
      
-int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int have_GIDs) {
+  int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int have_GIDs, MSTK_Comm comm) {
   int i, j, nv, nbv, ne, nf, nr, mesh_info[10];
   MVertex_ptr mv;
   List_ptr boundary_verts;
@@ -103,9 +103,9 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int have_GIDs) {
   int *global_mesh_info, *vertex_ov_label, *vertex_ov_global_id, *id_on_ov_list;
   int (*func)(MVertex_ptr mv);                /* function pointer to check boundary vertex */
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -350,17 +350,17 @@ int MESH_AssignGlobalIDs_Vertex(Mesh_ptr submesh, int have_GIDs) {
     Assume each processor knowns its overlap and ghost vertices 
  */
      
-int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, j, k, nbe, noe, nge, ne, mesh_info[10], global_id;
   MVertex_ptr mv;
   MEdge_ptr me;
   List_ptr boundary_edges;
   int *loc, edge_id[2], max_nbe, index_nbe, iloc, is_boundary;
   int *global_mesh_info, *list_edge, *recv_list_edge, *edge_ov_label, *id_on_ov_list;
-
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   ne = MESH_Num_Edges(submesh);
@@ -501,15 +501,15 @@ int MESH_AssignGlobalIDs_Edge(Mesh_ptr submesh) {
     Assume each processor knowns its overlap and ghost vertices 
  */
 
-int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, nf, global_id, mesh_info[10];
   MFace_ptr mf;
   RepType rtype;
   int *global_mesh_info;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   rtype = MESH_RepType(submesh);
@@ -544,7 +544,7 @@ int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh) {
     Assume each processor knowns its overlap and ghost vertices 
  */
      
-int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, j, k, nfv, nbf, nof, ngf, nf, nr, mesh_info[10], global_id;
   MVertex_ptr mv;
   MFace_ptr mf;
@@ -553,9 +553,9 @@ int MESH_AssignGlobalIDs_Region(Mesh_ptr submesh) {
   int *loc, face_id[MAXPV2+3],index_nbf, max_nbf, iloc, is_boundary;
   int *global_mesh_info, *list_face, *recv_list_face, *face_ov_label, *id_on_ov_list;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   nf = MESH_Num_Faces(submesh);

@@ -19,7 +19,7 @@ extern "C" {
      set_name: the name of the attribute 
   */
 
-  int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int torank) {
+  int MESH_SendMSet(Mesh_ptr mesh, const char *mset_name, int torank, MSTK_Comm comm) {
   int i, idx;
   int num, nent;
   int *list_info, *list_value_int;
@@ -28,7 +28,6 @@ extern "C" {
   MEntity_ptr ment;
   MSet_ptr mset;
 
-  MPI_Comm comm = MSTK_Comm();
 
   mset = MESH_MSetByName(mesh,mset_name);
   if(!mset) {
@@ -82,7 +81,7 @@ extern "C" {
 
   */
 
-  int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int fromrank) {
+  int MESH_RecvMSet(Mesh_ptr mesh, const char *mset_name, int fromrank, MSTK_Comm comm) {
   int i, idx, gid, count;
   int num, nent;
   int *list_info, *list_value_int;
@@ -96,8 +95,8 @@ extern "C" {
   MPI_Status status;
 
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
+  int rank;
+  MPI_Comm_rank(comm,&rank);
 
   MESH_Enable_GlobalIDSearch(mesh); /* no harm in calling repeatedly */
   

@@ -10,17 +10,17 @@ extern "C" {
 
   /* check is the parallel mesh is valid */
 int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank);
-int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
-int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
-int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
-int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
-int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm);
-int MESH_Parallel_Check(Mesh_ptr mesh) {
+int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
+int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
+int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
+int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
+int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
+  int MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm) {
   int valid;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   printf("Begin checking parallel information on submesh %d\n",rank);
   valid = MESH_Parallel_Check_Ghost(mesh,rank);
@@ -38,7 +38,7 @@ int MESH_Parallel_Check(Mesh_ptr mesh) {
     the information matches
  */
 
-int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm) {
   int valid = 1;
   valid = MESH_Parallel_Check_VertexGlobalID(mesh,rank,num,comm);
   valid &= MESH_Parallel_Check_EdgeGlobalID(mesh,rank,num,comm);
@@ -49,7 +49,7 @@ int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm
 
 }
 
-int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm) {
   int i, j, idx, nv, nov, max_nv, index_mv, global_id, *loc, iloc, valid = 1;
   char mesg[256], funcname[32] = "MESH_Parallel_Check";
   MPI_Status status;
@@ -274,7 +274,7 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Com
 }
 
 
-int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm) {
   int i, j, idx, ne, noe, max_ne, index_me, global_id, *loc, iloc, valid = 1;
   char mesg[256], funcname[32] = "MESH_Parallel_Check";
   MPI_Status status;
@@ -483,7 +483,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
 }
 
 
-int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm) {
   int i, j, idx, nf, nof, nfe, max_nf, index_mf, global_id, *loc, iloc, valid = 1;
   char mesg[256], funcname[32] = "MESH_Parallel_Check";
   MPI_Status status;
@@ -684,7 +684,7 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm 
   return valid;
 }
 
-int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MPI_Comm comm) {
+int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm) {
   int i, j, idx, nr, nor, nrf, max_nr, index_mr, global_id, *loc, iloc, valid = 1;
   char mesg[256], funcname[32] = "MESH_Parallel_Check";
   MPI_Status status;

@@ -21,32 +21,32 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank);
-  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank);
-  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int fromrank);
-  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int fromrank);
-  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int fromrank);
+  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm);
+  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm);
+  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm);
+  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm);
+  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm);
 
   static int (*MESH_Vol_RecvMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, 
 						   int *mesh_info, 
-						   int fromrank) =
+						   int fromrank, MSTK_Comm comm) =
   {MESH_Vol_RecvMesh_FN, MESH_Vol_RecvMesh_FN, MESH_Vol_RecvMesh_R1R2, 
    MESH_Vol_RecvMesh_R1R2, MESH_Vol_RecvMesh_R4};
   static int (*MESH_Surf_RecvMesh_jmp[MSTK_MAXREP])(Mesh_ptr mesh, 
 						    int *mesh_info, 
-						    int fromrank) =
+						    int fromrank, MSTK_Comm comm) =
   {MESH_Surf_RecvMesh_FN, MESH_Surf_RecvMesh_FN, MESH_Surf_RecvMesh_R1R2R4, 
    MESH_Surf_RecvMesh_R1R2R4, MESH_Surf_RecvMesh_R1R2R4};
 
 
 
-  int MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank) {
+  int MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, MSTK_Comm comm) {
     int mesh_info[10], count;
     MPI_Status status;
     RepType rtype;
 
-    MPI_Comm comm = MSTK_Comm();
-    int rank = MSTK_Comm_rank();
+    int rank;
+    MPI_Comm_rank(comm,&rank);
 
     /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
     /* receive mesh_info */
@@ -56,9 +56,9 @@ extern "C" {
     rtype = mesh_info[0];
     
     if (dim == 3)
-      (*MESH_Vol_RecvMesh_jmp[rtype])(mesh,mesh_info,fromrank);
+      (*MESH_Vol_RecvMesh_jmp[rtype])(mesh,mesh_info,fromrank,comm);
     else if(dim == 2) 
-      (*MESH_Surf_RecvMesh_jmp[rtype])(mesh,mesh_info,fromrank);
+      (*MESH_Surf_RecvMesh_jmp[rtype])(mesh,mesh_info,fromrank,comm);
     else {
       MSTK_Report("MESH_RecvMesh()","only receive volume or surface mesh",MSTK_ERROR);
       exit(-1);
@@ -71,7 +71,7 @@ extern "C" {
 
 
 
-  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank) {
+  int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm) {
     int i, j, nevs, nevs_local, nfe, nfes, nfes_local, natt, nset, count, ncomp;
     int nv, ne, nf, *fedirs;
     MVertex_ptr *verts, *fverts;
@@ -88,8 +88,8 @@ extern "C" {
     char *list_attr_names, *list_mset_names;
     double coor[3];
 
-    MPI_Comm comm = MSTK_Comm();
-    int rank = MSTK_Comm_rank();
+    int rank;
+    MPI_Comm_rank(comm,&rank);
 
     /* basic mesh information */
     rtype = mesh_info[0];
@@ -236,7 +236,7 @@ extern "C" {
     return 1;
   }
 
-  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank) {
+  int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MPI_Comm comm) {
     int i, j, nevs, nevs_local, nfes, nfes_local, nrv, nrfs, nrfs_local;
     int count, natt, nset, ncomp, nv, ne, nf, nr, nfe, nrf, *fedirs, *rfdirs;
     MVertex_ptr *verts, *rverts;
@@ -254,8 +254,8 @@ extern "C" {
     char *list_attr_names, *list_mset_names;
     double coor[3];
    
-    MPI_Comm comm = MSTK_Comm();
-    int rank = MSTK_Comm_rank();
+    int rank;
+    MPI_Comm_rank(comm,&rank);
 
     /* mesh_info store the mesh reptype, nv, nr, nrvs and natt */
 
@@ -449,18 +449,18 @@ extern "C" {
 
 
 
-  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int fromrank) {
+  int MESH_Surf_RecvMesh_R1R2R4(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm) {
     MSTK_Report("MESH_Surf_RecvMesh_R1R2R4","Not implemented",MSTK_FATAL);
     return 0;
   }
 
-  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int fromrank) {
+  int MESH_Vol_RecvMesh_R1R2(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm) {
     MSTK_Report("MESH_Vol_RecvMesh_R1R2","Not implemented",MSTK_FATAL);
     return 0;
   }
 
 
-  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int fromrank) {
+  int MESH_Vol_RecvMesh_R4(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm) {
     MSTK_Report("MESH_Vol_RecvMesh_R4","Not implemented",MSTK_FATAL);
     return 0;
   }

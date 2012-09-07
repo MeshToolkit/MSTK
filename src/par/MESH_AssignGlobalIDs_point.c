@@ -21,22 +21,22 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh);
-  int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh);
-  int MESH_AssignGlobalIDs_Face_p2p(Mesh_ptr submesh);
-  int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh);
+  int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_Face_p2p(Mesh_ptr submesh, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh, MSTK_Comm comm);
 
 
-  int MESH_AssignGlobalIDs_p2p(Mesh_ptr submesh, int topodim) {
+  int MESH_AssignGlobalIDs_p2p(Mesh_ptr submesh, int topodim, MSTK_Comm comm) {
   int nf, nr;
   nf = MESH_Num_Faces(submesh);
   nr = MESH_Num_Regions(submesh);
-  MESH_AssignGlobalIDs_Vertex_p2p(submesh);
-  MESH_AssignGlobalIDs_Edge_p2p(submesh);
+  MESH_AssignGlobalIDs_Vertex_p2p(submesh,comm);
+  MESH_AssignGlobalIDs_Edge_p2p(submesh,comm);
   if (topodim == 3)
-    MESH_AssignGlobalIDs_Region_p2p(submesh);
+    MESH_AssignGlobalIDs_Region_p2p(submesh,comm);
   else if (topodim == 2) 
-    MESH_AssignGlobalIDs_Face_p2p(submesh);
+    MESH_AssignGlobalIDs_Face_p2p(submesh,comm);
   else {
     MSTK_Report("MESH_AssignGlobalIDs()","only assign global id for volume or surface mesh",MSTK_ERROR);
     exit(-1);
@@ -88,7 +88,7 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
     so that user can call MESH_LabelPType_point() directly when global IDs are given
  */
      
-int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, j, nv, nbv, nov, ngv, nr, num_recv_procs, count;
   MVertex_ptr mv;
   List_ptr boundary_verts;
@@ -100,9 +100,9 @@ int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh) {
   double *list_coor, *recv_list_coor;
   int (*func)(MVertex_ptr mv);                /* function pointer to check boundary vertex */
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   num_recv_procs = MESH_Num_GhostPrtns(submesh);
@@ -273,7 +273,7 @@ int MESH_AssignGlobalIDs_Vertex_p2p(Mesh_ptr submesh) {
     Assume each processor knowns its overlap and ghost vertices 
  */
      
-int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, j, k, nbe, noe, nge, ne, mesh_info[10], global_id, count;
   MVertex_ptr mv;
   MEdge_ptr me;
@@ -286,9 +286,9 @@ int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh) {
   ne = MESH_Num_Edges(submesh);
   mesh_info[2] = ne;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   /* 
      collect 'boundary' edges
@@ -450,14 +450,14 @@ int MESH_AssignGlobalIDs_Edge_p2p(Mesh_ptr submesh) {
     Assume each processor knowns its overlap and ghost vertices 
  */
 
-int MESH_AssignGlobalIDs_Face_p2p(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Face_p2p(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, nf, global_id, mesh_info[10];
   MFace_ptr mf;
   int *global_mesh_info;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   nf = MESH_Num_Faces(submesh);
@@ -490,7 +490,7 @@ int MESH_AssignGlobalIDs_Face_p2p(Mesh_ptr submesh) {
     Assume each processor knowns its overlap and ghost vertices 
  */
      
-int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh) {
+  int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, j, k, nfv, nbf, nof, ngf, nf, nr, mesh_info[10], global_id, count;
   MVertex_ptr mv;
   MFace_ptr mf;
@@ -501,9 +501,9 @@ int MESH_AssignGlobalIDs_Region_p2p(Mesh_ptr submesh) {
   int *loc, face_id[MAXPV2+3],index_nbf, max_nbf, iloc, is_boundary;
   int *global_mesh_info, *list_face, *recv_list_face, *mf_remote_info, *mf_ov_label;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 

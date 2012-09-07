@@ -13,7 +13,7 @@ extern "C" {
 
   /* Import a single or distributed mesh from a FLAG X3D format file */
 
-  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename) {
+  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
 
   char funcname[32] = "MESH_ImportFromFLAGX3D";
   char mesg[256], temp_str[1028], keyword[1028], modfilename[256];
@@ -42,8 +42,8 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
 
-  numprocs = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&numprocs);
+  MPI_Comm_rank(comm,&rank);
 
   if (numprocs > 1) {
 
@@ -446,7 +446,7 @@ extern "C" {
     int topodim = ndim;
   
     status = MSTK_Weave_DistributedMeshes(mesh, topodim,
-                                          num_ghost_layers, input_type);
+                                          num_ghost_layers, input_type, comm);
   
     if (!status)
       MSTK_Report(funcname,"Could weave distributed meshes together correctly",

@@ -30,8 +30,7 @@ extern "C" {
      these entity sets. We are also setting mesh geometric entity IDs
      - Should we pick one of the first two? */
 
-
-  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename) {
+  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
 
   char mesg[256], funcname[32]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
@@ -78,8 +77,8 @@ extern "C" {
 
   int rank=0, numprocs=1;
 
-  numprocs = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&numprocs);
+  MPI_Comm_rank(comm,&rank);
 
   if (numprocs > 1) {
 
@@ -170,7 +169,7 @@ extern "C" {
 
       int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
                                                      num_ghost_layers, 
-                                                     input_type);
+                                                     input_type, comm);
       
       if (!weavestatus)
         MSTK_Report(funcname,
@@ -210,7 +209,7 @@ extern "C" {
 
       int dist_status = MSTK_Mesh_Distribute(globalmesh, &mesh, &topodim, 
                                              num_ghost_layers,
-                                             with_attr, method);
+                                             with_attr, method, comm);
       if (!dist_status)
         MSTK_Report(funcname,
                     "Could not distribute meshes to other processors",
@@ -220,7 +219,7 @@ extern "C" {
         MESH_Delete(globalmesh);
     }
 
-    int parallel_check = MESH_Parallel_Check(mesh);        
+    int parallel_check = MESH_Parallel_Check(mesh,comm);        
 
     if (!parallel_check)
       MSTK_Report(funcname,

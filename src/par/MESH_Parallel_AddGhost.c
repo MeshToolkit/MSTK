@@ -26,18 +26,18 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh);
-int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh);
+  int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, MSTK_Comm comm);
+  int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, MSTK_Comm comm);
 
 
-int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim) {
+  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim, MSTK_Comm comm) {
   int nf, nr;
   RepType rtype;
 
   if (topodim == 3)
-    MESH_Parallel_AddGhost_Region(submesh);
+    MESH_Parallel_AddGhost_Region(submesh,comm);
   else if (topodim == 2) 
-    MESH_Parallel_AddGhost_Face(submesh);
+    MESH_Parallel_AddGhost_Face(submesh,comm);
   else {
     MSTK_Report("MESH_Parallel_AddGhost()","only send volume or surface mesh",MSTK_ERROR);
     exit(-1);
@@ -50,14 +50,14 @@ int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim) {
      Send 1-ring Faces to neighbor processors, and receive them 
      First update the parallel adjancy information, 
   */
-int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh) {
+  int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, num_recv_procs, index_recv_mesh;
   Mesh_ptr send_mesh;
   Mesh_ptr *recv_meshes;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   /* build the 1-ring layer send mesh */
   send_mesh = MESH_New(MESH_RepType(submesh));
@@ -79,7 +79,7 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh) {
     }
   }
 
-  MESH_Update_ParallelAdj(submesh);
+  MESH_Update_ParallelAdj(submesh, comm);
 
   /* allocate meshes to receive from other processors */
   num_recv_procs = MESH_Num_GhostPrtns(submesh);
@@ -94,15 +94,15 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh) {
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) 
-	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i);
+	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i,comm);
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) 
-	MESH_SendMesh(send_mesh,i);
+	MESH_SendMesh(send_mesh,i,comm);
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) 
-	MESH_SendMesh(send_mesh,i);
+	MESH_SendMesh(send_mesh,i,comm);
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) 
-	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i);
+	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i,comm);
     }
   }
 
@@ -117,14 +117,14 @@ int MESH_Parallel_AddGhost_Face(Mesh_ptr submesh) {
 }
 
 
-int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh) {
+  int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh, MSTK_Comm comm) {
   int i, num_recv_procs, index_recv_mesh;
   Mesh_ptr send_mesh;
   Mesh_ptr *recv_meshes;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   /* build the 1-ring outside layer send mesh */
   send_mesh = MESH_New(MESH_RepType(submesh));
@@ -158,15 +158,15 @@ int MESH_Parallel_AddGhost_Region(Mesh_ptr submesh) {
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) 
-	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i);
+	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i,comm);
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) 
-	MESH_SendMesh(send_mesh,i);
+	MESH_SendMesh(send_mesh,i,comm);
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) 
-	MESH_SendMesh(send_mesh,i);
+	MESH_SendMesh(send_mesh,i,comm);
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) 
-	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i);
+	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i,comm);
     }
   }
   

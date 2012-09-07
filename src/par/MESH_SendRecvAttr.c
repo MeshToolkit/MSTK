@@ -19,7 +19,7 @@ extern "C" {
 
      Author(s): Rao Garimella
   */
-int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank) {
+  int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, MSTK_Comm comm) {
   int j, k;
   int num, ncomp, ival;
   double rval;
@@ -31,8 +31,6 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank) {
   MAttType att_type;
   MEntity_ptr ment;
   MAttrib_ptr attrib;
-
-  MPI_Comm comm = MSTK_Comm();
 
   attrib = MESH_AttribByName(mesh,attr_name);
   /* if there is no such attribute */
@@ -134,7 +132,7 @@ int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank) {
      
   */
 
-int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank) {
+  int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank, MPI_Comm comm) {
   int j, k, count;
   int num, ncomp, ival=0;
   double rval=0.0;
@@ -147,8 +145,8 @@ int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank) {
   MAttrib_ptr attrib;
   MPI_Status status;
   
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
+  int rank;
+  MPI_Comm_rank(comm,&rank);
 
   attrib = MESH_AttribByName(mesh,attr_name);
 

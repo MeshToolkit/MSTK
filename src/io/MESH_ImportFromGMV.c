@@ -3,14 +3,13 @@
 #include <string.h>
 #include <MSTK.h>
 
-#include "mpi.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
+  int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
 
   char funcname[32] = "MESH_ImportFromGMV";
   MRegion_ptr mr;
@@ -43,8 +42,9 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
 
 #ifdef MSTK_HAVE_MPI
 
-  int numprocs = MSTK_Comm_size();
-  int rank = MSTK_Comm_rank();
+  int numprocs, rank;
+  MPI_Comm_size(comm,&numprocs);
+  MPI_Comm_rank(comm,&rank);
 
   if (numprocs > 1) {
     distributed = 1;
@@ -1109,14 +1109,14 @@ int MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename) {
   
     int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
                                                    num_ghost_layers, 
-                                                   input_type);
+                                                   input_type, comm);
   
     if (!weavestatus)
       MSTK_Report(funcname,
                   "Could not weave distributed meshes correctly together",
                   MSTK_FATAL);
 
-    int parallel_check = MESH_Parallel_Check(mesh);
+    int parallel_check = MESH_Parallel_Check(mesh, comm);
   }
 #endif
 

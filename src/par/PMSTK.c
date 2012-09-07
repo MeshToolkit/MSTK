@@ -165,7 +165,7 @@ extern "C" {
 
   /* Send a mesh to a processor 'torank' with or without attributes */
 
-  int MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr) {
+  int MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, MSTK_Comm comm) {
     int i, natt, nset;
     char attr_name[256], mset_name[256];
     MAttrib_ptr attrib;
@@ -173,7 +173,7 @@ extern "C" {
 
     /* Send mesh only */
 
-    MESH_SendMesh(mesh,torank);
+    MESH_SendMesh(mesh,torank,comm);
 
     if (!with_attr) 
       return 1;
@@ -189,7 +189,7 @@ extern "C" {
 	      attr_name, MAttrib_Get_Type(attrib),
 	      MAttrib_Get_EntDim(attrib));
       */
-      MESH_SendAttr(mesh,attr_name,torank);
+      MESH_SendAttr(mesh,attr_name,torank,comm);
     }
 
     /* Distribute entity sets */
@@ -198,7 +198,7 @@ extern "C" {
     for(i = 0; i < nset; i++) {
       mset = MESH_MSet(mesh,i);
       MSet_Name(mset,mset_name);
-      MESH_SendMSet(mesh,mset_name,torank);
+      MESH_SendMSet(mesh,mset_name,torank,comm);
     }
 
 
@@ -208,18 +208,15 @@ extern "C" {
   /* Receive a mesh of dimension 'dim' from processor 'send_rank' with
      or without attributes onto processor 'rank' */
 
-  int MSTK_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, int with_attr) {
+  int MSTK_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, int with_attr, MSTK_Comm comm) {
     int i, natt, nset;
     char attr_name[256], mset_name[256];
     MAttrib_ptr attrib;
     MSet_ptr mset;
 
-    MPI_Comm comm = MSTK_Comm();
-    int rank = MSTK_Comm_rank();
-
     /* Receive the mesh only */
 
-    MESH_RecvMesh(mesh,dim,fromrank);
+    MESH_RecvMesh(mesh,dim,fromrank,comm);
 
     /* Build the sorted lists of ghost and overlap entities */
 
@@ -234,7 +231,7 @@ extern "C" {
     for(i = 0; i < natt; i++) {
       attrib = MESH_Attrib(mesh,i);
       MAttrib_Get_Name(attrib,attr_name);
-      MESH_RecvAttr(mesh,attr_name,fromrank);
+      MESH_RecvAttr(mesh,attr_name,fromrank,comm);
     }
 
 
@@ -244,7 +241,7 @@ extern "C" {
     for(i = 0; i < nset; i++) {
       mset = MESH_MSet(mesh,i);
       MSet_Name(mset,mset_name);
-      MESH_RecvMSet(mesh,mset_name,fromrank);
+      MESH_RecvMSet(mesh,mset_name,fromrank,comm);
     }
 
     return 1;
@@ -257,15 +254,17 @@ extern "C" {
   int MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
 				const char* global_mesh_name, 
 				int *dim, int ring, int with_attr,
-                                int method) {
+                                int method, MSTK_Comm comm) {
 
     int i, ok;
 
-    int rank = MSTK_Comm_rank();
+    int rank;
+    MPI_Comm_rank(comm,&rank);
+
     Mesh_ptr mesh;
     if(rank == 0) {
       mesh = MESH_New(UNKNOWN_REP);
-      ok = MESH_InitFromFile(mesh,global_mesh_name);
+      ok = MESH_InitFromFile(mesh,global_mesh_name,comm);
       if (!ok) {
 	fprintf(stderr,"Cannot open input file %s\n\n\n",global_mesh_name);
 	exit(-1);
@@ -275,7 +274,7 @@ extern "C" {
       *dim = MESH_Num_Regions(mesh) ? 3 : 2;
     }
 
-    MSTK_Mesh_Distribute(mesh, recv_mesh, dim, ring, with_attr, method);
+    MSTK_Mesh_Distribute(mesh, recv_mesh, dim, ring, with_attr, method, comm);
 
     if (rank == 0)
       MESH_Delete(mesh);
@@ -288,14 +287,13 @@ extern "C" {
   /* The rank, num and comm arguments will go away soon           */
 
   int MSTK_Mesh_Distribute(Mesh_ptr globalmesh, Mesh_ptr *mymesh, int *dim, 
-			   int ring, int with_attr, int method) {
+			   int ring, int with_attr, int method, MSTK_Comm comm) {
     int i, recv_dim;
     int *send_dim, *part;
     int rank, num;
 
-    MPI_Comm comm = MSTK_Comm();
-    rank = MSTK_Comm_rank();
-    num = MSTK_Comm_size();
+    MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&num);
     recv_dim = rank+5;
 
     send_dim = (int *) malloc(num*sizeof(int));
@@ -305,7 +303,7 @@ extern "C" {
 
     if (rank != 0)
       *dim = recv_dim;
-    MESH_Get_Partitioning(globalmesh, method, &part);
+    MESH_Get_Partitioning(globalmesh, method, &part, comm);
 
     if(rank == 0) {    
 
@@ -320,7 +318,7 @@ extern "C" {
       for(i = 1; i < num; i++) {
 
         int torank = i;
-	MSTK_SendMesh(submeshes[i],torank,with_attr);
+	MSTK_SendMesh(submeshes[i],torank,with_attr,comm);
 
 	MESH_Delete(submeshes[i]);  
       }
@@ -343,7 +341,7 @@ extern "C" {
 
       if (!(*mymesh)) *mymesh = MESH_New(UNKNOWN_REP);
       int fromrank = 0;
-      MSTK_RecvMesh(*mymesh,*dim,fromrank,with_attr);
+      MSTK_RecvMesh(*mymesh,*dim,fromrank,with_attr,comm);
 
 #ifdef DEBUG
       fprintf(stderr,"Received mesh on partition %d\n",rank);
@@ -353,7 +351,7 @@ extern "C" {
 
     MESH_Set_Prtn(*mymesh,rank,num);
 
-    MESH_Update_ParallelAdj(*mymesh);
+    MESH_Update_ParallelAdj(*mymesh,comm);
 
     MESH_Disable_GlobalIDSearch(*mymesh);
 
@@ -391,12 +389,14 @@ extern "C" {
 
 
   int MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
-                                   int num_ghost_layers, int input_type) {
+                                   int num_ghost_layers, int input_type,
+                                   MSTK_Comm comm) {
 
     int have_GIDs = 0;
-    MPI_Comm comm = MSTK_Comm();
-    int rank = MSTK_Comm_rank();
-    int num = MSTK_Comm_size();
+    int rank, num;
+
+    MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&num);
 
     if (num_ghost_layers > 1)
       MSTK_Report("MSTK_Weave_DistributedMeshes", "Only 1 ghost layer supported currently", MSTK_FATAL);
@@ -419,40 +419,37 @@ extern "C" {
 
     if (input_type == 0 || input_type == 1) {
       /* MESH_MatchEnts_ParBdry(mesh, have_GIDs, rank, num, comm); */
-      MESH_AssignGlobalIDs(mesh, topodim, have_GIDs);
-      MESH_BuildConnection(mesh, topodim);
+      MESH_AssignGlobalIDs(mesh, topodim, have_GIDs, comm);
+      MESH_BuildConnection(mesh, topodim, comm);
     }
     else if (input_type == 2) 
-      MESH_AssignGlobalIDs_p2p(mesh, topodim);
+      MESH_AssignGlobalIDs_p2p(mesh, topodim, comm);
 
-    MESH_LabelPType(mesh, topodim);
+    MESH_LabelPType(mesh, topodim, comm);
 
-    MESH_Parallel_AddGhost(mesh, topodim);
+    MESH_Parallel_AddGhost(mesh, topodim, comm);
 
     MESH_Build_GhostLists(mesh, topodim);
 
-    MESH_Update_ParallelAdj(mesh);
+    MESH_Update_ParallelAdj(mesh, comm);
     return 1;
   }
 
 
   /* Update attributes on partitions */
 
-  int MSTK_UpdateAttr(Mesh_ptr mesh) {
+  int MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm) {
     int i, natt;
     char attr_name[256];
     MAttrib_ptr attrib;
-
-    MPI_Comm comm = MSTK_Comm();
 
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {
       attrib = MESH_Attrib(mesh,i);
       MAttrib_Get_Name(attrib,attr_name);
       MPI_Barrier(comm);
-      MESH_UpdateAttr(mesh,attr_name);
+      MESH_UpdateAttr(mesh,attr_name,comm);
     }
-
 
     return 1;
   }

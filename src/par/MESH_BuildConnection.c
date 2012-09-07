@@ -19,16 +19,16 @@ extern "C" {
      Author(s): Duo Wang, Rao Garimella
   */
 
-  int MESH_BuildConnection(Mesh_ptr submesh, int topodim) {
+  int MESH_BuildConnection(Mesh_ptr submesh, int topodim, MSTK_Comm comm) {
   int i, j, nv, nr, nbv, mesh_info[10];
   MVertex_ptr mv;
   List_ptr boundary_verts;
   int *loc, *global_mesh_info, *list_boundary_vertex, *recv_list_vertex;
   int iloc,  global_id, max_nbv, index_nbv;
 
-  MPI_Comm comm = MSTK_Comm();
-  int rank = MSTK_Comm_rank();
-  int num = MSTK_Comm_size();
+  int rank, num;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&num);
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
   nv = MESH_Num_Vertices(submesh);

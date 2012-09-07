@@ -54,7 +54,7 @@ extern "C" {
 
   int MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
 			    const int natt, const char **attnames, 
-			    const int *opts) {
+			    const int *opts, MSTK_Comm comm) {
 
     int enable_set, verbose;
     int i, j, k, idx, idx2;
@@ -91,8 +91,8 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
     int rank, numprocs;
-    numprocs = MSTK_Comm_size();
-    rank = MSTK_Comm_rank();
+    MPI_Comm_size(comm,&numprocs);
+    MPI_Comm_rank(comm,&rank);
 
     if (numprocs > 1) {
       char basename[256];
@@ -323,7 +323,7 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
     
     int maxnum=0, maxnum1=0;
-    MPI_Allreduce(&num_element_block,&maxnum,1,MPI_INT,MPI_MAX,MSTK_Comm());
+    MPI_Allreduce(&num_element_block,&maxnum,1,MPI_INT,MPI_MAX,comm);
 
     int *ebids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
 
@@ -333,7 +333,7 @@ extern "C" {
     int *ebids_array_glob;
     ebids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
     
-    MPI_Gather(ebids_array_loc,maxnum,MPI_INT,ebids_array_glob,maxnum,MPI_INT,0,MSTK_Comm());
+    MPI_Gather(ebids_array_loc,maxnum,MPI_INT,ebids_array_glob,maxnum,MPI_INT,0,comm);
 
     if (rank == 0) {
 
@@ -377,7 +377,7 @@ extern "C" {
 
     /* Tell everyone how many element blocks there really are */
 
-    MPI_Bcast(&num_element_block_glob,1,MPI_INT,0,MSTK_Comm());
+    MPI_Bcast(&num_element_block_glob,1,MPI_INT,0,comm);
 
     /* Send everyone the IDs of these element blocks */
 
@@ -387,7 +387,7 @@ extern "C" {
         element_block_ids_glob[i] = ebids_array_glob[i];
 
     MPI_Bcast(element_block_ids_glob,num_element_block_glob,MPI_INT,
-              0,MSTK_Comm());
+              0,comm);
 
     /* Populate the global element block data on each processor */
 
@@ -491,7 +491,7 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
     
     maxnum=0, maxnum1=0;
-    MPI_Allreduce(&num_side_set,&maxnum,1,MPI_INT,MPI_MAX,MSTK_Comm());
+    MPI_Allreduce(&num_side_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
 
     int *ssids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
 
@@ -501,7 +501,7 @@ extern "C" {
     int *ssids_array_glob = NULL;
     ssids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
     
-    MPI_Gather(ssids_array_loc,maxnum,MPI_INT,ssids_array_glob,maxnum,MPI_INT,0,MSTK_Comm());
+    MPI_Gather(ssids_array_loc,maxnum,MPI_INT,ssids_array_glob,maxnum,MPI_INT,0,comm);
 
     if (rank == 0) {
 
@@ -545,7 +545,7 @@ extern "C" {
 
     /* Tell everyone how many element blocks there really are */
 
-    MPI_Bcast(&num_side_set_glob,1,MPI_INT,0,MSTK_Comm());
+    MPI_Bcast(&num_side_set_glob,1,MPI_INT,0,comm);
 
     /* Send everyone the IDs of these element blocks */
 
@@ -554,7 +554,7 @@ extern "C" {
       for (i = 0; i < num_side_set_glob; i++)
         side_set_ids_glob[i] = ssids_array_glob[i];
 
-    MPI_Bcast(side_set_ids_glob,num_side_set_glob,MPI_INT,0,MSTK_Comm());
+    MPI_Bcast(side_set_ids_glob,num_side_set_glob,MPI_INT,0,comm);
 
     /* Populate the global element block data on each processor */
 
@@ -607,7 +607,7 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
     
     maxnum=0, maxnum1=0;
-    MPI_Allreduce(&num_node_set,&maxnum,1,MPI_INT,MPI_MAX,MSTK_Comm());
+    MPI_Allreduce(&num_node_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
 
     int *nsids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
 
@@ -617,7 +617,7 @@ extern "C" {
     int *nsids_array_glob = NULL;
     nsids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
     
-    MPI_Gather(nsids_array_loc,maxnum,MPI_INT,nsids_array_glob,maxnum,MPI_INT,0,MSTK_Comm());
+    MPI_Gather(nsids_array_loc,maxnum,MPI_INT,nsids_array_glob,maxnum,MPI_INT,0,comm);
 
     if (rank == 0) {
 
@@ -661,7 +661,7 @@ extern "C" {
 
     /* Tell everyone how many element blocks there really are */
 
-    MPI_Bcast(&num_node_set_glob,1,MPI_INT,0,MSTK_Comm());
+    MPI_Bcast(&num_node_set_glob,1,MPI_INT,0,comm);
 
     /* Send everyone the IDs of these element blocks */
 
@@ -672,7 +672,7 @@ extern "C" {
   
 
     MPI_Bcast(node_set_ids_glob,num_node_set_glob,MPI_INT,
-              0,MSTK_Comm());
+              0,comm);
 
     /* Populate the global element block data on each processor */
 
