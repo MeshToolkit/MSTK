@@ -1,6 +1,18 @@
 #ifndef _H_MSTK
 #define _H_MSTK
 
+/* Main Header file defining the MSTK API. 
+
+   Author: Rao V Garimella
+   Email: rao@lanl.gov
+   Website: https://software.lanl.gov/MeshTools/hg/mstk
+
+   The MSTK source is available for use under an LGPL license 
+*/
+
+
+#define MSTK_VERSION "2.0rc1"
+
 #include <stdarg.h>
 
 #include "MSTK_defines.h"
@@ -12,6 +24,15 @@
 #ifdef MSTK_HAVE_MPI
 #include <mpi.h>
 #endif
+
+
+/* 
+   IMPORTANT NOTE: 
+   For serial builds, MSTK_types.h typedefs MSTK_Comm to be "void *" so
+   that serial codes can pass in NULL for the comm argument. Also, 
+   serial codes DO NOT have to include mpi.h or link with mpi.
+*/
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,32 +47,48 @@ void MSTK_Init(void);
 
   Mesh_ptr    MESH_New(RepType type);
   void        MESH_Delete(Mesh_ptr mesh);
-  int         MESH_InitFromFile(Mesh_ptr mesh, const char *filename);
+
+  /* Read from the native MSTK format. 'comm' can be NULL for serial codes */
+  int         MESH_InitFromFile(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
+
+  /* Initialize a mesh object on the fly from a general description of the mesh */
   int         MESH_InitFromGenDesc(Mesh_ptr mesh, int nv, double (*xyz)[3],
 				  int nf, int *nfv, int **fvids, int nr, 
 				  int *nrv, int **rvids, int *nrf, 
 				  int ***rfvtemplate);
+
+  /* Import mesh data into the mesh object from various
+     formats. 'comm' can be NULL for serial codes */
+
   int         MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
-                                  const char *format);
-  int         MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename); 
-  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename);
-  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename);
+                                  const char *format, MSTK_Comm comm);
+  int         MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, MSTK_Comm comm); 
+  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
+  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
+
+
+  /* Write mesh data into a file in the native MSTK format. 'comm' can
+     be NULL for serial codes */
+  int         MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype, MSTK_Comm comm);
+
+  /* Export mesh data to various file formats. 'comm' can be NULL for
+     serial codes */
   int         MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
                                 const char *format, const int natt, 
-                                const char **attnames, const int *opts);
+                                const char **attnames, const int *opts, MSTK_Comm comm);
   int         MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, 
                                const int natt, const char **attnames,
-                               const int *opts);
+                               const int *opts, MSTK_Comm comm);
   int         MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, 
                                    const int natt, const char **attnames, 
-                                   const int *opts);
+                                   const int *opts, MSTK_Comm comm);
   int         MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
                                     const int natt, const char **attnames, 
-                                    const int *opts);
+                                    const int *opts, MSTK_Comm comm);
 
   int         MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
   int         MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
-  int         MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype);
+
   int         MESH_BuildClassfn(Mesh_ptr mesh);
   int         MESH_DelInterior(Mesh_ptr mesh);
   int         MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
@@ -113,23 +150,7 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
 
-  /* Set the MPI communicator */
-
-  void MSTK_Set_Comm(MPI_Comm comm);
-
-  /* What is the communicator being used by MSTK? */
-
-  MPI_Comm MSTK_Comm();
-
-  /* Number of processors */
-
-  int MSTK_Comm_size();
-
-  /* Rank of the current process */
-
-  int MSTK_Comm_rank();
-
-  /* PRIMARY ROUTINES FOR PARALLEL APPLICATION */
+  /* PRIMARY ROUTINES FOR PARALLEL APPLICATIONS */
 
   /* Read a mesh in, partition it and distribute it to 'num' processors */
   /* 'ring' indicates the number of ghost layers (can only do 1 for now)*/
@@ -139,16 +160,17 @@ void MSTK_Init(void);
   int         MSTK_Mesh_Read_Distribute(Mesh_ptr *recv_mesh, 
                                         const char* global_mesh_name, 
                                         int *topodim, int ring, int with_attr, 
-                                        int method);
+                                        int method, MSTK_Comm comm);
 
   /* Partition an existing mesh (globalmesh) on processor 0 and
      distribute it to 'num' processors. The resulting mesh on my
      partition is in mymesh. If mymesh is already initialized, that
-     mesh pointer is used as is and the information filled in */
+     mesh pointer is used as is and the information filled in. It is
+     safest to set mymesh to NULL*/
 
   int         MSTK_Mesh_Distribute(Mesh_ptr globalmesh, Mesh_ptr *mymesh, 
                                    int *topodim, int ring, int with_attr, 
-                                   int method);
+                                   int method, MSTK_Comm comm);
 
 
 
@@ -156,19 +178,19 @@ void MSTK_Init(void);
 
   int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
                                            int num_ghost_layers,
-                                           int input_type);
+                                           int input_type, MSTK_Comm comm);
 
   /* Parallel update attribute values for ghost entities */
 
-  int         MSTK_UpdateAttr(Mesh_ptr mesh);
+  int         MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm);
 
 
   /* Update vertex coordinates for ghost vertices */
-  int         MESH_UpdateVertexCoords(Mesh_ptr mesh);
+  int         MESH_UpdateVertexCoords(Mesh_ptr mesh, MSTK_Comm comm);
 
   /* Check parallel consistency */
 
-  int         MESH_Parallel_Check(Mesh_ptr mesh);
+  int         MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm);
 
 
   MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
@@ -176,6 +198,14 @@ void MSTK_Init(void);
   MFace_ptr   MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id);
   MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
   MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
+
+
+  /* Get a partitioning for mesh using METIS (method=1) or ZOLTAN (method=2) */
+  /* Doesn't actually partition the mesh or distribute it                    */
+
+  int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, 
+                                   MPI_Comm);
+
 
 #endif /* MSTK_HAVE_MPI */
 
@@ -558,8 +588,6 @@ void MSTK_Init(void);
 /**********************************************************************/
 
 #ifdef MSTK_HAVE_MPI
-
-  int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part);
 
   /* Typically called only on processor 0 */
 

@@ -11,9 +11,6 @@
 extern "C" {
 #endif
 
-#ifdef MSTK_HAVE_MPI
-  MPI_Comm MSTK_communicator = MPI_COMM_WORLD;    /* Global */
-#endif
 
 /* Templates for TETS, PYRAMIDS, PRISMS and HEXS (move to global file?) */
 

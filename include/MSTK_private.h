@@ -272,34 +272,36 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_Sort_GhostLists(Mesh_ptr mesh, 
                            int (*compfunc)(const void*, const void*));
 
-  int MESH_BuildConnection(Mesh_ptr submesh, int topodim);
+  int MESH_BuildConnection(Mesh_ptr submesh, int topodim, MSTK_Comm comm);
 
-  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim);
-  int MESH_AssignGlobalIDs_p2p(Mesh_ptr submesh, int topodim);
+  int MESH_Parallel_AddGhost(Mesh_ptr submesh, int topodim, MSTK_Comm comm);
+  int MESH_AssignGlobalIDs_p2p(Mesh_ptr submesh, int topodim, MSTK_Comm comm);
 
 
   /* Mesh Partitioning Routines*/
 
   int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
-  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part);
+  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, MSTK_Comm comm);
   int        MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes);
   int        MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name);
 
   /* build processor boundary */
   int        MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh);
-  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs);
-  int        MESH_LabelPType(Mesh_ptr submesh, int topodim);
+  int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs, MSTK_Comm comm);
+  int        MESH_LabelPType(Mesh_ptr submesh, int topodim, MSTK_Comm comm);
   int        MESH_BuildSubMesh(Mesh_ptr mesh, int topodim, Mesh_ptr submesh);
   int        MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes);
   /* add ghost elements */
   int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
   /* send and receive mesh */
-  int        MESH_SendMesh(Mesh_ptr mesh, int torank);
-  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank);
-  int        MESH_SendMSet(Mesh_ptr mesh, const char *attr_name, int torank);
-  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank);
-  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank);
-  int        MESH_RecvMSet(Mesh_ptr mesh, const char *attr_name, int fromrank);
+  int        MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, MSTK_Comm comm);
+  int        MESH_SendMesh(Mesh_ptr mesh, int torank, MSTK_Comm comm);
+  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, MSTK_Comm comm);
+  int        MESH_SendMSet(Mesh_ptr mesh, const char *attr_name, int torank, MSTK_Comm comm);
+  int        MSTK_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, int with_attr, MSTK_Comm comm);
+  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, MSTK_Comm comm);
+  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank, MSTK_Comm comm);
+  int        MESH_RecvMSet(Mesh_ptr mesh, const char *attr_name, int fromrank, MSTK_Comm comm);
 
 
 
@@ -316,8 +318,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* functions to update ghost info and attributes */
   /* Must be preceded by MESH_Update_ProcessorRel - Not recommended for users */
-  int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name);
-  int        MESH_Update_ParallelAdj(Mesh_ptr mesh);
+  int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, MSTK_Comm comm);
+  int        MESH_Update_ParallelAdj(Mesh_ptr mesh, MSTK_Comm comm);
 
 
   void       MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v);

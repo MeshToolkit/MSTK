@@ -1,9 +1,19 @@
 #ifndef _H_TYPESMSTK
 #define _H_TYPESMSTK
 
+#ifdef MSTK_HAVE_MPI
+#include "mpi.h"
+typedef MPI_Comm MSTK_Comm;
+#else 
+/* For serial builds define typedef MSTK_Comm so that codes can send in
+   a NULL argument */
+typedef void *MSTK_Comm;    
+#endif
+
 #ifdef   __cplusplus
 extern "C" {
 #endif
+
 #ifndef _H_Mesh_Private
   typedef void     *Mesh_ptr;
 #endif
