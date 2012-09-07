@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   Mesh_ptr mesh;
   int len, ok, build_classfn=1, partition=0;
   MshFmt inmeshformat, outmeshformat;
-  
+
 
   if (argc < 3) {
     fprintf(stderr,"usage: %s <--classify=yes|no> infilename outfilename\n",argv[0]);
@@ -115,11 +115,14 @@ int main(int argc, char *argv[]) {
 
 #ifdef MSTK_HAVE_MPI
 
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
+  int rank, numprocs;
 
-  int rank = MSTK_Comm_rank();
-  int numprocs = MSTK_Comm_size();
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&numprocs);
 
+#else
+  MSTK_Comm comm = NULL;
 #endif
   
   if (inmeshformat == MSTK) {
@@ -127,7 +130,7 @@ int main(int argc, char *argv[]) {
 
     fprintf(stderr,"Reading file in MSTK format...");
 
-    ok = MESH_InitFromFile(mesh,infname);
+    ok = MESH_InitFromFile(mesh,infname,comm);
 
     fprintf(stderr,"Done\n");
   }
@@ -137,11 +140,11 @@ int main(int argc, char *argv[]) {
     switch(inmeshformat) {
     case GMV:
       fprintf(stderr,"Importing mesh from GMV file...");
-      ok = MESH_ImportFromFile(mesh,infname,"gmv");
+      ok = MESH_ImportFromFile(mesh,infname,"gmv",comm);
       break;
     case EXODUSII:
       fprintf(stderr,"Importing mesh from ExodusII file...");
-      ok = MESH_ImportFromFile(mesh,infname,"exodusii");
+      ok = MESH_ImportFromFile(mesh,infname,"exodusii",comm);
       break;
     case CGNS:
       fprintf(stderr,"Cannot import mesh from CGNS format. ");
@@ -154,7 +157,7 @@ int main(int argc, char *argv[]) {
       break;
     case X3D:
       fprintf(stderr,"Importing mesh from X3D format...");
-      ok = MESH_ImportFromFile(mesh,infname,"x3d");
+      ok = MESH_ImportFromFile(mesh,infname,"x3d",comm);
       break;
     default:
       fprintf(stderr,"Cannot import from unrecognized format. ");
@@ -200,8 +203,8 @@ int main(int argc, char *argv[]) {
         mesh_present = 1;
     }
     
-    MPI_Reduce(&mesh_present,&prepartitioned,1,MPI_INT,MPI_MAX,0,MPI_COMM_WORLD);
-    MPI_Bcast(&prepartitioned,1,MPI_INT,0,MPI_COMM_WORLD);
+    MPI_Reduce(&mesh_present,&prepartitioned,1,MPI_INT,MPI_MAX,0,comm);
+    MPI_Bcast(&prepartitioned,1,MPI_INT,0,comm);
 
     if (!prepartitioned) {
     
@@ -226,7 +229,7 @@ int main(int argc, char *argv[]) {
       int method = 0; /* Use Metis as the partitioner */
       
       int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
-                                    method);
+                                    method, comm);
       
       if (rank == 0) {
         if (ok)
@@ -246,18 +249,18 @@ int main(int argc, char *argv[]) {
 
   if (outmeshformat == MSTK) {
     fprintf(stderr,"Writing mesh to MSTK file...");
-    MESH_WriteToFile(mesh,outfname,MESH_RepType(mesh));
+    MESH_WriteToFile(mesh,outfname,MESH_RepType(mesh),comm);
     fprintf(stderr,"Done\n");
   }
   else {
     switch(outmeshformat) {
     case GMV:
       fprintf(stderr,"Exporting mesh to GMV format...");
-      ok = MESH_ExportToFile(mesh,outfname,"gmv",-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"gmv",-1,NULL,NULL,comm);
       break;
     case EXODUSII:
       fprintf(stderr,"Exporting mesh to ExodusII format...");
-      ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL,comm);
       break;
     case CGNS:
       fprintf(stderr,"Cannot export to CGNS format. ");
@@ -270,11 +273,11 @@ int main(int argc, char *argv[]) {
       break;
     case X3D:
       fprintf(stderr,"Exporting mesh to FLAG/X3D format...");
-      ok = MESH_ExportToFile(mesh,outfname,"flag",-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh,outfname,"flag",-1,NULL,NULL,comm);
       break;
     case STL:
       fprintf(stderr,"Exporting mesh to STL format...");
-      ok = MESH_ExportToFile(mesh, outfname,"stl",-1,NULL,NULL);
+      ok = MESH_ExportToFile(mesh, outfname,"stl",-1,NULL,NULL,comm);
       break;
     case DX:
       fprintf(stderr,"Exporting mesh to DX format...");

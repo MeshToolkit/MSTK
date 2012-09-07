@@ -63,16 +63,19 @@ int main(int argc, char **argv) {
 
 #ifdef MSTK_HAVE_MPI
 
-  MSTK_Set_Comm(MPI_COMM_WORLD);
-  int rank = MSTK_Comm_rank();
-  int size = MSTK_Comm_size();
+  MSTK_Comm comm = MPI_COMM_WORLD;
+  int rank, size;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
 
+#else
+  MSTK_Comm comm = NULL; /* Dummy communicator */
 #endif
 
   fprintf(stderr,"\n\nChecking mesh %s\n\n",infname);
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_InitFromFile(mesh,infname);
+  ok = MESH_InitFromFile(mesh,infname,comm);
   if (!ok) {
     fprintf(stderr,"Cannot open input file %s\n",infname);
     exit(-1);
@@ -199,7 +202,7 @@ int main(int argc, char **argv) {
 
 
 #ifdef MSTK_HAVE_MPI
-  status = status | MESH_Parallel_Check(mesh);
+  status = status | MESH_Parallel_Check(mesh,comm);
 #endif
 
   if (status) {
@@ -214,7 +217,7 @@ int main(int argc, char **argv) {
       fprintf(stderr,"Total number of bad elements %-d\n\n",nbad);
 
       fprintf(stderr,"Tagging bad elements in GMV file %s\n\n",gmvfname);
-      MESH_ExportToGMV(mesh,gmvfname,0,NULL,NULL);
+      MESH_ExportToGMV(mesh,gmvfname,0,NULL,NULL,comm);
     }
   }
 

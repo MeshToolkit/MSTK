@@ -58,10 +58,10 @@ int main(int argc, char **argv) {
       
   MSTK_Init();
 
-  MSTK_Set_Comm(MPI_COMM_WORLD);
+  MSTK_Comm comm = MPI_COMM_WORLD;
 
-  nproc = MSTK_Comm_size();
-  rank = MSTK_Comm_rank();
+  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_rank(comm,&rank);
 
   if (imethod == 1 && nproc != num_parts) {
     fprintf(stderr,"Zoltan based partitioner: Number of processors must equal requested number of partition\n");
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 
   if (rank == 0) {
 
-    ok = MESH_InitFromFile(mesh,meshname);
+    ok = MESH_InitFromFile(mesh,meshname,comm);
     if (!ok) {
       fprintf(stderr,"Cannot file input file %s\n\n\n",meshname);
       exit(-1);
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 
   Mesh_ptr *submeshes = (Mesh_ptr*) MSTK_malloc(num_parts*sizeof(Mesh_ptr));
   int *part;
-  MESH_Get_Partitioning(mesh, imethod, &part);
+  MESH_Get_Partitioning(mesh, imethod, &part, comm);
 
   if(rank == 0) {
 
@@ -124,10 +124,10 @@ int main(int argc, char **argv) {
     }
 
     sprintf(gmvfilename,"%s_part.gmv",basename);
-    MESH_ExportToGMV(mesh,gmvfilename,0,NULL,NULL);
+    MESH_ExportToGMV(mesh,gmvfilename,0,NULL,NULL,comm);
     for( i = 0; i < num_parts; i++) {
       sprintf(gmvfilename,"%s_part.%04d.%04d.gmv",basename,i,0);
-      MESH_ExportToGMV(submeshes[i],gmvfilename,0,NULL,NULL);
+      MESH_ExportToGMV(submeshes[i],gmvfilename,0,NULL,NULL,comm);
     }
 
     for (i = 0; i < num_parts; i++)
