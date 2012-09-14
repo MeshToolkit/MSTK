@@ -218,18 +218,30 @@ int MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int send_rank, int rank,
     }
 
     assert(MEnt_GlobalID(ment) == list_info[j]);
-    if (att_type == INT)
+    
+    int nullval = 1;
+    if (att_type == INT) {
       ival = list_value_int[j];
+      if (ival != 0) nullval = 0;
+    }
+    else if (att_type == DOUBLE) {
+      rval = list_value_double[j];
+      if (rval != 0.0) nullval = 0;
+    }
     else {
-      if(ncomp == 1) 
-	rval = list_value_double[j];
       if(ncomp > 1)
 	{
-	  rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
-	  for(k = 0; k < ncomp; k++)
-	    rval_arr[k] = list_value_double[j*ncomp+k];
-	}	
+          for (k = 0; k < ncomp; k++)
+            if (list_value_double[j*ncomp+k] != 0) nullval = 0;
+          if (!nullval) {
+            rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
+            for(k = 0; k < ncomp; k++)
+              rval_arr[k] = list_value_double[j*ncomp+k];
+          }
+        }
     }
+    if (nullval) continue; /* Don't waste time initializing to zero */
+
     MEnt_Set_AttVal(ment,attrib,ival,rval,(void*) rval_arr);
   }
   
