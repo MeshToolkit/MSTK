@@ -42,11 +42,11 @@ int MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh ) {
 }
   
 int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
-  int idx, vertex_gid, edge_gid;
-  MVertex_ptr gmv,lmv;
+  int idx;
+  MVertex_ptr lmv;
   MEdge_ptr lme, gme;
-  MFace_ptr lmf, gmf;
-  List_ptr lmvfaces, gmvfaces, lmefaces, gmefaces;
+  MFace_ptr lmf;
+  List_ptr lmefaces, gmefaces;
   MAttrib_ptr l2gatt;
 
   l2gatt = MESH_AttribByName(submesh,"Local2Global");
@@ -68,8 +68,17 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     gmefaces = ME_Faces(gme);
 
     /* if the number of neighbor faces is different, it is a boundary edge */
-    if(List_Num_Entries(lmefaces) != List_Num_Entries(gmefaces))
+    if(List_Num_Entries(lmefaces) != List_Num_Entries(gmefaces)) {
       ME_Set_PType(lme,PBOUNDARY);
+
+      /* By definition, its vertices must also be on the boundary */
+
+      int i;
+      for (i = 0; i < 2; i++) {
+        lmv = ME_Vertex(lme,i);
+        MV_Set_PType(lmv,PBOUNDARY);
+      }
+    }
     else
       ME_Set_PType(lme,PINTERIOR);
     List_Delete(lmefaces);
@@ -82,19 +91,8 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* Loop through vertices */
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
-    if (!gmv)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",MSTK_ERROR);
-
-    lmvfaces = MV_Faces(lmv);
-    gmvfaces = MV_Faces(gmv);
-    /* if the number of neighbor faces is different, it is a boundary vertex */
-    if(List_Num_Entries(lmvfaces) != List_Num_Entries(gmvfaces))
-      MV_Set_PType(lmv,PBOUNDARY);
-    else
+    if (MV_PType(lmv) != PBOUNDARY)
       MV_Set_PType(lmv,PINTERIOR);
-    List_Delete(lmvfaces);
-    List_Delete(gmvfaces);
   }
 
   return 1;
@@ -103,13 +101,11 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
 
 
 int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
-  int idx, vertex_gid, edge_gid, face_gid;
-  MVertex_ptr gmv,lmv;
-  MEdge_ptr lme, gme;
+  int idx;
+  MVertex_ptr lmv;
+  MEdge_ptr lme;
   MFace_ptr lmf, gmf;
   MRegion_ptr lmr, gmr;
-  List_ptr lmvregs, gmvregs;
-  List_ptr lmeregs, gmeregs;
   List_ptr lmfregs, gmfregs;
   MAttrib_ptr l2gatt;
 
@@ -133,8 +129,22 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     gmfregs = MF_Regions(gmf);
 
     /* if the number of neighbor regions is different, it is a boundary face */
-    if(List_Num_Entries(lmfregs) != List_Num_Entries(gmfregs))
+    if(List_Num_Entries(lmfregs) != List_Num_Entries(gmfregs)) {
       MF_Set_PType(lmf,PBOUNDARY);
+
+      /* By definition all edges of this face are on the boundary */
+      List_ptr fedges = MF_Edges(lmf,1,0);
+      int idx2 = 0;
+      while ((lme = List_Next_Entry(fedges,&idx2))) {
+        ME_Set_PType(lme,PBOUNDARY);
+        
+        int i;
+        for (i = 0; i < 2; i++) {
+          lmv = ME_Vertex(lme,i);
+          MV_Set_PType(lmv,PBOUNDARY);
+        }
+      }
+    }          
     else
       MF_Set_PType(lmf,PINTERIOR);
     List_Delete(lmfregs);
@@ -144,39 +154,16 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* Loop through edges */
   idx = 0;
   while((lme = MESH_Next_Edge(submesh,&idx))) {
-    MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
-    if (!gme)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",MSTK_ERROR);
-
-    lmeregs = ME_Regions(lme);
-    gmeregs = ME_Regions(gme);
-
-    /* if the number of neighbor faces is different, it is a boundary edge */
-    if(List_Num_Entries(lmeregs) != List_Num_Entries(gmeregs))
-      ME_Set_PType(lme,PBOUNDARY);
-    else
+    if (ME_PType(lme) != PBOUNDARY)
       ME_Set_PType(lme,PINTERIOR);
-    List_Delete(lmeregs);
-    List_Delete(gmeregs);
   }
 
 
   /* Loop through vertices */
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
-    if (!gmv)
-      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",MSTK_ERROR);
-
-    lmvregs = MV_Regions(lmv);
-    gmvregs = MV_Regions(gmv);
-    /* if the number of neighbor regions is different, it is a boundary vertex */
-    if(List_Num_Entries(lmvregs) != List_Num_Entries(gmvregs))
-      MV_Set_PType(lmv,PBOUNDARY);
-    else
+    if (MV_PType(lmv) != PBOUNDARY)
       MV_Set_PType(lmv,PINTERIOR);
-    List_Delete(lmvregs);
-    List_Delete(gmvregs);
   }
 
   return 1;
