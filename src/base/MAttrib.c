@@ -18,7 +18,8 @@ extern "C" {
 
 #ifdef DEBUG
     if(mesh) {
-      natt = MESH_Num_Attribs(mesh);
+      int natt = MESH_Num_Attribs(mesh);
+      int i;
       for (i = 0; i < natt; i++) {
 	attrib = MESH_Attrib(mesh,i);
 	if (strcmp(att_name,attrib->name) == 0) {

@@ -47,7 +47,7 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
 
     idx = 0;
     while ((fv1 = List_Next_Entry(fverts1,&idx))) {
-      if (!List_Contains(fverts2,fv2)) {
+      if (!List_Contains(fverts2,fv1)) {
 	MSTK_Report("MFs_Merge",
 		    "Vertices of faces must be merged before merging faces",
 		    MSTK_ERROR);
