@@ -61,8 +61,7 @@ extern "C" {
 	if (attrib == g2latt) continue;
 	
 	MAttrib_Get_Name(attrib,attr_name);
-	for(i = 0; i < num; i++)
-	  MESH_CopyAttr(mesh,submeshes[i],attr_name);
+        MESH_CopyAttr(mesh,num,submeshes,attr_name);
       }
       
       /* Split the sets into subsets and send them to the partitions */
@@ -77,28 +76,7 @@ extern "C" {
     }
 
 
-    /* Remove the temporary Global2Local and Local2Global attributes */
-
-    /* Remove these attributes from main mesh */
-
-    idx = 0;
-    while ((mv = MESH_Next_Vertex(mesh,&idx)))
-      MEnt_Rem_AllAttVals(mv);
-    
-    idx = 0;
-    while ((me = MESH_Next_Edge(mesh,&idx)))
-      MEnt_Rem_AllAttVals(me);
-    
-    idx = 0;
-    while ((mf = MESH_Next_Face(mesh,&idx)))
-      MEnt_Rem_AllAttVals(mf);
-    
-    idx = 0;
-    while ((mr = MESH_Next_Region(mesh,&idx)))
-      MEnt_Rem_AllAttVals(mr);
-    
-    MAttrib_Delete(g2latt);
-
+    /* Remove the temporary Local2Global attributes */
 
     /* Remove these attributes from submeshes */
 
@@ -313,7 +291,7 @@ extern "C" {
       
       for(i = 1; i < num; i++) {
 
-	MSTK_SendMesh(submeshes[i],i,with_attr,comm);
+	MSTK_SendMesh(submeshes[i],i,with_attr,comm); 
 
 	MESH_Delete(submeshes[i]);  
       }
@@ -322,20 +300,20 @@ extern "C" {
 #ifdef DEBUG
       fprintf(stderr,"Sent meshes to all partitions\n");
 #endif
-      MESH_Build_GhostLists(*mesh,*dim);
+      MESH_Build_GhostLists(*mesh,*dim); 
      
     }
 
     if( rank > 0) {
       *mesh = MESH_New(UNKNOWN_REP);
-      MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm);
+      MSTK_RecvMesh(*mesh,*dim,0,rank,with_attr,comm); 
 #ifdef DEBUG
       fprintf(stderr,"Received mesh on partition %d\n",rank);
 #endif
     }
     MESH_Set_Prtn(*mesh,rank,num);
 
-    MESH_Update_ParallelAdj(*mesh, rank, num,  comm);
+    MESH_Update_ParallelAdj(*mesh, rank, num,  comm); 
 
     MESH_Disable_GlobalIDSearch(*mesh);
 

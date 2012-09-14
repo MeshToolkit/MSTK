@@ -17,77 +17,201 @@ extern "C" {
 
  */
 
-int MESH_CopyAttr(Mesh_ptr mesh, Mesh_ptr submesh, const char *attr_name) {
-  int j, num, ncomp, ival;
+int MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, const char *attr_name) {
+  int i, ncomp, ival, idx;
   double rval, *pval_arr=NULL;
   void *pval;
   MType mtype;
-  MEntity_ptr local_ment, global_ment;
-  MAttrib_ptr local_attrib, global_attrib, l2gatt;
+  MAttrib_ptr *local_attrib, global_attrib, g2latt;
+  MAttType atttype;
 
-  l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
   global_attrib = MESH_AttribByName(mesh,attr_name);
-  local_attrib = MESH_AttribByName(submesh,attr_name);
-  /* if there is no such attribute */
-  if(!global_attrib || !local_attrib) {
-    MSTK_Report("MESH_CopyAttr","There is no such attribute",MSTK_WARN);
+  if(!global_attrib) {
+    MSTK_Report("MESH_CopyAttr","Root mesh has no attribute of given name",MSTK_WARN);
     return 0;
   }
+
+  g2latt = MESH_AttribByName(mesh,"Global2Local");
+
+  local_attrib = (MAttrib_ptr *) malloc(num*sizeof(MAttrib_ptr));
+  for (i = 0; i < num; i++) {
+    local_attrib[i] = MESH_AttribByName(submeshes[i],attr_name);
+    /* if there is no such attribute */
+    if(!local_attrib[i]) {
+      MSTK_Report("MESH_CopyAttr","Submesh has no attribute of given name",MSTK_WARN);
+      return 0;
+    }
+  }
+    
 
   /* get attribute properties */
   ncomp = MAttrib_Get_NumComps(global_attrib);
   mtype = MAttrib_Get_EntDim(global_attrib);
+  atttype = MAttrib_Get_Type(global_attrib);
 
-
-  /* attribute entity type */
-  switch (mtype) {
-  case MVERTEX:
-    num = MESH_Num_Vertices(submesh);
-    break;
-  case MEDGE:
-    num = MESH_Num_Edges(submesh);
-    break;
-  case MFACE:
-    num = MESH_Num_Faces(submesh);
-    break;
-  case MREGION:
-    num = MESH_Num_Regions(submesh);
-    break;
-  default:
-    num = 0;
-    MSTK_Report("MESH_CopyAttr()","Invalid entity type",MSTK_FATAL);
+  if (atttype == POINTER) {
+    free(local_attrib);
+    return 0; /* Don't see why one would want to
+                 transmit pointer info to the submesh */
   }
   
-  /* collect data */
-  for(j = 0; j < num; j++) {
-    switch (mtype) {
-    case MVERTEX:
-      local_ment = MESH_Vertex(submesh,j);
-      break;
-    case MEDGE:
-      local_ment = MESH_Edge(submesh,j);
-      break;
-    case MFACE:
-      local_ment = MESH_Face(submesh,j);
-      break;
-    case MREGION:
-      local_ment = MESH_Region(submesh,j);
-      break;
-    default:
-      local_ment = NULL;
-      MSTK_Report("MESH_CopyAttr()","Invalid entity type",MSTK_FATAL);
+  /* attribute entity type */
+  
+  if (mtype == MVERTEX || mtype == MALLTYPE) {
+    MVertex_ptr gmv, lmv;
+    List_ptr lmvlist;
+
+    idx = 0;
+    while ((gmv = MESH_Next_Vertex(mesh,&idx))) {
+
+      MEnt_Get_AttVal(gmv,global_attrib,&ival,&rval,&pval);
+
+      /* Don't copy null values */
+
+      if ((atttype == INT && ival == 0) || 
+          (atttype == DOUBLE  && rval == 0.0) ||
+          pval == NULL)
+        continue;
+
+      MEnt_Get_AttVal(gmv,g2latt,&ival,&rval,&lmvlist);
+      if (!lmvlist) continue;
+
+      int idx2 = 0;
+      while ((lmv = List_Next_Entry(lmvlist,&idx))) {
+        if (ncomp > 1) {
+          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          memcpy(pval_arr,pval,ncomp*sizeof(double));
+        }
+        else
+          pval_arr = NULL;
+
+        Mesh_ptr entmesh = MEnt_Mesh(lmv);
+        for (i = 0; i < num; i++)
+          if (entmesh == submeshes[i]) {
+            MEnt_Set_AttVal(lmv,local_attrib[i],ival,rval,(void *)pval_arr);
+            break;
+          }
+      }
     }
-    
-    MEnt_Get_AttVal(local_ment,l2gatt,0,0,&global_ment);
-    MEnt_Get_AttVal(global_ment,global_attrib,&ival,&rval,&pval);
-    
-    if(ncomp > 1) {
-      pval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
-      pval_arr = (double *)pval;
-    }	  
-    MEnt_Set_AttVal(local_ment,local_attrib,ival,rval,(void*) pval_arr);
   }
+
+  if (mtype == MEDGE || mtype == MALLTYPE) {
+    MVertex_ptr gme, lme;
+    List_ptr lmelist;
+
+    idx = 0;
+    while ((gme = MESH_Next_Edge(mesh,&idx))) {
+
+      MEnt_Get_AttVal(gme,global_attrib,&ival,&rval,&pval);
+
+      /* Don't copy null values */
+
+      if ((atttype == INT && ival == 0) || 
+          (atttype == DOUBLE  && rval == 0.0) ||
+          pval == NULL)
+        continue;
+
+      MEnt_Get_AttVal(gme,g2latt,&ival,&rval,&lmelist);
+      if (!lmelist) continue;
+
+      int idx2 = 0;
+      while ((lme = List_Next_Entry(lmelist,&idx))) {
+        if (ncomp > 1) {
+          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          memcpy(pval_arr,pval,ncomp*sizeof(double));
+        }
+        else
+          pval_arr = NULL;
+
+        Mesh_ptr entmesh = MEnt_Mesh(lme);
+        for (i = 0; i < num; i++)
+          if (entmesh == submeshes[i]) {
+            MEnt_Set_AttVal(lme,local_attrib[i],ival,rval,(void *)pval_arr);
+            break;
+          }
+      }
+    }
+  }
+
+  if (mtype == MFACE || mtype == MALLTYPE) {
+    MFace_ptr gmf, lmf;
+    List_ptr lmflist;
+
+    idx = 0;
+    while ((gmf = MESH_Next_Face(mesh,&idx))) {
+
+      MEnt_Get_AttVal(gmf,global_attrib,&ival,&rval,&pval);
+
+      /* Don't copy null values */
+
+      if ((atttype == INT && ival == 0) || 
+          (atttype == DOUBLE  && rval == 0.0) ||
+          pval == NULL)
+        continue;
+
+      MEnt_Get_AttVal(gmf,g2latt,&ival,&rval,&lmflist);
+      if (!lmflist) continue;
+
+      int idx2 = 0;
+      while ((lmf = List_Next_Entry(lmflist,&idx))) {
+        if (ncomp > 1) {
+          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          memcpy(pval_arr,pval,ncomp*sizeof(double));
+        }
+        else
+          pval_arr = NULL;
+
+        Mesh_ptr entmesh = MEnt_Mesh(lmf);
+        for (i = 0; i < num; i++)
+          if (entmesh == submeshes[i]) {
+            MEnt_Set_AttVal(lmf,local_attrib[i],ival,rval,(void *)pval_arr);
+            break;
+          }
+      }
+    }
+  }
+
+
+  if (mtype == MREGION || mtype == MALLTYPE) {
+    MRegion_ptr gmr, lmr;
+    List_ptr lmrlist;
+
+    idx = 0;
+    while ((gmr = MESH_Next_Region(mesh,&idx))) {
+
+      MEnt_Get_AttVal(gmr,global_attrib,&ival,&rval,&pval);
+
+      /* Don't copy null values */
+
+      if ((atttype == INT && ival == 0) || 
+          (atttype == DOUBLE  && rval == 0.0) ||
+          pval == NULL)
+        continue;
+
+      MEnt_Get_AttVal(gmr,g2latt,&ival,&rval,&lmrlist);
+      if (!lmrlist) continue;
+
+      int idx2 = 0;
+      while ((lmr = List_Next_Entry(lmrlist,&idx))) {
+        if (ncomp > 1) {
+          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          memcpy(pval_arr,pval,ncomp*sizeof(double));
+        }
+        else
+          pval_arr = NULL;
+
+        Mesh_ptr entmesh = MEnt_Mesh(lmr);
+        for (i = 0; i < num; i++)
+          if (entmesh == submeshes[i]) {
+            MEnt_Set_AttVal(lmr,local_attrib[i],ival,rval,(void *)pval_arr);
+            break;
+          }
+      }
+    }
+  }
+
+  free(local_attrib);
   
   return 1;
 }
