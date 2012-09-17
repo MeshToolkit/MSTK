@@ -65,7 +65,7 @@ extern "C" {
     double xyz_coord[3];
     int boundary_dim;
     reptype = MESH_RepType(mesh);
-    int *element_block_ids, *side_set_ids, *node_set_ids;
+    int *element_block_ids, *side_set_ids, *node_set_ids, *index_in_element_block;
     int num_face_block;
     char **element_block_types, block_name[256];
     List_ptr *element_blocks, *side_sets, *node_sets, face_block;
@@ -219,7 +219,7 @@ extern "C" {
 
 
     MESH_Get_Element_Block_Info(mesh, &num_element_block, &element_blocks,
-				 &element_block_ids, &element_block_types);
+                                &element_block_ids, &element_block_types);
     
     if (verbose) {
       fprintf(stdout,"\nElemen1t block information:\n");
@@ -227,7 +227,30 @@ extern "C" {
       fprintf(stdout,"total %d element blocks:\n\n", num_element_block);
     }
 
+    /* Compute the ID of each element according to the Exodus file */
+
+    int maxid=1;
+    if (MESH_Num_Regions(mesh))
+      maxid = MR_ID(MESH_Region(mesh,MESH_Num_Regions(mesh)-1));
+    else if (MESH_Num_Faces(mesh))
+      maxid = MF_ID(MESH_Face(mesh,MESH_Num_Faces(mesh)-1));
+    int *elem_id = (int *) calloc(maxid,sizeof(int));
+
+    int offset = 0;
+    for (i = 0; i < num_element_block; i++) {
+
+      int nelem = List_Num_Entries(element_blocks[i]);
+      for (k = 0; k < nelem; k++) {
+        MEntity_ptr ment = List_Entry(element_blocks[i],k);
+        int entid = MEnt_ID(ment);
+        elem_id[entid-1] = offset+k+1;
+      }
+
+      offset += nelem;
+    }
     
+
+
 
     MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
 
@@ -667,26 +690,9 @@ extern "C" {
 			MSTK_FATAL);
 	  mr = List_Entry(fregs,0);
 
-	  /* Since elements will be read back from the Exodus II file
-	     element block by element block, we have to jump through
-	     hoops to determine what the element number will be when
-	     it is read */
-
-	  int offset = 0;
-	  int found = 0;
-	  k = 0;
-	  while (!found && k < num_element_block) {
-	    int loc = List_Locate(element_blocks[k],mr);
-	    if (loc == -1) {
-	      /* This element block does not contain the element */
-	      offset = List_Num_Entries(element_blocks[k]);
-	      k++;
-	    }
-	    else {
-	      elem_list[j] = offset+loc+1;
-	      found = 1;
-	    }
-	  }
+          elem_list[j] = elem_id[MR_ID(mr)-1];
+          if (elem_list[j] == 0)
+            MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 	  
           int lid = MF_LocalID_in_Region(mf,mr);
           MRType mrtype = MR_ElementType(mr);
@@ -719,21 +725,9 @@ extern "C" {
 	     hoops to determine what the element number will be when
 	     it is read */
 
-	  int offset = 0;
-	  int found = 0;
-	  k = 0;
-	  while (!found && k < num_element_block) {
-	    int loc = List_Locate(element_blocks[k],mf);
-	    if (loc == -1) {
-	      /* This element block does not contain the element */
-	      offset = List_Num_Entries(element_blocks[k]);
-	      k++;
-	    }
-	    else {
-	      elem_list[j] = offset+loc+1;
-	      found = 1;
-	    }
-	  }
+          elem_list[j] = elem_id[MF_ID(mf)-1];
+          if (elem_list[j] == 0)
+            MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 	  
           int lid = ME_LocalID_in_Face(me,mf);
           side_list[j] = lid+1;
@@ -807,6 +801,8 @@ extern "C" {
 
 
 
+    free(elem_id);
+
 
 
      
@@ -835,7 +831,10 @@ extern "C" {
   /* Categorize the elements into blocks based on their geometric
      entity ID and the element type */
 
-  void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_block, List_ptr **element_blocks, int **element_block_ids, char ***element_block_types) {
+  void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_block, 
+                                   List_ptr **element_blocks, 
+                                   int **element_block_ids, 
+                                   char ***element_block_types) {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
@@ -849,6 +848,7 @@ extern "C" {
     int idx = 0;
     
     if (MESH_Num_Regions(mesh)) {
+
       while ((mr = MESH_Next_Region(mesh, &idx))) {
 	int nrv = MR_Num_Vertices(mr);
 	int nrf = MR_Num_Faces(mr);
@@ -946,6 +946,7 @@ extern "C" {
       }
     }
     else if (MESH_Num_Edges(mesh)) {
+
       while ((me = MESH_Next_Edge(mesh, &idx))) {
 	bid = (MEnt_GEntID(me)<<16) | 2;
 
