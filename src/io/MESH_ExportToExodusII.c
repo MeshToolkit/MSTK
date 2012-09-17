@@ -15,15 +15,15 @@ extern "C" {
   void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_blocks,\
 				   List_ptr **element_blocks, 
 				   int **element_block_ids, 
-				   char ***element_block_types, int *neballoc);
+				   char ***element_block_types);
 
   /* this function collects side set information                                  */
   int MESH_Num_Face_Set(List_ptr esides, int *side_set_id, int enable_set);
   int MESH_Num_Edge_Set(List_ptr esides, int *side_set_id, int enable_set);
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set, 
-			      List_ptr **side_sets, int **side_set_ids, int *nsalloc);
+			      List_ptr **side_sets, int **side_set_ids);
   void MESH_Get_Node_Set_Info(Mesh_ptr mesh, int *num_node_set, 
-			      List_ptr **node_sets, int **node_set_ids, int *nnalloc);
+			      List_ptr **node_sets, int **node_set_ids);
 
 
   /* this function get the local side number */
@@ -217,9 +217,8 @@ extern "C" {
 	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
     }
 
-    int neballoc;
     MESH_Get_Element_Block_Info(mesh, &num_element_block, &element_blocks,
-                                &element_block_ids, &element_block_types, &neballoc);
+                                &element_block_ids, &element_block_types);
     
     if (verbose) {
       fprintf(stdout,"\nElemen1t block information:\n");
@@ -251,11 +250,9 @@ extern "C" {
     
 
 
-    int nsalloc;
-    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids, &nsalloc);
+    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
 
-    int nnalloc;
-    MESH_Get_Node_Set_Info(mesh, &num_node_set, &node_sets, &node_set_ids, &nnalloc);
+    MESH_Get_Node_Set_Info(mesh, &num_node_set, &node_sets, &node_set_ids);
 
 
     /* Put all faces of polyhedral elements in one block */
@@ -801,22 +798,28 @@ extern "C" {
 
 
 
-    for (i = 0; i < neballoc; i++)
+    for (i = 0; i < num_element_block; i++)
       List_Delete(element_blocks[i]);
     free(element_blocks);
     free(element_block_ids);
+    for (i = 0; i < num_element_block; i++)
+      free(element_block_types[i]);
     free(element_block_types);
     free(elem_id);
 
-    for (i = 0; i < nsalloc; i++)
-      free(side_sets[i]);
-    free(side_sets);
-    free(side_set_ids);
+    if (num_side_set) {
+      for (i = 0; i < num_side_set; i++)
+        List_Delete(side_sets[i]);
+      free(side_sets);
+      free(side_set_ids);
+    }
 
-    for (i = 0; i < nnalloc; i++)
-      free(node_sets[i]);
-    free(node_sets);
-    free(node_set_ids);
+    if (num_node_set) {
+      for (i = 0; i < num_node_set; i++)
+        List_Delete(node_sets[i]);
+      free(node_sets);
+      free(node_set_ids);
+    }
 
      
     /* write quality assurance information optional*/
@@ -847,16 +850,16 @@ extern "C" {
   void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_block, 
                                    List_ptr **element_blocks, 
                                    int **element_block_ids, 
-                                   char ***element_block_types, int *nballoc) {
+                                   char ***element_block_types) {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
-    int i, nb, bid, found;
+    int i, nb, bid, found, nballoc;
 
-    nb = 0; *nballoc=10;
-    *element_block_ids = (int *) calloc(*nballoc,sizeof(int));
-    *element_block_types = (char **) malloc(*nballoc*sizeof(char *));
-    *element_blocks = (List_ptr *) calloc(*nballoc,sizeof(List_ptr));
+    nb = 0; nballoc=10;
+    *element_block_ids = (int *) calloc(nballoc,sizeof(int));
+    *element_block_types = (char **) malloc(nballoc*sizeof(char *));
+    *element_blocks = (List_ptr *) calloc(nballoc,sizeof(List_ptr));
 
     int idx = 0;
     
@@ -886,11 +889,11 @@ extern "C" {
 	if (!found) {
 	  /* New element block */
 
-	  if (*nballoc == nb) {
-	    *nballoc *= 2;
-	    *element_block_ids = (int *) realloc(*element_block_ids,*nballoc*sizeof(int));
-	    *element_blocks = (List_ptr *) realloc(*element_blocks,*nballoc*sizeof(List_ptr));
-	    *element_block_types = (char **) realloc(*element_block_types,*nballoc*sizeof(char *));
+	  if (nballoc == nb) {
+	    nballoc *= 2;
+	    *element_block_ids = (int *) realloc(*element_block_ids,nballoc*sizeof(int));
+	    *element_blocks = (List_ptr *) realloc(*element_blocks,nballoc*sizeof(List_ptr));
+	    *element_block_types = (char **) realloc(*element_block_types,nballoc*sizeof(char *));
 	  }
 
 	  (*element_block_ids)[nb] = bid;
@@ -935,11 +938,11 @@ extern "C" {
 	if (!found) {
 	  /* New element block */
 
-	  if (*nballoc == nb) {
-	    *nballoc *= 2;
-	    *element_block_ids = (int *) realloc(*element_block_ids,*nballoc*sizeof(int));
-	    *element_blocks = (List_ptr *) realloc(*element_blocks,*nballoc*sizeof(List_ptr));
-	    *element_block_types = (char **) realloc(*element_block_types,*nballoc*sizeof(char *));
+	  if (nballoc == nb) {
+	    nballoc *= 2;
+	    *element_block_ids = (int *) realloc(*element_block_ids,nballoc*sizeof(int));
+	    *element_blocks = (List_ptr *) realloc(*element_blocks,nballoc*sizeof(List_ptr));
+	    *element_block_types = (char **) realloc(*element_block_types,nballoc*sizeof(char *));
 	  }
 
 	  (*element_block_ids)[nb] = bid;
@@ -976,11 +979,11 @@ extern "C" {
 	if (!found) {
 	  /* New element block */
 
-	  if (*nballoc == nb) {
-	    *nballoc *= 2;
-	    *element_block_ids = (int *) realloc(*element_block_ids,*nballoc*sizeof(int));
-	    *element_blocks = (List_ptr *) realloc(*element_blocks,*nballoc*sizeof(List_ptr));
-	    *element_block_types = (char **) realloc(*element_block_types,*nballoc*sizeof(char *));
+	  if (nballoc == nb) {
+	    nballoc *= 2;
+	    *element_block_ids = (int *) realloc(*element_block_ids,nballoc*sizeof(int));
+	    *element_blocks = (List_ptr *) realloc(*element_blocks,nballoc*sizeof(List_ptr));
+	    *element_block_types = (char **) realloc(*element_block_types,nballoc*sizeof(char *));
 	  }
 
 	  (*element_block_ids)[nb] = bid;
@@ -999,18 +1002,17 @@ extern "C" {
 
  
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set, 
-			      List_ptr **side_sets, int **side_set_ids,
-                              int *nsalloc) {
+			      List_ptr **side_sets, int **side_set_ids) {
     MFace_ptr mf;
     MEdge_ptr me;
     int idx = 0, i = 0, found;
-    int ns, nr, nf, ne, sid;
+    int ns, nr, nf, ne, sid, nsalloc;
 
 
     ns = 0;
-    *nsalloc = 10;
-    *side_sets = (List_ptr *) MSTK_malloc(*nsalloc*sizeof(List_ptr));
-    *side_set_ids = (int *) MSTK_malloc(*nsalloc*sizeof(int));
+    nsalloc = 10;
+    *side_sets = (List_ptr *) MSTK_malloc(nsalloc*sizeof(List_ptr));
+    *side_set_ids = (int *) MSTK_malloc(nsalloc*sizeof(int));
 
     nr = MESH_Num_Regions(mesh);
     nf = MESH_Num_Faces(mesh);
@@ -1034,10 +1036,10 @@ extern "C" {
 	}
 
 	if (!found) {
-	  if (ns == *nsalloc) {
-	    *nsalloc *= 2;
-	    *side_sets = (List_ptr *) MSTK_realloc(*side_sets,*nsalloc*sizeof(List_ptr));
-	    *side_set_ids = (int *) MSTK_realloc(*side_set_ids,*nsalloc*sizeof(int));
+	  if (ns == nsalloc) {
+	    nsalloc *= 2;
+	    *side_sets = (List_ptr *) MSTK_realloc(*side_sets,nsalloc*sizeof(List_ptr));
+	    *side_set_ids = (int *) MSTK_realloc(*side_set_ids,nsalloc*sizeof(int));
 	  }
 	  (*side_sets)[ns] = List_New(10);
 	  List_Add((*side_sets)[ns],mf);
@@ -1064,10 +1066,10 @@ extern "C" {
 	}
 
 	if (!found) {
-	  if (ns == *nsalloc) {
-	    *nsalloc *= 2;
-	    *side_sets = (List_ptr *) MSTK_realloc(*side_sets,*nsalloc*sizeof(List_ptr));
-	    *side_set_ids = (int *) MSTK_realloc(*side_set_ids,*nsalloc*sizeof(int));
+	  if (ns == nsalloc) {
+	    nsalloc *= 2;
+	    *side_sets = (List_ptr *) MSTK_realloc(*side_sets,nsalloc*sizeof(List_ptr));
+	    *side_set_ids = (int *) MSTK_realloc(*side_set_ids,nsalloc*sizeof(int));
 	  }
 	  (*side_sets)[ns] = List_New(10);
 	  List_Add((*side_sets)[ns],me);
@@ -1083,19 +1085,19 @@ extern "C" {
 
  
   void MESH_Get_Node_Set_Info(Mesh_ptr mesh, int *num_node_set, 
-			      List_ptr **node_sets, int **node_set_ids, int *nnalloc) {
+			      List_ptr **node_sets, int **node_set_ids) {
     MVertex_ptr mv;
     MEdge_ptr me, me2, ve;
     MFace_ptr mf, mf2, ef;
-    int idx, idx2, idx3, idx4, i, found;
+    int idx, idx2, idx3, idx4, i, found, nnalloc;
     int nn, nid, nid2, mkid1, mkid2;
     List_ptr fverts, fedges, vedges, efaces, elist, flist, vlist;
 
 
     nn = 0;
-    *nnalloc = 10;
-    *node_sets = (List_ptr *) MSTK_malloc(*nnalloc*sizeof(List_ptr));
-    *node_set_ids = (int *) MSTK_malloc(*nnalloc*sizeof(int));
+    nnalloc = 10;
+    *node_sets = (List_ptr *) MSTK_malloc(nnalloc*sizeof(List_ptr));
+    *node_set_ids = (int *) MSTK_malloc(nnalloc*sizeof(int));
 
 
 
@@ -1119,10 +1121,10 @@ extern "C" {
       }
       
       if (!found) {
-	if (nn == *nnalloc) {
-	  *nnalloc *= 2;
-	  *node_sets = (List_ptr *) MSTK_realloc(*node_sets,*nnalloc*sizeof(List_ptr));
-	  *node_set_ids = (int *) MSTK_realloc(*node_set_ids,*nnalloc*sizeof(int));
+	if (nn == nnalloc) {
+	  nnalloc *= 2;
+	  *node_sets = (List_ptr *) MSTK_realloc(*node_sets,nnalloc*sizeof(List_ptr));
+	  *node_set_ids = (int *) MSTK_realloc(*node_set_ids,nnalloc*sizeof(int));
 	}
 	(*node_sets)[nn] = List_New(10);
 	List_Add((*node_sets)[nn],mv);
@@ -1202,10 +1204,10 @@ extern "C" {
 
       /* Make a nodeset from the vertices on the closure of this model edge */
 
-      if (nn == *nnalloc) {
-	*nnalloc *= 2;
-	*node_sets = (List_ptr *) MSTK_realloc(*node_sets,*nnalloc*sizeof(List_ptr));
-	*node_set_ids = (int *) MSTK_realloc(*node_set_ids,*nnalloc*sizeof(int));
+      if (nn == nnalloc) {
+	nnalloc *= 2;
+	*node_sets = (List_ptr *) MSTK_realloc(*node_sets,nnalloc*sizeof(List_ptr));
+	*node_set_ids = (int *) MSTK_realloc(*node_set_ids,nnalloc*sizeof(int));
       }
 
       (*node_sets)[nn] = vlist; /* don't delete vlist */
@@ -1294,10 +1296,10 @@ extern "C" {
 	
 	/* Make a nodeset from the vertices on the closure of this model edge */
 	
-	if (nn == *nnalloc) {
-	  *nnalloc *= 2;
-	  *node_sets = (List_ptr *) MSTK_realloc(*node_sets,*nnalloc*sizeof(List_ptr));
-	  *node_set_ids = (int *) MSTK_realloc(*node_set_ids,*nnalloc*sizeof(int));
+	if (nn == nnalloc) {
+	  nnalloc *= 2;
+	  *node_sets = (List_ptr *) MSTK_realloc(*node_sets,nnalloc*sizeof(List_ptr));
+	  *node_set_ids = (int *) MSTK_realloc(*node_set_ids,nnalloc*sizeof(int));
 	}
 	
 	(*node_sets)[nn] = vlist; /* don't delete vlist */
