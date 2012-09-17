@@ -110,7 +110,9 @@ int MESH_Update_ParallelAdj(Mesh_ptr mesh, int myprtn, int numprtns,  MPI_Comm c
   }
 
   MSTK_free(global_ov_num);
-
+  MSTK_free(local_par_adj);
+  MSTK_free(global_par_adj);
+  MSTK_free(prtnums);
 
  return 1;
 }
