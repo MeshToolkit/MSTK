@@ -161,36 +161,42 @@ void MESH_Delete(Mesh_ptr mesh) {
     GOING THROUGH THE REGULAR MESH AND SO WE DON'T NEED TO DELETE THEM
     SEPARATELY. NOT SURE THAT IT IS THE BEHAVIOR WE WANT */
 
-  /*
   if (mesh->ghregion) {
-    i = 0;
-    while ((ghr = List_Next_Entry(mesh->ghregion,&i))) {
+    /*
+      i = 0;
+      while ((ghr = List_Next_Entry(mesh->ghregion,&i))) {
       MR_Destroy_For_MESH_Delete(ghr);
-    }
+      }
+    */
     List_Delete(mesh->ghregion);
   }
   if (mesh->ghface) {
-    i = 0;
-    while ((ghf = List_Next_Entry(mesh->ghface,&i))) {
+    /*
+      i = 0;
+      while ((ghf = List_Next_Entry(mesh->ghface,&i))) {
       MF_Destroy_For_MESH_Delete(ghf);
-    }
+      }
+    */
     List_Delete(mesh->ghface);
   }
   if (mesh->ghedge) {
+    /*
     i = 0;
     while ((ghe = List_Next_Entry(mesh->ghedge,&i))) {
       ME_Destroy_For_MESH_Delete(ghe);
     }
+    */
     List_Delete(mesh->ghedge);
   }
   if (mesh->ghvertex) {
+    /*
     i = 0;
     while ((ghv = List_Next_Entry(mesh->ghvertex,&i))) {
       MV_Destroy_For_MESH_Delete(ghv);
     }
+    */
     List_Delete(mesh->ghvertex);
   }
-  */
   
   if (mesh->AttribList) {
     i = 0;
