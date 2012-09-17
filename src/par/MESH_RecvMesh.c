@@ -435,7 +435,9 @@ extern "C" {
 
 
 
-    MSTK_free(list_vertex);    
+    MSTK_free(list_vertex);   
+    MSTK_free(list_face);
+    MSTK_free(list_edge);
     MSTK_free(list_region);    
     MSTK_free(list_coor);    
     return 1;
