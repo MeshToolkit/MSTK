@@ -669,6 +669,7 @@ extern "C" {
     /* Check if this is a strictly solid mesh, strictly surface mesh
        or mixed */
 
+    int nface_est = 0;
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
@@ -684,8 +685,16 @@ extern "C" {
       if (strncasecmp(elem_type,"NFACED",6) == 0 ||
 	  strncasecmp(elem_type,"TETRA",5) == 0 ||
 	  strncasecmp(elem_type,"WEDGE",5) == 0 ||
-	  strncasecmp(elem_type,"HEX",3) == 0)
+	  strncasecmp(elem_type,"HEX",3) == 0) {
+
 	solid_elems = 1;
+
+        if (strncasecmp(elem_type,"NFACED",6) == 0)
+          nface_est += nelem_i*nelfaces;
+        else
+          nface_est += nelem_i*6;
+
+      }
       else if (strncasecmp(elem_type,"NSIDED",6) == 0 ||
 	       strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
 	       strncasecmp(elem_type,"QUAD",4) == 0 ||
@@ -710,6 +719,18 @@ extern "C" {
     else if (mesh_type == 3)
       elblockatt = MAttrib_New(mesh, "elemblock", INT, MALLTYPE);
     
+
+    List_ptr *face_hash = NULL;
+    int nfalloc=0, hash_key;
+
+    if (solid_elems) {
+      /* Initialize the face_hash */
+      
+      nfalloc = 6*nface_est;
+      face_hash = (List_ptr *) calloc(nfalloc,sizeof(List_ptr));
+
+    }
+
 
     for (i = 0; i < nelblock; i++) {
       
@@ -869,11 +890,37 @@ extern "C" {
             for (k = 0; k < exo_nrf[eltype]; k++) {
               int nfv;
 
-              nfv = exo_nrfverts[eltype][k];
-              for (k1 = 0; k1 < nfv; k1++)
+              face = NULL;
+              hash_key = 0;
+              nfv = exo_nrfverts[eltype][k];              
+              for (k1 = 0; k1 < nfv; k1++) {
                 fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
+                hash_key += MV_ID(fverts[k1])-1;
+              }
 
-              if ((face = MVs_CommonFace(nfv,fverts))) {
+              if (hash_key < nfalloc && face_hash[hash_key] != NULL) {
+                
+                List_ptr flist = face_hash[hash_key];
+                int ii;
+                for (ii = 0; ii < List_Num_Entries(flist); ii++) {
+                  MFace_ptr hash_face = List_Entry(flist,ii);
+                  
+                  int jj, has_all_verts = 1;
+                  for (jj = 0; jj < nfv; jj++)
+                    if (!MF_UsesEntity(hash_face,fverts[jj],MVERTEX)) {
+                      has_all_verts = 0;
+                      break;
+                    }
+
+                  if (has_all_verts) {
+                    face = hash_face;
+                    break;
+                  }
+                }
+
+              }
+                             
+              if (face) {
                 List_ptr fregs;
 
                 rfarr[k] = face;
@@ -901,6 +948,19 @@ extern "C" {
                 MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
                 rfarr[k] = face;
                 rfdirs[k] = 1;
+
+                if (hash_key >= nfalloc) {
+                  int new_alloc = 2*nfalloc;
+                  if (hash_key > new_alloc)
+                    new_alloc = 2*hash_key;
+                  face_hash = (List_ptr *) realloc(face_hash,new_alloc*sizeof(List_ptr));
+                  int ii;
+                  for (ii = nfalloc; ii < 2*nfalloc; ii++)
+                    face_hash[ii] = NULL;
+                  nfalloc = new_alloc;
+                }
+                if (!face_hash[hash_key]) face_hash[hash_key] = List_New(1);
+                List_Add(face_hash[hash_key],face);
               }
             }
 	  
@@ -921,8 +981,10 @@ extern "C" {
           
         }
 	
+        free(fverts);
 	free(rverts);
-
+        free(rfarr);
+        free(rfdirs);
 	free(connect);
 	
       } 
@@ -1033,6 +1095,20 @@ extern "C" {
       
     } /* for (i = 0; i < nelblock; i++) */
     
+
+    /* Deallocate the face hash table */
+    if (solid_elems) {
+
+#ifdef DEBUG
+      fprintf(stdout,"Face hash table for MESH_ImportFromExodusII has %d entries while the mesh has %d faces\n",nfalloc,MESH_Num_Faces(mesh));
+#endif
+
+      for (i = 0; i < nfalloc; i++)
+        if (face_hash[i]) List_Delete(face_hash[i]);
+      free(face_hash);
+      nfalloc = 0;
+
+    }
     
     
     /* Read side sets */
@@ -1130,14 +1206,12 @@ extern "C" {
       
           for (j = 0; j < num_sides_in_set; j++) {
             int eltype;
-            List_ptr rverts;
             
             mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
             if (!mr)
               MSTK_Report(funcname,"Could not find element in sideset",MSTK_FATAL);
 
             rfaces = MR_Faces(mr);       /* No particular order */
-            rverts = MR_Vertices(mr); /* Ordered for standard elements */
             
             int lfnum = ss_side_list[j]-1;
             
