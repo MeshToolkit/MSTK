@@ -270,6 +270,10 @@ extern "C" {
     int *send_dim, *part;
     int method = 0;
 
+#ifdef DEBUG
+    double t0 = MPI_Wtime();
+#endif
+
     send_dim = (int *) malloc(num*sizeof(int));
     for (i = 0; i < num; i++) send_dim[i] = *dim;
 
@@ -278,6 +282,12 @@ extern "C" {
     if (rank != 0)
       *dim = recv_dim;
     MESH_Get_Partitioning(*mesh, num, method, rank, comm, &part);
+
+#ifdef DEBUG
+    double elapsed_time = MPI_Wtime() - t0;
+
+    fprintf(stderr,"Elapsed time after calculating partitioning on processor %-d is %lf s\n",rank,elapsed_time);
+#endif
 
     if(rank == 0) {    
 
@@ -288,18 +298,29 @@ extern "C" {
 #ifdef DEBUG
       fprintf(stderr,"Finished partitioning\n");
 #endif
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+
+      fprintf(stderr,"Elapsed time after creating partitions on processor %d is %lf s\n",rank,elapsed_time);
+#endif
       
       for(i = 1; i < num; i++) {
 
 	MSTK_SendMesh(submeshes[i],i,with_attr,comm); 
 
 	MESH_Delete(submeshes[i]);  
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+
+      fprintf(stderr,"Elapsed time after sending out mesh #%-d on processor %-d is %lf s\n",i, rank, elapsed_time);
+#endif
       }
       *mesh = submeshes[0];
 
 #ifdef DEBUG
       fprintf(stderr,"Sent meshes to all partitions\n");
 #endif
+      
       MESH_Build_GhostLists(*mesh,*dim); 
      
     }
@@ -310,16 +331,34 @@ extern "C" {
 #ifdef DEBUG
       fprintf(stderr,"Received mesh on partition %d\n",rank);
 #endif
+
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+
+    if (rank == 0)
+      fprintf(stderr,"Elapsed time after receiving mesh on partition %d is %lf s\n",rank,elapsed_time);
+#endif
+      
     }
     MESH_Set_Prtn(*mesh,rank,num);
 
     MESH_Update_ParallelAdj(*mesh, rank, num,  comm); 
+
+#ifdef DEBUG
+    elapsed_time = MPI_Wtime() - t0;
+    fprintf(stdout,"Elapsed time after MESH_Update_ParallelAdj on processor %-d is %lf s\n",rank,elapsed_time);
+#endif
 
     MESH_Disable_GlobalIDSearch(*mesh);
 
 #ifdef DEBUG
     fprintf(stderr,"Updated parallel adjacencies. Exiting mesh distribution\n");
 #endif
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+      fprintf(stderr,"Elapsed time after mesh distribution on processor %-d is %lf s\n",rank,elapsed_time);
+#endif
+      
 
     /* Put a barrier so that distribution of meshes takes place one at a time 
        in a simulation that may have multiple mesh objects on each processor */
