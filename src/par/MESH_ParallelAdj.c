@@ -114,7 +114,9 @@ extern "C" {
   }
 
   MSTK_free(global_ov_num);
-
+  MSTK_free(local_par_adj);
+  MSTK_free(global_par_adj);
+  MSTK_free(prtnums);
 
  return 1;
 }

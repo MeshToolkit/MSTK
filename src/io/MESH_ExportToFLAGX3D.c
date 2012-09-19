@@ -754,7 +754,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       }
 #ifdef DEBUG
       else {
-	if (nfr == 0)
+	if (nef == 0)
 	  fprintf(stderr,
 		  "Meshes of non-manifold objects not supported in FLAG X3D\n");
 	else 

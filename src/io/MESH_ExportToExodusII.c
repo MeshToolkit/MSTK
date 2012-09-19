@@ -309,10 +309,15 @@ extern "C" {
 
     */
 
-
+    if(verbose) {
+      if (enable_set)
+	fprintf(stdout,"\nElement block and side set based on geometric id is enabled.\n");
+      else
+	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
+    }
 
     MESH_Get_Element_Block_Info(mesh, &num_element_block, &element_blocks,
-				 &element_block_ids, &element_block_types);
+                                &element_block_ids, &element_block_types);
 
 
     int num_element_block_glob;
@@ -432,6 +437,32 @@ extern "C" {
 
 #endif
 
+    /* Compute the ID of each element according to the Exodus file */
+
+    int maxid=1;
+    if (MESH_Num_Regions(mesh))
+      maxid = MR_ID(MESH_Region(mesh,MESH_Num_Regions(mesh)-1));
+    else if (MESH_Num_Faces(mesh))
+      maxid = MF_ID(MESH_Face(mesh,MESH_Num_Faces(mesh)-1));
+    int *elem_id = (int *) calloc(maxid,sizeof(int));
+
+    int offset = 0;
+    for (i = 0; i < num_element_block; i++) {
+      int nelem = List_Num_Entries(element_blocks[i]);
+      for (k = 0; k < nelem; k++) {
+        MEntity_ptr ment = List_Entry(element_blocks[i],k);
+        int entid = MEnt_ID(ment);
+        elem_id[entid-1] = offset+k+1;
+      }
+
+      offset += nelem;
+    }
+    
+
+
+    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
+
+    MESH_Get_Node_Set_Info(mesh, &num_node_set, &node_sets, &node_set_ids);
 
     /* COLLECT FACE BLOCK FOR POLYHEDRAL MESHES */
 
@@ -515,8 +546,8 @@ extern "C" {
         for (j = 0; j < maxnum; j++) {
           if (ssids_array_glob[offset+j] == 0) continue;
 
-          /* Is this element block ID in the list of global element
-             block IDs being collected at the head of the
+          /* Is this element block ID in the list of global sideset
+             IDs being collected at the head of the
              ssids_array_glob? */
 
           int found = 0;
@@ -529,7 +560,7 @@ extern "C" {
 
           if (!found) {
             
-            /* Found element block ID on processor i that is not in
+            /* Found sideset ID on processor i that is not in
                the global list. Put it in. */
 
             ssids_array_glob[maxnum1] = ssids_array_glob[offset+j];
@@ -543,11 +574,11 @@ extern "C" {
       
     } /* if (rank == 0) */
 
-    /* Tell everyone how many element blocks there really are */
+    /* Tell everyone how many sidesets there really are */
 
     MPI_Bcast(&num_side_set_glob,1,MPI_INT,0,comm);
 
-    /* Send everyone the IDs of these element blocks */
+    /* Send everyone the IDs of these sidesets */
 
     side_set_ids_glob = (int *) MSTK_malloc(num_side_set_glob*sizeof(int));
     if (rank == 0)
@@ -556,7 +587,7 @@ extern "C" {
 
     MPI_Bcast(side_set_ids_glob,num_side_set_glob,MPI_INT,0,comm);
 
-    /* Populate the global element block data on each processor */
+    /* Populate the global sideset data on each processor */
 
     side_sets_glob = (List_ptr *) MSTK_calloc(num_side_set_glob,
                                                    sizeof(List_ptr));
@@ -631,8 +662,8 @@ extern "C" {
         for (j = 0; j < maxnum; j++) {
           if (nsids_array_glob[offset+j] == 0) continue;
 
-          /* Is this element block ID in the list of global element
-             block IDs being collected at the head of the
+          /* Is this element block ID in the list of global nodeset
+             IDs being collected at the head of the
              nsids_array_glob? */
 
           int found = 0;
@@ -645,7 +676,7 @@ extern "C" {
 
           if (!found) {
             
-            /* Found element block ID on processor i that is not in
+            /* Found nodeset ID on processor i that is not in
                the global list. Put it in. */
 
             nsids_array_glob[maxnum1] = nsids_array_glob[offset+j];
@@ -659,11 +690,11 @@ extern "C" {
 
     } /* if (rank == 0) */
 
-    /* Tell everyone how many element blocks there really are */
+    /* Tell everyone how many nodesets there really are */
 
     MPI_Bcast(&num_node_set_glob,1,MPI_INT,0,comm);
 
-    /* Send everyone the IDs of these element blocks */
+    /* Send everyone the IDs of these nodesets */
 
     node_set_ids_glob = (int *) MSTK_malloc(num_node_set_glob*sizeof(int));
     if (rank == 0)
@@ -674,7 +705,7 @@ extern "C" {
     MPI_Bcast(node_set_ids_glob,num_node_set_glob,MPI_INT,
               0,comm);
 
-    /* Populate the global element block data on each processor */
+    /* Populate the global nodeset data on each processor */
 
     node_sets_glob = (List_ptr *) MSTK_calloc(num_node_set_glob,
                                                    sizeof(List_ptr));
@@ -1114,30 +1145,10 @@ extern "C" {
             mr = List_Entry(fregs,1);  /* at least 1 region should be owned */
 #endif
 
-	  /* Since elements will be read back from the Exodus II file
-	     element block by element block, we have to jump through
-	     hoops to determine what the element number will be when
-	     it is read */
+          elem_list[j] = elem_id[MR_ID(mr)-1];
+          if (elem_list[j] == 0)
+            MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 
-	  int offset = 0;
-	  int found = 0;
-	  k = 0;
-	  while (!found && k < num_element_block_glob) {
-	    int loc = List_Locate(element_blocks_glob[k],mr);
-	    if (loc == -1) {
-	      /* This element block does not contain the element */
-	      offset += List_Num_Entries(element_blocks_glob[k]);
-	      k++;
-	    }
-	    else {
-	      elem_list[j] = offset+loc+1;
-	      found = 1;
-	    }
-	  }
-          if (!found)
-            MSTK_Report(funcname,"Could not find element in element blocks while writing out side sets",
-                        MSTK_FATAL);
-                        
 	  
           int lid = MF_LocalID_in_Region(mf,mr);
           MRType mrtype = MR_ElementType(mr);
@@ -1175,25 +1186,9 @@ extern "C" {
 	     hoops to determine what the element number will be when
 	     it is read */
 
-	  int offset = 0;
-	  int found = 0;
-	  k = 0;
-	  while (!found && k < num_element_block_glob) {
-	    int loc = List_Locate(element_blocks_glob[k],mf);
-	    if (loc == -1) {
-	      /* This element block does not contain the element */
-	      offset = List_Num_Entries(element_blocks_glob[k]);
-	      k++;
-	    }
-	    else {
-	      elem_list[j] = offset+loc+1;
-	      found = 1;
-	    }
-	  }
-          if (!found)
-            MSTK_Report(funcname,"Could not find element in element blocks while writing out side sets",
-                        MSTK_FATAL);
-                        
+          elem_list[j] = elem_id[MF_ID(mf)-1];
+          if (elem_list[j] == 0)
+            MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 	  
           int lid = ME_LocalID_in_Face(me,mf);
           side_list[j] = lid+1;
@@ -1270,7 +1265,28 @@ extern "C" {
 
 
 
+    for (i = 0; i < num_element_block; i++)
+      List_Delete(element_blocks[i]);
+    free(element_blocks);
+    free(element_block_ids);
+    for (i = 0; i < num_element_block; i++)
+      free(element_block_types[i]);
+    free(element_block_types);
+    free(elem_id);
 
+    if (num_side_set) {
+      for (i = 0; i < num_side_set; i++)
+        List_Delete(side_sets[i]);
+      free(side_sets);
+      free(side_set_ids);
+    }
+
+    if (num_node_set) {
+      for (i = 0; i < num_node_set; i++)
+        List_Delete(node_sets[i]);
+      free(node_sets);
+      free(node_set_ids);
+    }
 
      
     /* write quality assurance information optional*/
@@ -1363,11 +1379,14 @@ extern "C" {
   /* Categorize the elements into blocks based on their geometric
      entity ID and the element type */
 
-  void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_block, List_ptr **element_blocks, int **element_block_ids, char ***element_block_types) {
+  void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_block, 
+                                   List_ptr **element_blocks, 
+                                   int **element_block_ids, 
+                                   char ***element_block_types) {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
-    int i, nb, nballoc, bid, found;
+    int i, nb, bid, found, nballoc;
 
     nb = 0; nballoc=10;
     *element_block_ids = (int *) calloc(nballoc,sizeof(int));
@@ -1377,6 +1396,7 @@ extern "C" {
     int idx = 0;
     
     if (MESH_Num_Regions(mesh)) {
+
       while ((mr = MESH_Next_Region(mesh, &idx))) {
 
 #ifdef MSTK_HAVE_MPI
@@ -1483,6 +1503,7 @@ extern "C" {
       }
     }
 
+
     *num_element_block = nb;
   }	
 
@@ -1493,7 +1514,7 @@ extern "C" {
     MFace_ptr mf;
     MEdge_ptr me;
     int idx = 0, i = 0, found;
-    int ns, nsalloc, nr, nf, ne, sid;
+    int ns, nr, nf, ne, sid, nsalloc;
 
 
     ns = 0;
@@ -1584,8 +1605,8 @@ extern "C" {
     MVertex_ptr mv;
     MEdge_ptr me, me2, ve;
     MFace_ptr mf, mf2, ef;
-    int idx, idx2, idx3, idx4, i, found;
-    int nn, nnalloc, nid, nid2, mkid1, mkid2;
+    int idx, idx2, idx3, idx4, i, found, nnalloc;
+    int nn, nid, nid2, mkid1, mkid2;
     List_ptr fverts, fedges, vedges, efaces, elist, flist, vlist;
 
 

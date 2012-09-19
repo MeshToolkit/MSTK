@@ -329,37 +329,64 @@ extern "C" {
     return;
   }
 
-  MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts) {
-    MFace_ptr common_face = NULL, vface;
-    int i, j;
-    int nvf0, contains_all;
-    List_ptr vfaces0, fvtxlist;
+  
+  /* NOTE: MVs_CommonFace can give a positive result if a face has all
+     'nv' vertices but has other vertices not in the list */
+  /* The implementation also assumes that fverts are given in order
+     around the face regardless of direction - Otherwise this routine
+     can be inefficient */
 
-    vfaces0 = MV_Faces(fverts[0]);
-    if (!vfaces0)
+  MFace_ptr MVs_CommonFace(int nv, MVertex_ptr *fverts) {
+    MFace_ptr common_face = NULL, eface;
+    int i, j;
+    int nef0, contains_all;
+    List_ptr efaces0, fvtxlist;
+
+    MEdge_ptr edge0 = MVs_CommonEdge(fverts[0],fverts[1]);
+    if (!edge0)
       return NULL;
 
-    nvf0 = List_Num_Entries(vfaces0);
+    efaces0 = ME_Faces(edge0);
+    if (!efaces0)
+      return NULL;
+
+    nef0 = List_Num_Entries(efaces0);
     
-    for (i = 0; i < nvf0; i++) {
-      vface = List_Entry(vfaces0,i);
-      fvtxlist = MF_Vertices(vface,1,0);
+    for (i = 0; i < nef0; i++) {
+      eface = List_Entry(efaces0,i);
+      int nfv = MF_Num_Vertices(eface);
+
+      if (nfv != nv) continue;
+
+      fvtxlist = MF_Vertices(eface,1,0);
 
       contains_all = 1;
-      for (j = 1; j < nv; j++) {
-	if (!List_Contains(fvtxlist,fverts[j])) {
-	  contains_all = 0;
-	  break;
-	}
-      }      
+      for (j = 0; j < nv; j++) {
+        MVertex_ptr vtx = List_Entry(fvtxlist,j);
+
+        if (vtx == fverts[0] || vtx == fverts[1]) continue;
+
+        int k, found = 0;
+        for (k = 2; k < nv; k++)
+          if (vtx == fverts[k]) {
+            found = 1;
+            break;
+          }
+
+        if (!found) {
+          contains_all = 0;
+          break;
+        }
+      }  
+    
       List_Delete(fvtxlist);
 
       if (contains_all) {
-	common_face = vface;
+	common_face = eface;
 	break;
       }
     }
-    List_Delete(vfaces0);
+    List_Delete(efaces0);
 
     return common_face;
   }

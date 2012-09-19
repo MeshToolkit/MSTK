@@ -61,8 +61,7 @@ extern "C" {
 	if (attrib == g2latt) continue;
 	
 	MAttrib_Get_Name(attrib,attr_name);
-	for(i = 0; i < num; i++)
-	  MESH_CopyAttr(mesh,submeshes[i],attr_name);
+        MESH_CopyAttr(mesh,num,submeshes,attr_name);
       }
       
       /* Split the sets into subsets and send them to the partitions */
@@ -77,28 +76,7 @@ extern "C" {
     }
 
 
-    /* Remove the temporary Global2Local and Local2Global attributes */
-
-    /* Remove these attributes from main mesh */
-
-    idx = 0;
-    while ((mv = MESH_Next_Vertex(mesh,&idx)))
-      MEnt_Rem_AllAttVals(mv);
-    
-    idx = 0;
-    while ((me = MESH_Next_Edge(mesh,&idx)))
-      MEnt_Rem_AllAttVals(me);
-    
-    idx = 0;
-    while ((mf = MESH_Next_Face(mesh,&idx)))
-      MEnt_Rem_AllAttVals(mf);
-    
-    idx = 0;
-    while ((mr = MESH_Next_Region(mesh,&idx)))
-      MEnt_Rem_AllAttVals(mr);
-    
-    MAttrib_Delete(g2latt);
-
+    /* Remove the temporary Local2Global attributes */
 
     /* Remove these attributes from submeshes */
 
@@ -296,6 +274,10 @@ extern "C" {
     MPI_Comm_size(comm,&num);
     recv_dim = rank+5;
 
+#ifdef DEBUG
+    double t0 = MPI_Wtime();
+#endif
+
     send_dim = (int *) malloc(num*sizeof(int));
     for (i = 0; i < num; i++) send_dim[i] = *dim;
 
@@ -304,6 +286,12 @@ extern "C" {
     if (rank != 0)
       *dim = recv_dim;
     MESH_Get_Partitioning(globalmesh, method, &part, comm);
+
+#ifdef DEBUG
+    double elapsed_time = MPI_Wtime() - t0;
+
+    fprintf(stderr,"Elapsed time after calculating partitioning on processor %-d is %lf s\n",rank,elapsed_time);
+#endif
 
     if(rank == 0) {    
 
@@ -314,6 +302,11 @@ extern "C" {
 #ifdef DEBUG
       fprintf(stderr,"Finished partitioning\n");
 #endif
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+
+      fprintf(stderr,"Elapsed time after creating partitions on processor %d is %lf s\n",rank,elapsed_time);
+#endif
       
       for(i = 1; i < num; i++) {
 
@@ -321,6 +314,11 @@ extern "C" {
 	MSTK_SendMesh(submeshes[i],torank,with_attr,comm);
 
 	MESH_Delete(submeshes[i]);  
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+
+      fprintf(stderr,"Elapsed time after sending out mesh #%-d on processor %-d is %lf s\n",i, rank, elapsed_time);
+#endif
       }
 
       if (*mymesh == NULL)
@@ -347,17 +345,35 @@ extern "C" {
       fprintf(stderr,"Received mesh on partition %d\n",rank);
 #endif
 
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+
+    if (rank == 0)
+      fprintf(stderr,"Elapsed time after receiving mesh on partition %d is %lf s\n",rank,elapsed_time);
+#endif
+      
     }
 
     MESH_Set_Prtn(*mymesh,rank,num);
 
     MESH_Update_ParallelAdj(*mymesh,comm);
 
+#ifdef DEBUG
+    elapsed_time = MPI_Wtime() - t0;
+    fprintf(stdout,"Elapsed time after MESH_Update_ParallelAdj on processor %-d is %lf s\n",rank,elapsed_time);
+#endif
+
     MESH_Disable_GlobalIDSearch(*mymesh);
+
 
 #ifdef DEBUG
     fprintf(stderr,"Updated parallel adjacencies. Exiting mesh distribution\n");
 #endif
+#ifdef DEBUG
+      elapsed_time = MPI_Wtime() - t0;
+      fprintf(stderr,"Elapsed time after mesh distribution on processor %-d is %lf s\n",rank,elapsed_time);
+#endif
+      
 
     /* Put a barrier so that distribution of meshes takes place one at a time 
        in a simulation that may have multiple mesh objects on each processor */

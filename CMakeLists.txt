@@ -222,6 +222,7 @@ add_subdirectory(src)
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
   set (CONFIG_SUFFIX -d)
+  add_definitions(-DDEBUG)
 endif ()
 
 # Add version number to library name

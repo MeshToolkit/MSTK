@@ -173,7 +173,7 @@ MR_Rev_FaceDir_i_R2, MR_Rev_FaceDir_i_R4};
   void MR_Rem_Face_R2(MRegion_ptr r, MFace_ptr f);
   void MR_Rem_Face_R4(MRegion_ptr r, MFace_ptr f);
   void MR_Rem_Face_FNR3R4(MRegion_ptr r, MFace_ptr f);
-static void (*MR_Replace_Face_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f) =
+static void (*MR_Rem_Face_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f) =
 {MR_Rem_Face_F1, MR_Rem_Face_F4, MR_Rem_Face_R1, 
  MR_Rem_Face_R2, MR_Rem_Face_R4};
 
