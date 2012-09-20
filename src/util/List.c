@@ -116,7 +116,6 @@ extern "C" {
     
   
   void List_Delete(List_ptr l) {
-    pvtList_Set_Pars(l,0,0,0,-1);
     free(l->entry);
     free(l);
   }
