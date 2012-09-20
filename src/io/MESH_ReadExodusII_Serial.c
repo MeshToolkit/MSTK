@@ -799,10 +799,10 @@ extern "C" {
               }
               hash_key = (int) (hash_key/nfv + 0.5);
 
-              if (hash_key < nfalloc && face_hash_lens[hash_key] != 0) {
+              if ((hash_key < nfalloc) && (face_hash_lens[hash_key] != 0)) {
                 
                 int ii;
-                for (ii = 0; ii < face_hash_lens[ii]; ii++) {
+                for (ii = 0; ii < face_hash_lens[hash_key]; ii++) {
                   MFace_ptr hash_face = face_hash[hash_key][ii];
                   
                   int jj, has_all_verts = 1;
