@@ -27,6 +27,8 @@ extern "C" {
      these entity sets. We are also setting mesh geometric entity IDs
      - Should we pick one of the first two? */
 
+#define DEF_MAXFACES 10
+
 
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank) {
 
@@ -45,6 +47,7 @@ extern "C" {
   int nelem_i, natts;
   int *sideset_ids, *ss_elem_list, *ss_side_list, *nodeset_ids, *ns_node_list;
   int num_nodes_in_set, num_sides_in_set, num_df_in_set;
+  RepType reptype = MESH_RepType(mesh);
 
   double *xvals, *yvals, *zvals, xyz[3];
   float version;
@@ -414,9 +417,9 @@ extern "C" {
 	  offset += nnpe[j];
 	}
 	
-	MSTK_free(fverts);
-	MSTK_free(connect);
-	MSTK_free(nnpe);
+	free(fverts);
+	free(connect);
+	free(nnpe);
 
       }
       else {
@@ -454,7 +457,7 @@ extern "C" {
 	}
 	
 	free(fverts);
-
+        free(connect);
 	
       } /* if (strcmp(elem_type,"NSIDED") ... else */
       
@@ -523,6 +526,7 @@ extern "C" {
 	
       }
 
+      free(sideset_ids);
     }
     
     
@@ -562,6 +566,7 @@ extern "C" {
     /* Check if this is a strictly solid mesh, strictly surface mesh
        or mixed */
 
+    int nface_est = 0;
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
@@ -577,8 +582,16 @@ extern "C" {
       if (strncasecmp(elem_type,"NFACED",6) == 0 ||
 	  strncasecmp(elem_type,"TETRA",5) == 0 ||
 	  strncasecmp(elem_type,"WEDGE",5) == 0 ||
-	  strncasecmp(elem_type,"HEX",3) == 0)
+	  strncasecmp(elem_type,"HEX",3) == 0) {
+
 	solid_elems = 1;
+
+        if (strncasecmp(elem_type,"NFACED",6) == 0)
+          nface_est += nelem_i*nelfaces;
+        else
+          nface_est += nelem_i*6;
+
+      }
       else if (strncasecmp(elem_type,"NSIDED",6) == 0 ||
 	       strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
 	       strncasecmp(elem_type,"QUAD",4) == 0 ||
@@ -603,6 +616,21 @@ extern "C" {
     else if (mesh_type == 3)
       elblockatt = MAttrib_New(mesh, "elemblock", INT, MALLTYPE);
     
+
+    MFace_ptr (*face_hash)[DEF_MAXFACES] = NULL;
+    int *face_hash_lens = NULL;
+    int nfalloc=0, hash_key;
+    int nrealloc;
+
+    if (solid_elems) {
+      /* Initialize the face_hash */
+      
+      nfalloc = (int) (nface_est/4.0 + 0.5);
+      nrealloc = 0;
+      face_hash = (MFace_ptr (*)[DEF_MAXFACES]) malloc(nfalloc*sizeof(MFace_ptr [DEF_MAXFACES]));
+      face_hash_lens = (int *) calloc(nfalloc,sizeof(int));
+    }
+
 
     for (i = 0; i < nelblock; i++) {
       
@@ -682,9 +710,9 @@ extern "C" {
 	  offset += nnpe[j];
 	}
 	
-	MSTK_free(rfarr);
-	MSTK_free(connect);
-	MSTK_free(nnpe);
+	free(rfarr); free(rfdirs);
+	free(connect);
+	free(nnpe);
 
       }
       else if (strncasecmp(elem_type,"TETRA",5) == 0 ||
@@ -739,7 +767,7 @@ extern "C" {
 	  continue;
 	}
 	
-	fverts = (MVertex_ptr *) MSTK_malloc(6*sizeof(MVertex_ptr));
+	fverts = (MVertex_ptr *) MSTK_malloc(4*sizeof(MVertex_ptr));
 
 	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(nrf*sizeof(MFace_ptr));
 	int *rfdirs = (int *) MSTK_malloc(nrf*sizeof(int *));
@@ -757,16 +785,42 @@ extern "C" {
           for (k = 0; k < nelnodes; k++)
             rverts[k] = MESH_VertexFromID(mesh,connect[nelnodes*j+k]);
             
-          if (MESH_RepType(mesh) == F1 || MESH_RepType(mesh) == F4) {
+          if (reptype == F1 || reptype == F4) {
                         
             for (k = 0; k < exo_nrf[eltype]; k++) {
               int nfv;
 
-              nfv = exo_nrfverts[eltype][k];
-              for (k1 = 0; k1 < nfv; k1++)
+              face = NULL;
+              hash_key = 0;
+              nfv = exo_nrfverts[eltype][k];              
+              for (k1 = 0; k1 < nfv; k1++) {
                 fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
+                hash_key += MV_ID(fverts[k1])-1;
+              }
+              hash_key = (int) (hash_key/nfv + 0.5);
 
-              if ((face = MVs_CommonFace(nfv,fverts))) {
+              if (hash_key < nfalloc && face_hash_lens[hash_key] != 0) {
+                
+                int ii;
+                for (ii = 0; ii < face_hash_lens[ii]; ii++) {
+                  MFace_ptr hash_face = face_hash[hash_key][ii];
+                  
+                  int jj, has_all_verts = 1;
+                  for (jj = 0; jj < nfv; jj++)
+                    if (!MF_UsesEntity(hash_face,fverts[jj],MVERTEX)) {
+                      has_all_verts = 0;
+                      break;
+                    }
+
+                  if (has_all_verts) {
+                    face = hash_face;
+                    break;
+                  }
+                }
+
+              }
+                             
+              if (face) {
                 List_ptr fregs;
 
                 rfarr[k] = face;
@@ -794,13 +848,33 @@ extern "C" {
                 MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
                 rfarr[k] = face;
                 rfdirs[k] = 1;
+
+                if (hash_key >= nfalloc) {
+                  int new_alloc = 2*nfalloc;
+                  if (hash_key > new_alloc)
+                    new_alloc = 2*hash_key;
+                  face_hash = (MFace_ptr (*)[DEF_MAXFACES]) realloc(face_hash,new_alloc*sizeof(MFace_ptr [DEF_MAXFACES]));
+                  face_hash_lens = (int *) realloc(face_hash_lens,new_alloc*sizeof(int));
+                  int ii;
+                  for (ii = nfalloc; ii < new_alloc; ii++)
+                    face_hash_lens[ii] = 0;
+                  nrealloc++;
+                  nfalloc = new_alloc;
+                }
+                if (face_hash_lens[hash_key]+1 > DEF_MAXFACES) {
+                  MSTK_Report(funcname,"Increase size of each array in hash table (DEF_MAXFACES) \n or use hash key with fewer conflicts",MSTK_ERROR);
+                  MSTK_Report(funcname,"Cannot insert face into hash table\n",MSTK_FATAL);
+                }
+
+                face_hash[hash_key][face_hash_lens[hash_key]] = face;
+                face_hash_lens[hash_key]++;
               }
             }
 	  
             MR_Set_Faces(mr,nrf,rfarr,rfdirs);
 
           }
-          else if (MESH_RepType(mesh) == R1 || MESH_RepType(mesh) == R2) {
+          else if (reptype == R1 || reptype == R2) {
 
             MR_Set_Vertices(mr,nelnodes,rverts,0,NULL);
 
@@ -814,8 +888,10 @@ extern "C" {
           
         }
 	
+        free(fverts);
 	free(rverts);
-
+        free(rfarr);
+        free(rfdirs);
 	free(connect);
 	
       } 
@@ -919,13 +995,37 @@ extern "C" {
 	}
 	
 	free(fverts);
-
+        free(connect);
 	
       } /* if (strcmp(elem_type,"NFACED") ... else */
       
       
     } /* for (i = 0; i < nelblock; i++) */
     
+
+    /* Deallocate the face hash table */
+    if (solid_elems) {
+
+#ifdef DEBUG
+      fprintf(stderr,"Face hash table for MESH_ImportFromExodusII has %d entries while the mesh has %d faces\n",nfalloc,MESH_Num_Faces(mesh));
+      int maxlen=0, num=0, totlen=0, avelen;
+      for (i = 0; i < nfalloc; i++)
+        if (face_hash_lens[i]) {
+          num++;
+          int len = face_hash_lens[i];
+          if (len > maxlen) maxlen = len;
+          totlen += len;
+        }
+      avelen = totlen/num;
+      fprintf(stderr,"There are %d non-zero entries in the hash_table\n",num);
+      fprintf(stderr,"Maximum list length is %d and average list length is %d\n",maxlen,avelen); 
+      fprintf(stderr,"Number of times face_has array was realloc'ed = %d\n",nrealloc);
+#endif
+
+      free(face_hash);
+      nfalloc = 0;
+
+    }
     
     
     /* Read side sets */
@@ -1025,14 +1125,12 @@ extern "C" {
       
           for (j = 0; j < num_sides_in_set; j++) {
             int eltype;
-            List_ptr rverts;
             
             mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
             if (!mr)
               MSTK_Report(funcname,"Could not find element in sideset",MSTK_FATAL);
 
             rfaces = MR_Faces(mr);       /* No particular order */
-            rverts = MR_Vertices(mr); /* Ordered for standard elements */
             
             int lfnum = ss_side_list[j]-1;
             
@@ -1078,6 +1176,7 @@ extern "C" {
 	
       }
 
+      free(sideset_ids);
     }
 
 
