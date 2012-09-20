@@ -117,6 +117,7 @@ extern "C" {
   
   void List_Delete(List_ptr l) {
     free(l->entry);
+    if (l->remdat) free(l->remdat);
     free(l);
   }
 
