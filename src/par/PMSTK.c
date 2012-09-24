@@ -347,8 +347,6 @@ extern "C" {
 
 #ifdef DEBUG
       elapsed_time = MPI_Wtime() - t0;
-
-    if (rank == 0)
       fprintf(stderr,"Elapsed time after receiving mesh on partition %d is %lf s\n",rank,elapsed_time);
 #endif
       
