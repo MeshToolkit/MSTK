@@ -1263,31 +1263,6 @@ extern "C" {
 
 #endif /* MSTK_HAVE_MPI */
 
-
-
-    for (i = 0; i < num_element_block; i++)
-      List_Delete(element_blocks[i]);
-    free(element_blocks);
-    free(element_block_ids);
-    for (i = 0; i < num_element_block; i++)
-      free(element_block_types[i]);
-    free(element_block_types);
-    free(elem_id);
-
-    if (num_side_set) {
-      for (i = 0; i < num_side_set; i++)
-        List_Delete(side_sets[i]);
-      free(side_sets);
-      free(side_set_ids);
-    }
-
-    if (num_node_set) {
-      for (i = 0; i < num_node_set; i++)
-        List_Delete(node_sets[i]);
-      free(node_sets);
-      free(node_set_ids);
-    }
-
      
     /* write quality assurance information optional*/
 
@@ -1308,7 +1283,6 @@ extern "C" {
 
 
 
-
     MSTK_free(element_block_ids_glob);
     for (i = 0; i < num_element_block_glob; i++)
       List_Delete(element_blocks_glob[i]);
@@ -1318,20 +1292,21 @@ extern "C" {
     MSTK_free(element_block_types_glob);
 
 
-    MSTK_free(side_set_ids_glob);
-    for (i = 0; i < num_side_set_glob; i++)
-      List_Delete(side_sets_glob[i]);
-    MSTK_free(side_sets_glob);
-      
+    if (num_side_set_glob) {
+      MSTK_free(side_set_ids_glob);
+      for (i = 0; i < num_side_set_glob; i++)
+        List_Delete(side_sets_glob[i]);
+      MSTK_free(side_sets_glob);
+    }
     
-    MSTK_free(node_set_ids_glob);
-    for (i = 0; i < num_node_set_glob; i++)
-      List_Delete(node_sets_glob[i]);
-    MSTK_free(node_sets_glob);
-
+    if (num_node_set_glob) {
+      MSTK_free(node_set_ids_glob);
+      for (i = 0; i < num_node_set_glob; i++)
+        List_Delete(node_sets_glob[i]);
+      MSTK_free(node_sets_glob);
+    }
 
 #ifdef MSTK_HAVE_MPI
-
     idx = 0;
     while ((mr = MESH_Next_Region(mesh,&idx)))
       MEnt_Unmark(mr,ownedmk);
@@ -1403,7 +1378,9 @@ extern "C" {
         if (!MEnt_IsMarked(mr,ownedmk)) continue;  /* Ghost element */
 #endif
 
-	int nrv = MR_Num_Vertices(mr);
+	List_ptr rverts = MR_Vertices(mr);
+	int nrv = List_Num_Entries(rverts);
+        List_Delete(rverts);
 	int nrf = MR_Num_Faces(mr);
         MRType mrtype = MR_ElementType(mr);
 
