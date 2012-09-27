@@ -3,7 +3,124 @@
 #include "../../../include/MSTK.h"
 
 SUITE(Parallel) {
-TEST(Partition3D_sym) {
+TEST(Partition3D_sym_0ring) {
+
+  int i, j, idx;
+  int nr, nf, ne, nv, ngr, nor, ngf, nof, nge, noe, ngv, nov;
+  int nproc, rank, status, dim;
+  int *regids, *gregids, *oregids;
+  int *faceids, *gfaceids, *ofaceids;
+  int *edgeids, *gedgeids, *oedgeids;
+  int *vertexids, *gvertexids, *overtexids;
+  Mesh_ptr mesh, mymesh;
+  MRegion_ptr mr;
+  MFace_ptr mf;
+  MEdge_ptr me;
+  MVertex_ptr mv;
+
+  
+  /* Total number of entities - ghost + owned */
+  int expnr[8]={1,1,1,1,1,1,1,1};
+  int expnf[8]={6,6,6,6,6,6,6,6};
+  int expne[8]={12,12,12,12,12,12,12,12};
+  int expnv[8]={8,8,8,8,8,8,8,8};
+
+  /* Number of ghost entities */
+  int expngr[8]={0,0,0,0};
+  int expngf[8]={0,1,1,2,1,2,2,3};
+  int expnge[8]={0,4,4,7,4,7,7,9};
+  int expngv[8]={0,4,4,6,4,6,6,7};
+
+  /* Number of overlap entities */
+  int expnor[8]={0,0,0,0,0,0,0,0};
+  int expnof[8]={3,2,2,1,2,1,1,0};
+  int expnoe[8]={9,5,5,2,5,2,2,0};
+  int expnov[8]={7,3,3,1,3,1,1,0};
+
+
+  MSTK_Init();
+  MSTK_Comm comm = MPI_COMM_WORLD;
+  int debugwait=0;
+  while (debugwait);
+
+
+  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_rank(comm,&rank);
+
+  Mesh_ptr globalmesh=NULL;
+  if (rank == 0) {
+
+    globalmesh = MESH_New(UNKNOWN_REP);
+    status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex2x2x2.mstk",comm);
+
+    CHECK(status);
+
+    CHECK(MESH_Num_Regions(globalmesh));
+
+    dim = 3;
+  }
+    
+  int method;
+
+#if defined (_MSTK_HAVE_METIS)
+  method = 0;
+#elif defined (_MSTK_HAVE_ZOLTAN)
+  method = 1;
+#else
+  fprintf(stderr,"No partitioner found");
+  status = 0;
+  CHECK(status);
+#endif
+
+  mymesh = NULL;
+  int num_ghost_layers = 0;
+  int with_attr = 0;
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, with_attr, method, comm);
+
+  CHECK(status);
+
+  if (rank == 0) MESH_Delete(globalmesh);
+
+  ngr = MESH_Num_GhostRegions(mymesh);
+  CHECK_EQUAL(expngr[rank],ngr);
+
+  nor = MESH_Num_OverlapRegions(mymesh);
+  CHECK_EQUAL(expnor[rank],nor);
+
+  nr = MESH_Num_Regions(mymesh);
+  CHECK_EQUAL(expnr[rank],nr);
+
+  ngf = MESH_Num_GhostFaces(mymesh);
+  CHECK_EQUAL(expngf[rank],ngf);
+
+  nof = MESH_Num_OverlapFaces(mymesh);
+  CHECK_EQUAL(expnof[rank],nof);
+
+  nf = MESH_Num_Faces(mymesh);
+  CHECK_EQUAL(expnf[rank],nf);
+
+  nge = MESH_Num_GhostEdges(mymesh);
+  CHECK_EQUAL(expnge[rank],nge);
+
+  noe = MESH_Num_OverlapEdges(mymesh);
+  CHECK_EQUAL(expnoe[rank],noe);
+
+  ne = MESH_Num_Edges(mymesh);
+  CHECK_EQUAL(expne[rank],ne);
+
+  ngv = MESH_Num_GhostVertices(mymesh);
+  CHECK_EQUAL(expngv[rank],ngv);
+
+  nov = MESH_Num_OverlapVertices(mymesh);
+  CHECK_EQUAL(expnov[rank],nov);
+
+  nv = MESH_Num_Vertices(mymesh);
+  CHECK_EQUAL(expnv[rank],nv);
+
+  return;
+}
+
+TEST(Partition3D_sym_1ring) {
 
   int i, j, idx;
   int nr, nf, ne, nv, ngr, nor, ngf, nof, nge, noe, ngv, nov;
@@ -73,7 +190,9 @@ TEST(Partition3D_sym) {
 #endif
 
   mymesh = NULL;
-  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, 1, 1, method, comm);
+  int num_ghost_layers = 1;
+  int with_attr = 0;
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, with_attr, method, comm);
 
   CHECK(status);
 
