@@ -1389,10 +1389,14 @@ extern "C" {
 	int nrf = MR_Num_Faces(mr);
         MRType mrtype = MR_ElementType(mr);
 
+        /*
 	if (mrtype == TET || mrtype == PRISM || mrtype == HEX)
 	  bid = (MEnt_GEntID(mr)<<16) | nrv<<8 | nrf;
 	else
 	  bid = MEnt_GEntID(mr)<<16;
+        */
+
+        bid = MEnt_GEntID(mr);
 	
 	found = 0; 
 	i = 0;
@@ -1443,10 +1447,14 @@ extern "C" {
 
 	int nfv = MF_Num_Vertices(mf);
 
+        /*
 	if (nfv == 3 || nfv == 4)
 	  bid = (MEnt_GEntID(mf)<<16) | nfv;
 	else
 	  bid = MEnt_GEntID(mf)<<16;
+        */
+        
+        bid = MEnt_GEntID(mf);
 
 	found = 0; i = 0;
 	while (!found && i < nb) {
@@ -1484,7 +1492,6 @@ extern "C" {
 	}
       }
     }
-
 
     *num_element_block = nb;
   }	
