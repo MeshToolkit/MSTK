@@ -10,12 +10,13 @@
 
 #include "MSTK.h" 
 
-typedef enum {MSTK,GMV,EXODUSII,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
+typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
 
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;
-  int len, ok, build_classfn=1, partition=0;
+  int len, ok, build_classfn=1, partition=0, weave=0;
+  int num_ghost_layers=0;
   MshFmt inmeshformat, outmeshformat;
 
 
@@ -39,6 +40,15 @@ int main(int argc, char *argv[]) {
         else if (strncmp(argv[i],"--partition=n",13) == 0) 
           partition = 0;
       }
+      else if (strncmp(argv[i],"--weave",7) == 0) {
+        if (strncmp(argv[i],"--weave=y",11) == 0)
+          weave = 1;
+        else if (strncmp(argv[i],"--weave=n",11) == 0) 
+          weave = 0;
+      }
+      else if (strncmp(argv[i],"--num_ghost_layers",18) == 0) {
+        sscanf(argv[i]+19,"%d",&num_ghost_layers);
+      }
       else
         fprintf(stderr,"Unrecognized option...Ignoring\n");
   }
@@ -59,9 +69,10 @@ int main(int argc, char *argv[]) {
     inmeshformat = GMV;
   else if ((len > 4 && strncmp(&(infname[len-4]),".exo",4) == 0) ||
 	   (len > 2 && strncmp(&(infname[len-2]),".g",2) == 0) ||
-	   (len > 2 && strncmp(&(infname[len-2]),".e",2) == 0) ||
-           (len > 4 && strncmp(&(infname[len-4]),".par",4) == 0)) 
+	   (len > 2 && strncmp(&(infname[len-2]),".e",2) == 0))
     inmeshformat = EXODUSII;
+  else if (len > 4 && strncmp(&(infname[len-4]),".par",4) == 0) 
+    inmeshformat = NEMESISI;
   else if (len > 4 && strncmp(&(infname[len-4]),".vtk",4) == 0)
     inmeshformat = VTK;
   else if (len > 5 && strncmp(&(infname[len-5]),".cgns",5) == 0)
@@ -73,7 +84,7 @@ int main(int argc, char *argv[]) {
     inmeshformat = X3D;
   else {
     fprintf(stderr,"Unrecognized input mesh format\n");
-    fprintf(stderr,"Recognized input mesh formats: MSTK, GMV, ExodusII, CGNS, VTK, AVS/UCD\n");
+    fprintf(stderr,"Recognized input mesh formats: MSTK, GMV, ExodusII, NemesisI, CGNS, VTK, AVS/UCD\n");
     exit(-1);
   }
 
@@ -84,9 +95,10 @@ int main(int argc, char *argv[]) {
     outmeshformat = GMV;
   else if ((len > 4 && strncmp(&(outfname[len-4]),".exo",4) == 0) ||
 	   (len > 2 && strncmp(&(outfname[len-2]),".g",2) == 0) ||
-	   (len > 2 && strncmp(&(outfname[len-2]),".e",2) == 0) ||
-           (len > 4 && strncmp(&(outfname[len-4]),".par",4) == 0)) 
+	   (len > 2 && strncmp(&(outfname[len-2]),".e",2) == 0))
     outmeshformat = EXODUSII;
+  else if ((len > 4 && strncmp(&(outfname[len-4]),".par",4) == 0))
+    outmeshformat = NEMESISI;
   else if (len > 4 && strncmp(&(outfname[len-4]),".vtk",4) == 0)
     outmeshformat = VTK;
   else if (len > 5 && strncmp(&(outfname[len-5]),".cgns",5) == 0)
@@ -100,7 +112,7 @@ int main(int argc, char *argv[]) {
     outmeshformat = DX;
   else {
     fprintf(stderr,"Unrecognized output mesh format\n");
-    fprintf(stderr,"Recognized output mesh formats: MSTK, GMV, ExodusII, CGNS, VTK, AVS/UCD\n");
+    fprintf(stderr,"Recognized output mesh formats: MSTK, GMV, ExodusII, NemesisI, CGNS, VTK, AVS/UCD\n");
     exit(-1);
   }
 
@@ -137,14 +149,25 @@ int main(int argc, char *argv[]) {
   else {
     mesh = MESH_New(F1);
 
+    int opts[5]={0,0,0,0,0};
+
     switch(inmeshformat) {
     case GMV:
       fprintf(stderr,"Importing mesh from GMV file...");
-      ok = MESH_ImportFromFile(mesh,infname,"gmv",comm);
+      ok = MESH_ImportFromFile(mesh,infname,"gmv",opts,comm);
       break;
     case EXODUSII:
+      opts[0] = partition ? 1 : 0;
+      opts[1] = 0;
+      opts[2] = num_ghost_layers; /* no ghost layers */      
       fprintf(stderr,"Importing mesh from ExodusII file...");
-      ok = MESH_ImportFromFile(mesh,infname,"exodusii",comm);
+      ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
+      break;
+    case NEMESISI:
+      fprintf(stderr,"Importing mesh from NemesisI file...");
+      opts[0] = weave ? 1 : 0; 
+      opts[1] = num_ghost_layers; /* no ghost layers */      
+      ok = MESH_ImportFromFile(mesh,infname,"nemesisi",opts,comm);      
       break;
     case CGNS:
       fprintf(stderr,"Cannot import mesh from CGNS format. ");
@@ -157,7 +180,7 @@ int main(int argc, char *argv[]) {
       break;
     case X3D:
       fprintf(stderr,"Importing mesh from X3D format...");
-      ok = MESH_ImportFromFile(mesh,infname,"x3d",comm);
+      ok = MESH_ImportFromFile(mesh,infname,"x3d",opts,comm);
       break;
     default:
       fprintf(stderr,"Cannot import from unrecognized format. ");
