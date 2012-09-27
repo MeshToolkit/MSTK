@@ -15,22 +15,37 @@ extern "C" {
 #endif
 
 
-  /* Read an Exodus II (or Nemesis) file into MSTK */
-  /* Nemesis files are the distributed versions of Exodus II files
-     with the global IDs of elements and nodes encoded as element maps
-     and node maps. Nemesis files also contain some additional info
-     that can be read by the Nemesis API but we are choosing to ignore
-     that for now. While Nemesis tools that produce distributed meshes
-     from a single Exodus II file use the extension .par.N.n where N
-     is the total number of processors and n is the rank of the
-     particular process we will also accept .exo.N.n */
+  /* Read an Exodus II file into MSTK */
+  /* 
+     The input arguments parallel_opts indicate if we should build
+     parallel adjacencies and some options for controlling that 
 
+     if parallel_opts == NULL, then only processor 0 will read the mesh and
+     do nothing else
+     
+     parallel_opts[0] = 1/0  ---- distribute/Don't distribute the mesh
+     parallel_opts[1] = 0-3  ---- 0: read/partition on P0 and distribute
+                                  1: read/partition on P0, reread local portion
+                                     on each process and weave/connect
+                                  2: read on multiple processors Pn where n is 
+                                  an arithmetic progression (5,10,15 etc) and
+                                  distribute to a subset of processors (like P5
+     Opts 1,2,3 NOT ACTIVE        distributes to P0-P4, P10 to P6-P9 etc)
+                                  3: read portions of the mesh on each processor
+                                  and repartition
+     parallel_opts[1] = N    ---- Number of ghost layers around mesh on proc
+     parallel_opts[2] = 0/1  ---- partitioning method
+                                  0: Metis
+                                  1: Zoltan
+  */                            
+
+  
   /* Right now we are creating an attribute for material sets, side
      sets and node sets. We are ALSO creating meshsets for each of
      these entity sets. We are also setting mesh geometric entity IDs
      - Should we pick one of the first two? */
 
-  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
+  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
   char mesg[256], funcname[32]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
@@ -73,154 +88,96 @@ extern "C" {
   FILE *fp;
   char basename[256], modfilename[256], *ext;
 
+  
 #ifdef MSTK_HAVE_MPI
 
   int rank=0, numprocs=1;
 
-  MPI_Comm_size(comm,&numprocs);
-  MPI_Comm_rank(comm,&rank);
+  if (comm) {
+    MPI_Comm_size(comm,&numprocs);
+    MPI_Comm_rank(comm,&rank);
+  }
 
-  if (numprocs > 1) {
+  if (numprocs > 1 && parallel_opts && parallel_opts[0]) {
 
-    strcpy(basename,filename);
-    ext = strstr(basename,".exo"); /* Search for the exodus extension */
-    if (ext) {
+    int num_ghost_layers = parallel_opts[2];
 
-      ext[0] = '\0'; /* Truncate the basename string at the extension */
+    int have_zoltan = 0, have_metis = 0;
+#ifdef _MSTK_HAVE_ZOLTAN
+    have_zoltan = 1;
+#endif
+#ifdef _MSTK_HAVE_METIS
+    have_metis = 1;
+#endif
 
-      /* Try opening the file with .exo.N.n extension in the hope that
-       we have a distributed set of files */
+    int part_method = parallel_opts[3];
 
-      sprintf(modfilename,"%s.exo.%-d.%-d",basename,numprocs,rank);
-      
-      if ((fp = fopen(modfilename,"r"))) {
-        fclose(fp);
-        
-        distributed = 1;
+    if (part_method == 0) {
+      if (!have_metis) {
+        MSTK_Report(funcname,"Metis not available. Trying Zoltan",MSTK_WARN);
+        part_method = 1;
+        if (!have_zoltan) 
+          MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
       }
-      else {
-
-        sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
-      
-        if ((fp = fopen(modfilename,"r"))) {
-          fclose(fp);
-        
-          distributed = 1;
-        }
-        else {
-        
-          distributed = 0;
-        
-          if (rank == 0) {          
-            if ((fp = fopen(filename,"r"))) {
-              fclose(fp);
-            }
-            else {  
-              sprintf(mesg,"Cannot open/read Exodus II file %s.exo, %s.exo.%-d.%-d or %s.par.%-d.%-d",basename,basename,numprocs,rank,basename,numprocs,rank);
-              MSTK_Report(funcname,mesg,MSTK_FATAL);        
-            }
-          
-          }
-        }  
-      }
-
     }
-    else {
-      ext = strstr(basename,".par"); /* Search for the Nemesis extension */
-      if (!ext)
-        MSTK_Report(funcname,
-                 "Exodus II/Nemesis I files must have .exo or .par extension",
-                    MSTK_FATAL);        
-      else
-        ext[0] = '\0'; /* Truncate the basename string at the extension */
-
-      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
-      
-      if ((fp = fopen(modfilename,"r"))) {
-        fclose(fp);
-        
-        distributed = 1;
+    else if (part_method == 1) {
+      if (!have_zoltan) {
+        MSTK_Report(funcname,"Zoltan not available. Trying Metis",MSTK_WARN);
+        part_method = 1;
+        if (!have_zoltan) 
+          MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
       }
     }
 
 
-    /* Now that we;ve identified the extension, read the meshes and
-       weave them together or read the whole mesh on processor 0 and
-       distribute it */
+    if (parallel_opts[1] == 0) {
 
-    int num_ghost_layers = 1;
-    int topodim;
-    int input_type = 1;
-  
-    if (distributed) {
-
-      /* Now weave the distributed meshes together so that appropriate
-         ghost links are created */
-
-      int read_status = MESH_ReadExodusII_Serial(mesh,modfilename,rank);
-
-      if (!read_status) {
-        sprintf(mesg,"Could not read Exodus II file %s successfully\n",
-                modfilename);
-        MSTK_Report(funcname,mesg,MSTK_FATAL);
-      }
-
-      topodim = (MESH_Num_Regions(mesh) == 0) ? 2 : 3;
-
-      int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
-                                                     num_ghost_layers, 
-                                                     input_type, comm);
-      
-      if (!weavestatus)
-        MSTK_Report(funcname,
-                    "Could not weave distributed meshes correctly together",
-                    MSTK_FATAL);
-    }
-    else {
+      /* Read on processor 0 and distribute to all other processors */
 
       Mesh_ptr globalmesh;
-
+      int topodim;
+      
       if (rank == 0) { /* Read only on processor 0 */
-
+        
         globalmesh = MESH_New(MESH_RepType(mesh));
         int read_status = MESH_ReadExodusII_Serial(globalmesh,filename,rank);
-
+        
         if (!read_status) {
           sprintf(mesg,"Could not read Exodus II file %s successfully\n",
                   filename);
           MSTK_Report(funcname,mesg,MSTK_FATAL);
         }
-
+        
         topodim = (MESH_Num_Regions(globalmesh) == 0) ? 2 : 3;
       }
       else
         globalmesh = NULL;
-
+      
       int with_attr = 1;      
-      int method=0;
-
-#if defined (_MSTK_HAVE_ZOLTAN)
-      method = 1;
-#elif defined (_MSTK_HAVE_METIS)
-      method = 0;
-#else
-      MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
-#endif
 
       int dist_status = MSTK_Mesh_Distribute(globalmesh, &mesh, &topodim, 
                                              num_ghost_layers,
-                                             with_attr, method, comm);
+                                             with_attr, part_method, comm);
       if (!dist_status)
         MSTK_Report(funcname,
                     "Could not distribute meshes to other processors",
                     MSTK_FATAL);
-
+      
       if (rank == 0)
         MESH_Delete(globalmesh);
     }
+    else if (parallel_opts[1] == 1) {
 
+    }
+    else if (parallel_opts[1] == 2) {
+
+    }
+    else if (parallel_opts[1] == 3) {
+
+    }
+  
     int parallel_check = MESH_Parallel_Check(mesh,comm);        
-
+    
     if (!parallel_check)
       MSTK_Report(funcname,
                   "Parallel mesh checks failed",
@@ -228,16 +185,16 @@ extern "C" {
 
   } /* if numprocs > 1 */
   else {
-    return (MESH_ReadExodusII_Serial(mesh,filename,rank));
+    if (rank == 0) 
+      return (MESH_ReadExodusII_Serial(mesh,filename,0));
+    else
+      return 0;
   }
-
-
 
 #else /* Serial process */
   return (MESH_ReadExodusII_Serial(mesh,filename,0));
 #endif 
   
-
   return 1;
 
 }
