@@ -415,7 +415,12 @@ extern "C" {
       }      
       if (!found) {
         element_blocks_glob[i] = List_New(1); /* dummy list */
-        strcpy(element_block_types_glob[i],"HEX");
+        if (element_dim == 3)
+          strcpy(element_block_types_glob[i],"HEX");
+        else if (element_dim == 2)
+          strcpy(element_block_types_glob[i],"QUAD");
+        else
+          strcpy(element_block_types_glob[i],"UNKNOWN");
       }
     }
 
@@ -1197,7 +1202,7 @@ extern "C" {
 	  j++;
 	}
 
-	ex_put_side_set(exoid, side_set_ids[i], elem_list, side_list);
+	ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
 
       }
 
