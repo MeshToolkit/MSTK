@@ -41,12 +41,14 @@ extern "C" {
 
 
 int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
-  int nf, nr, idx;
-  MVertex_ptr lmv;
+  int nf, nr;
   RepType rtype;
 
-  /* if 0 ring, only mark processor boundary vertex */
+  /* if 0 ring, only mark processor boundary entities */
   if (ring == 0) {
+    int idx;
+
+    MVertex_ptr lmv;
     idx = 0;
     while((lmv = MESH_Next_Vertex(submesh,&idx))) {
       if(MV_PType(lmv) == PBOUNDARY) {
@@ -56,6 +58,31 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
 	  MV_Set_PType(lmv,PGHOST);
       }
     }
+
+    MEdge_ptr lme;
+    idx = 0;
+    while((lme = MESH_Next_Edge(submesh,&idx))) {
+      if(ME_PType(lme) == PBOUNDARY) {
+	if(MV_MasterParID(lme) == part_no)
+	  ME_Set_PType(lme,POVERLAP);
+	else
+	  ME_Set_PType(lme,PGHOST);
+      }
+    }
+    
+    if (MESH_Num_Regions(mesh)) {
+      MFace_ptr lmf;
+      idx = 0;
+      while((lmf = MESH_Next_Face(submesh,&idx))) {
+        if(MF_PType(lmf) == PBOUNDARY) {
+          if(MF_MasterParID(lmf) == part_no)
+            MF_Set_PType(lmf,POVERLAP);
+          else
+            MF_Set_PType(lmf,PGHOST);
+        }
+      }
+    }
+
     return 1;
   }
 
