@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-  int MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, const char *format, MSTK_Comm comm) {
+  int MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, const char *format, int *opts, MSTK_Comm comm) {
 
 
   if (strncmp(format,"mstk",4) == 0) {
@@ -18,9 +18,16 @@ extern "C" {
   }
   else if (strncmp(format,"exo",3) == 0) {
 #ifdef ENABLE_ExodusII
-    return MESH_ImportFromExodusII(mesh,filename,comm);
+    return MESH_ImportFromExodusII(mesh,filename,opts,comm);
 #else
     MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",MSTK_ERROR);
+#endif
+  } 
+  else if (strncmp(format,"nem",3) == 0) {
+#ifdef ENABLE_ExodusII
+    return MESH_ImportFromNemesisI(mesh,filename,opts,comm);
+#else
+    MSTK_Report("MESH_ImportFromFile","Exodus II/Nemesis I file support not built in",MSTK_ERROR);
 #endif
   } 
   else if (strncmp(format,"x3d",3) == 0) {
