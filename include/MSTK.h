@@ -11,7 +11,7 @@
 */
 
 
-#define MSTK_VERSION "2.0rc1"
+#define MSTK_VERSION "2.0rc2"
 
 #include <stdarg.h>
 
@@ -59,11 +59,54 @@ void MSTK_Init(void);
 
   /* Import mesh data into the mesh object from various
      formats. 'comm' can be NULL for serial codes */
+  /* opts is an integer array with different meanings for different
+     formats */
 
   int         MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
-                                  const char *format, MSTK_Comm comm);
+                                  const char *format, int *opts, MSTK_Comm comm);
   int         MESH_ImportFromGMV(Mesh_ptr mesh, const char *filename, MSTK_Comm comm); 
-  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
+
+  /*--------------------------------------------------------------------------*/
+  /* Read an Exodus II file into MSTK */
+  /* The input arguments parallel_opts indicate if we should build
+     parallel adjacencies and some options for controlling that 
+
+     if parallel_opts == NULL, then only processor 0 will read the mesh and
+     do nothing else
+     
+     parallel_opts[0] = 1/0  ---- distribute/Don't distribute the mesh
+     parallel_opts[1] = 0-3  ---- 0: read/partition on P0 and distribute
+                                  1: read/partition on P0, reread local portion
+                                     on each process and weave/connect
+                                  2: read on multiple processors Pn where n is 
+                                  an arithmetic progression (5,10,15 etc) and
+                                  distribute to a subset of processors (like P5
+     Opts 1,2,3 NOT ACTIVE        distributes to P0-P4, P10 to P6-P9 etc)
+                                  3: read portions of the mesh on each processor
+                                  and repartition
+     parallel_opts[1] = N    ---- Number of ghost layers around mesh on proc
+     parallel_opts[2] = 0/1  ---- partitioning method
+                                  0: Metis
+                                  1: Zoltan */                            
+  /*--------------------------------------------------------------------------*/
+
+  int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm);
+
+
+  /*--------------------------------------------------------------------------*/
+  /* Read an Nemesis I file into MSTK */
+  /* The input arguments parallel_opts indicate if we should build
+     parallel adjacencies and some options for controlling that 
+     
+     parallel_opts[0] = 1/0  ---- Weave/Don't weave the distributed meshes
+                                  together to form parallel connections
+     parallel_opts[1] = N    ---- Number of ghost layers around mesh  */
+  /*--------------------------------------------------------------------------*/
+
+  int         MESH_ImportFromNemesisI(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm);
+
+
+
   int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
 
 
