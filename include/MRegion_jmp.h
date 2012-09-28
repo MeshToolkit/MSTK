@@ -485,6 +485,17 @@ static int (*MR_UsesVertex_jmp[MSTK_MAXREP])(MRegion_ptr r, MEdge_ptr e) =
 #endif
 
 
+
+void MR_Update_ElementType_R1(MRegion_ptr r);
+void MR_Update_ElementType_R2(MRegion_ptr r);
+void MR_Update_ElementType_FNR3R4(MRegion_ptr r);
+static void (*MR_Update_ElementType_jmp[MSTK_MAXREP])(MRegion_ptr r) =
+{MR_Update_ElementType_FNR3R4, MR_Update_ElementType_FNR3R4, MR_Update_ElementType_R1, MR_Update_ElementType_R2, MR_Update_ElementType_FNR3R4};
+
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

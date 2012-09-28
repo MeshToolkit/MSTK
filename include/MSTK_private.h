@@ -79,6 +79,10 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void MF_Rem_Region(MFace_ptr f, MRegion_ptr r);
 
 
+  /* Update the element type of the region */
+
+  void MR_Update_ElementType(MRegion_ptr r);
+
   /*
   void MR_Set_RepType(MRegion_ptr r, RepType rtype);
   */

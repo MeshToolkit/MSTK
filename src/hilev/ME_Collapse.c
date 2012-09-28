@@ -209,7 +209,6 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
       List_Delete(rfaces);
 
     } /* while ((reg = ...)) */
-    List_Delete(eregs);
   }
 
 
@@ -226,13 +225,13 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
 	/* Disconnect the regions from the face before deleting */
 
 	List_ptr fregs = MF_Regions(face);
-
-	idx2 = 0;
-	while ((reg = List_Next_Entry(fregs,&idx2)))
-	  MR_Rem_Face(reg,face);
-
-	List_Delete(fregs);
-
+        if (fregs) {
+          idx2 = 0;
+          while ((reg = List_Next_Entry(fregs,&idx2)))
+            MR_Rem_Face(reg,face);
+          
+          List_Delete(fregs);
+        }
 
 	MF_Delete(face,0);
       }
@@ -331,6 +330,13 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
   ME_Delete(e,0);
   MV_Delete(vdel,0);
 
+  if (eregs) {
+    idx1 = 0;
+    while ((reg = List_Next_Entry(eregs,&idx1)))
+      MR_Update_ElementType(reg);
+    
+    List_Delete(eregs);
+  }
 
   return vkeep;
 }

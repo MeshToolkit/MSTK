@@ -368,6 +368,10 @@ extern "C" {
   }
 
 
+  void MR_Update_ElementType_R1(MRegion_ptr r) {
+    MSTK_Report("MR_Update_ElementType_R1","Not yet implemented",MSTK_ERROR);
+  }
+
   int MR_UsesFace_R1(MRegion_ptr r, MFace_ptr f) {
     if (MR_FaceDir_R1(r,f) == -1)
       return 0; /* Face is not in region */

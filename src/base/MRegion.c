@@ -163,6 +163,10 @@ extern "C" {
     return r->mrtype;
   }
 
+  void MR_Update_ElementType(MRegion_ptr r) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    return (*MR_Update_ElementType_jmp[RTYPE])(r);
+  }
 
   int MR_Num_Vertices(MRegion_ptr r) {
     List_ptr rverts;
