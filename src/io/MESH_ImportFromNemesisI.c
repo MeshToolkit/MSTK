@@ -40,7 +40,7 @@ extern "C" {
 
   int MESH_ImportFromNemesisI(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
-  char mesg[256], funcname[32]="MESH_ImportFromExodusII";
+  char mesg[256], funcname[32]="MESH_ImportFromNemesisI";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
   char matsetname[256];
   char **elem_blknames;
