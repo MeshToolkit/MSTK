@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "MSTK.h"
 #include "MSTK_private.h"
@@ -28,6 +29,41 @@ extern "C" {
      - Should we pick one of the first two? */
 
 #define DEF_MAXFACES 10
+
+  /* create a hash function from n positive integers. Since these
+     integers are the IDs of face vertices, we know that if the same
+     set of integers is passed into the function repeatedly they will
+     be in the same order or reverse order as the first time,
+     i.e. given numbers a,b,c,d the first time, we will get either
+     a,b,c,d or c,b,a,d or b,c,d,a or b,a,d,c but never a,c,d,b. So to
+     hash we start at the minimum number and then go in the direction
+     of the smaller next number. For example, if we have 10, 22, 24,
+     220, we choose 22, 10, 220, 24 */
+
+  unsigned int hash_ints(int n, unsigned int *nums) {
+    int i, k;
+    unsigned int p1 = 3;
+
+    unsigned int h = 0;
+    unsigned int min = 1e+9;
+    for (i = 0; i < n; i++)
+      if (nums[i] < min) {
+        min = nums[i];
+        k = i;
+      }
+    if (nums[(k+1)%n] < nums[(k-1+n)%n]) {
+      for (i = 0; i < n; i++)
+        h = h*p1 + nums[(k+i)%n];
+    }
+    else {
+      for (i = 0; i < n; i++)
+        h = h*p1 + nums[(k-i+n)%n];
+    }
+    
+    /* h = (int) ((double)h/(n-1) + 0.5); */
+
+    return h;
+  }
 
 
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank) {
@@ -567,6 +603,10 @@ extern "C" {
        or mixed */
 
     int nface_est = 0;
+    int max_nfv = 4; /* max number of vertices per face - for faces that
+                        have more than 4 vertices, the faces are created
+                        explicitly and we don't need to build a hash function
+                        to check for their existence */
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
@@ -619,13 +659,17 @@ extern "C" {
 
     MFace_ptr (*face_hash)[DEF_MAXFACES] = NULL;
     int *face_hash_lens = NULL;
-    int nfalloc=0, hash_key;
+    int nfalloc=0;
     int nrealloc;
+    int a_prime = 31;
+    unsigned int nums[4] = {nnodes,nnodes,nnodes,nnodes};
+    unsigned int max_hash_key = hash_ints(4,nums);
+    unsigned int hash_key;
 
     if (solid_elems) {
       /* Initialize the face_hash */
       
-      nfalloc = (int) (nface_est/4.0 + 0.5);
+      nfalloc = max_hash_key+1;
       nrealloc = 0;
       face_hash = (MFace_ptr (*)[DEF_MAXFACES]) malloc(nfalloc*sizeof(MFace_ptr [DEF_MAXFACES]));
       face_hash_lens = (int *) calloc(nfalloc,sizeof(int));
@@ -788,16 +832,14 @@ extern "C" {
           if (reptype == F1 || reptype == F4) {
                         
             for (k = 0; k < exo_nrf[eltype]; k++) {
-              int nfv;
-
               face = NULL;
-              hash_key = 0;
-              nfv = exo_nrfverts[eltype][k];              
+
+              int nfv = exo_nrfverts[eltype][k];              
               for (k1 = 0; k1 < nfv; k1++) {
                 fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
-                hash_key += MV_ID(fverts[k1])-1;
+                nums[k1] = MV_ID(fverts[k1]); 
               }
-              hash_key = (int) (hash_key/nfv + 0.5);
+              hash_key = hash_ints(nfv,nums);
 
               if ((hash_key < nfalloc) && (face_hash_lens[hash_key] != 0)) {
                 
