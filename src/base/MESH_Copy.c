@@ -256,9 +256,11 @@ extern "C" {
             
             MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
             
-            if (atttype == INT || atttype == DOUBLE)
+            if (atttype == INT && ival) 
               MEnt_Set_AttVal(mv_copy,att_copy,ival,rval,pval);
-            else if (atttype == VECTOR || atttype == TENSOR) {
+            else if (atttype == DOUBLE && rval)
+              MEnt_Set_AttVal(mv_copy,att_copy,ival,rval,pval);
+            else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
               double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(mv_copy,att_copy,ival,rval,vec);
@@ -276,9 +278,11 @@ extern "C" {
             
             MEnt_Get_AttVal(me,att,&ival,&rval,&pval);
             
-            if (atttype == INT || atttype == DOUBLE)
+            if (atttype == INT && ival)
               MEnt_Set_AttVal(me_copy,att_copy,ival,rval,pval);
-            else if (atttype == VECTOR || atttype == TENSOR) {
+            else if (atttype == DOUBLE && rval)
+              MEnt_Set_AttVal(me_copy,att_copy,ival,rval,pval);
+            else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
               double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(me_copy,att_copy,ival,rval,vec);
@@ -296,9 +300,11 @@ extern "C" {
             
             MEnt_Get_AttVal(mf,att,&ival,&rval,&pval);
             
-            if (atttype == INT || atttype == DOUBLE)
+            if (atttype == INT && ival)
               MEnt_Set_AttVal(mf_copy,att_copy,ival,rval,pval);
-            else if (atttype == VECTOR || atttype == TENSOR) {
+            else if (atttype == DOUBLE && rval)
+              MEnt_Set_AttVal(mf_copy,att_copy,ival,rval,pval);
+            else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
               double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(mf_copy,att_copy,ival,rval,vec);
@@ -316,9 +322,11 @@ extern "C" {
             
             MEnt_Get_AttVal(mr,att,&ival,&rval,&pval);
             
-            if (atttype == INT || atttype == DOUBLE)
+            if (atttype == INT && ival)
               MEnt_Set_AttVal(mr_copy,att_copy,ival,rval,pval);
-            else if (atttype == VECTOR || atttype == TENSOR) {
+            else if (atttype == DOUBLE && rval)
+              MEnt_Set_AttVal(mr_copy,att_copy,ival,rval,pval);
+            else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
               double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(mr_copy,att_copy,ival,rval,vec);
