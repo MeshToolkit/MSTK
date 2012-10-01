@@ -281,7 +281,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"Exporting mesh to GMV format...");
       ok = MESH_ExportToFile(mesh,outfname,"gmv",-1,NULL,NULL,comm);
       break;
-    case EXODUSII:
+    case EXODUSII:case NEMESISI:
       fprintf(stderr,"Exporting mesh to ExodusII format...");
       ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL,comm);
       break;
