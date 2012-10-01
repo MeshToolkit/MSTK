@@ -887,6 +887,7 @@ extern "C" {
               }
               else {
                 face = MF_New(mesh);
+
                 MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
                 rfarr[k] = face;
                 rfdirs[k] = 1;

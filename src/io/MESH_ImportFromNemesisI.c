@@ -90,6 +90,10 @@ extern "C" {
 
   if (numprocs > 1) {
 
+    int ndigits = 0;
+    int div = 1;
+    while (numprocs/div) {div *= 10; ndigits++;}
+      
     strcpy(basename,filename);
     ext = strstr(basename,".exo"); /* Search for the Exodus extension */
     if (ext) {
@@ -98,7 +102,8 @@ extern "C" {
 
       /* Try opening the file with .par.N.n extension */
 
-      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
+      sprintf(modfilename,"%s.par.%-d.%0*d",basename,numprocs,ndigits,rank);
+      
       
       if ((fp = fopen(modfilename,"r"))) {
         fclose(fp);
@@ -108,7 +113,7 @@ extern "C" {
       else {
         /* Perhaps the files have a .exo.N.n extension? */
 
-        sprintf(modfilename,"%s.exo.%-d.%-d",basename,numprocs,rank);
+        sprintf(modfilename,"%s.exo.%-d.%0*d",basename,numprocs,ndigits,rank);
       
         if ((fp = fopen(modfilename,"r"))) {
           fclose(fp);
@@ -141,7 +146,7 @@ extern "C" {
       else
         ext[0] = '\0'; /* Truncate the basename string at the extension */
 
-      sprintf(modfilename,"%s.par.%-d.%-d",basename,numprocs,rank);
+      sprintf(modfilename,"%s.par.%-d.%0*d",basename,numprocs,ndigits,rank);
       
       if ((fp = fopen(modfilename,"r"))) {
         fclose(fp);

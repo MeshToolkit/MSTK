@@ -97,6 +97,10 @@ extern "C" {
     if (numprocs > 1) {
       char basename[256];
 
+      int ndigits = 0;
+      int div = 1;
+      while (numprocs/div) {div *= 10; ndigits++;}
+ 
       strcpy(basename,filename);
       char *ext = strstr(basename,".par");
       
@@ -108,12 +112,12 @@ extern "C" {
                       MSTK_FATAL);
         else {          
           ext[0] = '\0';
-          sprintf(modfilename,"%s.exo.%d.%d",basename,numprocs,rank);          
+          sprintf(modfilename,"%s.exo.%d.%0*d",basename,numprocs,ndigits,rank);
         }
       }
       else {
         ext[0] = '\0';
-        sprintf(modfilename,"%s.par.%d.%d",basename,numprocs,rank);
+        sprintf(modfilename,"%s.par.%d.%0*d",basename,numprocs,ndigits,rank);
       }
 
     }
