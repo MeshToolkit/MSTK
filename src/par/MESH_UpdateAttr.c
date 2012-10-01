@@ -305,12 +305,25 @@ extern "C" {
 	  rval = list_value_double_recv[i];
 	if(ncomp > 1)
 	  {
-	    rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
-	    for(k = 0; k < ncomp; k++)
-	      rval_arr[k] = list_value_double_recv[i*ncomp+k];
-	  }	
+            int allzero = 1;
+            for (k = 0; k < ncomp; k++)
+              if (list_value_double_recv[i*ncomp+k] != 0.0) {
+                allzero = 0;
+                break;
+              }
+            if (!allzero) {
+              rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
+              for(k = 0; k < ncomp; k++)
+                rval_arr[k] = list_value_double_recv[i*ncomp+k];
+            }	
+            else
+              rval_arr = NULL;
+          }
       }
-      MEnt_Set_AttVal(ment,attrib,ival,rval,(void*) rval_arr);
+      if ((att_type == INT && ival) ||
+          (att_type == DOUBLE && rval) ||
+          ((att_type == VECTOR || att_type == TENSOR) && rval_arr))
+        MEnt_Set_AttVal(ment,attrib,ival,rval,(void*) rval_arr);
     }
 
     /* release the send buffer */
