@@ -1089,8 +1089,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   while ((region = MESH_Next_Region(mesh,&idx)))
     MEnt_Rem_AttVal(region,ridatt);
 
-  MAttrib_Delete(vidatt);
-  MAttrib_Delete(fidatt);
+  if (vidatt) MAttrib_Delete(vidatt);
+  if (MESH_Num_Faces(mesh))
+    MAttrib_Delete(fidatt);
   if (MESH_Num_Regions(mesh))
     MAttrib_Delete(ridatt);
 
