@@ -32,6 +32,11 @@ extern "C" {
   MEntity_ptr ment;
   MAttrib_ptr attrib;
 
+  int nreq=0;
+  MPI_Request request[5];
+  MPI_Status  status[5];
+
+
   attrib = MESH_AttribByName(mesh,attr_name);
   /* if there is no such attribute */
   if(!attrib) {
@@ -107,12 +112,17 @@ extern "C" {
   }
   
   /* send info */
-  MPI_Send(list_info,num,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_info,num,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
   /* send value */
   if (att_type == INT)
-    MPI_Send(list_value_int,num*ncomp,MPI_INT,torank,torank,comm);
+    MPI_Isend(list_value_int,num*ncomp,MPI_INT,torank,torank,comm,&(request[nreq]));
   else
-    MPI_Send(list_value_double,num*ncomp,MPI_DOUBLE,torank,torank,comm);
+    MPI_Isend(list_value_double,num*ncomp,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
+  if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
+    MSTK_Report("MESH_SendAttr","Trouble sending mesh attributes",MSTK_FATAL);
 
   /* release the send buffer */
   MSTK_free(list_info);
@@ -143,6 +153,7 @@ extern "C" {
   MAttType att_type;
   MEntity_ptr ment=NULL;
   MAttrib_ptr attrib;
+  MPI_Request request;
   MPI_Status status;
   
   int rank;
@@ -181,9 +192,11 @@ extern "C" {
 
   /* receive info */
   list_info = (int *)MSTK_malloc((num)*sizeof(int));
-  MPI_Recv(list_info,num,MPI_INT,fromrank,rank,comm,&status);
-  MPI_Get_count(&status,MPI_INT,&count);
+  MPI_Irecv(list_info,num,MPI_INT,fromrank,rank,comm,&request);
+  if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+    MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);
 
+  MPI_Get_count(&status,MPI_INT,&count);
   assert((num)==count);
   /* printf("received %d attributes of attribute index %d in MESH_RecvAttr() from rank %d on rank %d\n",count,attr_index,fromrank,rank); */
 
@@ -191,12 +204,16 @@ extern "C" {
   list_value_double = (double *)MSTK_malloc(num*ncomp*sizeof(double));
   /* reveive value */
   if (att_type == INT) {
-    MPI_Recv(list_value_int,(num)*ncomp,MPI_INT,fromrank,rank,comm, &status);
+    MPI_Irecv(list_value_int,(num)*ncomp,MPI_INT,fromrank,rank,comm, &request);
+    if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+      MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);    
     MPI_Get_count(&status,MPI_INT,&count);
     assert(num*ncomp==count);
   }
   else {
-    MPI_Recv(list_value_double,num*ncomp,MPI_DOUBLE,fromrank,rank,comm, &status);
+    MPI_Irecv(list_value_double,num*ncomp,MPI_DOUBLE,fromrank,rank,comm, &request);
+    if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+      MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);    
     MPI_Get_count(&status,MPI_DOUBLE,&count);
     assert(ncomp*num==count);
   }

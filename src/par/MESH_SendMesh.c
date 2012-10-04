@@ -76,6 +76,9 @@ extern "C" {
   int *list_attr=NULL, *list_mset=NULL;
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
+  int nreq=0;
+  MPI_Request request[10];
+  MPI_Status status[10];
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -192,37 +195,48 @@ extern "C" {
     }
   }
 
-  /* send mesh_info */
-  MPI_Send(mesh_info,10,MPI_INT,torank,torank,comm);
+  MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send vertices */
   /* printf("%d vertices sent to torank %d\n",nv,torank); */
-  MPI_Send(list_vertex,3*nv,MPI_INT,torank,torank,comm);
-  MPI_Send(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm);
+  MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send edges */
-  MPI_Send(list_edge,nevs,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send faces */
   /* printf("%d faces sent to torank %d\n",nf,torank); */
-  MPI_Send(list_face,nfes,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
   
   /* send attr */
   /* printf("%d attrs sent to torank %d\n",natt,torank); */
   if(natt) {
-    MPI_Send(list_attr,natt,MPI_INT,torank,torank,comm);
-    MPI_Send(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm);
+    MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
+    nreq++;
     MSTK_free(list_attr);
     MSTK_free(list_attr_names);
   }
 
   /* send sets */
   if (nset) {
-    MPI_Send(list_mset,nset,MPI_INT,torank,torank,comm);
-    MPI_Send(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm);
+    MPI_Isend(list_mset,nset,MPI_INT,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MPI_Isend(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
+    nreq++;
     MSTK_free(list_mset);
     MSTK_free(list_mset_names);
   }
+
+  if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
+    MSTK_Report("MESH_Surf_SendMesh","Trouble sending mesh",MSTK_FATAL);
 
   MSTK_free(list_vertex);
   MSTK_free(list_coor);
@@ -249,6 +263,9 @@ extern "C" {
   int *list_attr=NULL, *list_mset=NULL;
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
+  int nreq=0;
+  MPI_Request request[10];
+  MPI_Status status[10];
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -379,28 +396,36 @@ extern "C" {
 
 
   /* send mesh_info */
-  MPI_Send(mesh_info,10,MPI_INT,torank,torank,comm);
+  MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send vertices */
   /* printf("%d vertices sent to torank %d\n",nv,torank); */
-  MPI_Send(list_vertex,3*nv,MPI_INT,torank,torank,comm);
-  MPI_Send(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm);
+  MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send edges */
-  MPI_Send(list_edge,nevs,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
   
   /* send faces */
-  MPI_Send(list_face,nfes,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send regions */
   /* printf("%d regions sent to torank %d\n",nr,torank); */
-  MPI_Send(list_region,nrfs,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_region,nrfs,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   /* send attr */
   /* printf("%d attr sent to torank %d\n",natt,torank); */
   if(natt) {
-    MPI_Send(list_attr,natt,MPI_INT,torank,torank,comm);
-    MPI_Send(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm);
+    MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
+    nreq++;
     MSTK_free(list_attr);
     MSTK_free(list_attr_names);
   }
@@ -408,12 +433,17 @@ extern "C" {
 
   /* send sets */
   if (nset) {
-    MPI_Send(list_mset,nset,MPI_INT,torank,torank,comm);
-    MPI_Send(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm);
+    MPI_Isend(list_mset,nset,MPI_INT,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MPI_Isend(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
+    nreq++;
     MSTK_free(list_mset);
     MSTK_free(list_mset_names);
   }
 
+
+  if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
+    MSTK_Report("MESH_Vol_SendMesh_FN","Trouble sending mesh",MSTK_FATAL);
 
 
   MSTK_free(list_vertex);

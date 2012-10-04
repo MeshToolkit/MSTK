@@ -27,6 +27,9 @@ extern "C" {
   MType mtype;
   MEntity_ptr ment;
   MSet_ptr mset;
+  int nreq=0;
+  MPI_Request request[5];
+  MPI_Status status[5];
 
 
   mset = MESH_MSetByName(mesh,mset_name);
@@ -41,7 +44,8 @@ extern "C" {
   list_info = (int *)MSTK_malloc(sizeof(int));
   list_info[0] = nent;
 
-  MPI_Send(list_info,1,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_info,1,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
   if (!nent) {
     MSTK_free(list_info);
@@ -60,7 +64,11 @@ extern "C" {
   
 
   /* send info */
-  MPI_Send(list_value_int,num,MPI_INT,torank,torank,comm);
+  MPI_Isend(list_value_int,num,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
+  if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
+    MSTK_Report("MESH_SendMSet","Trouble sending mset",MSTK_FATAL);
 
   /* release the send buffer */
   MSTK_free(list_info);
@@ -93,7 +101,7 @@ extern "C" {
   MRegion_ptr rgn;
   MSet_ptr mset;
   MPI_Status status;
-
+  MPI_Request request;
 
   int rank;
   MPI_Comm_rank(comm,&rank);
@@ -112,7 +120,9 @@ extern "C" {
 
   /* receive info */
   list_info = (int *)MSTK_malloc(sizeof(int));
-  MPI_Recv(list_info,1,MPI_INT,fromrank,rank,comm,&status);
+  MPI_Irecv(list_info,1,MPI_INT,fromrank,rank,comm,&request);
+  if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+    MSTK_Report("MESH_RecvMSet","Trouble receiving mesh set",MSTK_FATAL);
   MPI_Get_count(&status,MPI_INT,&count);
 
   assert(1==count);
@@ -127,7 +137,9 @@ extern "C" {
   num = 2*nent;
   list_value_int = (int *)MSTK_malloc(num*sizeof(int));
 
-  MPI_Recv(list_value_int,num,MPI_INT,fromrank,rank,comm, &status);
+  MPI_Irecv(list_value_int,num,MPI_INT,fromrank,rank,comm, &request);
+  if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+    MSTK_Report("MESH_RecvMSet","Trouble receiving mesh set",MSTK_FATAL);
   MPI_Get_count(&status,MPI_INT,&count);
   assert(num==count);
 
