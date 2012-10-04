@@ -26,6 +26,8 @@ extern "C" {
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&num);
 
+  *part = NULL;
+
   /* basic mesh information */
   
   if ( rank == 0 ) {
@@ -40,11 +42,7 @@ extern "C" {
       exit(-1);
     }
 #endif
-
-    *part = (int *) MSTK_malloc(ncells*sizeof(int));
   }
-  else
-    *part = NULL;
 
   switch (method) {
   case 0:
