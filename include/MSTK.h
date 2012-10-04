@@ -513,6 +513,7 @@ void MSTK_Init(void);
   void        MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
   int         MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);  
+  void        MEnt_Clear_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
   void        MEnt_Rem_AllAttVals(MEntity_ptr);
 
 
@@ -602,6 +603,7 @@ void MSTK_Init(void);
   MType       MAttrib_Get_EntDim(MAttrib_ptr attrib);
   int         MAttrib_Get_NumComps(MAttrib_ptr attrib);
   void        MAttrib_Delete(MAttrib_ptr attrib);
+  void        MAttrib_Clear(MAttrib_ptr attrib);
 
 
 /*************************************************************************/
@@ -631,11 +633,6 @@ void MSTK_Init(void);
 /**********************************************************************/
 
 #ifdef MSTK_HAVE_MPI
-
-  /* Typically called only on processor 0 */
-
-  int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part, int ring, 
-                                 int with_attr, Mesh_ptr *submeshes);
 
   /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
   /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */

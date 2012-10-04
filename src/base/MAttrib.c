@@ -96,6 +96,10 @@ extern "C" {
   }
 
 
+  void MAttrib_Clear(MAttrib_ptr attrib) {
+    MESH_Clear_Attrib(attrib->mesh,attrib);
+  }
+
 
 
   MAttIns_ptr MAttIns_New(MAttrib_ptr attrib) {

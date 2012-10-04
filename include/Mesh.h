@@ -52,6 +52,7 @@ extern "C" {
   MAttrib_ptr MESH_AttribByName(Mesh_ptr mesh, const char *name);
   void        MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
   void        MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
+  void        MESH_Clear_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
 
   int         MESH_Num_MSets(Mesh_ptr mesh);
   MSet_ptr    MESH_MSet(Mesh_ptr mesh, int i);

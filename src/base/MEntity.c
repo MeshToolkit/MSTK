@@ -398,7 +398,7 @@ extern "C" {
 		  "Attribute not suitable for this entity type",MSTK_ERROR);
   }
 
-  /* Clear value of attribute */
+  /* Remove an attribute from entity */
 
   void MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
     int i, idx, found;
@@ -436,6 +436,39 @@ extern "C" {
       return;
  
   }
+
+  void MEnt_Clear_AttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
+    int idx, found;
+    MType attentdim, entdim;
+    MAttIns_ptr attins;
+    List_ptr attinslist;
+
+    attentdim = MAttrib_Get_EntDim(attrib);
+    entdim = MEnt_Dim(ent);
+
+    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
+	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+
+      attinslist = ent->entdat.AttInsList;
+      if (!attinslist) return;
+      
+      idx = 0; found = 0;
+      while ((attins = List_Next_Entry(attinslist,&idx))) {
+	if (MAttIns_Attrib(attins) == attrib) {
+	  found = 1;
+	  break;
+	}
+      }
+      
+      if (!found) return;
+      
+      MAttIns_Set_Value(attins, 0, 0.0, NULL);
+    }
+    else
+      MSTK_Report("MEnt_Clear_AttVal",
+		  "Attribute not suitable for this entity type",MSTK_ERROR);
+  }
+
 
   /* Clear value of attribute */
 

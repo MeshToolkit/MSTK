@@ -42,6 +42,7 @@ extern "C" {
   MType       MAttrib_Get_EntDim(MAttrib_ptr attrib);
   int         MAttrib_Get_NumComps(MAttrib_ptr attrib);
   void        MAttrib_Delete(MAttrib_ptr attrib);
+  void        MAttrib_Clear(MAttrib_ptr attrib);
 
 
 

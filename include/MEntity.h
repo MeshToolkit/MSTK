@@ -97,6 +97,7 @@ extern "C" {
   void  MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
 			double lval, void *pval);
   void  MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  void  MEnt_Clear_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
   int   MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
 			double *lval, void **pval);
 

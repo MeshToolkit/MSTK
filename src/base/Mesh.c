@@ -107,6 +107,20 @@ void MESH_Delete(Mesh_ptr mesh) {
 
 #endif
 
+  if (mesh->AttribList) {
+    i = 0;
+    while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
+      MAttrib_Delete(attrib);
+    List_Delete(mesh->AttribList);
+  }
+
+  if (mesh->MSetList) {
+    i = 0;
+    while ((mset = List_Next_Entry(mesh->MSetList,&i)))
+      MSet_Delete(mset);
+    List_Delete(mesh->MSetList);
+  }
+
   if (mesh->mregion) {
     nr = mesh->nr;
     i = 0;
@@ -200,20 +214,6 @@ void MESH_Delete(Mesh_ptr mesh) {
   }
 #endif
   
-  if (mesh->AttribList) {
-    i = 0;
-    while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
-      MAttrib_Delete(attrib);
-    List_Delete(mesh->AttribList);
-  }
-
-  if (mesh->MSetList) {
-    i = 0;
-    while ((mset = List_Next_Entry(mesh->MSetList,&i)))
-      MSet_Delete(mset);
-    List_Delete(mesh->MSetList);
-  }
-
   MSTK_free(mesh);
 }
 
@@ -307,8 +307,55 @@ void MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
 }
 
 void MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
-  if (mesh->AttribList)
+  if (mesh->AttribList) {
     List_Rem(mesh->AttribList,attrib);
+
+    int idx = 0;
+    MVertex_ptr mv;
+    while ((mv = MESH_Next_Vertex(mesh,&idx)))
+      MEnt_Rem_AttVal(mv,attrib);
+
+    idx = 0;
+    MEdge_ptr me;
+    while ((me = MESH_Next_Edge(mesh,&idx)))
+      MEnt_Rem_AttVal(me,attrib);
+
+    idx = 0;
+    MFace_ptr mf;
+    while ((mf = MESH_Next_Face(mesh,&idx)))
+      MEnt_Rem_AttVal(mf,attrib);
+
+    idx = 0;
+    MRegion_ptr mr;
+    while ((mr = MESH_Next_Region(mesh,&idx)))
+      MEnt_Rem_AttVal(mr,attrib);
+  }
+}
+
+
+void MESH_Clear_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
+
+  if (mesh->AttribList) {
+    int idx = 0;
+    MVertex_ptr mv;
+    while ((mv = MESH_Next_Vertex(mesh,&idx)))
+      MEnt_Clear_AttVal(mv,attrib);
+
+    idx = 0;
+    MEdge_ptr me;
+    while ((me = MESH_Next_Edge(mesh,&idx)))
+      MEnt_Clear_AttVal(me,attrib);
+
+    idx = 0;
+    MFace_ptr mf;
+    while ((mf = MESH_Next_Face(mesh,&idx)))
+      MEnt_Clear_AttVal(mf,attrib);
+
+    idx = 0;
+    MRegion_ptr mr;
+    while ((mr = MESH_Next_Region(mesh,&idx)))
+      MEnt_Clear_AttVal(mr,attrib);
+  }
 }
 
 
