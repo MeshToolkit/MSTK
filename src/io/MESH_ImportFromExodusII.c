@@ -188,7 +188,7 @@ extern "C" {
     if (rank == 0) 
       return (MESH_ReadExodusII_Serial(mesh,filename,0));
     else
-      return 0;
+      return 1;
   }
 
 #else /* Serial process */
