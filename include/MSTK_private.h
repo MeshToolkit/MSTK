@@ -41,6 +41,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
   void       MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
 
+  void       MESH_Clear_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
+
 
 /*
   void MV_Set_RepType(MVertex_ptr v, RepType rtype);
