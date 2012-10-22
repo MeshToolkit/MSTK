@@ -43,14 +43,13 @@ extern "C" {
   */
 
   /* nent - number of valid entries 
-     p - parameter to say how many space are allocated i.e. 2^p-1
+     p - parameter to say how many spaces are allocated i.e. 2^p-1
      nrem - number of removed entities
      rem1 - index of first removed entity 
   */
 
   void pvtList_Get_Pars(List_ptr l, int *nent, int *p, int *nrem, int *rem1){
 
-    *nent = (l->nentdat)>>5;    
     if (l->remdat) {
       *nrem = l->remdat[0];
       *rem1 = l->remdat[1];
@@ -59,6 +58,7 @@ extern "C" {
       *nrem = 0;
       *rem1 = -1;
     }
+    *nent = (l->nentdat)>>5;    
     *p = l->nentdat & 31;  /* 31 is 0000...00011111 i.e. 1 in first 5 spaces */
   }
 
@@ -130,9 +130,9 @@ extern "C" {
     ntot = nent+nrem;
 
     newl = (List_ptr) MSTK_malloc(sizeof(List));
-    newl->entry = (void **) MSTK_malloc(nalloc*sizeof(void *));
     newl->nentdat = 0;
     newl->remdat = NULL;
+    newl->entry = (void **) MSTK_malloc(nalloc*sizeof(void *));
 
     memcpy(newl->entry,oldl->entry,ntot*sizeof(void *));
     pvtList_Set_Pars(newl,nent,p,nrem,rem1);
@@ -248,12 +248,11 @@ extern "C" {
   void *List_Next_Entry(List_ptr l, int *index) {
     int ip=0, nent, nrem, p, rem1, ntot=0;
     
-    ip = *index;
 
     pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
-
     ntot = nent + nrem;
 
+    ip = *index;
     if (ip < 0 || ip >= ntot)
       return (void *) NULL;
 
