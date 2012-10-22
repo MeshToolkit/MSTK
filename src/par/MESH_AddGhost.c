@@ -430,7 +430,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
         if (!MEnt_IsMarked(lmr,mkrid)) {
           List_Add(ovregions,lmr);
-          MEnt_Mark(ovregions,mkrid);
+          MEnt_Mark(lmr,mkrid);
           MR_Set_PType(lmr,POVERLAP);
 
           rfaces = MR_Faces(lmr);
