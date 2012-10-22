@@ -199,19 +199,14 @@ extern "C" {
       list_attr[i] = (ncomp << 6) | (mtype << 3) | (att_type);
       strcpy(&list_attr_names[i*256],attname);
     }
-  }
 
   /* send attr */
   /* printf("%d attrs sent to torank %d\n",natt,torank); */
-  if(natt) {
     MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
     nreq++;
     MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
     nreq++;
-    MSTK_free(list_attr);
-    MSTK_free(list_attr_names);
   }
-
 
   /* Mesh entity sets */
 
@@ -226,17 +221,11 @@ extern "C" {
       list_mset[i] = mtype;
       strcpy(&list_mset_names[i*256],msetname);
     }
-  }
 
-
-  /* send sets */
-  if (nset) {
     MPI_Isend(list_mset,nset,MPI_INT,torank,torank,comm,&(request[nreq]));
     nreq++;
     MPI_Isend(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
     nreq++;
-    MSTK_free(list_mset);
-    MSTK_free(list_mset_names);
   }
 
   if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
@@ -246,6 +235,15 @@ extern "C" {
   MSTK_free(list_coor);
   MSTK_free(list_edge);
   MSTK_free(list_face);
+  if(natt) {
+    MSTK_free(list_attr);
+    MSTK_free(list_attr_names);
+  }
+  if (nset) {
+    MSTK_free(list_mset);
+    MSTK_free(list_mset_names);
+  }
+
   return 1;
 }
 
@@ -414,10 +412,7 @@ extern "C" {
     nreq++;
     MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
     nreq++;
-    MSTK_free(list_attr);
-    MSTK_free(list_attr_names);
   }
-
 
   /* Mesh entity sets */
 
@@ -437,10 +432,7 @@ extern "C" {
     nreq++;
     MPI_Isend(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
     nreq++;
-    MSTK_free(list_mset);
-    MSTK_free(list_mset_names);
   }
-
 
   if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
     MSTK_Report("MESH_Vol_SendMesh_FN","Trouble sending mesh",MSTK_FATAL);
@@ -449,6 +441,16 @@ extern "C" {
   MSTK_free(list_vertex);
   MSTK_free(list_region);
   MSTK_free(list_coor);
+  if (natt) {
+    MSTK_free(list_attr);
+    MSTK_free(list_attr_names);
+  }
+  if (nset) {
+    MSTK_free(list_mset);
+    MSTK_free(list_mset_names);
+  }
+
+
   return 1;
 }
 
