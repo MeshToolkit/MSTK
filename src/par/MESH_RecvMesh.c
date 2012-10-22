@@ -53,7 +53,7 @@ extern "C" {
 
     /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
     /* receive mesh_info */
-    MPI_Irecv(mesh_info,10,MPI_INT,fromrank,rank,comm,&request);
+    MPI_Irecv(mesh_info,7,MPI_INT,fromrank,rank,comm,&request);
     errcode = MPI_Wait(&request,&status);
     if (errcode != MPI_SUCCESS) {
       MPI_Error_string(errcode,errorstr,&len);
@@ -82,7 +82,7 @@ extern "C" {
 
   int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm) {
     int i, j, nevs, nevs_local, nfe, nfes, nfes_local, natt, nset, count, ncomp;
-    int nv, ne, nf, *fedirs;
+    int nv, ne, nf, nr, *fedirs;
     MVertex_ptr *verts, *fverts;
     MEdge_ptr me, *edges, *fedges;
     MFace_ptr mf;
@@ -108,12 +108,12 @@ extern "C" {
     nv = mesh_info[1];
     ne = mesh_info[2];
     nf = mesh_info[3];
-    nevs = mesh_info[4];
-    nfes = mesh_info[5];
-    natt = mesh_info[6];
-    nset = mesh_info[7];
-  
+    nr = mesh_info[4]; /* should be 0 */
+    natt = mesh_info[5];
+    nset = mesh_info[6];
+    
     MESH_SetRepType(mesh,rtype);
+
 
     /* allocate receive buffer */
     int *list_vertex = (int *) malloc(3*nv*sizeof(int));
@@ -137,6 +137,9 @@ extern "C" {
       sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
       MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
     }
+
+    
+
     verts = (MVertex_ptr *) malloc(nv*sizeof(MVertex_ptr));
     for(i = 0; i < nv; i++) {
       verts[i] = MV_New(mesh);
@@ -153,6 +156,15 @@ extern "C" {
 
 
     /* receive edge info */
+
+    MPI_Irecv(&nevs,1,MPI_INT,fromrank,rank,comm,&request);
+    errcode = MPI_Wait(&request,&status);
+    if (errcode != MPI_SUCCESS) {
+      MPI_Error_string(errcode,errorstr,&len);
+      sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
+      MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
+    }
+    
 
     int *list_edge = (int *) malloc(nevs*sizeof(int));
 
@@ -184,6 +196,15 @@ extern "C" {
 
 
     /* receive face info */
+
+    MPI_Irecv(&nfes,1,MPI_INT,fromrank,rank,comm,&request);
+    errcode = MPI_Wait(&request,&status);
+    if (errcode != MPI_SUCCESS) {
+      MPI_Error_string(errcode,errorstr,&len);
+      sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
+      MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
+    }
+    
 
     int *list_face = (int *) malloc(nfes*sizeof(int));
 
@@ -332,11 +353,8 @@ extern "C" {
     ne = mesh_info[2];
     nf = mesh_info[3];
     nr = mesh_info[4];    
-    nevs = mesh_info[5];
-    nfes = mesh_info[6];
-    nrfs = mesh_info[7];
-    natt = mesh_info[8];
-    nset = mesh_info[9];
+    natt = mesh_info[5];
+    nset = mesh_info[6];
     
     MESH_SetRepType(mesh,rtype);
 
@@ -380,6 +398,14 @@ extern "C" {
 
     /* receive edge info */
 
+    MPI_Irecv(&nevs,1,MPI_INT,fromrank,rank,comm,&request);
+    errcode = MPI_Wait(&request,&status);
+    if (errcode != MPI_SUCCESS) {
+      MPI_Error_string(errcode,errorstr,&len);
+      sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
+      MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
+    }
+
     int *list_edge = (int *) malloc(nevs*sizeof(int));
 
     MPI_Irecv(list_edge,nevs,MPI_INT,fromrank,rank,comm,&request);
@@ -389,7 +415,7 @@ extern "C" {
       sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
       MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
     }
-    /* MPI_Get_count(&status,MPI_INT,&count); */
+    MPI_Get_count(&status,MPI_INT,&count);
 
     edges = (MEdge_ptr *) malloc(ne*sizeof(MEdge_ptr));
 
@@ -410,6 +436,14 @@ extern "C" {
 
 
     /* receive face info */
+
+    MPI_Irecv(&nfes,1,MPI_INT,fromrank,rank,comm,&request);
+    errcode = MPI_Wait(&request,&status);
+    if (errcode != MPI_SUCCESS) {
+      MPI_Error_string(errcode,errorstr,&len);
+      sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
+      MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
+    }
 
     int *list_face = (int *) malloc(nfes*sizeof(int));
 
@@ -450,6 +484,14 @@ extern "C" {
 
 
     /* receive region info */
+
+    MPI_Irecv(&nrfs,1,MPI_INT,fromrank,rank,comm,&request);
+    errcode = MPI_Wait(&request,&status);
+    if (errcode != MPI_SUCCESS) {
+      MPI_Error_string(errcode,errorstr,&len);
+      sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
+      MSTK_Report("MESH_RecvMesh",mesg,MSTK_FATAL);
+    }
 
     int *list_region = (int *) malloc(nrfs*sizeof(int));
 

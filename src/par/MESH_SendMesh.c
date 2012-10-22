@@ -92,6 +92,15 @@ extern "C" {
   mesh_info[1] = nv;
   mesh_info[2] = ne;
   mesh_info[3] = nf;
+  mesh_info[4] = 0;
+  mesh_info[5] = natt = MESH_Num_Attribs(mesh);
+  mesh_info[6] = nset = MESH_Num_MSets(mesh);
+
+
+  /* Send some global mesh info */
+
+  MPI_Isend(mesh_info,7,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
 
   int *list_vertex = (int *)MSTK_malloc(3*nv*sizeof(int));
@@ -108,6 +117,13 @@ extern "C" {
     list_coor[i*3+1] = coor[1];
     list_coor[i*3+2] = coor[2];
   }
+
+  /* send vertices */
+  MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
 
 
   /* Reserve 5 spots for each edge, 2 for the vertices and 3 for extra
@@ -127,7 +143,15 @@ extern "C" {
     list_edge[nevs+4] = ME_GlobalID(me);
     nevs += 5;
   }
-  mesh_info[4] = nevs;
+
+  
+  /* send edges */
+  MPI_Isend(&nevs,1,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
+
 
 
   /* Reserve 1 spot for number of edges in each face, MAXPV2 spots for edges 
@@ -152,13 +176,14 @@ extern "C" {
     nfes += (nfe + 4);
     List_Delete(mfedges);
   }
-  mesh_info[5] = nfes;
 
+  /* send faces */
+  MPI_Isend(&nfes,1,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  
 
-
-  /* number of attr */
-  natt = MESH_Num_Attribs(mesh);
-  mesh_info[6] = natt;
 
   /* collect attrs */
   if(natt) {
@@ -176,11 +201,19 @@ extern "C" {
     }
   }
 
+  /* send attr */
+  /* printf("%d attrs sent to torank %d\n",natt,torank); */
+  if(natt) {
+    MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MSTK_free(list_attr);
+    MSTK_free(list_attr_names);
+  }
+
 
   /* Mesh entity sets */
-
-  nset = MESH_Num_MSets(mesh);
-  mesh_info[7] = nset;
 
   if (nset) {
     list_mset = (int *) MSTK_malloc(nset*sizeof(int));
@@ -195,35 +228,6 @@ extern "C" {
     }
   }
 
-  MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send vertices */
-  /* printf("%d vertices sent to torank %d\n",nv,torank); */
-  MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-  MPI_Isend(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send edges */
-  MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send faces */
-  /* printf("%d faces sent to torank %d\n",nf,torank); */
-  MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-  
-  /* send attr */
-  /* printf("%d attrs sent to torank %d\n",natt,torank); */
-  if(natt) {
-    MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
-    nreq++;
-    MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
-    nreq++;
-    MSTK_free(list_attr);
-    MSTK_free(list_attr_names);
-  }
 
   /* send sets */
   if (nset) {
@@ -280,6 +284,14 @@ extern "C" {
   mesh_info[2] = ne;
   mesh_info[3] = nf;
   mesh_info[4] = nr;
+  mesh_info[5] = natt = MESH_Num_Attribs(mesh);
+  mesh_info[6] = nset = MESH_Num_MSets(mesh);
+
+  /* send mesh_info */
+  MPI_Isend(mesh_info,7,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
+
   /* collect data */
   int *list_vertex = (int *)MSTK_malloc(3*nv*sizeof(int));
   double *list_coor = (double *)MSTK_malloc(3*nv*sizeof(double));
@@ -293,6 +305,14 @@ extern "C" {
     list_coor[i*3+1] = coor[1];
     list_coor[i*3+2] = coor[2];
   }
+
+  /* send vertices */
+  /* printf("%d vertices sent to torank %d\n",nv,torank); */
+  MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
 
 
  int *list_edge = (int *)MSTK_malloc(5*ne*sizeof(int));
@@ -308,7 +328,13 @@ extern "C" {
     list_edge[nevs+4] = ME_GlobalID(me);
     nevs += 5;
   }
-  mesh_info[5] = nevs;
+
+  /* send edges */
+  MPI_Isend(&nevs,1,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  
 
 
   int *list_face = (int *)MSTK_malloc((MAXPV2+4)*nf*sizeof(int));
@@ -330,8 +356,13 @@ extern "C" {
     nfes += (nfe + 4);
     List_Delete(mfedges);
   }
-  mesh_info[6] = nfes;
 
+
+  /* send faces */
+  MPI_Isend(&nfes,1,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
 
 
   int *list_region = (int *)MSTK_malloc((MAXPF3+4)*nr*sizeof(int));
@@ -353,11 +384,15 @@ extern "C" {
     nrfs += (nrf + 4);
     List_Delete(mrfaces);
   }
-  mesh_info[7] = nrfs;
 
-  /* number of attr */
-  natt = MESH_Num_Attribs(mesh);
-  mesh_info[8] = natt;
+  /* send regions */
+  MPI_Isend(&nrfs,1,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+  MPI_Isend(list_region,nrfs,MPI_INT,torank,torank,comm,&(request[nreq]));
+  nreq++;
+
+
+
 
   /* collect attrs */
   if(natt) {
@@ -372,13 +407,19 @@ extern "C" {
       list_attr[i] = (ncomp << 6) | (mtype << 3) | (att_type);
       strcpy(&list_attr_names[i*256],attname);
     }
+
+
+    /* send attr */
+    MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
+    nreq++;
+    MSTK_free(list_attr);
+    MSTK_free(list_attr_names);
   }
 
 
   /* Mesh entity sets */
-
-  nset = MESH_Num_MSets(mesh);
-  mesh_info[9] = nset;
 
   if (nset) {
     list_mset = (int *) MSTK_malloc(nset*sizeof(int));
@@ -391,48 +432,7 @@ extern "C" {
       list_mset[i] = mtype;
       strcpy(&list_mset_names[i*256],msetname);
     }
-  }
 
-
-
-  /* send mesh_info */
-  MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send vertices */
-  /* printf("%d vertices sent to torank %d\n",nv,torank); */
-  MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-  MPI_Isend(list_coor,3*nv,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send edges */
-  MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-  
-  /* send faces */
-  MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send regions */
-  /* printf("%d regions sent to torank %d\n",nr,torank); */
-  MPI_Isend(list_region,nrfs,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  /* send attr */
-  /* printf("%d attr sent to torank %d\n",natt,torank); */
-  if(natt) {
-    MPI_Isend(list_attr,natt,MPI_INT,torank,torank,comm,&(request[nreq]));
-    nreq++;
-    MPI_Isend(list_attr_names,natt*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
-    nreq++;
-    MSTK_free(list_attr);
-    MSTK_free(list_attr_names);
-  }
-
-
-  /* send sets */
-  if (nset) {
     MPI_Isend(list_mset,nset,MPI_INT,torank,torank,comm,&(request[nreq]));
     nreq++;
     MPI_Isend(list_mset_names,nset*256,MPI_CHAR,torank,torank,comm,&(request[nreq]));
