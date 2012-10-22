@@ -77,8 +77,8 @@ extern "C" {
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
   int nreq=0;
-  MPI_Request request[10];
-  MPI_Status status[10];
+  MPI_Request request[15];
+  MPI_Status status[15];
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
@@ -268,8 +268,8 @@ extern "C" {
   char *list_attr_names=NULL, *list_mset_names=NULL;
   double coor[3];
   int nreq=0;
-  MPI_Request request[10];
-  MPI_Status status[10];
+  MPI_Request request[15];
+  MPI_Status status[15];
 
   for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
