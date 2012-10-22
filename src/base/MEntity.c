@@ -368,11 +368,17 @@ extern "C" {
     MAttIns_ptr attins;
     List_ptr attinslist;
 
+
+#ifdef DEBUG
     attentdim = MAttrib_Get_EntDim(attrib);
     entdim = MEnt_Dim(ent);
 
-    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
-	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+    if (attentdim != entdim)
+      if (attentdim != MALLTYPE &&
+          ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
+        MSTK_Report("MEnt_Set_AttVal",
+                    "Attribute not suitable for this entity type",MSTK_ERROR);
+#endif
 
       attinslist = ent->entdat.AttInsList;
       if (!attinslist)
@@ -392,10 +398,7 @@ extern "C" {
       }
       
       MAttIns_Set_Value(attins, ival, lval, pval);
-    }
-    else
-      MSTK_Report("MEnt_Set_AttVal",
-		  "Attribute not suitable for this entity type",MSTK_ERROR);
+
   }
 
   /* Remove an attribute from entity */
@@ -405,12 +408,17 @@ extern "C" {
     MType attentdim, entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
-    
+
+#ifdef DEBUG    
     attentdim = MAttrib_Get_EntDim(attrib);
     entdim = MEnt_Dim(ent);
 
-    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
-	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+    if (attentdim != entdim)
+      if (attentdim != MALLTYPE &&
+          ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
+        MSTK_Report("MEnt_Rem_AttVal",
+                    "Attribute not suitable for this entity type",MSTK_ERROR);
+#endif
 
       attinslist = ent->entdat.AttInsList;
       if (!attinslist)
@@ -431,10 +439,7 @@ extern "C" {
       
       List_Remi(attinslist,i);
       MAttIns_Delete(attins);
-    }
-    else
-      return;
- 
+
   }
 
   void MEnt_Clear_AttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
@@ -443,11 +448,16 @@ extern "C" {
     MAttIns_ptr attins;
     List_ptr attinslist;
 
+#ifdef DEBUG
     attentdim = MAttrib_Get_EntDim(attrib);
     entdim = MEnt_Dim(ent);
 
-    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
-	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
+    if (attentdim != entdim)
+      if (attentdim != MALLTYPE &&
+          ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
+        MSTK_Report("MEnt_Clear_AttVal",
+                    "Attribute not suitable for this entity type",MSTK_ERROR);
+#endif
 
       attinslist = ent->entdat.AttInsList;
       if (!attinslist) return;
@@ -463,10 +473,7 @@ extern "C" {
       if (!found) return;
       
       MAttIns_Set_Value(attins, 0, 0.0, NULL);
-    }
-    else
-      MSTK_Report("MEnt_Clear_AttVal",
-		  "Attribute not suitable for this entity type",MSTK_ERROR);
+
   }
 
 
@@ -498,17 +505,21 @@ extern "C" {
     MType attentdim, entdim;
     MAttIns_ptr attins;
     List_ptr attinslist;
-    
+
+#ifdef DEBUG    
+    attentdim = MAttrib_Get_EntDim(attrib);
+    entdim = MEnt_Dim(ent);
+    if (attentdim != entdim)
+      if (attentdim != MALLTYPE &&
+          ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
+        MSTK_Report("MEnt_Clear_AttVal",
+                    "Attribute not suitable for this entity type",MSTK_ERROR);
+#endif
+
     if (ival) *ival = 0;
     if (lval) *lval = 0;
     if (pval) *pval = NULL;
     
-    attentdim = MAttrib_Get_EntDim(attrib);
-    entdim = MEnt_Dim(ent);
-
-    if ((attentdim == MALLTYPE) || (attentdim == entdim) || 
-	(entdim == MDELETED && attentdim == MEnt_OrigDim(ent))) {
-
       attinslist = ent->entdat.AttInsList;
       if (!attinslist)
 	return 0;
@@ -527,9 +538,6 @@ extern "C" {
       MAttIns_Get_Value(attins, ival, lval, pval);
 
       return 1;
-    }
-    else
-      return 0;
 
   }
 
