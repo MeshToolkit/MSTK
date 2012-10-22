@@ -174,7 +174,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
         
         if (!MEnt_IsMarked(lmf,mkfid)) {        
           List_Add(ovfaces,lmf);
-          MEnt_Mark(ovfaces,mkfid);
+          MEnt_Mark(lmf,mkfid);
           MF_Set_PType(lmf,POVERLAP);          
 
           fedges = MF_Edges(lmf,1,0);
