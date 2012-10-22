@@ -76,62 +76,62 @@ extern "C" {
     }
 
 
-    /* Remove the temporary Local2Global attributes */
+    /* Don't waste time removing these attributes */
+    /* */
+    /* /\* Remove these attributes from submeshes *\/ */
 
-    /* Remove these attributes from submeshes */
-
-    for (i = 0; i < num; i++) {
+    /* for (i = 0; i < num; i++) { */
       
-      l2gatt = MESH_AttribByName(submeshes[i],"Local2Global");
+    /*   l2gatt = MESH_AttribByName(submeshes[i],"Local2Global"); */
       
-      if (l2gatt) {
+    /*   if (l2gatt) { */
 	
-	idx = 0;
-	while ((mv = MESH_Next_Vertex(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(mv,l2gatt);
+    /*     idx = 0; */
+    /*     while ((mv = MESH_Next_Vertex(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(mv,l2gatt); */
 	
-	idx = 0;
-	while ((me = MESH_Next_Edge(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(me,l2gatt);
+    /*     idx = 0; */
+    /*     while ((me = MESH_Next_Edge(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(me,l2gatt); */
 	
-	idx = 0;
-	while ((mf = MESH_Next_Face(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(mf,l2gatt);
+    /*     idx = 0; */
+    /*     while ((mf = MESH_Next_Face(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(mf,l2gatt); */
 	
-	idx = 0;
-	while ((mr = MESH_Next_Region(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(mr,l2gatt);
+    /*     idx = 0; */
+    /*     while ((mr = MESH_Next_Region(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(mr,l2gatt); */
 	
-	MAttrib_Delete(l2gatt);
+    /*     MAttrib_Delete(l2gatt); */
 	
-      } /* if (l2gatt) */
+    /*   } /\* if (l2gatt) *\/ */
 
 
-      g2latt = MESH_AttribByName(submeshes[i],"Global2Local");
+    /*   g2latt = MESH_AttribByName(submeshes[i],"Global2Local"); */
       
-      if (g2latt) {
+    /*   if (g2latt) { */
 	
-	idx = 0;
-	while ((mv = MESH_Next_Vertex(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(mv,g2latt);
+    /*     idx = 0; */
+    /*     while ((mv = MESH_Next_Vertex(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(mv,g2latt); */
 	
-	idx = 0;
-	while ((me = MESH_Next_Edge(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(me,g2latt);
+    /*     idx = 0; */
+    /*     while ((me = MESH_Next_Edge(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(me,g2latt); */
 	
-	idx = 0;
-	while ((mf = MESH_Next_Face(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(mf,g2latt);
+    /*     idx = 0; */
+    /*     while ((mf = MESH_Next_Face(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(mf,g2latt); */
 	
-	idx = 0;
-	while ((mr = MESH_Next_Region(submeshes[i],&idx)))
-	  MEnt_Rem_AttVal(mr,g2latt);
+    /*     idx = 0; */
+    /*     while ((mr = MESH_Next_Region(submeshes[i],&idx))) */
+    /*       MEnt_Rem_AttVal(mr,g2latt); */
 	
-	MAttrib_Delete(g2latt);
+    /*     MAttrib_Delete(g2latt); */
 	
-      } /* if (g2latt) */
+    /*   } /\* if (g2latt) *\/ */
 
-    } /* for (i = 0; i < num; i++) */
+    /* } /\* for (i = 0; i < num; i++) *\/ */
 
 
     /*
