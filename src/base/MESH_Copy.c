@@ -266,7 +266,9 @@ extern "C" {
               MEnt_Set_AttVal(mv_copy,att_copy,ival,rval,vec);
             }
             else {
+#ifdef DEBUG
               MSTK_Report(funcname,"Does not make sense to copy POINTER attributes from one mesh to another",MSTK_WARN);
+#endif
             }
           }
         }
@@ -288,7 +290,9 @@ extern "C" {
               MEnt_Set_AttVal(me_copy,att_copy,ival,rval,vec);
             }
             else {
+#ifdef DEBUG
               MSTK_Report(funcname,"Does not make sense to copy POINTER attributes from one mesh to another",MSTK_WARN);
+#endif
             }
           }
         }
@@ -310,7 +314,9 @@ extern "C" {
               MEnt_Set_AttVal(mf_copy,att_copy,ival,rval,vec);
             }
             else {
+#ifdef DEBUG
               MSTK_Report(funcname,"Does not make sense to copy POINTER attributes from one mesh to another",MSTK_WARN);
+#endif
             }
           }
         }
@@ -332,7 +338,9 @@ extern "C" {
               MEnt_Set_AttVal(mr_copy,att_copy,ival,rval,vec);
             }
             else {
+#ifdef DEBUG
               MSTK_Report(funcname,"Does not make sense to copy POINTER attributes from one mesh to another",MSTK_WARN);
+#endif
             }
           }
         }
