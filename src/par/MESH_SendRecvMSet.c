@@ -48,6 +48,8 @@ extern "C" {
   nreq++;
 
   if (!nent) {
+    if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
+      MSTK_Report("MESH_SendMSet","Trouble sending mset info",MSTK_FATAL);
     MSTK_free(list_info);
     return 1;
   }
