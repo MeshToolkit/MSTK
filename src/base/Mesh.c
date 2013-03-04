@@ -1885,7 +1885,7 @@ void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
   }
   
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghedge,e,&(ME_ID));
+    fnd = List_RemSorted(mesh->ghedge,e,&(ME_GlobalID));
 
   if (!fnd)
     MSTK_Report("MESH_Rem_GhostEdge","Edge not found in list",MSTK_FATAL);
@@ -1916,7 +1916,7 @@ void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
   }
 
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghface,f,&(MF_ID));
+    fnd = List_RemSorted(mesh->ghface,f,&(MF_GlobalID));
 
   if (!fnd)
     MSTK_Report("MESH_Rem_Face","Face not found in list",MSTK_FATAL);
@@ -1946,7 +1946,7 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
   }
 
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghregion,r,&(MR_ID));
+    fnd = List_RemSorted(mesh->ghregion,r,&(MR_GlobalID));
 
   if (!fnd)
     MSTK_Report("MESH_Rem_GhostRegion","Region not found in list",MSTK_FATAL);

@@ -246,7 +246,7 @@ install(TARGETS ${MSTKLIB}
 
 # export cmake file other projects can use to find MSTK
 
-export(TARGETS ${MSTKLIB} FILE ${INSTALL_DIR}/mstk.cmake)
+#export(TARGETS ${MSTKLIB} FILE ${INSTALL_DIR}/mstk.cmake)
 message(STATUS "Building library " ${MSTKLIB})
 
 
@@ -264,7 +264,7 @@ INSTALL(FILES
         DESTINATION ${INSTALL_DIR}/include)
 endif ()
 
-# Don't know how to export the include files locations to mstk.cmake
+export(PACKAGE MSTK)
 
 #############################################################################
 # Unittests
