@@ -34,6 +34,12 @@ extern "C" {
 
     MPI_Barrier(comm);
 
+    int glob_paradj_status=0;
+    int loc_paradj_status = MESH_ParallelAdj_Current(mesh);
+    MPI_Allreduce(&loc_paradj_status,&glob_paradj_status,1,MPI_INT,MPI_MIN,comm);
+    if (glob_paradj_status == 0)
+      MESH_Update_ParallelAdj(mesh,comm);
+
     num_ghost = MESH_Num_GhostVertices(mesh);
     num_ov = MESH_Num_OverlapVertices(mesh);
 

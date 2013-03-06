@@ -13,9 +13,6 @@ extern "C" {
   /* 
      this function sends ov attributes and update ghost attributes
      
-     must call MESH_Update_ParallelAdj() first
-     called by every process
-     
      attr_name: the attribute name
 
      Author(s): Duo Wang, Rao Garimella
@@ -39,6 +36,11 @@ extern "C" {
     MPI_Comm_rank(comm,&myrank);
     MPI_Comm_size(comm,&numprocs);
 
+    int glob_paradj_status=0;
+    int loc_paradj_status = MESH_ParallelAdj_Current(mesh);
+    MPI_Allreduce(&loc_paradj_status,&glob_paradj_status,1,MPI_INT,MPI_MIN,comm);
+    if (glob_paradj_status == 0)
+      MESH_Update_ParallelAdj(mesh,comm);
 
     attrib = MESH_AttribByName(mesh,attr_name);
     /* if there is no such attribute */
