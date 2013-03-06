@@ -39,6 +39,7 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->ovedge = (List_ptr) NULL;
   newmesh->ovface = (List_ptr) NULL;
   newmesh->ovregion = (List_ptr) NULL;
+  newmesh->par_adj_current = 0;
   newmesh->par_adj_flags = NULL;
   newmesh->par_recv_info = NULL;
 
@@ -869,6 +870,16 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
 
   mesh->nv = List_Num_Entries(mesh->mvertex);
 
+#ifdef MSTK_HAVE_MPI
+  if (MV_PType(v) == POVERLAP) {
+    fnd = List_RemSorted(mesh->ovvertex,v,&(MV_GlobalID));
+    if (!fnd)
+      MSTK_Report("MESH_Rem_Vertex","Vertex not found in overlap list",MSTK_FATAL);
+    MESH_Mark_ParallelAdj_Stale(mesh);
+  }
+#endif
+
+
   return;
 }    
      
@@ -901,6 +912,15 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
     MSTK_Report("MESH_Rem_Edge","Edge not found in list",MSTK_FATAL);
 
   mesh->ne = List_Num_Entries(mesh->medge);
+
+#ifdef MSTK_HAVE_MPI
+  if (ME_PType(e) == POVERLAP) {
+    fnd = List_RemSorted(mesh->ovedge,e,&(ME_GlobalID));
+    if (!fnd)
+      MSTK_Report("MESH_Rem_Edge","Edge not found in overlap list",MSTK_FATAL);
+    MESH_Mark_ParallelAdj_Stale(mesh);
+  }
+#endif
 
   return;
 }    
@@ -935,6 +955,15 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
 
   mesh->nf = List_Num_Entries(mesh->mface);
 
+#ifdef MSTK_HAVE_MPI
+  if (MF_PType(f) == POVERLAP) {
+    fnd = List_RemSorted(mesh->ovface,f,&(MF_GlobalID));
+    if (!fnd)
+      MSTK_Report("MESH_Rem_Face","Face not found in overlap list",MSTK_FATAL);
+    MESH_Mark_ParallelAdj_Stale(mesh);
+  }
+#endif
+
   return;
 }    
      
@@ -966,6 +995,15 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
     MSTK_Report("MESH_Rem_Region","Region not found in list",MSTK_FATAL);
 
   mesh->nr = List_Num_Entries(mesh->mregion);
+
+#ifdef MSTK_HAVE_MPI
+  if (MR_PType(r) == POVERLAP) {
+    fnd = List_RemSorted(mesh->ovregion,r,&(MR_GlobalID));
+    if (!fnd)
+      MSTK_Report("MESH_Rem_Region","Region not found in overlap list",MSTK_FATAL);
+    MESH_Mark_ParallelAdj_Stale(mesh);
+  }
+#endif
 }    
 
 List_ptr   MESH_Vertex_List(Mesh_ptr mesh) {
@@ -1004,6 +1042,20 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   unsigned int MESH_Prtn(Mesh_ptr mesh) {
     return mesh->mypartn;
   }
+
+
+  int MESH_ParallelAdj_Current(Mesh_ptr mesh) {
+    return mesh->par_adj_current;
+  }
+
+  void MESH_Mark_ParallelAdj_Current(Mesh_ptr mesh) {
+    mesh->par_adj_current = 1;
+  }
+
+  void MESH_Mark_ParallelAdj_Stale(Mesh_ptr mesh) {
+    mesh->par_adj_current = 0;
+  }
+
 
   void MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
 
@@ -1740,11 +1792,13 @@ void MESH_Add_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
     (mesh->max_ghvid)++;
     MV_Set_ID(v,mesh->max_ghvid);
   }
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }
 void MESH_Add_OverlapVertex(Mesh_ptr mesh, MVertex_ptr v) {
   if (mesh->ovvertex == (List_ptr) NULL)
     mesh->ovvertex = List_New(10);
   mesh->ovvertex = List_Add(mesh->ovvertex, (void *) v);
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }
 
 void MESH_Add_GhostEdge(Mesh_ptr mesh, MEdge_ptr e){
@@ -1761,6 +1815,7 @@ void MESH_Add_GhostEdge(Mesh_ptr mesh, MEdge_ptr e){
     (mesh->max_gheid)++;
     ME_Set_ID(e,mesh->max_gheid);
   }
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
 void MESH_Add_OverlapEdge(Mesh_ptr mesh, MEdge_ptr e){
   /* Have to check if edges exist in this type of representation */
@@ -1771,6 +1826,7 @@ void MESH_Add_OverlapEdge(Mesh_ptr mesh, MEdge_ptr e){
     mesh->ovedge = List_New(10);
 
   mesh->ovedge = List_Add(mesh->ovedge, (void *) e);
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
      
 void MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f){
@@ -1794,6 +1850,7 @@ void MESH_Add_GhostFace(Mesh_ptr mesh, MFace_ptr f){
     (mesh->max_ghfid)++;
     MF_Set_ID(f,mesh->max_ghfid);
   }
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
 
 void MESH_Add_OverlapFace(Mesh_ptr mesh, MFace_ptr f){
@@ -1812,6 +1869,7 @@ void MESH_Add_OverlapFace(Mesh_ptr mesh, MFace_ptr f){
     mesh->ovface = List_New(10);
   
   mesh->ovface = List_Add(mesh->ovface, (void *) f);
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
      
 void MESH_Add_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
@@ -1824,11 +1882,13 @@ void MESH_Add_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
     (mesh->max_ghrid)++;
     MR_Set_ID(r,mesh->max_ghrid);
   }
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
 void MESH_Add_OverlapRegion(Mesh_ptr mesh, MRegion_ptr r){
   if (mesh->ovregion == (List_ptr) NULL)
     mesh->ovregion = List_New(10);
   mesh->ovregion = List_Add(mesh->ovregion, (void *) r);
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
      
 void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
@@ -1848,18 +1908,22 @@ void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
   id = MV_ID(v);
 
   i = id-1;
-  if (List_Entry_Raw(mesh->ghvertex,i) == v) {
-    List_Remi_Raw(mesh->ghvertex,i);
+  if (List_Entry_Raw(mesh->mvertex,i) == v) {
+    List_Remi_Raw(mesh->mvertex,i);
     fnd = 1;
   }
 
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghvertex,v,&(MV_GlobalID));
+    fnd = List_RemSorted(mesh->mvertex,v,&(MV_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in list",MSTK_FATAL);
+    MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in mesh vertex list",MSTK_FATAL);
 
-  return;
+  fnd = List_RemSorted(mesh->ghvertex,v,&(MV_GlobalID));
+  if (!fnd)
+    MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in ghost vertex list",MSTK_FATAL);
+
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
      
 void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
@@ -1879,18 +1943,22 @@ void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
   id = ME_ID(e);
 
   i = id-1;
-  if (List_Entry_Raw(mesh->ghedge,i) == e) {
-    List_Remi_Raw(mesh->ghedge,i);
+  if (List_Entry_Raw(mesh->medge,i) == e) {
+    List_Remi_Raw(mesh->medge,i);
     fnd = 1;
   }
   
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghedge,e,&(ME_GlobalID));
+    fnd = List_RemSorted(mesh->medge,e,&(ME_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_GhostEdge","Edge not found in list",MSTK_FATAL);
+    MSTK_Report("MESH_Rem_GhostEdge","Edge not found in mesh edge list",MSTK_FATAL);
 
-  return;
+  fnd = List_RemSorted(mesh->ghedge,e,&(ME_GlobalID));
+  if (!fnd)
+    MSTK_Report("MESH_Rem_GhostEdge","Edge not found in ghost edge list",MSTK_FATAL);
+
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
      
 void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
@@ -1910,18 +1978,22 @@ void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
   id = MF_ID(f);
 
   i = id-1;
-  if (List_Entry_Raw(mesh->ghface,i) == f) {
-    List_Remi_Raw(mesh->ghface,i);
+  if (List_Entry_Raw(mesh->mface,i) == f) {
+    List_Remi_Raw(mesh->mface,i);
     fnd = 1;
   }
 
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghface,f,&(MF_GlobalID));
+    fnd = List_RemSorted(mesh->mface,f,&(MF_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Face","Face not found in list",MSTK_FATAL);
+    MSTK_Report("MESH_Rem_Face","Face not found in mesh face list",MSTK_FATAL);
 
-  return;
+  fnd = List_RemSorted(mesh->ghface,f,&(MF_GlobalID));
+  if (!fnd)
+    MSTK_Report("MESH_Rem_Face","Face not found in ghost list",MSTK_FATAL);
+
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
      
 void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
@@ -1940,18 +2012,22 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
   id = MR_ID(r);
 
   i = id-1;
-  if (List_Entry_Raw(mesh->ghregion,i) == r) {
-    List_Remi_Raw(mesh->ghregion,i);
+  if (List_Entry_Raw(mesh->mregion,i) == r) {
+    List_Remi_Raw(mesh->mregion,i);
     fnd = 1;
   }
 
   if (!fnd)
-    fnd = List_RemSorted(mesh->ghregion,r,&(MR_GlobalID));
+    fnd = List_RemSorted(mesh->mregion,r,&(MR_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_GhostRegion","Region not found in list",MSTK_FATAL);
+    MSTK_Report("MESH_Rem_GhostRegion","Region not found in mesh region list",MSTK_FATAL);
 
-  return;
+  fnd = List_RemSorted(mesh->ghregion,r,&(MR_GlobalID));
+  if (!fnd)
+    MSTK_Report("MESH_Rem_GhostRegion","Region not found in ghost region list",MSTK_FATAL);
+
+  MESH_Mark_ParallelAdj_Stale(mesh);
 }    
 
 
