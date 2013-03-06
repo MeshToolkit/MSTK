@@ -323,8 +323,10 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* functions to update ghost info and attributes */
-  /* Must be preceded by MESH_Update_ProcessorRel - Not recommended for users */
   int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, MSTK_Comm comm);
+  int        MESH_ParallelAdj_Current(Mesh_ptr mesh);
+  void       MESH_Mark_ParallelAdj_Current(Mesh_ptr mesh);
+  void       MESH_Mark_ParallelAdj_Stale(Mesh_ptr mesh);
   int        MESH_Update_ParallelAdj(Mesh_ptr mesh, MSTK_Comm comm);
 
 
