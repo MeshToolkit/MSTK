@@ -22,12 +22,16 @@ int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm com
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&num);
 
-  printf("Begin checking parallel information on submesh %d\n",rank);
+#ifdef DEBUG
+  fprintf(stderr,"Begin checking parallel information on submesh %d\n",rank);
+#endif
   valid = MESH_Parallel_Check_Ghost(mesh,rank);
   if(valid)
     valid = MESH_Parallel_Check_GlobalID(mesh,rank,num,comm);
-  if (valid) printf("Passed parallel checking on submesh %d\n",rank);
-  else printf("Failed parallel checking on submesh %d\n",rank);
+#ifdef DEBUG
+  if (valid) fprintf(stderr,"Passed parallel checking on submesh %d\n",rank);
+  else printf(stderr,"Failed parallel checking on submesh %d\n",rank);
+#endif
 
   return valid;
 
