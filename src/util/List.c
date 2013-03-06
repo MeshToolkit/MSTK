@@ -775,7 +775,7 @@ extern "C" {
 	fnd = 1;
 	done = 1;
       }
-      else if (imax == imin) {
+      else if (imax-imin <= 1) {
 	done = 1;
       }
     }
