@@ -226,6 +226,8 @@ void MSTK_Init(void);
   /* Parallel update attribute values for ghost entities */
 
   int         MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm);
+  int         MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, 
+                              MSTK_Comm comm);
 
 
   /* Update vertex coordinates for ghost vertices */
@@ -247,7 +249,7 @@ void MSTK_Init(void);
   /* Doesn't actually partition the mesh or distribute it                    */
 
   int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, 
-                                   MPI_Comm);
+                                   MPI_Comm comm);
 
 
 #endif /* MSTK_HAVE_MPI */

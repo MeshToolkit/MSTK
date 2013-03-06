@@ -22,6 +22,7 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
     unsigned int mypartn, numpartns;
+    unsigned int par_adj_current;
     unsigned int *par_adj_flags;  /* See note below for explanation */
     unsigned int *par_recv_info;  /* of these two variables */
     List_ptr ghvertex, ghedge, ghface, ghregion;
@@ -91,6 +92,10 @@ extern "C" {
   void         MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, 
                              unsigned int numpartitions);
   unsigned int MESH_Prtn(Mesh_ptr mesh);
+
+  int          MESH_ParallelAdj_Current(Mesh_ptr mesh);
+  void         MESH_Mark_ParallelAdj_Current(Mesh_ptr mesh);
+  void         MESH_Mark_ParallelAdj_Stale(Mesh_ptr mesh);
 
   void         MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn,
                                               MType mtype);  
