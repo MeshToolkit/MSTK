@@ -61,11 +61,10 @@ typedef struct{
   int rank;
   MPI_Comm_rank(comm,&rank);
  
-  printf("zoltan on processor %d\n",rank);
   rc = Zoltan_Initialize(0, NULL, &ver);
 
   if (rc != ZOLTAN_OK){
-    printf("sorry...\n");
+    MSTK_Report("MESH_PartitionWithZoltan","Could not initialize Zoltan",MSTK_FATAL);
     MPI_Finalize();
     exit(0);
   }
@@ -88,7 +87,7 @@ typedef struct{
   
     if (nr == 0) {
       if (nf == 0) {
-	fprintf(stderr,"Cannot partition wire meshes with Zoltan\n");
+	MSTK_Report("MESH_PartitionWithZoltan","Cannot partition wire meshes with Zoltan",MSTK_FATAL);
 	exit(-1);
       
       }
@@ -116,7 +115,8 @@ typedef struct{
 	  nef = List_Num_Entries(efaces);
 	  
 	  if (nef > 2) {
-	    fprintf(stderr,"Non-manifold surface mesh. Exit!\n");
+	    MSTK_Report("MESH_PartitionWithZoltan",
+                        "Non-manifold surface mesh. Exit!",MSTK_FATAL);
 	    exit(-1);
 	  }
 	  else if (nef == 1) {
