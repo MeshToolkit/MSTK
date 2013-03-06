@@ -18,8 +18,7 @@ extern "C" {
      this routine can be called only once during initialization
 
      Author(s): Duo Wang, Rao Garimella
-  */
-
+  */  
 
   int MESH_Update_ParallelAdj(Mesh_ptr mesh, MSTK_Comm comm) {
   int i, idx, nv, ne, nf, nr, local_ov_num[4];
@@ -117,6 +116,8 @@ extern "C" {
   MSTK_free(local_par_adj);
   MSTK_free(global_par_adj);
   MSTK_free(prtnums);
+
+  MESH_Mark_ParallelAdj_Current(mesh);
 
  return 1;
 }
