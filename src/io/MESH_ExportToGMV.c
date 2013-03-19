@@ -75,11 +75,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   char modfilename[256];
 
+  int rank=0, numprocs=1;
 #ifdef MSTK_HAVE_MPI
-  int rank, numprocs;
-  MPI_Comm_size(comm,&numprocs);
-  MPI_Comm_rank(comm,&rank);
-
+  if (comm != NULL) {
+    MPI_Comm_size(comm,&numprocs);
+    MPI_Comm_rank(comm,&rank);
+  }
+  
   if (numprocs > 1) 
     sprintf(modfilename,"%s.%05d",filename,rank);
   else
