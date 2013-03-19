@@ -814,6 +814,7 @@ extern "C" {
 	MSTK_Report("MESH_InitFromFile",
 		    "Error in reading attribute data",MSTK_FATAL);
 
+      atttype = INT;
       if (strncmp(atttype_str,"INT",3) == 0)
 	atttype = INT;
       else if (strncmp(atttype_str,"DOUBLE",6) == 0)
@@ -852,6 +853,7 @@ extern "C" {
       else if (status == 0)
 	MSTK_Report("MESH_InitFromFile",
 		    "Error in reading attribute data",MSTK_FATAL);
+      attent = MALLTYPE;
       if (strncmp(attent_str,"MVERTEX",7) == 0) 
 	attent = MVERTEX;
       else if (strncmp(attent_str,"MEDGE",5) == 0)

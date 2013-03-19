@@ -239,7 +239,7 @@ extern "C" {
     int rank;
     MPI_Comm_rank(comm,&rank);
 
-    Mesh_ptr mesh;
+    Mesh_ptr mesh=NULL;
     if(rank == 0) {
       mesh = MESH_New(UNKNOWN_REP);
       ok = MESH_InitFromFile(mesh,global_mesh_name,comm);

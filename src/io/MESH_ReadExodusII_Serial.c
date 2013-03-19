@@ -41,7 +41,7 @@ extern "C" {
      220, we choose 22, 10, 220, 24 */
 
   unsigned int hash_ints(int n, unsigned int *nums) {
-    int i, k;
+    int i, k=0;
     unsigned int p1 = 3;
 
     unsigned int h = 0;

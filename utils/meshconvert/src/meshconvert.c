@@ -151,6 +151,7 @@ int main(int argc, char *argv[]) {
 
     int opts[5]={0,0,0,0,0};
 
+    ok = 0;
     switch(inmeshformat) {
     case GMV:
       fprintf(stderr,"Importing mesh from GMV file...");
@@ -231,7 +232,7 @@ int main(int argc, char *argv[]) {
 
     if (!prepartitioned) {
     
-      Mesh_ptr mesh0;
+      Mesh_ptr mesh0=NULL;
       if (rank == 0) {
         fprintf(stderr,"Partitioning mesh into %d parts...",numprocs);
         

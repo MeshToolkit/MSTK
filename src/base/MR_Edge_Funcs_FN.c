@@ -194,6 +194,7 @@ extern "C" {
 	botfdir = MR_FaceDir_i(r,iquad0);  /* Sense in which face is used in region */
 	redges = MF_Edges(quad0,!botfdir,0);
 
+        vapex = NULL;
 	fverts = MF_Vertices(tri0,1,0);
 	for (i = 0; i < 3; i++) {
 	  vert = List_Entry(fverts,i);

@@ -45,7 +45,7 @@ typedef struct{
   MFace_ptr mf, oppf, rface;
   MRegion_ptr mr, oppr;
   List_ptr fedges, efaces, rfaces, fregions;
-  int  i, ncells;
+  int  i, ncells=0;
   int  nv, ne, nf, nr, nfe, nef, nfr, nrf, idx, idx2;
   int  numflag, nedgecut, ipos;
   int  wtflag, metisopts[5] = {0,0,0,0,0};
