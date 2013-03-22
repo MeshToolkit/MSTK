@@ -1,3 +1,122 @@
+03/19/2013
+
+MSTK v 2.01 release candidate 2
+
+Minor fix to MESH_ExportToFile to not call MPI_Comm_* functions if MSTK_comm is NULL
+
+Some fixes of unitialized variable warnings
+
+03/06/2013
+
+MSTK v 2.01 release candidate 1
+
+Update Ghost and Overlap lists if necessary when an entity is removed from the mesh
+Added a parallel adjacency status flag to Mesh to indicate if the info of the
+number of entities to be received from other processors is current or not
+
+Set parallel adjacency status flag to stale when entities are removed from the mesh
+Set parallel adjacency status flag to current after calling MESH_Update_ParallelAdj
+Check Parallel Ajdacency flag before updating attributes and if it is stale, call MESH_Update_ParallelAdj
+11/26/2012
+
+MSTK v 2.0 stable
+
+MAJOR RELEASE: Note the version number change
+MSTK 2.0 is NOT backward compatible
+Bug fixes to MESH_SendRecvMSet that was causing failure with MPICH but not OpenMPI
+Minor fixes to suppress some warnings outside of debug mode
+10/22/2012
+
+MSTK v 2.0 release candidate 4
+
+MAJOR RELEASE: Note the version number change
+MSTK 2.0 is NOT backward compatible
+Bug fixes to rc4
+MSTK v 2.0 release candidate 3
+
+MAJOR RELEASE: Note the version number change
+MSTK 2.0 is NOT backward compatible
+Converted mesh send/receive to non-blocking calls
+Efficiency improved for large meshes distributed over a large number of processors
+10/02/2012
+
+MSTK v 2.0 release candidate 2
+
+MAJOR RELEASE: Note the version number change
+MSTK 2.0 is NOT backward compatible
+Improvements to importing of meshes from Exodus II files
+Ability to improve Nemesis I files (these are augmented Exodus II files for parallel applications)
+Efficiency improvements to parallel distribution
+Eliminated some major leaks
+09/07/2012
+
+MSTK v 2.0 release candidate 1
+
+MAJOR RELEASE: Note the version number change
+MSTK 2.0 is NOT backward compatible
+This version has parallel read capability built into Exodus II and FLAG X3D formats. Depending on the files on disk, the code will read in a serial file and automatically distribute it to the number of processors or read in parallel files and weave them together to make parallel connections
+Can also write parallel Exodus meshes
+meshconvert can now be used to read in a mesh in some format, partition the mesh and write it out in the same or another format - For example, this can be used to partition Exodus files (instead of nemspread)
+Zoltan can now be used as partitioner for MSTK meshes
+Arguments of functions like MESH_ImportFromExodusII have changed - some of these need to be supplied with the communicator.
+Some minor bug fixes
+07/26/2012
+
+MSTK v 1.86 release candidate 2
+
+Major change in the distribution of meshes to multiple processors Anyone reading and distributing Exodus II files with sidesets will see a huge performance improvement for large meshes
+Minor fixes to keep compilers happy
+07/16/2012
+
+MSTK v 1.86 release candidate 1
+
+New parallel functionality to weave distributed meshes
+Many related changes under the hood
+Developers see only the addition of the functions
+MESH_Weave_DistributedMeshes
+MESH_UpdVtxCoords
+07/16/2012
+
+MSTK v 1.85 final release
+
+Bug fix in MESH_ImportFromExodusII.c
+Bug fix in MESH_AddGhost.c
+New unit tests for parallel partitioning in 3D
+06/26/2012
+
+MSTK v 1.85 release candidate 4 released
+
+Bug fix to sidesets in Exodus II output
+
+06/21/2012
+
+MSTK v 1.85 release candidate 3 released.
+
+Global IDs of entities in meshes partitioned on processor 0 are now sequential and without holes
+Changed the standard numbering of regions' vertices for standard element types
+New Find modules for CMake
+New unit test for removing edge from mesh face and face from mesh region
+Number of bug fixes
+02/08/2012
+
+MSTK v 1.85 release candidate 2 released.
+
+Removes use of MPI_COMM_WORLD in PMSTK.c
+
+02/02/2012
+
+MSTK v 1.85 release candidate 1 released.
+
+This release contains an important fix for parallel mesh partitioning!! Other changes include fixes for memory leaks.
+
+12/06/2011
+
+MSTK v 1.84 released. Minor release to prefix internal symbols ERROR, WARN, MESG and FATAL with MSTK_ due to name conflict with another package
+
+11/21/2011
+
+MSTK v 1.83 released. Has improvements and bug fixes especially for the 2D parallel mesh distribution
+
 Changes v1.83rc3
 
 Revamped build system so that CMake uses Find*.cmake modules to find packages
