@@ -1,9 +1,7 @@
 
 ------------------------------------------------------------------------------
-A. BUILD AND INSTALL MSTK
+A.  -------- Install MSTK ----------
 ------------------------------------------------------------------------------
-
-PREFERRED METHOD:
 
 Starting from MSTK v1.8, we are including CMakeLists.txt files to allow
 users to build and install MSTK on a wide variety of platforms with various 
@@ -39,67 +37,43 @@ The following are the steps for build and installing MSTK using cmake
    right away. 'make VERBOSE=1' will display details about what compile 
    commands make is using.
 
-
-
-
-
-------------------------------------------------------------------------
-Building using standalone Makefile (NOT PREFERRED)
-------------------------------------------------------------------------
-
-1. Edit the Makefile to set the compiler and compiler flags (ONLY IF
-   NECESSARY). In general, on a Linux system you have to make little
-   or no change to the Makefile.
-
-2. Also edit the TOPDIR variable in the Makefile to reflect where the
-   mstk directories are located. For example, if the mstk directories 
-   are in the directory $HOME/develop/, then set TOPDIR to $HOME/develop.
-
-3. Edit the locations of the third-party libraries like METIS etc.
-
-4. Type 'make' to make the debug and optimized versions of the
-   libraries which are ./lib/$ARCHOS/libmstk-d.a and
-   ./lib/$ARCHOS/libmstk.a respectively. 
-
-	To include the mesh partitioning code MESH_Partition with
-	METIS, you have to type 'make PAR=1'
-
-5. Edit the 'install' file and modify the INSTALL_TOPDIR variable to
-   be where you want the header files and include files to be
-   installed. It could be $HOME or /usr/local. 
-
-   Then type './install N.n' (e.g., 'install 1.5')
-
-   The script will install the header files in
-   $INSTALL_TOPDIR/include/mstk-N.n. If you answer 'y' to the
-   question "Do you to make the installed version the default?", it
-   will make a symbolic link to it called
-   $INSTALL_TOPDIR/include/mstk
-
+6. 'make install' not only installs the library and the include files
+   but also a CMake configuration file called MSTKConfig.cmake. This
+   file contains many important CMake variables used in building MSTK
+   and can simplify the process of building an executable based on
+   MSTK. See section C for more detail.
 
 ------------------------------------------------------------------------
-B.      --------- Use MSTK for code development ----------------
+B.      --------- Learn MSTK  --------------
 ------------------------------------------------------------------------
 
 1. Read the manual !!!!! It is in .../mstk-N.n/docs/
 
-2. Include "MSTK.h" in any code that uses MSTK
 
-3. Edit the makefile to indicate the paths to MSTK libraries. 
-   If necessary, also indicate where the metis library paths are.
+------------------------------------------------------------------------
+B.      --------- Use MSTK for developing applications ----------------
+------------------------------------------------------------------------
 
-4. Include "-lmstk" on the link line for the optimized libs and 
-   "-lmstk-d" for the debug libs
+1. Include "MSTK.h" in any code that uses MSTK
+
+2. Link with the MSTK libraries and any third party libraries that 
+   were used to build MSTK.
+
+   To simplify the process of building an end application using MSTK,
+   a CMake configuration file called MSTKConfig.cmake is written out
+   when you 'make install' MSTK.
+
+   The directory config/application_cmake contains a CMakeLists.txt
+   file and a do-configure script to use as a "rough" template for
+   developing a CMake based build system for an application using MSTK
 
 
 
 NOTES:
 
-I have tested MSTK only on a Linux system with the gcc compiler. I do not 
-see why it should not work on other systems with a ANSI compliant 
-compiler. If it doesn't, please let me know. On other machines tar may
-not support the -z option. In this case, gunzip the file first and
-then issue a 'tar xvf file.tar' command.
+I have tested MSTK only on a Linux systems, on HPC Unix systems and on
+MacOS with GNU, PGI and Intel compilers. If it doesn't work on a
+particular system, please let me know. 
 
 Feel free to contact me if you need any assistance. Also, see the MSTK
 website https://software.lanl.gov/MeshTools/trac/
