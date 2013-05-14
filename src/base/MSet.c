@@ -45,6 +45,10 @@ extern "C" {
     return set_name;
   }
 
+  void MSet_Rename(MSet_ptr set, char *newname) {
+    strcpy(set->name,newname);
+  }
+
   MType MSet_EntDim(MSet_ptr set) {
     return set->entdim;
   }

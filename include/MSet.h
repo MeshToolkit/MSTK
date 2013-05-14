@@ -29,6 +29,7 @@ extern "C" {
   MType       MSet_EntDim(MSet_ptr set);
   void        MSet_Delete(MSet_ptr set);
 
+  void        MSet_Rename(MSet_ptr set, char *newname);
   MSet_ptr    MSet_Add(MSet_ptr set, void *entry);
   MSet_ptr    MSet_ChknAdd(MSet_ptr set, void *entry);
   MSet_ptr    MSet_Insert(MSet_ptr set, void *nuentry, void *b4entry);
