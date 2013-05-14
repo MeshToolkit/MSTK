@@ -115,7 +115,7 @@ else(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS)
     #  (2) ExodusII_DIR/<lib,Lib>
     #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
     #
-    set(exodus_lib_names "exoIIv2c" "exodus")
+    set(exodus_lib_names "exodus" "exoIIv2c")
     if (ExodusII_LIBRARY_DIR)
 
         if (EXISTS "${ExodusII_LIBRARY_DIR}")
