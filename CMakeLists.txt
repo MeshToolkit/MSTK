@@ -13,8 +13,8 @@ project (MSTK)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(MSTK_VERSION_MAJOR 1)
-set(MSTK_VERSION_MINOR 83)
+set(MSTK_VERSION_MAJOR 2)
+set(MSTK_VERSION_MINOR 02)
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
@@ -234,21 +234,21 @@ else ()
 endif ()
 
 add_library(${MSTKLIB} ${mstkfiles})
+message(STATUS "Building library " ${MSTKLIB})
 
 
 # where to install library
 
 install(TARGETS ${MSTKLIB}
+  EXPORT mstk
   ARCHIVE
   DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
   CONFIGURATIONS ${CMAKE_BUILD_TYPE}
   )
 
-# export cmake file other projects can use to find MSTK
+# export cmake file other projects can use to find MSTK and its dependencies
 
-#export(TARGETS ${MSTKLIB} FILE ${INSTALL_DIR}/mstk.cmake)
-message(STATUS "Building library " ${MSTKLIB})
-
+install(EXPORT mstk DESTINATION ${INSTALL_DIR}/lib/${ARCHOS})
 
 # where to install include files
 
@@ -264,7 +264,18 @@ INSTALL(FILES
         DESTINATION ${INSTALL_DIR}/include)
 endif ()
 
-export(PACKAGE MSTK)
+# What are all the TPLs that codes linking to MSTK have to link to
+
+set(MSTK_TPL_LIBRARIES ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} 
+  ${ExodusII_LIBRARIES})
+
+# Write a configuration file from template replacing only variables enclosed
+# by the @ sign
+
+configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in 
+               ${PROJECT_BINARY_DIR}/MSTKConfig.cmake @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
+        DESTINATION ${INSTALL_DIR}/share/cmake/)
 
 #############################################################################
 # Unittests
