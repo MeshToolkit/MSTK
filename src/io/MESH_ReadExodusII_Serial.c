@@ -993,9 +993,9 @@ extern "C" {
 	  offset += nnpe[j];
 	}
 	
-	MSTK_free(fverts);
-	MSTK_free(connect);
-	MSTK_free(nnpe);
+	free(fverts);
+	free(connect);
+	free(nnpe);
 
       }
       else if (strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
@@ -1066,6 +1066,7 @@ extern "C" {
 #endif
 
       free(face_hash);
+      free(face_hash_lens);
       nfalloc = 0;
 
     }
@@ -1274,6 +1275,7 @@ extern "C" {
   } /* ndim = 3 */
 
   free(elem_blk_ids);
+  for (i = 0; i < nelblock; i++) free(elem_blknames[i]);
   free(elem_blknames);
 
 
