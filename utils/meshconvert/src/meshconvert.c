@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
       break;
     case X3D:
       fprintf(stderr,"Exporting mesh to FLAG/X3D format...");
-      ok = MESH_ExportToFile(mesh,outfname,"flag",-1,NULL,NULL,comm);
+      ok = MESH_ExportToFile(mesh,outfname,"x3d",-1,NULL,NULL,comm);
       break;
     case STL:
       fprintf(stderr,"Exporting mesh to STL format...");
