@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
 
 
 #ifdef MSTK_HAVE_MPI
-  status = status | MESH_Parallel_Check(mesh,comm);
+  status = status && MESH_Parallel_Check(mesh,comm);
 #endif
 
   if (status) {
