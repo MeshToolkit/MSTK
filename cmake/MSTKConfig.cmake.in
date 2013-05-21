@@ -1,0 +1,82 @@
+#-----------------------------------------------------------------------------
+#
+# MSTK configuration file template
+#
+#-----------------------------------------------------------------------------
+
+set(MSTK_VERSION_MAJOR @MSTK_VERSION_MAJOR@ CACHE STRING "Major version of MSTK")
+set(MSTK_VERSION_MINOR @MSTK_VERSION_MINOR@ CACHE STRING "Minor version of MSTK")
+
+
+# Compiler Definitions
+set(CMAKE_C_COMPILER @CMAKE_C_COMPILER@ CACHE FILEPATH "C Compiler used for compiling MSTK")
+set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@ CACHE FILEPATH "CXX Compiler used for compiling MSTK")
+
+
+# Compiler Flags
+set(CMAKE_C_FLAGS "@CMAKE_C_FLAGS@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_C_FLAGS_DEBUG "@CMAKE_C_FLAGS_DEBUG@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_C_FLAGS_RELEASE "@CMAKE_C_FLAGS_RELEASE@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_C_FLAGS_MINSIZEREL "@CMAKE_C_FLAGS_MINSIZEREL@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "@CMAKE_C_FLAGS_RELWITHDEBINFO@" CACHE STRING "MSTK C compiler flags")
+
+set(CMAKE_CXX_FLAGS "@CMAKE_CXX_FLAGS@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@" CACHE STRING "MSTK C compiler flags")
+
+# MSTK Build info
+set(MSTK_BUILD_TYPE @CMAKE_BUILD_TYPE@ CACHE STRING "MSTK build type")
+
+# MSTK library 
+set(MSTK_LIBRARY_DIR @INSTALL_DIR@/lib/@ARCHOS@ CACHE PATH "MSTK library location")
+set(MSTK_LIBRARY_NAME @MSTKLIB@ CACHE STRING "MSTK library name")
+
+# MSTK includes
+set(MSTK_INCLUDE_DIR @INSTALL_DIR@/include CACHE PATH "MSTK include file locations")
+
+# MSTK options
+
+set(ENABLE_PARALLEL @ENABLE_PARALLEL@ CACHE BOOL "Enable parallel mesh management")
+
+if (ENABLE_PARALLEL)
+  set(ENABLE_METIS @ENABLE_METIS@ CACHE BOOL "Enable use of METIS as a partitioner")
+  set(METIS_DIR @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+  set(METIS_INCLUDE_DIRS @METIS_INCLUDE_DIRS@ CACHE PATH "Path to METIS include files")
+  set(METIS_LIBRARY_DIR @METIS_LIBRARY_DIR@ CACHE PATH "Path to METIS library")
+  set(METIS_LIBRARIES @METIS_LIBRARIES@ CACHE STRING "METIS library names")
+
+  set(ENABLE_ZOLTAN @ENABLE_ZOLTAN@ CACHE BOOL "Enable use of ZOLTAN as a partitioner")
+  set(ZOLTAN_DIR @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+  set(ZOLTAN_INCLUDE_DIRS @ZOLTAN_INCLUDE_DIRS@ CACHE PATH "Path to ZOLTAN include files")
+  set(ZOLTAN_LIBRARY_DIR @ZOLTAN_LIBRARY_DIR@ CACHE PATH "Path to ZOLTAN library")
+  set(ZOLTAN_LIBRARIES @ZOLTAN_LIBRARIES@ CACHE STRING "ZOLTAN library names")
+endif()
+
+set(ENABLE_ExodusII @ENABLE_ExodusII@ CACHE BOOL "Enable use of Exodus II libraries")
+
+if (ENABLE_ExodusII)
+  set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
+  set(ExodusII_INCLUDE_DIRS @ExodusII_INCLUDE_DIRS@ CACHE PATH "Path to ExodusII include files")
+  set(ExodusII_LIBRARY_DIR @ExodusII_LIBRARY_DIR@ CACHE PATH "Path to ExodusII library")
+  set(ExodusII_LIBRARIES @ExodusII_LIBRARIES@ CACHE STRING "ExodusII library names")
+
+  set(NetCDF_DIR @NetCDF_DIR@ CACHE STRING "Path to top level NetCDF installation dir")
+  set(NetCDF_INCLUDE_DIRS @NetCDF_INCLUDE_DIRS@ CACHE PATH "Path to NetCDF include files")
+  set(NetCDF_LIBRARY_DIR @NetCDF_LIBRARY_DIR@ CACHE PATH "Path to NetCDF library")
+  set(NetCDF_LIBRARIES @NetCDF_LIBRARIES@ CACHE STRING "NetCDF library names")
+
+  set(HDF5_DIR @HDF5_DIR@ CACHE STRING "Path to top level HDF5 installation dir")
+  set(HDF5_INCLUDE_DIRS @HDF5_INCLUDE_DIRS@ CACHE PATH "Path to HDF5 include files")
+  set(HDF5_LIBRARY_DIR @HDF5_LIBRARY_DIR@ CACHE PATH "Path to HDF5 library")
+  set(HDF5_LIBRARIES @HDF5_LIBRARIES@ CACHE STRING "HDF5 library names")
+endif()
+
+set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES@ CACHE STRING "All third party libraries MSTK is built with")
+
+
+
+
+
+
