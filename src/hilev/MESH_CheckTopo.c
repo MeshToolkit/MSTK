@@ -459,25 +459,82 @@ extern "C" {
       grid = MR_GEntID(mr);
 
       rfaces = MR_Faces(mr);
+      int nrf = List_Num_Entries(rfaces);
 
-      if (List_Num_Entries(rfaces) < 4) {
+      if (nrf < 4) {
         sprintf(mesg,"Region %-d has less than 4 faces",rid);
         MSTK_Report(funcname,mesg,MSTK_ERROR);
       }
 
+      /* Check that face to region and region to face links are consistent
+         with each other */
+      int *rfdirs = (int *) malloc(nrf*sizeof(int));
+
+      i = 0;
       idx2 = 0;
       while ((rf = List_Next_Entry(rfaces,&idx2))) {
-	int dir;
-
-	dir = MR_FaceDir(mr,rf);
-	if (mr != MF_Region(rf,!dir)) {
+	rfdirs[i] = MR_FaceDir_i(mr,i);
+	if (mr != MF_Region(rf,!rfdirs[i])) {
 	  sprintf(mesg,"Region %-d to face %-d dir inconsistent with \n face to region dir",rid,MF_ID(rf));
 	  MSTK_Report(funcname,mesg,MSTK_ERROR);
 	  valid = 0;
 	}
+
+        i++;
+      }
+
+
+      /* Check that faces of a region have consistent orientation in
+         the region with respect to each other */
+      
+      for (i = 0; i < nrf; i++) {
+        MFace_ptr rf, rf2;
+
+        rf = List_Entry(rfaces,i);
+
+        fedges = MF_Edges(rf,1,0);
+        nfe = List_Num_Entries(fedges);
+        
+        for (j = 0; j < nfe && !found; j++) {
+          fe = List_Entry(fedges,j);
+          int fedir = MF_EdgeDir_i(rf,j);
+          
+          /* Find adjacent face in the region */
+          found = 0;
+          for (k = 0; k < nrf; k++) {
+            rf2 = List_Entry(rfaces,k);
+            if (rf != rf2 && MF_UsesEntity(rf2,fe,MEDGE)) {
+              found = 1;
+              break;
+            }
+            else
+              k++;
+          }
+
+          if (!found) {
+            sprintf(mesg,"Cannot find another face in region %-d sharing edge %-d (ID = %-d) of face with ID = %-d",MR_ID(mr),j,ME_ID(fe),MF_ID(rf));
+            MSTK_Report(funcname,mesg,MSTK_ERROR);
+            valid = 0;
+          }
+          
+          int fedir_adj = MF_EdgeDir(rf2,fe);
+          
+          /* If the two faces use the edge in opposite directions then
+             the region should use the faces in the same direction and
+             vice versa */
+
+          if (((fedir_adj == fedir) && (rfdirs[i] == rfdirs[k])) ||
+              ((fedir_adj != fedir) && (rfdirs[i] != rfdirs[k]))) {
+            sprintf(mesg,"Region %-d faces are inconsistently oriented",MR_ID(mr));
+            MSTK_Report(funcname,mesg,MSTK_ERROR);
+            valid = 0;
+          }
+        }
+        List_Delete(fedges);
+           
       }
       List_Delete(rfaces);
-
+      free(rfdirs);
     }
 
     return valid;
