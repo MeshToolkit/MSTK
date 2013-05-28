@@ -64,10 +64,20 @@ double Tet_Volume(double (*rxyz)[3]) {
    The assumption is that each face is described such that its normal
    points into the polyhedron.
 
-*/
+   General polyhedra are evaluated by evaluating tets of a symmetric
+   subdivision of the polyhedron. Each tet in the subdivision is
+   formed by the two end points of a polyhedron edge, a "center" point
+   of a polyhedron face and a "center" point in the polyhedron.  If
+   one of these tets is bad (zero or -ve volume), the element is
+   considered to not be star shaped (even if the sum of tetrahedral
+   volumes is positive). The bad_tet_info array contains the two edge
+   points, the face point and the region point for each bad tet.
+ */
 
-double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
-		 int nf, int *star_shaped) {
+double PR_Volume_debug(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
+                       int nf, int *star_shaped, int *nbad, 
+                       double (*bad_tet_coords)[4][3],
+                       int (*bad_tet_info)[4]) {
 
   int i, j, k, ind, inverted = 0;
   int feverts[2], (*everts)[2];
@@ -75,6 +85,7 @@ double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv,
   double fcen[3], rcen[3], txyz[4][3];
 
   *star_shaped = 1;
+  *nbad = 0;
 
 #ifdef DEBUG
   if (n < 4)
@@ -128,6 +139,13 @@ double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv,
 	if (tvol < 0.0) {
 	  *star_shaped = 0;
 	  inverted = 1;
+          int kk;
+          for (kk = 0; kk < 4; kk++)
+            VCopy3(bad_tet_coords[*nbad][kk],txyz[kk]);
+          bad_tet_info[*nbad][0] = rfverts[i][j];
+          bad_tet_info[*nbad][1] = rfverts[i][(j+1)%nfv[i]];
+          bad_tet_info[*nbad][2] = i;
+          (*nbad)++;
 	}
       }
 

@@ -8,8 +8,9 @@
 #endif
 
 double Tet_Volume(double (*rxyz)[3]);
-double PR_Volume(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
-		 int nf, int *star_shaped);
+double PR_Volume_debug(double (*rxyz)[3], int n, int **rfverts, int *nfv, 
+                       int nf, int *star_shaped, int *nbad,
+                       double (*bad_tet_coords)[4][3], int (*bad_tet_info)[4]);
 
 
 int main(int argc, char **argv) {
@@ -19,6 +20,8 @@ int main(int argc, char **argv) {
   int first=1, star_shaped;
   double vol, rxyz[MAXPV3][3];
   double rcen[3], fcen[3], fxyz[MAXPV2][3], txyz[4][3], tvol;
+  double (*bad_tet_coords)[4][3];
+  int (*bad_tet_info)[4];
   int k;
   char infname[256], gmvfname[256], mname[256];
   Mesh_ptr mesh;
@@ -128,11 +131,14 @@ int main(int argc, char **argv) {
       }
     }
     else {
+      int nbadtet=0;
 
       if (first) {
 	rfverts = (int **) malloc(MAXPF3*sizeof(int *));
 	for (i = 0; i < MAXPF3; i++)
 	  rfverts[i] = (int *) malloc(MAXPV2*sizeof(int));
+        bad_tet_coords = (double (*)[4][3]) malloc(MAXPV3*sizeof(double [4][3]));
+        bad_tet_info = (int (*)[4]) malloc(MAXPV3*sizeof(double [4]));
       }
 
       rfaces = MR_Faces(mr);
@@ -152,11 +158,10 @@ int main(int argc, char **argv) {
 
 	List_Delete(fverts);
       }
-      List_Delete(rfaces);
+           
       
-
-      
-      vol = PR_Volume(rxyz, nrv, rfverts, nfv, nrf, &star_shaped);
+      vol = PR_Volume_debug(rxyz, nrv, rfverts, nfv, nrf, &star_shaped, 
+                            &nbadtet, bad_tet_coords, bad_tet_info);
 
       if (vol <= 0.0) {
 	if (firstwarn1) {
@@ -176,13 +181,53 @@ int main(int argc, char **argv) {
 	  fprintf(stderr,"\n\nElement is valid but is not star shaped - ID %d\n",rid);
 	  fprintf(stderr,"Volume = %lf\n",vol);
 
-	  fprintf(stderr,"Invalid tet in decomposition of polyhedral element.\n");
+	  fprintf(stderr," %-d invalid tet(s) in decomposition of polyhedral element.\n", nbadtet);
 	  fprintf(stderr,"Perhaps a polyhedral face is severely distorted?\n");
 	  MR_Print(mr,3);
-	  fprintf(stderr,"\n\n\n Select/Color elements by cell field \"valatt\" in %s to see all bad elements\n\n\n",gmvfname);
+
+          /* Let us also try to print which tet in the subdivision of the element is invalid */
+          int k;
+          for (k = 0; k < nbadtet; k++) {
+            MVertex_ptr v0 = List_Entry(rverts,bad_tet_info[k][0]);
+            MVertex_ptr v1 = List_Entry(rverts,bad_tet_info[k][1]);
+            MFace_ptr f = List_Entry(rfaces,bad_tet_info[k][2]);
+            
+            fprintf(stderr,"Invalid tet formed by vertices %-d, %-d, center of face %-d and center of region\n",
+                    MV_ID(v0), MV_ID(v1), MF_ID(f));
+
+            fprintf(stderr,"Face vertices:  ");
+            fverts = MF_Vertices(f,1,0);
+            int kk;
+            for (kk = 0; kk < List_Num_Entries(fverts); kk++)
+              fprintf(stderr,"%-d  ",MV_ID(List_Entry(fverts,kk)));
+            List_Delete(fverts);
+            fprintf(stderr,"\n");
+
+            fprintf(stderr,"Tet coordinates: \n");
+            fprintf(stderr,"%20.12lf %20.12lf %20.12lf\n",
+                    bad_tet_coords[k][0][0],bad_tet_coords[k][0][1],
+                    bad_tet_coords[k][0][2]);
+            fprintf(stderr,"%20.12lf %20.12lf %20.12lf\n",
+                    bad_tet_coords[k][1][0],bad_tet_coords[k][1][1],
+                    bad_tet_coords[k][1][2]);
+            fprintf(stderr,"%20.12lf %20.12lf %20.12lf\n",
+                    bad_tet_coords[k][2][0],bad_tet_coords[k][2][1],
+                    bad_tet_coords[k][2][2]);
+            fprintf(stderr,"%20.12lf %20.12lf %20.12lf\n",
+                    bad_tet_coords[k][3][0],bad_tet_coords[k][3][1],
+                    bad_tet_coords[k][3][2]);
+
+            fprintf(stderr,"\n\n\n");
+          }
+          
+	  fprintf(stderr,
+                  "\n\n\n Select/Color elements by cell field \"valatt\" in %s to see all bad elements\n\n\n",
+                  gmvfname);
+
 	  firstwarn2 = 0;
 	  status = 0;
 	}
+        List_Delete(rfaces);
 
 	nbad++;
 	MEnt_Set_AttVal(mr,valatt,1,0.0,NULL);
