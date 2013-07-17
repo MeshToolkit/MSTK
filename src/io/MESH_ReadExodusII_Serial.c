@@ -5,6 +5,7 @@
 
 #include "MSTK.h"
 #include "MSTK_private.h"
+#include "MSTK_VecFuncs.h"
 
 #include "exodusII.h"
 #ifdef EXODUSII_4
@@ -69,7 +70,8 @@ extern "C" {
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank) {
 
   char mesg[256], funcname[32]="MESH_ImportFromExodusII";
-  char title[256], elem_type[256], sidesetname[256], nodesetname[256];
+  char title[256], sidesetname[256], nodesetname[256];
+  char elem_type[256], face_type[256];
   char matsetname[256];
   char **elem_blknames;
   int i, j, k, k1;
@@ -278,7 +280,7 @@ extern "C" {
   }
     for (i = 0; i < nface_blk; i++) {
 
-      status = ex_get_block(exoid, EX_FACE_BLOCK, face_blk_ids[i], "nsided",
+      status = ex_get_block(exoid, EX_FACE_BLOCK, face_blk_ids[i], face_type,
 			    &nfblock, &ntotnodes, NULL, NULL, NULL);
 
       if (status < 0) {
@@ -718,7 +720,7 @@ extern "C" {
       
 	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
 	
-	status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
+	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
 	if (status < 0) {
 	  sprintf(mesg,
@@ -738,11 +740,75 @@ extern "C" {
 	for (j = 0; j < nelem_i; j++) {
 	  mr = MR_New(mesh);
 
+          int nrv = 0;
+          double rcen[3], fcen[MAXPF3][3], fnormal[MAXPF3][3], fxyz[MAXPV2][3];
+          rcen[0] = rcen[1] = rcen[2] = 0.0;
+
+          int mkid = MSTK_GetMarker();
+
+          List_ptr rvlist = List_New(0);
 	  for (k = 0; k < nnpe[j]; k++) {
+
+            /* Face of region */
 	    rfarr[k] = MSet_Entry(faceset,connect[offset+k]-1);
-	    rfdirs[k] = 1;   /* THIS IS WRONG - EXODUS HAS TO GIVE US THIS INFO */
+            
+            /* Exodus II doesn't tell us the direction in which face
+               is used by region. Compute face center, face normal and
+               region center in preparation for computing this
+               geometrically */
+
+            List_ptr rfverts = MF_Vertices(rfarr[k],1,0);
+            int nrfv = List_Num_Entries(rfverts);
+
+            fcen[k][0] = fcen[k][1] = fcen[k][2] = 0.0;
+            fnormal[k][0] = fnormal[k][1] = fnormal[k][2] = 0.0;
+
+            int k1, k2;
+            for (k1 = 0; k1 < nrfv; k1++) {
+              MVertex_ptr v = List_Entry(rfverts,k1);
+              MV_Coords(v,fxyz[k1]);
+
+              for (k2 = 0; k2 < 3; k2++) fcen[k][k2] += fxyz[k1][k2];
+
+              if (!MEnt_IsMarked(v,mkid)) {
+                List_Add(rvlist,v);
+                MEnt_Mark(v,mkid);
+                for (k2 = 0; k2 < 3; k2++) rcen[k2] += fxyz[k1][k2];
+                nrv++;
+              }
+            }
+
+            /* geometric center of face */
+            for (k2 = 0; k2 < 3; k2++) fcen[k][k2] /= nrfv;
+
+            /* Average normal of face */
+            for (k1 = 0; k1 < nrfv; k1++) {
+              double vec1[3], vec2[3], normal[3];
+              MSTK_VDiff3(fxyz[(k1+1)%nrfv],fxyz[k1],vec1);
+              MSTK_VDiff3(fxyz[(k1+nrfv-1)%nrfv],fxyz[k1],vec2);
+              MSTK_VCross3(vec1,vec2,normal);
+              MSTK_VNormalize3(normal);
+              MSTK_VSum3(fnormal[k],normal,fnormal[k]);
+            }
 	  }
-	  
+
+          for (k = 0; k < 3; k++) rcen[k] /= nrv;
+
+          List_Unmark(rvlist,mkid);
+          MSTK_FreeMarker(mkid);
+          List_Delete(rvlist);
+
+
+          /* Exodus II has no support for specifying face dirs. We
+             have to figure it out ourselves using geometric checks */
+
+          for (k = 0; k < nnpe[j]; k++) {
+            double outvec[3], dp;
+            MSTK_VDiff3(fcen[k],rcen,outvec);
+            dp = MSTK_VDot3(outvec,fnormal[k]);
+            rfdirs[k] = (dp > 0) ? 1 : 0;
+          }
+
 	  MR_Set_Faces(mr, nnpe[j], rfarr, rfdirs);
 
 	  MR_Set_GEntID(mr, elem_blk_ids[i]);	  
@@ -1044,6 +1110,7 @@ extern "C" {
       
       
     } /* for (i = 0; i < nelblock; i++) */
+
     
 
     /* Deallocate the face hash table */
@@ -1059,16 +1126,44 @@ extern "C" {
           if (len > maxlen) maxlen = len;
           totlen += len;
         }
-      avelen = totlen/num;
-      fprintf(stderr,"There are %d non-zero entries in the hash_table\n",num);
-      fprintf(stderr,"Maximum list length is %d and average list length is %d\n",maxlen,avelen); 
-      fprintf(stderr,"Number of times face_has array was realloc'ed = %d\n",nrealloc);
+      if (num) {
+        avelen = totlen/num;      
+        fprintf(stderr,"There are %d non-zero entries in the hash_table\n",num);
+        fprintf(stderr,"Maximum list length is %d and average list length is %d\n",maxlen,avelen); 
+        fprintf(stderr,"Number of times face_has array was realloc'ed = %d\n",nrealloc);
+      }
 #endif
 
       free(face_hash);
       free(face_hash_lens);
       nfalloc = 0;
 
+    }
+
+
+    /* Some interior faces may have been labeled as boundary faces */
+    /* Check to see if the face has two regions classified on the same
+       geometric model region and if so reclassify it */
+
+    int idx = 0;
+    while ((mf = MESH_Next_Face(mesh,&idx))) {
+      List_ptr fregs = MF_Regions(mf);
+      if (fregs) {
+        if (List_Num_Entries(fregs) == 2 && MF_GEntDim(mf) == 2) {
+          MRegion_ptr reg0, reg1;
+          int greg0, greg1;
+          reg0 = List_Entry(fregs,0);
+          reg1 = List_Entry(fregs,1);
+          greg0 = MR_GEntID(reg0);
+          greg1 = MR_GEntID(reg1);
+
+          if (greg0 == greg1) {
+            MF_Set_GEntDim(mf,3);
+            MF_Set_GEntID(mf,greg0);
+          }
+        }
+        List_Delete(fregs);
+      }
     }
     
     
