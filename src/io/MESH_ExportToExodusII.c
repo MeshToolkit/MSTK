@@ -15,7 +15,8 @@ extern "C" {
   void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_blocks,\
 				   List_ptr **element_blocks, 
 				   int **element_block_ids, 
-				   char ***element_block_types);
+				   char ***element_block_types,
+                                   MAttrib_ptr block_type_att);
 
   /* this function collects side set information                                  */
   int MESH_Num_Face_Set(List_ptr esides, int *side_set_id, int enable_set);
@@ -320,8 +321,19 @@ extern "C" {
 	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
     }
 
+    /* Even though there is a native element type for every mesh
+       region or face we have to consider what the element type is
+       considered as for Exodus II output. For example, a HEX element
+       in a mixed mesh will be written as a NFACED (polyhedral)
+       element */
+
+    MAttrib_ptr block_type_att = 
+      MAttrib_New(mesh,"block_type",INT,MALLTYPE); 
+
     MESH_Get_Element_Block_Info(mesh, &num_element_block, &element_blocks,
-                                &element_block_ids, &element_block_types);
+                                &element_block_ids, &element_block_types, 
+                                block_type_att);
+
 
 
     int num_element_block_glob;
@@ -467,11 +479,6 @@ extern "C" {
       offset += nelem;
     }
     
-
-
-    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
-
-    MESH_Get_Node_Set_Info(mesh, &num_node_set, &node_sets, &node_set_ids);
 
     /* COLLECT FACE BLOCK FOR POLYHEDRAL MESHES */
 
@@ -1159,12 +1166,32 @@ extern "C" {
             MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 
 	  
-          int lid = MF_LocalID_in_Region(mf,mr);
-          MRType mrtype = MR_ElementType(mr);
-          if (mrtype == TET || mrtype == PRISM || mrtype == HEX)
+          /* Rather than look at the real element type of the region,
+             we need to see what it will be classified as in the
+             Exodus II file */
+
+          MRType mrtype;
+
+          MEnt_Get_AttVal(mr,block_type_att,&mrtype,NULL,NULL);
+
+          int lid;
+          if (mrtype == TET || mrtype == PRISM || mrtype == HEX) {
+            lid = MF_LocalID_in_Region(mf,mr);
             side_list[j] = mstk2exo_facemap[mrtype][lid];
-          else
+          }
+          else { 
+            List_ptr rfaces = MR_Faces(mr);
+            int k, nrf = List_Num_Entries(rfaces);
+            for (k = 0, lid = -1; k < nrf && lid < 0; k++)
+              if (List_Entry(rfaces,k) == mf) lid = k;
+            List_Delete(rfaces);
+            if (lid == -1)
+              MSTK_Report("MESH_ExportToExodusII",
+              "Messed up mesh. Face not found in region connected to face",
+                          MSTK_FATAL);
+              
             side_list[j] = lid+1;
+          }
 
 	  List_Delete(fregs);
 	  j++;
@@ -1366,7 +1393,8 @@ extern "C" {
   void MESH_Get_Element_Block_Info(Mesh_ptr mesh, int *num_element_block, 
                                    List_ptr **element_blocks, 
                                    int **element_block_ids, 
-                                   char ***element_block_types) {
+                                   char ***element_block_types,
+                                   MAttrib_ptr block_type_att) {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
@@ -1405,7 +1433,7 @@ extern "C" {
 	found = 0; 
 	i = 0;
 	while (!found && i < nb) {
-	  if (bid == (*element_block_ids)[i]) {
+	  if (bid == (*element_block_ids)[i]) {           
 	    found = 1;
 	    List_Add((*element_blocks)[i],mr);    
 	    break;
@@ -1435,6 +1463,8 @@ extern "C" {
             strcpy((*element_block_types)[nb],"HEX");
           else
             strcpy((*element_block_types)[nb],"NFACED");
+
+          MEnt_Set_AttVal(mr,block_type_att,mrtype,0.0,NULL);
 
 	  List_Add((*element_blocks)[nb],mr);
 	  nb++;
@@ -1483,14 +1513,21 @@ extern "C" {
 	  (*element_block_ids)[nb] = bid;
 	  (*element_blocks)[nb] = List_New(10);
 	  (*element_block_types)[nb] = (char *) malloc(16*sizeof(char));
-	  if (nfv > 4)
+	  if (nfv > 4) {
 	    strcpy((*element_block_types)[nb],"NSIDED");
+            MEnt_Set_AttVal(mf,block_type_att,POLYGON,0.0,NULL);
+          }
 	  else {
-	    if (nfv == 4)
+	    if (nfv == 4) {
 	      strcpy((*element_block_types)[nb],"QUAD");
-	    else if (nfv == 3)
+              MEnt_Set_AttVal(mf,block_type_att,QUAD,0.0,NULL);
+            }
+	    else if (nfv == 3) {
 	      strcpy((*element_block_types)[nb],"TRIANGLE");
+              MEnt_Set_AttVal(mf,block_type_att,TRI,0.0,NULL);
+            }
 	  }
+
 	  List_Add((*element_blocks)[nb],mf);
 	  nb++;
 	}
@@ -1498,7 +1535,71 @@ extern "C" {
     }
 
     *num_element_block = nb;
-  }	
+
+    /* Post process so that if the same element block has different
+       types of elements, the block type will be labeled as NSIDED or
+       NFACED */
+
+    if (MESH_Num_Regions(mesh)) {
+      for (i = 0; i < nb; i++) {
+        MRType mrtype0, mrtype;
+        MRegion_ptr mr;
+        
+        mr = List_Entry((*element_blocks)[i],0);
+        mrtype0 = MR_ElementType(mr);
+        
+        int found = 0, idx = 0;
+        while (!found && ((mr = List_Next_Entry((*element_blocks)[i],&idx)))) {
+          if (MR_ElementType(mr) != mrtype0)
+            found = 1;
+        }
+        
+        if (found) { 
+          /* found different element types in element block */
+          /* label it as a block containing polyhedra       */
+          
+          strcpy((*element_block_types)[i],"NFACED");
+
+          /* Attach attribute to each of its elements indicating that
+             the element type according to Exodus II will be NSIDED */
+
+          idx = 0;
+          while ((mr = List_Next_Entry((*element_blocks)[i],&idx))) 
+            MEnt_Set_AttVal(mr,block_type_att,POLYHED,0.0,NULL);
+        }
+      }
+    }
+    else if (MESH_Num_Faces(mesh)) {
+      for (i = 0; i < nb; i++) {
+        int nfv0;
+        MFace_ptr mf;
+
+        mf = List_Entry((*element_blocks)[i],0);
+        nfv0 = MF_Num_Vertices(mf);
+
+        int found = 0, idx = 0;
+        while (!found && ((mf = List_Next_Entry((*element_blocks)[i],&idx)))) {
+          if (MF_Num_Vertices(mf) != nfv0)
+            found = 1;
+        }
+
+        if (found) {
+          /* found different element types in element block */
+          /* label it as a block containing polyhedra       */
+          
+          strcpy((*element_block_types)[i],"NSIDED");
+          
+          /* Attach attribute to each of its elements indicating that
+             the element type according to Exodus II will be NSIDED */
+
+          idx = 0;
+          while ((mf = List_Next_Entry((*element_blocks)[i],&idx))) 
+            MEnt_Set_AttVal(mf,block_type_att,POLYGON,0.0,NULL);
+        }
+      }
+    }
+
+  }
 
 
  
