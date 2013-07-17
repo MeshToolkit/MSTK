@@ -73,10 +73,6 @@ int main(int argc, char *argv[]) {
     inmeshformat = EXODUSII;
   else if (len > 4 && strncmp(&(infname[len-4]),".par",4) == 0) 
     inmeshformat = NEMESISI;
-  else if (len > 4 && strncmp(&(infname[len-4]),".vtk",4) == 0)
-    inmeshformat = VTK;
-  else if (len > 5 && strncmp(&(infname[len-5]),".cgns",5) == 0)
-    inmeshformat = CGNS;
   else if ((len > 4 && strncmp(&(infname[len-4]),".avs",4) == 0) ||
 	   (len > 4 && strncmp(&(infname[len-4]),".inp",4) == 0))
     inmeshformat = AVSUCD;
@@ -84,7 +80,7 @@ int main(int argc, char *argv[]) {
     inmeshformat = X3D;
   else {
     fprintf(stderr,"Unrecognized input mesh format\n");
-    fprintf(stderr,"Recognized input mesh formats: MSTK, GMV, ExodusII, NemesisI, CGNS, VTK, AVS/UCD\n");
+    fprintf(stderr,"Recognized input mesh formats: MSTK, GMV, ExodusII, NemesisI, AVS/UCD\n");
     exit(-1);
   }
 
