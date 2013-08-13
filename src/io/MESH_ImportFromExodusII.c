@@ -33,8 +33,8 @@ extern "C" {
      Opts 1,2,3 NOT ACTIVE        distributes to P0-P4, P10 to P6-P9 etc)
                                   3: read portions of the mesh on each processor
                                   and repartition
-     parallel_opts[1] = N    ---- Number of ghost layers around mesh on proc
-     parallel_opts[2] = 0/1  ---- partitioning method
+     parallel_opts[2] = N    ---- Number of ghost layers around mesh on proc
+     parallel_opts[3] = 0/1  ---- partitioning method
                                   0: Metis
                                   1: Zoltan
   */                            
@@ -45,7 +45,8 @@ extern "C" {
      these entity sets. We are also setting mesh geometric entity IDs
      - Should we pick one of the first two? */
 
-  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
+  int MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, int *parallel_opts, 
+                              MSTK_Comm comm) {
 
   char mesg[256], funcname[32]="MESH_ImportFromExodusII";
   char title[256], elem_type[256], sidesetname[256], nodesetname[256];
@@ -120,11 +121,11 @@ extern "C" {
           MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
       }
     }
-    else if (part_method == 1) {
+    else if (part_method == 1 || part_method == 2) {
       if (!have_zoltan) {
         MSTK_Report(funcname,"Zoltan not available. Trying Metis",MSTK_WARN);
-        part_method = 1;
-        if (!have_zoltan) 
+        part_method = 0;
+        if (!have_metis) 
           MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
       }
     }
