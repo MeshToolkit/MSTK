@@ -87,7 +87,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
   }
   case 2: {
     /* This invokes the Recursive Coordinate Bisection partitioner in Zoltan */
-    /* This will 
+
     /* Even though we assign all entities to processor zero and
        ask Zoltan to partition the mesh, we have to invoke the 
        Zoltan partitioner on all processors */
