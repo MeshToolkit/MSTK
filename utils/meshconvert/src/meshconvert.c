@@ -16,41 +16,73 @@ int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;
   int len, ok, build_classfn=1, partition=0, weave=0;
-  int num_ghost_layers=0;
+  int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
 
 
   if (argc < 3) {
-    fprintf(stderr,"usage: %s <--classify=yes|no> infilename outfilename\n",argv[0]);
+    fprintf(stderr,"usage: %s <--classify=y|1|n|0> <--partition=y|1|n|0> <--partition-method=0|1|2> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n",argv[0]);
+    fprintf(stderr,"partition-method = 0, METIS\n");
+    fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
+    fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
+    fprintf(stderr,"                 = 3, ZOLTAN with RCB partitioning\n");
+    fprintf(stderr,"Choose 2 or 3 if you want to avoid partitioning models\n");
+    fprintf(stderr,"with high aspect ratio along the short directions\n");
     exit(-1);
   }
 
   if (argc > 3) {
     int i;
-    for (i = 1; i < argc-2; i++)
+    for (i = 1; i < argc-2; i++) {
       if (strncmp(argv[i],"--classify",10) == 0) {
-        if (strncmp(argv[i],"--classify=y",12) == 0) 
+        if (strncmp(argv[i],"--classify=y",12) == 0 ||
+            strncmp(argv[i],"--classify=1",12) == 0) 
           build_classfn = 1;
-        else if (strncmp(argv[i],"--classify=n",12) == 0)
+        else if (strncmp(argv[i],"--classify=n",12) == 0 ||
+                 strncmp(argv[i],"--classify=0",12) == 0)
           build_classfn = 0;
+        else
+          MSTK_Report("meshconvert",
+                      "--classify option should be y, n, 1 or 0",
+                      MSTK_FATAL);          
+           
       }
-      else if (strncmp(argv[i],"--partition",11) == 0) {
-        if (strncmp(argv[i],"--partition=y",13) == 0)
+      else if (strncmp(argv[i],"--partition",11) == 0 &&
+               strncmp(argv[i],"--partition-method",18) != 0) {
+        if (strncmp(argv[i],"--partition=y",13) == 0 ||
+            strncmp(argv[i],"--partition=1",13) == 1)
           partition = 1;
-        else if (strncmp(argv[i],"--partition=n",13) == 0) 
+        else if (strncmp(argv[i],"--partition=n",13) == 0 ||
+                 strncmp(argv[i],"--partition=0",13) == 1) 
           partition = 0;
+        else 
+          MSTK_Report("meshconvert",
+                      "--partition option should be y, n, 1 or 0",
+                      MSTK_FATAL);          
+      }
+      else if (strncmp(argv[i],"--partition-method",18) == 0) {
+        sscanf(argv[i]+19,"%d",&partmethod);
+        partition = 1;
       }
       else if (strncmp(argv[i],"--weave",7) == 0) {
-        if (strncmp(argv[i],"--weave=y",11) == 0)
+        if (strncmp(argv[i],"--weave=y",11) == 0 ||
+            strncmp(argv[i],"--weave=1",11) == 0)
           weave = 1;
-        else if (strncmp(argv[i],"--weave=n",11) == 0) 
+        else if (strncmp(argv[i],"--weave=n",11) == 0 ||
+                 strncmp(argv[i],"--weave=0",11) == 0) 
           weave = 0;
+        else
+          MSTK_Report("meshconvert",
+                      "--weave option should be y, n, 1 or 0",
+                      MSTK_FATAL);          
+           
       }
       else if (strncmp(argv[i],"--num_ghost_layers",18) == 0) {
         sscanf(argv[i]+19,"%d",&num_ghost_layers);
       }
       else
         fprintf(stderr,"Unrecognized option...Ignoring\n");
+    }
   }
 
   strcpy(infname,argv[argc-2]);
@@ -154,10 +186,11 @@ int main(int argc, char *argv[]) {
       ok = MESH_ImportFromFile(mesh,infname,"gmv",opts,comm);
       break;
     case EXODUSII:
+      fprintf(stderr,"Importing mesh from ExodusII file...");
       opts[0] = partition ? 1 : 0;
       opts[1] = 0;
-      opts[2] = num_ghost_layers; /* no ghost layers */      
-      fprintf(stderr,"Importing mesh from ExodusII file...");
+      opts[2] = num_ghost_layers; /* no ghost layers */  
+      opts[3] = partmethod;
       ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
       break;
     case NEMESISI:
@@ -246,10 +279,9 @@ int main(int argc, char *argv[]) {
       
       int ring = 0; /* No ghost ring of elements */
       int with_attr = 1; /* Do allow exchange of attributes */
-      int method = 0; /* Use Metis as the partitioner */
       
       int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
-                                    method, comm);
+                                    partmethod, comm);
       
       if (rank == 0) {
         if (ok)
