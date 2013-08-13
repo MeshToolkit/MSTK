@@ -19,14 +19,17 @@ extern "C" {
   */
 
 
-  int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm) {
-  int ok = 1, nf, nr, ncells;
+int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm) {
+  int i, ok = 1, nf, nr, ncells;
+  int noptions;
+  char **options = (char **) malloc(10*sizeof(char *));
+  for (i = 0; i < 10; i++) options[i] = (char *) malloc(64*sizeof(char));
 
   int rank, num;
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&num);
 
-  *part = NULL;
+  *part = NULL;  
 
   /* basic mesh information */
   
@@ -43,9 +46,15 @@ extern "C" {
     }
 #endif
   }
+  
+  if (num == 1) {
+    *part = (int *) calloc(ncells,sizeof(int)); /* will initialize to 0 */
+    return 1;
+  }
+
 
   switch (method) {
-  case 0:
+  case 0: {
 
     /* Call the partitioner only on processor zero */
 
@@ -58,21 +67,49 @@ extern "C" {
     }
 
     break;
-  case 1:
+  }
+  case 1: {
+    /* This invokes the graph partitioner in Zoltan */
+    
+    /* Even though we assign all entities to processor zero and
+       ask Zoltan to partition the mesh, we have to invoke the 
+       Zoltan partitioner on all processors */
+    
+#ifdef _MSTK_HAVE_ZOLTAN
+    noptions = 1;
+    strcpy(options[0],"LB_PARTITION=GRAPH");
+    ok = MESH_PartitionWithZoltan(mesh, num, part, noptions, options, comm);
+#else
+    MSTK_Report("MESH_Partition","Zoltan not enabled",MSTK_FATAL);
+#endif
+    
+    break;
+  }
+  case 2: {
+    /* This invokes the Recursive Coordinate Bisection partitioner in Zoltan */
+    /* This will 
     /* Even though we assign all entities to processor zero and
        ask Zoltan to partition the mesh, we have to invoke the 
        Zoltan partitioner on all processors */
 
 #ifdef _MSTK_HAVE_ZOLTAN
-    ok = MESH_PartitionWithZoltan(mesh, num, part, comm);
+    noptions = 1;
+    strcpy(options[0],"LB_PARTITION=RCB");
+    ok = MESH_PartitionWithZoltan(mesh, num, part, noptions, options, comm);
 #else
     MSTK_Report("MESH_Partition","Zoltan not enabled",MSTK_FATAL);
 #endif
 
     break;
+  }
   default:
     MSTK_Report("MESH_Get_Partition","Unknown partitioning method",MSTK_FATAL);
   }
+
+
+  for (i = 0; i < 10; i++)
+    free(options[i]);
+  free(options);
 
   return ok;
 }
