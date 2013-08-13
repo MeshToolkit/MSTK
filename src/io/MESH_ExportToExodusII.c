@@ -62,13 +62,13 @@ extern "C" {
     int nv, ne, nf, nr, nvall, neall, nfall, nrall;
     int num_element_block, num_side_set, num_node_set;
     int nvfblock, block_id, *connect, *nnpe;
-    MVertex_ptr mv,  vertex;
+    MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
     RepType reptype;
     char MESH_rtype_str[5][3] = {"F1\0","F4\0","R1\0","R2\0","R4\0"};
-    int jv;
+    int jv, vid;
     double xyz_coord[3];
     int boundary_dim;  /* For pure 2D mesh, boundary_dim is 1, for surface mesh, it is 2 */
     int *element_block_ids, *side_set_ids, *node_set_ids;
@@ -76,9 +76,11 @@ extern "C" {
     char **element_block_types, block_name[256];
     List_ptr *element_blocks, *side_sets, *node_sets, face_block;
     List_ptr fverts, rverts;
-    MAttrib_ptr fidatt;
+    MAttrib_ptr vidatt=NULL, fidatt=NULL;
     char modfilename[256], funcname[64]="MESH_ExportToExodusII";
     int status;
+    double rval;
+    void *pval;
 
     int mstk2exo_facemap[5][6]={{0,0,0,0,0,0},
 				{4,1,2,3,0,0}, /* TET */
@@ -150,6 +152,8 @@ extern "C" {
     int element_dim = -1, side_dim = -1;
     int num_element = 0, num_side = 0;
 
+    vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
+
     if (nrall) {
       element_dim = 3; side_dim = 2; boundary_dim = 2;
 
@@ -186,6 +190,7 @@ extern "C" {
                     if (!MEnt_IsMarked(mv,ownedmk)) {
                       MEnt_Mark(mv,ownedmk);
                       nv++;
+                      MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
                     }
                   }
                 }
@@ -237,6 +242,7 @@ extern "C" {
                 if (!MEnt_IsMarked(mv,ownedmk)) {
                   MEnt_Mark(mv,ownedmk);
                   nv++;
+                  MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
                 }
               }
             }
@@ -262,12 +268,12 @@ extern "C" {
 
     if (element_dim == 2) {
       double xyz_coord0[3];
-      vertex = MESH_Vertex(mesh,0);
-      MV_Coords(vertex,xyz_coord0);
+      mv = MESH_Vertex(mesh,0);
+      MV_Coords(mv,xyz_coord0);
 
       idx = 0;
-      while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
-	MV_Coords(vertex,xyz_coord);
+      while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+	MV_Coords(mv,xyz_coord);
 	/* if z coordinate is not all the same, it is a surface mesh */
 	if ((xyz_coord[2]!=xyz_coord0[2])) {
 	  boundary_dim = 2;
@@ -850,19 +856,20 @@ extern "C" {
     xcoord = (double *) MSTK_malloc(nv*sizeof(double));
     ycoord = (double *) MSTK_malloc(nv*sizeof(double));
     zcoord = (double *) MSTK_malloc(nv*sizeof(double));
-    for (jv = 0; jv < nv; jv++) {
-      vertex = MESH_Vertex(mesh,jv);
+
+    idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh,&idx))) {
 
 #ifdef MSTK_HAVE_MPI 
-      if (!MEnt_IsMarked(vertex,ownedmk)) 
-        MSTK_Report(funcname,
-                    "Unexpected ghost vertex in output node list",MSTK_ERROR);
+      if (!MEnt_IsMarked(mv,ownedmk)) continue;
+      MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
+#else
+      vid = MV_ID(mv);
 #endif
-
-      MV_Coords(vertex,vxyz);
-      xcoord[jv] = vxyz[0];
-      ycoord[jv] = vxyz[1];
-      zcoord[jv] = vxyz[2];
+      MV_Coords(mv,vxyz);
+      xcoord[vid-1] = vxyz[0];
+      ycoord[vid-1] = vxyz[1];
+      zcoord[vid-1] = vxyz[2];
     }
     err = ex_put_coord (exoid, xcoord, ycoord, zcoord);
 
@@ -1003,8 +1010,14 @@ extern "C" {
 	  List_ptr fverts = MF_Vertices(mf,1,0);
 	  MVertex_ptr fv;
 	  idx2 = 0;
-	  while ((fv = List_Next_Entry(fverts,&idx2)))
-	    connect[j++] = MV_ID(fv);
+	  while ((fv = List_Next_Entry(fverts,&idx2))) {
+#ifdef MSTK_HAVE_MPI      
+            MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
+#else
+            vid = MV_ID(fv);
+#endif
+	    connect[j++] = vid;
+          }
 	  List_Delete(fverts);
 	}
 
@@ -1060,8 +1073,14 @@ extern "C" {
 	  idx = 0; k = 0;
 	  while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	    rverts = MR_Vertices(mr);
-	    for (j = 0; j < nelnodes; j++) 
-	      connect[nelnodes*k+j] = MV_ID(List_Entry(rverts,j));
+	    for (j = 0; j < nelnodes; j++) {
+#ifdef MSTK_HAVE_MPI      
+              MEnt_Get_AttVal(List_Entry(rverts,j),vidatt,&vid,&rval,&pval);
+#else
+              vid = MV_ID(List_Entry(rverts,j));
+#endif
+	      connect[nelnodes*k+j] = vid;
+            }
 	    List_Delete(rverts);	    
 	    k++;
 	  }
@@ -1089,8 +1108,14 @@ extern "C" {
 	  idx = 0; k = 0;
 	  while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	    fverts = MF_Vertices(mf,1,0);
-	    for (j = 0; j < nelnodes; j++) 
-	      connect[nelnodes*k+j] = MV_ID(List_Entry(fverts,j));	    
+	    for (j = 0; j < nelnodes; j++) {
+#ifdef MSTK_HAVE_MPI      
+              MEnt_Get_AttVal(List_Entry(fverts,j),vidatt,&vid,&rval,&pval);
+#else
+              vid = MV_ID(List_Entry(fverts,j);
+#endif
+	      connect[nelnodes*k+j] = vid;
+            }
 	    List_Delete(fverts);
 	    k++;
 	  }
@@ -1119,8 +1144,14 @@ extern "C" {
       int *node_list = (int *) MSTK_malloc(nnodes*sizeof(int));
 
       idx = 0; j = 0;
-      while ((mv = List_Next_Entry(node_sets_glob[i],&idx)))
-	node_list[j++] = MV_ID(mv);
+      while ((mv = List_Next_Entry(node_sets_glob[i],&idx))) {
+#ifdef MSTK_HAVE_MPI      
+        MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
+#else
+        vid = MV_ID(mv);
+#endif
+	node_list[j++] = vid;
+      }
 
       ex_put_node_set(exoid, node_set_ids_glob[i], node_list);
 
@@ -1318,7 +1349,6 @@ extern "C" {
     ex_close(exoid);
 
 
-
     MSTK_free(element_block_ids_glob);
     for (i = 0; i < num_element_block_glob; i++)
       List_Delete(element_blocks_glob[i]);
@@ -1379,8 +1409,17 @@ extern "C" {
 #endif
 
 
-
-
+    idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh,&idx)))
+      MEnt_Rem_AttVal(mv,vidatt);
+    MAttrib_Delete(vidatt);
+    if (fidatt) {
+      idx = 0;
+      while ((mf = MESH_Next_Face(mesh,&idx)))
+        MEnt_Rem_AttVal(mf,fidatt);
+      MAttrib_Delete(fidatt);
+    }
+      
     return 1;
 
   }
