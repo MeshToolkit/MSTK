@@ -1116,7 +1116,7 @@ extern "C" {
     /* Deallocate the face hash table */
     if (solid_elems) {
 
-#ifdef DEBUG
+#ifdef DEBUG2
       fprintf(stderr,"Face hash table for MESH_ImportFromExodusII has %d entries while the mesh has %d faces\n",nfalloc,MESH_Num_Faces(mesh));
       int maxlen=0, num=0, totlen=0, avelen;
       for (i = 0; i < nfalloc; i++)
