@@ -287,7 +287,9 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   /* Mesh Partitioning Routines*/
 
   int        MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part);
-  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, MSTK_Comm comm);
+  int        MESH_PartitionWithZoltan(Mesh_ptr mesh, int nparts, int **part, 
+                                      int noptions, char **options,
+                                      MSTK_Comm comm);
   int        MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes);
   int        MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submesh, const char *attr_name);
 
