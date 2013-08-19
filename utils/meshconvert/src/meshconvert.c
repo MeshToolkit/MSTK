@@ -31,6 +31,27 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
 
+#ifdef MSTK_HAVE_MPI
+  MPI_Init(&argc,&argv);
+#endif
+
+
+  MSTK_Init();
+
+
+#ifdef MSTK_HAVE_MPI
+
+  MSTK_Comm comm = MPI_COMM_WORLD;
+  int rank, numprocs;
+
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&numprocs);
+
+#else
+  MSTK_Comm comm = NULL;
+#endif
+  
+
   if (argc > 3) {
     int i;
     for (i = 1; i < argc-2; i++) {
@@ -83,6 +104,12 @@ int main(int argc, char *argv[]) {
       else
         fprintf(stderr,"Unrecognized option...Ignoring\n");
     }
+
+    /* If running on multiple processors, assume that you either partition
+       a serial mesh or weave together distributed meshes */
+
+    if (numprocs > 1 && weave == 0 && partition == 0) 
+      partition = 1; 
   }
 
   strcpy(infname,argv[argc-2]);
@@ -145,26 +172,6 @@ int main(int argc, char *argv[]) {
   }
 
 
-#ifdef MSTK_HAVE_MPI
-  MPI_Init(&argc,&argv);
-#endif
-
-
-  MSTK_Init();
-
-
-#ifdef MSTK_HAVE_MPI
-
-  MSTK_Comm comm = MPI_COMM_WORLD;
-  int rank, numprocs;
-
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&numprocs);
-
-#else
-  MSTK_Comm comm = NULL;
-#endif
-  
   if (inmeshformat == MSTK) {
     mesh = MESH_New(UNKNOWN_REP);
 
@@ -187,10 +194,10 @@ int main(int argc, char *argv[]) {
       break;
     case EXODUSII:
       fprintf(stderr,"Importing mesh from ExodusII file...");
-      opts[0] = partition ? 1 : 0;
+      opts[0] = 0; /* don't partition while importing - do it later */
       opts[1] = 0;
-      opts[2] = num_ghost_layers; /* no ghost layers */  
-      opts[3] = partmethod;
+      opts[2] = 0; /* no ghost layers */  
+      opts[3] = 0;
       ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
       break;
     case NEMESISI:
@@ -275,6 +282,7 @@ int main(int argc, char *argv[]) {
         }
         
         mesh0 = mesh;
+        mesh = NULL;
       }
       
       int ring = 0; /* No ghost ring of elements */
