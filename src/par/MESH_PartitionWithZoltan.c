@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "zoltan.h"
 
 #include "MSTK.h"
@@ -194,6 +195,8 @@ int NDIM_4_ZOLTAN = 3;
             for (k = 0; k < NDIM_4_ZOLTAN; k++)
               cen[k] += rxyz[j][k];
           for (k = 0; k < NDIM_4_ZOLTAN; k++) cen[k] /= nrv;
+          for (k = 0; k < NDIM_4_ZOLTAN; k++) 
+            if (fabs(cen[k]) < 1.0e-10) cen[k] = 0.0; 
 
           id = MR_ID(mr);
           graph.nodeGID[id-1] = id;
@@ -206,6 +209,9 @@ int NDIM_4_ZOLTAN = 3;
     MPI_Bcast(&NDIM_4_ZOLTAN,1,MPI_INT,0,comm);
 
     /* Set some default values */
+    //    Zoltan_Set_Param(zz, "RCB_RECTILINEAR_BLOCKS","1");
+    Zoltan_Set_Param(zz, "AVERAGE_CUTS", "1");
+
     if (noptions > 1) {
       for (i = 1; i < noptions; i++) {
         char *paramstr = NULL, *valuestr = NULL, instring[256];
