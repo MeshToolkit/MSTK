@@ -94,9 +94,13 @@ extern "C" {
   int exo_nrfverts[3][6] =
     {{3,3,3,3,0,0},{4,4,4,3,3,0},{4,4,4,4,4,4}};
   int exo_rfverts[3][6][4] =
-    {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{2,1,0,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
-     {{0,1,4,3},{1,2,5,4},{2,0,3,5},{2,1,0,-1},{3,4,5,-1},{-1,-1,-1,-1}},
-     {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{3,2,1,0},{4,5,6,7}}};
+    {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{0,1,2,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
+     {{0,1,4,3},{1,2,5,4},{2,0,3,5},{0,1,2,-1},{3,4,5,-1},{-1,-1,-1,-1}},
+     {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{0,1,2,3},{4,5,6,7}}};
+  int exo_rfdirs[3][6] =
+    {{1,1,1,0,-99,-99},
+     {1,1,1,0,1,-99},
+     {1,1,1,1,0,1}};
 
   List_ptr fedges, rfaces;
   MVertex_ptr mv, *fverts, *rverts;
@@ -934,7 +938,7 @@ extern "C" {
                 rfarr[k] = face;
                 fregs = MF_Regions(face);
                 if (!fregs || !List_Num_Entries(fregs)) {
-                  rfdirs[k] = 1;
+                  rfdirs[k] = exo_rfdirs[eltype][k]; /* unlikely to come here */
                 }
                 else {
                   if (List_Num_Entries(fregs) == 1) {
@@ -949,14 +953,14 @@ extern "C" {
 		  MSTK_Report(funcname,"Face already connected two faces",MSTK_FATAL);
                   }
                   List_Delete(fregs);
-                }                
+                }
               }
               else {
                 face = MF_New(mesh);
 
                 MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
                 rfarr[k] = face;
-                rfdirs[k] = 1;
+                rfdirs[k] = exo_rfdirs[eltype][k];
 
                 if (hash_key >= nfalloc) {
                   int new_alloc = 2*nfalloc;
