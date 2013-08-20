@@ -1230,22 +1230,22 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
 void MESH_Enable_GlobalIDSearch(Mesh_ptr mesh) {
 
-  if (mesh->nv) {
+  if (mesh->nv && !mesh->gid_sorted_mvlist) {
     mesh->gid_sorted_mvlist = List_Copy(mesh->mvertex);
     List_Sort(mesh->gid_sorted_mvlist,mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
   }
 
-  if (mesh->ne) {
+  if (mesh->ne && !mesh->gid_sorted_melist) {
     mesh->gid_sorted_melist = List_Copy(mesh->medge);
     List_Sort(mesh->gid_sorted_melist,mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
   }
 
-  if (mesh->nf) {
+  if (mesh->nf && !mesh->gid_sorted_mflist) {
     mesh->gid_sorted_mflist = List_Copy(mesh->mface);
     List_Sort(mesh->gid_sorted_mflist,mesh->nf,sizeof(MFace_ptr),compareGlobalID);
   }
 
-  if (mesh->nr) {
+  if (mesh->nr && !mesh->gid_sorted_mrlist) {
     mesh->gid_sorted_mrlist = List_Copy(mesh->mregion);
     List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
   }
