@@ -299,7 +299,10 @@ int main(int argc, char *argv[]) {
         }
       }
 
-    }
+      if (rank == 0)
+        MESH_Delete(mesh0);
+
+    }    
   }
 
 #endif /* MSTK_HAVE_MPI */
