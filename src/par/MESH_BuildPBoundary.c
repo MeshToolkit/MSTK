@@ -144,6 +144,7 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
           MV_Set_PType(lmv,PBOUNDARY);
         }
       }
+      List_Delete(fedges);
     }          
     else
       MF_Set_PType(lmf,PINTERIOR);

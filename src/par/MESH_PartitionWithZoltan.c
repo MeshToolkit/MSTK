@@ -400,11 +400,11 @@ int NDIM_4_ZOLTAN = 3;
     for ( i = 0; i < numExport; i++ ) {
       (*part)[exportGlobalGids[i]-1] = exportToPart[i];
     }
-/*  if (graph.nodeGID) free(graph.nodeGID);
+    if (graph.nodeGID) free(graph.nodeGID);
     if (graph.nodeCoords) free(graph.nodeCoords);
     if (graph.nborIndex) free(graph.nborIndex);
     if (graph.nborGID) free(graph.nborGID);
-    if (graph.nborProc) free(graph.nborProc); */
+    if (graph.nborProc) free(graph.nborProc);
   }
   else { 
     *part = NULL;
