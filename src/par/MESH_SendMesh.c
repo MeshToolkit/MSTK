@@ -438,16 +438,18 @@ extern "C" {
     MSTK_Report("MESH_Vol_SendMesh_FN","Trouble sending mesh",MSTK_FATAL);
 
 
-  MSTK_free(list_vertex);
-  MSTK_free(list_region);
-  MSTK_free(list_coor);
+  free(list_vertex);
+  free(list_coor);  
+  free(list_edge);
+  free(list_face);
+  free(list_region);
   if (natt) {
-    MSTK_free(list_attr);
-    MSTK_free(list_attr_names);
+    free(list_attr);
+    free(list_attr_names);
   }
   if (nset) {
-    MSTK_free(list_mset);
-    MSTK_free(list_mset_names);
+    free(list_mset);
+    free(list_mset_names);
   }
 
 
