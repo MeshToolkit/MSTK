@@ -369,10 +369,13 @@ extern "C" {
     fprintf(stderr,"Updated parallel adjacencies. Exiting mesh distribution\n");
 #endif
 #ifdef DEBUG
-      elapsed_time = MPI_Wtime() - t0;
-      fprintf(stderr,"Elapsed time after mesh distribution on processor %-d is %lf s\n",rank,elapsed_time);
+    elapsed_time = MPI_Wtime() - t0;
+    fprintf(stderr,"Elapsed time after mesh distribution on processor %-d is %lf s\n",rank,elapsed_time);
 #endif
-      
+
+
+    if (part)
+      free(part);
 
     /* Put a barrier so that distribution of meshes takes place one at a time 
        in a simulation that may have multiple mesh objects on each processor */
