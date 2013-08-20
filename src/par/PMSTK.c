@@ -282,6 +282,7 @@ extern "C" {
     for (i = 0; i < num; i++) send_dim[i] = *dim;
 
     MPI_Scatter(send_dim, 1, MPI_INT, &recv_dim, 1, MPI_INT, 0, comm);
+    free(send_dim);
 
     if (rank != 0)
       *dim = recv_dim;
