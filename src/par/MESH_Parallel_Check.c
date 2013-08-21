@@ -67,6 +67,21 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 
   mesh_info[0] = nv;
 
+  /* First check if global IDs are continuous on each processor */
+  int *vgidlist = (int *) malloc(nv*sizeof(int));
+  int nown = 0;
+  idx = 0; 
+  while ((mv = MESH_Next_Vertex(mesh, &idx)))
+    if (MV_PType(mv) != PGHOST)
+      vgidlist[nown++] = MV_GlobalID(mv);
+  qsort(vgidlist,nown,sizeof(int),compareINT);
+
+  for (i = 1; i < nown; i++)
+    if (vgidlist[i] != vgidlist[i-1]+1)
+      MSTK_Report("MESH_Parallel_Check_VertexGlobalID",
+                  "Vertex Global IDs are not contiguous",MSTK_WARN);
+
+  /* Additional checks */
   /* collect overlap vertex list for fast checking */
   idx = 0; nov = 0; ov_verts = List_New(10);
   while ((mv = MESH_Next_Vertex(mesh, &idx)))  {
@@ -130,12 +145,12 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    master_id = (recv_list_vertex[3*j+1] >> 2);
 	    if(MV_GEntDim(mv) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
+	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MV_GEntID(mv) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MV_GEntID(mv));
+	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, MV_GEntID(mv));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -232,12 +247,12 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    master_id = (recv_list_vertex[3*j+1] >> 2);
 	    if(MV_GEntDim(mv) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
+	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MV_GEntID(mv) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MV_GEntID(mv));
+	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, MV_GEntID(mv));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -290,6 +305,20 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
   ne = MESH_Num_Edges(mesh);
 
   mesh_info[0] = ne;
+
+  /* First check if global IDs are continuous on each processor */
+  int *egidlist = (int *) malloc(ne*sizeof(int));
+  int nown = 0;
+  idx = 0; 
+  while ((me = MESH_Next_Edge(mesh, &idx)))
+    if (ME_PType(me) != PGHOST)
+      egidlist[nown++] = ME_GlobalID(me);
+  qsort(egidlist,nown,sizeof(int),compareINT);
+
+  for (i = 1; i < nown; i++)
+    if (egidlist[i] != egidlist[i-1]+1)
+      MSTK_Report("MESH_Parallel_Check_EdgeGlobalID",
+                  "Edge Global IDs are not contiguous",MSTK_WARN);
 
   /* collect overlap edge list for fast checking */
   idx = 0; noe = 0; ov_edges = List_New(10);
@@ -350,12 +379,12 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    master_id = (recv_list_edge[5*j+3] >> 2);
 	    if(MV_GEntDim(me) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(ME_GEntID(me) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -442,12 +471,12 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    master_id = (recv_list_edge[5*j+3] >> 2);
 	    if(ME_GEntDim(me) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(ME_GEntID(me) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
+	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, ME_GEntID(me));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -500,6 +529,20 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
   nf = MESH_Num_Faces(mesh);
 
   mesh_info[0] = nf;
+
+  /* First check if global IDs are continuous on each processor */
+  int *fgidlist = (int *) malloc(nf*sizeof(int));
+  int nown = 0;
+  idx = 0; 
+  while ((mf = MESH_Next_Face(mesh, &idx)))
+    if (MF_PType(mf) != PGHOST)
+      fgidlist[nown++] = MF_GlobalID(mf);
+  qsort(fgidlist,nown,sizeof(int),compareINT);
+
+  for (i = 1; i < nown; i++)
+    if (fgidlist[i] != fgidlist[i-1]+1)
+      MSTK_Report("MESH_Parallel_Check_FaceGlobalID",
+                  "Face Global IDs are not contiguous",MSTK_WARN);
 
   /* collect overlap face list for fast checking */
   idx = 0; nof = 0; ov_faces = List_New(10);
@@ -559,12 +602,12 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    master_id = (recv_list_face[index_mf+nfe+2] >> 2);
 	    if(MF_GEntDim(mf) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MF_GEntID(mf) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MF_GEntID(mf));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, MF_GEntID(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -654,12 +697,12 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    master_id = (recv_list_face[index_mf+nfe+2] >> 2);
 	    if(MF_GEntDim(mf) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MF_GEntID(mf) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MF_GEntID(mf));
+	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, MF_GEntID(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -701,6 +744,21 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
   nr = MESH_Num_Regions(mesh);
 
   mesh_info[0] = nr;
+
+  /* First check if global IDs are continuous on each processor */
+  int *rgidlist = (int *) malloc(nr*sizeof(int));
+  int nown = 0;
+  idx = 0;
+  while ((mr = MESH_Next_Region(mesh, &idx)))
+    if (MR_PType(mr) != PGHOST)
+      rgidlist[nown++] = MR_GlobalID(mr);
+  qsort(rgidlist,nown,sizeof(int),compareINT);
+
+  for (i = 1; i < nown; i++)
+    if (rgidlist[i] != rgidlist[i-1]+1)
+      MSTK_Report("MESH_Parallel_Check_RegionGlobalID",
+                  "Region Global IDs are not contiguous",MSTK_WARN);
+
 
   /* collect overlap region list for fast checking */
   idx = 0; nor = 0; ov_regions = List_New(10);
@@ -760,12 +818,12 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    master_id = (recv_list_region[index_mr+nrf+2] >> 2);
 	    if(MR_GEntDim(mr) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MR_GEntDim(mr));
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MR_GEntDim(mr));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MR_GEntID(mr) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MR_GEntID(mr));
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, MR_GEntID(mr));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
@@ -854,12 +912,12 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    master_id = (recv_list_region[index_mr+nrf+2] >> 2);
 	    if(MR_GEntDim(mr) != gdim) {
 	      valid = 0;
-	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndDim mismatch: %d vs %d ", global_id, i, rank, gdim, MR_GEntDim(mr));
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MR_GEntDim(mr));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 	    if(MR_GEntID(mr) != gid) {
 	      valid = 0;
-	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEndID mismatch: %d vs %d ", global_id, i, rank, gid, MR_GEntID(mr));
+	      sprintf(mesg,"Global region %-d from processor %d and on processor %d GEntID mismatch: %d vs %d ", global_id, i, rank, gid, MR_GEntID(mr));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
