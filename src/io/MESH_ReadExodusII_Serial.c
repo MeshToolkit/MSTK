@@ -335,8 +335,6 @@ extern "C" {
 	  fverts[k] = MESH_VertexFromID(mesh,connect[offset+k]);
 
 	MF_Set_Vertices(mf,nnpe[j],fverts);
-	MF_Set_GEntDim(mf,3);  /* For now assume all are interior faces */
-	                       /* Build classification will fix that    */
 	offset += nnpe[j];
 
 	MSet_Add(faceset,mf);
@@ -1145,15 +1143,15 @@ extern "C" {
     }
 
 
-    /* Some interior faces may have been labeled as boundary faces */
-    /* Check to see if the face has two regions classified on the same
-       geometric model region and if so reclassify it */
+    /* Fix classifications of interior mesh faces only - if this mesh
+     is part of a distributed mesh we will get boundary info wrong */
 
     int idx = 0;
     while ((mf = MESH_Next_Face(mesh,&idx))) {
       List_ptr fregs = MF_Regions(mf);
       if (fregs) {
-        if (List_Num_Entries(fregs) == 2 && MF_GEntDim(mf) == 2) {
+        int nregs = List_Num_Entries(fregs);
+        if (nregs == 2) {
           MRegion_ptr reg0, reg1;
           int greg0, greg1;
           reg0 = List_Entry(fregs,0);
@@ -1161,10 +1159,9 @@ extern "C" {
           greg0 = MR_GEntID(reg0);
           greg1 = MR_GEntID(reg1);
 
-          if (greg0 == greg1) {
-            MF_Set_GEntDim(mf,3);
+          MF_Set_GEntDim(mf,3);
+          if (greg0 == greg1)
             MF_Set_GEntID(mf,greg0);
-          }
         }
         List_Delete(fregs);
       }
