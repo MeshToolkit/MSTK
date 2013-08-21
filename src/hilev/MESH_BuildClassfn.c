@@ -13,10 +13,17 @@ extern "C" {
 
 /* Routine to build classification for mesh entities given a mesh no
    information or model ID info only for the highest level entities
-   (typically regions in volume meshes and faces in surface meshes) */
+   (typically regions in volume meshes and faces in surface meshes) 
+
+   if use_geometry is 1, then the algorithm will try to use boundary
+   geometry to subdivide the boundary into smaller smoother faces/edges
+   This is time consuming and in the case of rough geometry, it can
+   lead to many unwanted new geometric entity IDs
+
+*/
 
 
-int MESH_BuildClassfn(Mesh_ptr mesh) {
+int MESH_BuildClassfn(Mesh_ptr mesh, int use_geometry) {
   int ok, idx, gid;
   int max_greg_id,  zeroid;
   double PI=3.141592, ang;
@@ -52,32 +59,22 @@ int MESH_BuildClassfn(Mesh_ptr mesh) {
     }
   }
 
-  /* <<<<<<<<<<<<<<<< end MESH REGIONS */
-
-
 
   /* MESH FACES >>>>>>>>>>>>>>> */
     
-  ok = MESH_BuildFaceClassfn(mesh);
-
-
-  /* <<<<<<<<<<<<<<< MESH FACES */
+  ok = MESH_BuildFaceClassfn(mesh,use_geometry);
 
 
   /* MESH EDGES >>>>>>>>>>>>>>> */
     
-  ok = MESH_BuildEdgeClassfn(mesh);
+  ok = MESH_BuildEdgeClassfn(mesh,use_geometry);
 
 
-  /* <<<<<<<<<<<<<<< MESH EDGES */
-
-
-  /* MESH EDGES >>>>>>>>>>>>>>> */
+  /* MESH VERTICES >>>>>>>>>>>>>>> */
     
-  ok = MESH_BuildVertexClassfn(mesh);
+  ok = MESH_BuildVertexClassfn(mesh,use_geometry);
 
 
-  /* <<<<<<<<<<<<<<< MESH EDGES */
 
 
   return 1;

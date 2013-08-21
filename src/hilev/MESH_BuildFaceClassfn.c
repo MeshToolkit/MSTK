@@ -13,9 +13,13 @@ extern "C" {
 /* Routine to build classification for mesh faces given no
    classification or classification information for mesh regions only
    (if they exist)
+
+   if use_geometry is 1, the code will try to use geometric measures
+   to refine the geometric entity that boundary mesh faces are
+   classified on
  */
 
-int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
+  int MESH_BuildFaceClassfn(Mesh_ptr mesh, int use_geometry) {
   int i, j, k, idx, idx2, fnd, gfid, gfid2, gdim;
   int ngfaces, ngfalloc, grid0, grid1;
   int max_gface_id, processedmk, submk;
@@ -166,164 +170,167 @@ int MESH_BuildFaceClassfn(Mesh_ptr mesh) {
     }
   }
 
+  if (use_geometry == 1) {
 
-  /* Now assign model face IDs based on whether a sharp set of edges
-     enclose a set of faces */
+    /* Now assign model face IDs based on whether a sharp set of edges
+       enclose a set of faces */
 
-  for (i = 0; i < ngfaces; i++) {
+    for (i = 0; i < ngfaces; i++) {
 
-    /* Find all mesh faces with this model face id */
+      /* Find all mesh faces with this model face id */
 
-    gffaces = List_New(10);
-    idx = 0; 
-    while ((face = MESH_Next_Face(mesh,&idx))) {
-      if (MF_GEntDim(face) == 2 && MF_GEntID(face) == gfids[i])
-	List_Add(gffaces,face);
-    }
+      gffaces = List_New(10);
+      idx = 0; 
+      while ((face = MESH_Next_Face(mesh,&idx))) {
+        if (MF_GEntDim(face) == 2 && MF_GEntID(face) == gfids[i])
+          List_Add(gffaces,face);
+      }
 
-    /* Process faces of this list and subdivide them into subfaces */
-    /* The way we do that is 
+      /* Process faces of this list and subdivide them into subfaces */
+      /* The way we do that is 
        
-    1) we put an unprocessed face from the original list in a subface
-    list
+         1) we put an unprocessed face from the original list in a subface
+         list
 
-    2) we then add its neighboring faces to subface list if they are
-    of the same color (same model face id) and do not have a sharp
-    edge separating them from the current face
+         2) we then add its neighboring faces to subface list if they are
+         of the same color (same model face id) and do not have a sharp
+         edge separating them from the current face
 
-    3) we then process the next face in the subface list 
+         3) we then process the next face in the subface list 
 
-    4) we are done if we cannot find any more neighbors of faces in
-    the subface list to add to the subface list
+         4) we are done if we cannot find any more neighbors of faces in
+         the subface list to add to the subface list
 
-    5) we then repeat steps 1 through 4 until we are left with no
-    more faces to process from the original list
+         5) we then repeat steps 1 through 4 until we are left with no
+         more faces to process from the original list
        
-    */
+      */
 
-    processedmk = MSTK_GetMarker();
+      processedmk = MSTK_GetMarker();
 
-    nsub = 0;
-    idx = 0;
-    while ((face = List_Next_Entry(gffaces,&idx))) {
-      if (MEnt_IsMarked(face,processedmk))
-	continue;
+      nsub = 0;
+      idx = 0;
+      while ((face = List_Next_Entry(gffaces,&idx))) {
+        if (MEnt_IsMarked(face,processedmk))
+          continue;
 
-      /* Found a face in gffaces that has not been processed */
-      MEnt_Mark(face,processedmk);
+        /* Found a face in gffaces that has not been processed */
+        MEnt_Mark(face,processedmk);
 
-      submk = MSTK_GetMarker();
-      subfaces = List_New(10);
-      List_Add(subfaces,face);
-      MEnt_Mark(face,submk);
+        submk = MSTK_GetMarker();
+        subfaces = List_New(10);
+        List_Add(subfaces,face);
+        MEnt_Mark(face,submk);
 
-      idx2 = 0;
-      while ((subface = List_Next_Entry(subfaces,&idx2))) {
-	gfid = MF_GEntID(subface);
+        idx2 = 0;
+        while ((subface = List_Next_Entry(subfaces,&idx2))) {
+          gfid = MF_GEntID(subface);
 
-	fedges = MF_Edges(subface,1,0);
-	nfe = List_Num_Entries(fedges);
+          fedges = MF_Edges(subface,1,0);
+          nfe = List_Num_Entries(fedges);
 
-	for (j = 0; j < nfe; j++) {
-	  edge = List_Entry(fedges,j);
-	  efaces = ME_Faces(edge);
-	  nef = List_Num_Entries(efaces);
+          for (j = 0; j < nfe; j++) {
+            edge = List_Entry(fedges,j);
+            efaces = ME_Faces(edge);
+            nef = List_Num_Entries(efaces);
 
-	  ebfaces = List_New(nef); /* list of boundary faces cnctd 2 edge */
-	  for (k = 0; k < nef; k++) {
-	    adjface = List_Entry(efaces,k);
-	    if (MF_GEntDim(adjface) == 2)
-	      List_Add(ebfaces,adjface);
-	  }
-          List_Delete(efaces);
+            ebfaces = List_New(nef); /* list of boundary faces cnctd 2 edge */
+            for (k = 0; k < nef; k++) {
+              adjface = List_Entry(efaces,k);
+              if (MF_GEntDim(adjface) == 2)
+                List_Add(ebfaces,adjface);
+            }
+            List_Delete(efaces);
 
-	  nbf = List_Num_Entries(ebfaces);
-	  if (nbf == 2) {
-	    /* we might be on a model face or on a model edge */
+            nbf = List_Num_Entries(ebfaces);
+            if (nbf == 2) {
+              /* we might be on a model face or on a model edge */
             
-	    adjface = List_Entry(ebfaces,0);
-	    if (adjface == subface)
-	      adjface = List_Entry(ebfaces,1);
-	    gfid2 = MF_GEntID(adjface);
+              adjface = List_Entry(ebfaces,0);
+              if (adjface == subface)
+                adjface = List_Entry(ebfaces,1);
+              gfid2 = MF_GEntID(adjface);
 
             
-	    if (gfid == gfid2) {
-	      /* The two faces are of the same ID. If the angle
-		 between them is not sharp they can be classified as
-		 being on the same subface */
+              if (gfid == gfid2) {
+                /* The two faces are of the same ID. If the angle
+                   between them is not sharp they can be classified as
+                   being on the same subface */
 	      
-	      ang = MFs_DihedralAngle(subface,adjface,edge);
+                ang = MFs_DihedralAngle(subface,adjface,edge);
               
-	      if (ang <= COSSHARPANG) {
-		/* Add face2 to subface list unless its already there */
-		if (!MEnt_IsMarked(adjface,submk)) {
-                  List_Add(subfaces,adjface);
-                  MEnt_Mark(adjface,submk);
+                if (ang <= COSSHARPANG) {
+                  /* Add face2 to subface list unless its already there */
+                  if (!MEnt_IsMarked(adjface,submk)) {
+                    List_Add(subfaces,adjface);
+                    MEnt_Mark(adjface,submk);
+                  }
                 }
-	      }
-	      else {
-		/* The two faces make a very sharp angle. We will
-		   consider the edge b/w them to be a model edge */
-		/* Tag the edge as being on a model edge (we don't
-		   know the model edge ID as yet) and continue */
+                else {
+                  /* The two faces make a very sharp angle. We will
+                     consider the edge b/w them to be a model edge */
+                  /* Tag the edge as being on a model edge (we don't
+                     know the model edge ID as yet) and continue */
                 
-		ME_Set_GEntDim(edge,1);
-		ME_Set_GEntID(edge,0);
+                  ME_Set_GEntDim(edge,1);
+                  ME_Set_GEntID(edge,0);
+                }
               }
-	    }
-	    else {
-	      /* we reached a model edge */
-	      /* Tag the edge as being on a model edge (we don't know
-		 the model edge ID as yet) and continue */
+              else {
+                /* we reached a model edge */
+                /* Tag the edge as being on a model edge (we don't know
+                   the model edge ID as yet) and continue */
 
-	      ME_Set_GEntDim(edge,1);
-	      ME_Set_GEntID(edge,0);
-	    }
-	  }
-	  else {
-	    /* we reached a a model edge */
-	    /* Tag the edge as being on a model edge (we don't know
-	       the model edge ID as yet) and continue */
+                ME_Set_GEntDim(edge,1);
+                ME_Set_GEntID(edge,0);
+              }
+            }
+            else {
+              /* we reached a a model edge */
+              /* Tag the edge as being on a model edge (we don't know
+                 the model edge ID as yet) and continue */
 
-	    ME_Set_GEntDim(edge,1);
-	    ME_Set_GEntID(edge,0);
-	  }
-          List_Delete(ebfaces);
+              ME_Set_GEntDim(edge,1);
+              ME_Set_GEntID(edge,0);
+            }
+            List_Delete(ebfaces);
+          }
+
+          /* Finished processing all neighbors of the face */
+          List_Delete(fedges);
         }
 
-	/* Finished processing all neighbors of the face */
-	List_Delete(fedges);
+        /* Now we have a list of faces which we believe constitutes a
+           model face by itself. If this is the first subface (which
+           means it could also be the entire model face originally
+           considered), leave the model face tag as it is. If not,
+           assign the faces in the subface a new model face ID */
+
+        if (nsub != 0) {
+          max_gface_id++;
+          idx2 = 0;
+          while ((subface = List_Next_Entry(subfaces,&idx2))) 
+            MF_Set_GEntID(subface,max_gface_id);
+        }
+        nsub++;
+
+        /* Done with this subface */
+
+        idx2 = 0;
+        while ((subface = List_Next_Entry(subfaces,&idx2))) {
+          MEnt_Mark(subface,processedmk);
+          MEnt_Unmark(subface,submk);
+        }
+        MSTK_FreeMarker(submk);
+        List_Delete(subfaces);
       }
 
-      /* Now we have a list of faces which we believe constitutes a
-	 model face by itself. If this is the first subface (which
-	 means it could also be the entire model face originally
-	 considered), leave the model face tag as it is. If not,
-	 assign the faces in the subface a new model face ID */
-
-      if (nsub != 0) {
-	max_gface_id++;
-	idx2 = 0;
-	while ((subface = List_Next_Entry(subfaces,&idx2))) 
-	  MF_Set_GEntID(subface,max_gface_id);
-      }
-      nsub++;
-
-      /* Done with this subface */
-
-      idx2 = 0;
-      while ((subface = List_Next_Entry(subfaces,&idx2))) {
-	MEnt_Mark(subface,processedmk);
-	MEnt_Unmark(subface,submk);
-      }
-      MSTK_FreeMarker(submk);
-      List_Delete(subfaces);
+      List_Unmark(gffaces,processedmk);
+      MSTK_FreeMarker(processedmk);
+      List_Delete(gffaces);
     }
-
-    List_Unmark(gffaces,processedmk);
-    MSTK_FreeMarker(processedmk);
-    List_Delete(gffaces);
-  }
+  
+  } /* if use_geometry == 1 */
 
   free(gfids);
   free(gfregids);

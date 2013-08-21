@@ -13,9 +13,11 @@ extern "C" {
 /* Routine to build classification for mesh vertexs given no
    classification or classification information for mesh regions only
    (if they exist)
+
+   use_geometry flag has no effect
  */
 
-int MESH_BuildVertexClassfn(Mesh_ptr mesh) {
+int MESH_BuildVertexClassfn(Mesh_ptr mesh, int use_geometry) {
   int i, j, k, idx, fnd, fnd2, gvid, gdim;
   int ngverts, ngvalloc, ngve, max_loc_geids, *loc_geids;
   int max_gvert_id;

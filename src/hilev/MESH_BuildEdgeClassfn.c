@@ -13,9 +13,14 @@ extern "C" {
 /* Routine to build classification for mesh edges given no
    classification or classification information for mesh regions only
    (if they exist)
+
+   if use_geometry is 1, then the code tries to refine the
+   classification of mesh edges on model edges based on geometric
+   measures
+
  */
 
-int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
+  int MESH_BuildEdgeClassfn(Mesh_ptr mesh, int use_geometry) {
   int i, j, k, idx, idx2, fnd, fnd2, geid, geid2, gdim;
   int ngedges, ngealloc, ngef, max_loc_gfids, *loc_gfids;
   int max_gedge_id, processedmk, submk;
@@ -340,160 +345,164 @@ int MESH_BuildEdgeClassfn(Mesh_ptr mesh) {
   free(loc_gfids);
 
 
-  /* Now assign model edge IDs based on whether a sharp set of edges
-     enclose a set of edges */
+  if (use_geometry == 1) {
 
-  for (i = 0; i < ngedges; i++) {
+    /* Now assign model edge IDs based on whether a sharp set of edges
+       enclose a set of edges */
 
-    /* Find all mesh edges with this model edge id */
+    for (i = 0; i < ngedges; i++) {
 
-    geedges = List_New(10);
-    idx = 0; 
-    while ((edge = MESH_Next_Edge(mesh,&idx))) {
-      if (ME_GEntDim(edge) == 1 && ME_GEntID(edge) == geids[i])
-	List_Add(geedges,edge);
-    }
+      /* Find all mesh edges with this model edge id */
 
-    /* Process edges of this list and subdivide them into subedges */
-    /* The way we do that is 
+      geedges = List_New(10);
+      idx = 0; 
+      while ((edge = MESH_Next_Edge(mesh,&idx))) {
+        if (ME_GEntDim(edge) == 1 && ME_GEntID(edge) == geids[i])
+          List_Add(geedges,edge);
+      }
+
+      /* Process edges of this list and subdivide them into subedges */
+      /* The way we do that is 
        
-    1) we put an unprocessed edge from the original list in a subedge
-    list
+         1) we put an unprocessed edge from the original list in a subedge
+         list
 
-    2) we then add its neighboring edges to subedge list if they are
-    of the same color (same model edge id) and do not have a sharp
-    edge separating them from the current edge
+         2) we then add its neighboring edges to subedge list if they are
+         of the same color (same model edge id) and do not have a sharp
+         edge separating them from the current edge
 
-    3) we then process the next edge in the subedge list 
+         3) we then process the next edge in the subedge list 
 
-    4) we are done if we cannot find any more neighbors of edges in
-    the subedge list to add to the subedge list
+         4) we are done if we cannot find any more neighbors of edges in
+         the subedge list to add to the subedge list
 
-    5) we then repeat steps 1 through 4 until we are left with no
-    more edges to process from the original list
+         5) we then repeat steps 1 through 4 until we are left with no
+         more edges to process from the original list
        
-    */
+      */
 
-    processedmk = MSTK_GetMarker();
+      processedmk = MSTK_GetMarker();
 
-    nsub = 0;
-    idx = 0;
-    while ((edge = List_Next_Entry(geedges,&idx))) {
-      if (MEnt_IsMarked(edge,processedmk))
-	continue;
+      nsub = 0;
+      idx = 0;
+      while ((edge = List_Next_Entry(geedges,&idx))) {
+        if (MEnt_IsMarked(edge,processedmk))
+          continue;
 
-      /* Found a edge in geedges that has not been processed */
-      MEnt_Mark(edge,processedmk);
+        /* Found a edge in geedges that has not been processed */
+        MEnt_Mark(edge,processedmk);
 
-      submk = MSTK_GetMarker();
-      subedges = List_New(10);
-      List_Add(subedges,edge);
-      MEnt_Mark(edge,submk);
+        submk = MSTK_GetMarker();
+        subedges = List_New(10);
+        List_Add(subedges,edge);
+        MEnt_Mark(edge,submk);
 
-      idx2 = 0;
-      while ((subedge = List_Next_Entry(subedges,&idx2))) {
-	geid = ME_GEntID(subedge);
+        idx2 = 0;
+        while ((subedge = List_Next_Entry(subedges,&idx2))) {
+          geid = ME_GEntID(subedge);
 
-	ev[0] = ME_Vertex(subedge,0);
-	ev[1] = ME_Vertex(subedge,1);
+          ev[0] = ME_Vertex(subedge,0);
+          ev[1] = ME_Vertex(subedge,1);
 
-	for (j = 0; j < 2; j++) {
-	  vedges = MV_Edges(ev[j]);
-	  nve = List_Num_Entries(vedges);
+          for (j = 0; j < 2; j++) {
+            vedges = MV_Edges(ev[j]);
+            nve = List_Num_Entries(vedges);
 
-	  vbedges = List_New(nve); /* list of boundary edges cnctd 2 vert */
-	  for (k = 0; k < nve; k++) {
-	    adjedge = List_Entry(vedges,k);
-	    if (ME_GEntDim(adjedge) == 1)
-	      List_Add(vbedges,adjedge);
-	  }
+            vbedges = List_New(nve); /* list of boundary edges cnctd 2 vert */
+            for (k = 0; k < nve; k++) {
+              adjedge = List_Entry(vedges,k);
+              if (ME_GEntDim(adjedge) == 1)
+                List_Add(vbedges,adjedge);
+            }
 
-	  nbe = List_Num_Entries(vbedges);
-	  if (nbe == 2) {
-	    /* we might be on a model vertex or on a model edge */
+            nbe = List_Num_Entries(vbedges);
+            if (nbe == 2) {
+              /* we might be on a model vertex or on a model edge */
 
-	    adjedge = List_Entry(vbedges,0);
-	    if (adjedge == subedge)
-	      adjedge = List_Entry(vbedges,1);
-	    geid2 = ME_GEntID(adjedge);
+              adjedge = List_Entry(vbedges,0);
+              if (adjedge == subedge)
+                adjedge = List_Entry(vbedges,1);
+              geid2 = ME_GEntID(adjedge);
 
-	    if (geid == geid2) {
-	      /* The two edges are of the same ID. If the angle
-		 between them is not sharp they can be classified as
-		 being on the same subedge */
+              if (geid == geid2) {
+                /* The two edges are of the same ID. If the angle
+                   between them is not sharp they can be classified as
+                   being on the same subedge */
 	      
-	      cosang = MEs_Angle(subedge,adjedge);
+                cosang = MEs_Angle(subedge,adjedge);
 
-	      if (cosang <= COSSHARPANG) {
-		/* Add edge2 to subedge list unless its already there */
-		if (!MEnt_IsMarked(adjedge,submk)) {
-                  List_Add(subedges,adjedge);
-                  MEnt_Mark(adjedge,submk);
+                if (cosang <= COSSHARPANG) {
+                  /* Add edge2 to subedge list unless its already there */
+                  if (!MEnt_IsMarked(adjedge,submk)) {
+                    List_Add(subedges,adjedge);
+                    MEnt_Mark(adjedge,submk);
+                  }
                 }
-	      }
-	      else {
-		/* The two edges make a very sharp angle. We will
-		   consider the edge b/w them to be a model vertex */
-		/* Tag the edge as being on a model vertex (we don't
-		   know the model vertex ID as yet) and continue */
+                else {
+                  /* The two edges make a very sharp angle. We will
+                     consider the edge b/w them to be a model vertex */
+                  /* Tag the edge as being on a model vertex (we don't
+                     know the model vertex ID as yet) and continue */
 
-		MV_Set_GEntDim(ev[j],0);
-		MV_Set_GEntID(ev[j],0);
-	      }
-	    }
-	    else {
-	      /* we reached a model vertex */
-	      /* Tag the edge as being on a model vertex (we don't know
-		 the model vertex ID as yet) and continue */
+                  MV_Set_GEntDim(ev[j],0);
+                  MV_Set_GEntID(ev[j],0);
+                }
+              }
+              else {
+                /* we reached a model vertex */
+                /* Tag the edge as being on a model vertex (we don't know
+                   the model vertex ID as yet) and continue */
 
-	      MV_Set_GEntDim(ev[j],0);
-	      MV_Set_GEntID(ev[j],0);
-	    }
-	  }
-	  else {
-	    /* we reached a a model vertex */
-	    /* Tag the edge as being on a model vertex (we don't know
-	       the model vertex ID as yet) and continue */
+                MV_Set_GEntDim(ev[j],0);
+                MV_Set_GEntID(ev[j],0);
+              }
+            }
+            else {
+              /* we reached a a model vertex */
+              /* Tag the edge as being on a model vertex (we don't know
+                 the model vertex ID as yet) and continue */
 
-	    ME_Set_GEntDim(ev[j],0);
-	    ME_Set_GEntID(ev[j],0);
-	  }
-	  List_Delete(vedges);
-	  List_Delete(vbedges);	  
-	}
+              ME_Set_GEntDim(ev[j],0);
+              ME_Set_GEntID(ev[j],0);
+            }
+            List_Delete(vedges);
+            List_Delete(vbedges);	  
+          }
 
-	/* Finished processing all neighbors of the edge */
+          /* Finished processing all neighbors of the edge */
+        }
+
+        /* Now we have a list of edges which we believe constitutes a
+           model edge by itself. If this is the first subedge (which
+           means it could also be the entire model edge originally
+           considered), leave the model edge tag as it is. If not,
+           assign the edges in the subedge a new model edge ID */
+
+        if (nsub != 0) {
+          max_gedge_id++;
+          idx2 = 0;
+          while ((subedge = List_Next_Entry(subedges,&idx2))) 
+            ME_Set_GEntID(subedge,max_gedge_id);
+        }
+        nsub++;
+
+        /* Done with this subedge */
+
+        idx2 = 0;
+        while ((subedge = List_Next_Entry(subedges,&idx2))) {
+          MEnt_Mark(subedge,processedmk);
+          MEnt_Unmark(subedge,submk);
+        }
+        MSTK_FreeMarker(submk);
+        List_Delete(subedges);
       }
 
-      /* Now we have a list of edges which we believe constitutes a
-	 model edge by itself. If this is the first subedge (which
-	 means it could also be the entire model edge originally
-	 considered), leave the model edge tag as it is. If not,
-	 assign the edges in the subedge a new model edge ID */
-
-      if (nsub != 0) {
-	max_gedge_id++;
-	idx2 = 0;
-	while ((subedge = List_Next_Entry(subedges,&idx2))) 
-	  ME_Set_GEntID(subedge,max_gedge_id);
-      }
-      nsub++;
-
-      /* Done with this subedge */
-
-      idx2 = 0;
-      while ((subedge = List_Next_Entry(subedges,&idx2))) {
-	MEnt_Mark(subedge,processedmk);
-	MEnt_Unmark(subedge,submk);
-      }
-      MSTK_FreeMarker(submk);
-      List_Delete(subedges);
+      List_Unmark(geedges,processedmk);
+      MSTK_FreeMarker(processedmk);
+      List_Delete(geedges);
     }
 
-    List_Unmark(geedges,processedmk);
-    MSTK_FreeMarker(processedmk);
-    List_Delete(geedges);
-  }
+  } /* if use_geometry == 1 */
 
   free(geids);
   for (i = 0; i < ngedges; i++)
