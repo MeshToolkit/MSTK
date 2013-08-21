@@ -15,18 +15,26 @@ typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;
-  int len, ok, build_classfn=1, partition=0, weave=0;
+  int len, ok, build_classfn=1, partition=0, weave=0, use_geometry=0;
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
 
 
   if (argc < 3) {
-    fprintf(stderr,"usage: %s <--classify=y|1|n|0> <--partition=y|1|n|0> <--partition-method=0|1|2> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n",argv[0]);
+    fprintf(stderr,"usage: %s <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n",argv[0]);
     fprintf(stderr,"partition-method = 0, METIS\n");
     fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
     fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
     fprintf(stderr,"Choose 2 if you want to avoid partitioning models\n");
     fprintf(stderr,"with high aspect ratio along the short directions\n");
+    fprintf(stderr,"");
+    fprintf(stderr,"weave = 0, Do not weave distributed meshes for inter-processor connectivity\n");
+    fprintf(stderr,"      = 1, Weave distributed meshes for inter-processor connectivity\n");
+    fprintf(stderr,"");
+    fprintf(stderr,"classify = 0/n, No mesh classification information derived\n");
+    fprintf(stderr,"         = 1/y, Mesh entity classification derived from material IDs\n");
+    fprintf(stderr,"         = 2, As in 1 with additional inference from boundary geometry\n");
+    fprintf(stderr,"CLASSIFICATION: Relationship of mesh entities to geometric model/domain\n");
     exit(-1);
   }
 
@@ -56,14 +64,18 @@ int main(int argc, char *argv[]) {
     for (i = 1; i < argc-2; i++) {
       if (strncmp(argv[i],"--classify",10) == 0) {
         if (strncmp(argv[i],"--classify=y",12) == 0 ||
-            strncmp(argv[i],"--classify=1",12) == 0) 
+            strncmp(argv[i],"--classify=1",12) == 0)
           build_classfn = 1;
         else if (strncmp(argv[i],"--classify=n",12) == 0 ||
                  strncmp(argv[i],"--classify=0",12) == 0)
           build_classfn = 0;
+        else if (strncmp(argv[i],"--classify=2",12) == 0) {
+          build_classfn = 1;
+          use_geometry = 1;
+        }
         else
           MSTK_Report("meshconvert",
-                      "--classify option should be y, n, 1 or 0",
+                      "--classify option should be 0, 1, 2, y or n",
                       MSTK_FATAL);          
            
       }
@@ -236,7 +248,7 @@ int main(int argc, char *argv[]) {
   if (build_classfn) {
     fprintf(stderr,"Building classification information....");
 
-    ok = MESH_BuildClassfn(mesh);  
+    ok = MESH_BuildClassfn(mesh,use_geometry);  
 
     if (ok)
       fprintf(stderr,"Done\n");
