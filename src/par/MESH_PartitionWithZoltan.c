@@ -5,6 +5,7 @@
 #include "zoltan.h"
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 /* Get partitioning of mesh using Zoltan. Doesn't actually do anything 
    the mesh */
@@ -107,7 +108,7 @@ int NDIM_4_ZOLTAN = 3;
   
   if (rank == 0) {
     char mesg[256];
-    sprintf(mesg,"Using partitioning method %s for ZOLTAN",partition_method_str);
+    sprintf(mesg,"Using partitioning method %s for ZOLTAN\n",partition_method_str);
     MSTK_Report("MESH_PartitionWithZoltan",mesg,MSTK_MESG);
   }
 
@@ -209,8 +210,8 @@ int NDIM_4_ZOLTAN = 3;
     MPI_Bcast(&NDIM_4_ZOLTAN,1,MPI_INT,0,comm);
 
     /* Set some default values */
-    //    Zoltan_Set_Param(zz, "RCB_RECTILINEAR_BLOCKS","1");
-    Zoltan_Set_Param(zz, "AVERAGE_CUTS", "1");
+    Zoltan_Set_Param(zz, "RCB_RECTILINEAR_BLOCKS","1");
+    //    Zoltan_Set_Param(zz, "AVERAGE_CUTS", "1");
 
     if (noptions > 1) {
       for (i = 1; i < noptions; i++) {
@@ -405,6 +406,14 @@ int NDIM_4_ZOLTAN = 3;
     if (graph.nborIndex) free(graph.nborIndex);
     if (graph.nborGID) free(graph.nborGID);
     if (graph.nborProc) free(graph.nborProc);
+
+    if (nr && strcmp(partition_method_str,"RCB") == 0) {
+      /* This is expected to be a columnar mesh but Zoltan sometimes
+         splits columns across two processors - Fix this */
+
+      FixColumnPartitions(mesh,*part,comm);
+
+    }
   }
   else { 
     *part = NULL;

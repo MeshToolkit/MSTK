@@ -132,7 +132,7 @@ void MSTK_Init(void);
   int         MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
   int         MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
 
-  int         MESH_BuildClassfn(Mesh_ptr mesh);
+  int         MESH_BuildClassfn(Mesh_ptr mesh, int use_geometry);
   int         MESH_DelInterior(Mesh_ptr mesh);
   int         MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
 

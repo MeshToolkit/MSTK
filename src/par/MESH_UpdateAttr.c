@@ -57,7 +57,7 @@ extern "C" {
     if (att_type == POINTER) {
       char mesg[1024], attname[256];
       MAttrib_Get_Name(attrib,attname);
-#ifdef DEBUG
+#ifdef DEBUG2
       sprintf(mesg,"Meaningless to update pointer attributes across processors (attribute: %s", attname);
       MSTK_Report("MESH_UpdateAttr()",mesg,MSTK_WARN);
 #endif
@@ -84,7 +84,9 @@ extern "C" {
       num_ov = MESH_Num_OverlapRegions(mesh);
       break;
     case MALLTYPE:
+#ifdef DEBUG2
       MSTK_Report("MESH_UpdateAttr","Not implemented for MALLTYPE",MSTK_WARN);
+#endif
       return 0;
       break;
     default:

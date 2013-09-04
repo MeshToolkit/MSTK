@@ -65,7 +65,7 @@ extern "C" {
     break;
   default:
     num = 0;
-#ifdef DEBUG
+#ifdef DEBUG2
     MSTK_Report("MESH_SendAttr()","Cannot send attributes on entity type MALLTYPE",MSTK_WARN);
 #endif
     return 0;
@@ -184,7 +184,7 @@ extern "C" {
     break;
   case MALLTYPE:
     num = 0;
-#ifdef DEBUG
+#ifdef DEBUG2
     MSTK_Report("MESH_SendAttr()","Cannot receive attributes on entity type MALLTYPE",MSTK_WARN);
 #endif
     return 0;
