@@ -113,7 +113,7 @@ int NDIM_4_ZOLTAN = 3;
   }
 
   /* General parameters for Zoltan */
-
+  Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
   Zoltan_Set_Param(zz, "LB_METHOD", partition_method_str);
   Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
   Zoltan_Set_Param(zz, "NUM_GID_ENTRIES", "1");
@@ -354,7 +354,7 @@ int NDIM_4_ZOLTAN = 3;
 
     /* Graph parameters */
 
-    Zoltan_Set_Param(zz, "CHECK_GRAPH", "2");
+    /* Zoltan_Set_Param(zz, "CHECK_GRAPH", "2"); */
     Zoltan_Set_Param(zz, "PHG_EDGE_SIZE_THRESHOLD", ".35");  /* 0-remove all, 1-remove none */
 
     /* Query functions - defined in simpleQueries.h */
