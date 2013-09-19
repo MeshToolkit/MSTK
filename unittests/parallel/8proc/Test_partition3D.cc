@@ -471,22 +471,22 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
 
   
   /* Total number of entities - ghost + owned */
-  int expnr[8]={2,2,2,2,2,2,2,2};
-  int expnf[8]={11,11,11,11,11,11,11,11};
-  int expne[8]={20,20,20,20,20,20,20,20};
-  int expnv[8]={12,12,12,12,12,12,12,12};
+  int expnr[8]={4,4,4,4,4,4,4,4};
+  int expnf[8]={20,20,20,20,20,20,20,20};
+  int expne[8]={33,33,33,33,33,33,33,33};
+  int expnv[8]={18,18,18,18,18,18,18,18};
 
   /* Number of ghost entities */
   int expngr[8]={0,0,0,0};
-  int expngf[8]={0,2,2,4,2,4,2,4};
-  int expnge[8]={0,7,7,12,7,12,7,12};
-  int expngv[8]={0,6,6,9,6,9,6,9};
+  int expngf[8]={0,4,2,6,4,4,6,6};
+  int expnge[8]={0,12,7,17,12,12,17,17};
+  int expngv[8]={0,9,6,12,9,9,12,12};
 
   /* Number of overlap entities */
   int expnor[8]={0,0,0,0,0,0,0,0};
-  int expnof[8]={4,2,4,2,4,2,2,0};
-  int expnoe[8]={12,5,10,5,10,5,5,0};
-  int expnov[8]={9,3,6,3,6,3,3,0};
+  int expnof[8]={6,6,4,4,6,2,4,0};
+  int expnoe[8]={17,15,10,10,15,5,10,0};
+  int expnov[8]={12,9,6,6,9,3,6,0};
 
 
   MSTK_Init();
@@ -504,7 +504,7 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
   if (rank == 0) {
       
     globalmesh = MESH_New(UNKNOWN_REP);
-    status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex_4x2x2.mstk",comm);
+    status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex_4x4x2.mstk",comm);
       
     CHECK(status);
       
