@@ -637,7 +637,7 @@ extern "C" {
 
       }
       else if (strncasecmp(elem_type,"NSIDED",6) == 0 ||
-	       strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
+	       strncasecmp(elem_type,"TRI",3) == 0 ||
 	       strncasecmp(elem_type,"QUAD",4) == 0 ||
 	       strncasecmp(elem_type,"SHELL",5) == 0)
 	surf_elems = 1;      
@@ -1066,7 +1066,7 @@ extern "C" {
 	free(nnpe);
 
       }
-      else if (strncasecmp(elem_type,"TRIANGLE",8) == 0 ||
+      else if (strncasecmp(elem_type,"TRI",3) == 0 ||
 	       strncasecmp(elem_type,"QUAD",4) == 0 ||
 	       strncasecmp(elem_type,"SHELL3",6) == 0 ||
 	       strncasecmp(elem_type,"SHELL4",6) == 0) {
