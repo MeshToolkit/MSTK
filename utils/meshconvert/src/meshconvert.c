@@ -21,20 +21,22 @@ int main(int argc, char *argv[]) {
 
 
   if (argc < 3) {
-    fprintf(stderr,"usage: %s <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n",argv[0]);
+    fprintf(stderr,"\n");
+    fprintf(stderr,"usage: meshconvert <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n\n");
     fprintf(stderr,"partition-method = 0, METIS\n");
     fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
     fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
     fprintf(stderr,"Choose 2 if you want to avoid partitioning models\n");
     fprintf(stderr,"with high aspect ratio along the short directions\n");
-    fprintf(stderr,"");
+    fprintf(stderr,"\n");
     fprintf(stderr,"weave = 0, Do not weave distributed meshes for inter-processor connectivity\n");
     fprintf(stderr,"      = 1, Weave distributed meshes for inter-processor connectivity\n");
-    fprintf(stderr,"");
+    fprintf(stderr,"\n");
     fprintf(stderr,"classify = 0/n, No mesh classification information derived\n");
     fprintf(stderr,"         = 1/y, Mesh entity classification derived from material IDs\n");
     fprintf(stderr,"         = 2, As in 1 with additional inference from boundary geometry\n");
     fprintf(stderr,"CLASSIFICATION: Relationship of mesh entities to geometric model/domain\n");
+    fprintf(stderr,"\n");
     exit(-1);
   }
 
@@ -319,6 +321,22 @@ int main(int argc, char *argv[]) {
 
 #endif /* MSTK_HAVE_MPI */
 
+
+  /* Check that the imported mesh is ok */
+
+  ok = MESH_CheckTopo(mesh);
+
+#ifdef MSTK_HAVE_MPI
+  if (numprocs > 1) {
+
+    /* Do a parallel consistency check too */
+
+    ok = ok && MESH_Parallel_Check(mesh,comm);
+    
+  }
+#endif
+
+  /* Not checking the mesh geometry here */
 
 
   if (outmeshformat == MSTK) {
