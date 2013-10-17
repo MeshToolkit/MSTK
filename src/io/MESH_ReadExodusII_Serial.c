@@ -93,6 +93,12 @@ extern "C" {
   int exo_nrf[3] = {4,5,6};
   int exo_nrfverts[3][6] =
     {{3,3,3,3,0,0},{4,4,4,3,3,0},{4,4,4,4,4,4}};
+
+  /* I am making the following change in order to have consistent face
+     orientations on the boundary. If the import breaks horribly,
+     revert to previous version given in comments below - RVG 10/17/2013 */
+
+  /* Old
   int exo_rfverts[3][6][4] =
     {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{0,1,2,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
      {{0,1,4,3},{1,2,5,4},{2,0,3,5},{0,1,2,-1},{3,4,5,-1},{-1,-1,-1,-1}},
@@ -101,6 +107,17 @@ extern "C" {
     {{1,1,1,0,-99,-99},
      {1,1,1,0,1,-99},
      {1,1,1,1,0,1}};
+  */
+
+  /* New */
+  int exo_rfverts[3][6][4] =
+    {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{0,2,1,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
+     {{0,1,4,3},{1,2,5,4},{2,0,3,5},{0,2,1,-1},{3,4,5,-1},{-1,-1,-1,-1}},
+     {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{0,3,2,1},{4,5,6,7}}};
+  int exo_rfdirs[3][6] =
+    {{1,1,1,1,-99,-99},
+     {1,1,1,1,1,-99},
+     {1,1,1,1,1,1}};
 
   List_ptr fedges, rfaces;
   MVertex_ptr mv, *fverts, *rverts;
@@ -624,7 +641,7 @@ extern "C" {
       }
 
       if (strncasecmp(elem_type,"NFACED",6) == 0 ||
-	  strncasecmp(elem_type,"TETRA",5) == 0 ||
+	  strncasecmp(elem_type,"TET",3) == 0 ||
 	  strncasecmp(elem_type,"WEDGE",5) == 0 ||
 	  strncasecmp(elem_type,"HEX",3) == 0) {
 
@@ -827,7 +844,7 @@ extern "C" {
 	free(nnpe);
 
       }
-      else if (strncasecmp(elem_type,"TETRA",5) == 0 ||
+      else if (strncasecmp(elem_type,"TET",3) == 0 ||
 	       strncasecmp(elem_type,"WEDGE",5) == 0 ||
 	       strncasecmp(elem_type,"HEX",3) == 0) {
 	int nrf, eltype;
@@ -848,7 +865,7 @@ extern "C" {
 	
 	rverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
 	
-	if (strncasecmp(elem_type,"TETRA",5) == 0) {
+	if (strncasecmp(elem_type,"TET",3) == 0) {
 	  eltype = 0;
 	  nrf = 4;
 	  if (nelnodes > 4) {

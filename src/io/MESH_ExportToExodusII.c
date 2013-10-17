@@ -1762,18 +1762,18 @@ extern "C" {
 
 
 
-    /* Node sets formed by vertices on geometric model vertices */
+    /* Node sets formed by vertices on geometric model vertices and edges */
 
     idx = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-      if (MV_GEntDim(mv) != 0) continue;
+      if (MV_GEntDim(mv) >= 2) continue;
       
 
 #ifdef MSTK_HAVE_MPI
       if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
 #endif
 
-      nid = MV_GEntID(mv);
+      nid = MV_GEntDim(mv)*10000 + MV_GEntID(mv);
       
       found = 0;
       i = 0;
@@ -1798,103 +1798,6 @@ extern "C" {
 	nn++;
       }
     }
-
-
-
-
-    /* Node sets formed by vertices on the closure of geometric model edges */
-
-    mkid1 = MSTK_GetMarker();
-    mkid2 = MSTK_GetMarker();
-
-    idx = 0;
-    while ((me = MESH_Next_Edge(mesh,&idx))) {
-      if (ME_GEntDim(me) != 1) continue;
-
-      if (MEnt_IsMarked(me,mkid1)) continue;
-
-      /* Found a mesh edge on an unprocessed geometric model edge */	
-
-      elist = List_New(10);
-
-      MEnt_Mark(me,mkid1);
-      MEnt_Mark(me,mkid2);
-      List_Add(elist,me);
-
-      int egid = ME_GEntID(me);
-      nid = 10000+egid;
-
-      /* Make a list of the mesh edges on this geometric model edge */
-      
-      idx2 = 0;
-      while ((me2 = List_Next_Entry(elist,&idx2))) {
-	for (i = 0; i < 2; i++) {
-	  mv = ME_Vertex(me2,i);
-	  vedges = MV_Edges(mv);
-	  
-	  idx3 = 0;
-	  while ((ve = List_Next_Entry(vedges,&idx3))) {
-
-	    if (ME_GEntDim(ve) != 1 || ME_GEntID(ve) != egid) continue; /* Not on the same model edge */
-
-	    if (!MEnt_IsMarked(ve,mkid2)) {
-	      List_Add(elist,ve);
-	      MEnt_Mark(ve,mkid1);
-	      MEnt_Mark(ve,mkid2);
-	    }
-	  }
-	  List_Delete(vedges);
-	}
-      }
-
-
-      /* Get the unique vertices of edges on this model edge */
-
-      vlist = List_New(10);
-      idx2 = 0;
-      while ((me2 = List_Next_Entry(elist,&idx2))) {
-	for (i = 0; i < 2; i++) {
-	  mv = ME_Vertex(me2,i);
-
-#ifdef MSTK_HAVE_MPI
-          if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
-#endif
-	  if (!MEnt_IsMarked(mv,mkid2)) {
-	    MEnt_Mark(mv,mkid2);
-	    List_Add(vlist,mv);
-	  }
-	}
-      }
-      List_Unmark(vlist,mkid2);
-
-      List_Unmark(elist,mkid2);
-      List_Delete(elist);
-
-      if (List_Num_Entries(vlist) == 0) {
-        List_Delete(vlist);
-        continue;
-      }
-
-      /* Make a nodeset from the vertices on the closure of this model edge */
-
-      if (nn == nnalloc) {
-	nnalloc *= 2;
-	*node_sets = (List_ptr *) MSTK_realloc(*node_sets,nnalloc*sizeof(List_ptr));
-	*node_set_ids = (int *) MSTK_realloc(*node_set_ids,nnalloc*sizeof(int));
-      }
-
-      (*node_sets)[nn] = vlist; /* don't delete vlist */
-      (*node_set_ids)[nn] = nid;
-      nn++;
-    }
-
-    idx = 0;
-    while ((me = MESH_Next_Edge(mesh,&idx)))
-      MEnt_Unmark(me,mkid1);
-
-
-    MSTK_FreeMarker(mkid1);
-    MSTK_FreeMarker(mkid2);
 
     *num_node_set = nn;
   }
