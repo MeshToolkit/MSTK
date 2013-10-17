@@ -15,12 +15,16 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
 int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm);
-  int MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm) {
+
+
+int MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm) {
   int valid;
 
   int rank, num;
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&num);
+
+  if (num == 1) return 1;
 
 #ifdef DEBUG
   fprintf(stderr,"Begin checking parallel information on submesh %d\n",rank);
@@ -30,7 +34,7 @@ int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm com
     valid = MESH_Parallel_Check_GlobalID(mesh,rank,num,comm);
 #ifdef DEBUG
   if (valid) fprintf(stderr,"Passed parallel checking on submesh %d\n",rank);
-  else printf(stderr,"Failed parallel checking on submesh %d\n",rank);
+  else fprintf(stderr,"Failed parallel checking on submesh %d\n",rank);
 #endif
 
   return valid;
