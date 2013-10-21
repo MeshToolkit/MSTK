@@ -624,6 +624,7 @@ void MSTK_Init(void);
 /***********************************************************************/
 
   int         ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
+  int         ME_Split(MEdge_ptr esplit, MVertex_ptr vsplit, MEdge_ptr enew[2]);
   MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
   MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
   MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
