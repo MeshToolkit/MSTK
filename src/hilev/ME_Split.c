@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include "MSTK.h"
 
-/* Routine to split an edge by inserting a vertex - two new edges are
+/* Routine to split an edge at a given location - two new edges are
    created in place of this edge and the faces connected to the old
    edge are updated to reflect the new topology. The split edge is
    deleted */
 
-int ME_Split(MEdge_ptr esplit, MVertex_ptr vnew, MEdge_ptr enew[2]) {
+MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz) {
   Mesh_ptr mesh;
-  MEdge_ptr fe[4], fenew[6], enewrev[2];
-  MVertex_ptr v[4];
+  MEdge_ptr fe[4], fenew[6], enew[2], enewrev[2];
+  MVertex_ptr v[4], vnew=NULL;
   MFace_ptr f[2], ef;
   int dir[3], gid, gdim, k, nf, idx, fedir;
   List_ptr fedges, efaces;
@@ -23,6 +23,11 @@ int ME_Split(MEdge_ptr esplit, MVertex_ptr vnew, MEdge_ptr enew[2]) {
   mesh = ME_Mesh(esplit);
   v[0] = ME_Vertex(esplit,0);
   v[1] = ME_Vertex(esplit,1);
+
+  vnew = MV_New(mesh);
+  MV_Set_Coords(vnew,xyz);
+  MV_Set_GEntDim(vnew,gdim);
+  MV_Set_GEntID(vnew,gid);
 
   enew[0] = ME_New(mesh);
   ME_Set_Vertex(enew[0],0,v[0]);
@@ -49,5 +54,5 @@ int ME_Split(MEdge_ptr esplit, MVertex_ptr vnew, MEdge_ptr enew[2]) {
       MF_Replace_Edges(ef,1,&esplit,2,enewrev);
   }
 
-  return 1;
+  return vnew;
 }
