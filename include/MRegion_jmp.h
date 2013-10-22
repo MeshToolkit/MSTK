@@ -469,7 +469,7 @@ void MR_Replace_Faces_R2(MRegion_ptr r, int nold, MFace_ptr *f, int nnu,
 static void 
 (*MR_Replace_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r, int nold, MFace_ptr *f,
                                     int nnu, MFace_ptr * nuf, 
-                                    int nudir)=
+                                    int *nudir)=
 {MR_Replace_Faces_FNR3R4, MR_Replace_Faces_FNR3R4, MR_Replace_Faces_R1, 
  MR_Replace_Faces_R2, MR_Replace_Faces_FNR3R4};
 
