@@ -117,9 +117,11 @@ MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2) {
     while ((reg = List_Next_Entry(fregs2,&idx))) {
       int f2dir = MR_FaceDir(reg,f2);
       if (dir)                      /* f1 and f2 oriented the same way */
-	MR_Replace_Face(reg,f2,f1,f2dir);
-      else                          /* f1 and f2 oriented in opposite way */
-	MR_Replace_Face(reg,f2,f1,!f2dir);
+	MR_Replace_Faces(reg,1,&f2,1,&f1,&f2dir);
+      else {                         /* f1 and f2 oriented in opposite way */
+        f2dir = !f2dir;
+	MR_Replace_Faces(reg,1,&f2,1,&f1,&f2dir);
+      }
     }
 
     List_Delete(fregs2);

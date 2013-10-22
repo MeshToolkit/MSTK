@@ -69,7 +69,7 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
     idx = 0;
     while ((reg = List_Next_Entry(fregs2,&idx))) {
       dir = MR_FaceDir(reg,f2);
-      MR_Replace_Face(reg,f2,f1,dir);
+      MR_Replace_Faces(reg,1,&f2,1,&f1,&dir);
     }
 
     List_Delete(fregs2);
