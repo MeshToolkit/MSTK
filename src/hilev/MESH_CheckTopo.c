@@ -495,7 +495,7 @@ extern "C" {
         fedges = MF_Edges(rf,1,0);
         nfe = List_Num_Entries(fedges);
         
-        for (j = 0; j < nfe && !found; j++) {
+        for (j = 0, found=0; j < nfe && !found; j++) {
           fe = List_Entry(fedges,j);
           int fedir = MF_EdgeDir_i(rf,j);
           

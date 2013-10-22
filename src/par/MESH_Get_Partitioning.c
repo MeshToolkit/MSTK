@@ -20,7 +20,7 @@ extern "C" {
 
 
 int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm) {
-  int i, ok = 1, nf, nr, ncells;
+  int i, ok = 1, nf, nr, ncells=0;
   int noptions;
   char **options = (char **) malloc(10*sizeof(char *));
   for (i = 0; i < 10; i++) options[i] = (char *) malloc(64*sizeof(char));

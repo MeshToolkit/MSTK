@@ -60,7 +60,7 @@ int NDIM_4_ZOLTAN = 3;
   MRegion_ptr mr, oppr;
   List_ptr fedges, efaces, rfaces, fregions;
   int  i, j, k, id;
-  int  nv, ne, nf, nr, nfe, nef, nfr, nrf, idx, idx2;
+  int  nv, ne, nf, nr=0, nfe, nef, nfr, nrf, idx, idx2;
   int  numflag, nedgecut, ipos;
   int  wtflag;
 
