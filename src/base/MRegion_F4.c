@@ -92,6 +92,14 @@ extern "C" {
     return MR_Rev_FaceDir_i_FNR3R4(r,i);
   }
 
+  int MR_Set_FaceDir_F4(MRegion_ptr r, MFace_ptr f, int dir) {
+    return MR_Set_FaceDir_FNR3R4(r,f,dir);
+  }
+
+  int MR_Set_FaceDir_i_F4(MRegion_ptr r, int i, int dir) {
+    return MR_Set_FaceDir_i_FNR3R4(r,i,dir);
+  }
+
   int MR_Num_Faces_F4(MRegion_ptr r) {
     return MR_Num_Faces_FNR3R4(r);
   }
@@ -130,8 +138,13 @@ extern "C" {
     MR_Rem_Face_FNR3R4(r,f);
   }
 
-  void MR_Replace_Face_F4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf,int nudir){
-    MR_Replace_Face_FNR3R4(r,f,nuf,nudir);
+  void MR_Replace_Faces_F4(MRegion_ptr r, int nold, MFace_ptr *oldf, int nnu,
+                           MFace_ptr *nuf, int *nudir){
+    MR_Replace_Faces_FNR3R4(r,nold,oldf,nnu,nuf,nudir);
+  }
+
+  void MR_Replace_Face_F4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir){
+    MR_Replace_Faces_FNR3R4(r,1,&f,1,&nuf,&nudir);
   }
 
   void MR_Replace_Face_i_F4(MRegion_ptr r, int i, MFace_ptr nuf, int nudir) {

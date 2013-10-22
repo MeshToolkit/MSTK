@@ -144,11 +144,19 @@ extern "C" {
 
 
   int MR_Rev_FaceDir_R2(MRegion_ptr r, MFace_ptr f) {
-    return -1;
+    return 0;
   }
 
   int MR_Rev_FaceDir_i_R2(MRegion_ptr r, int i) {
-    return -1;
+    return 0;
+  }
+
+  int MR_Set_FaceDir_R2(MRegion_ptr r, MFace_ptr f, int dir) {
+    return 0;
+  }
+
+  int MR_Set_FaceDir_i_R2(MRegion_ptr r, int i, int dir) {
+    return 0;
   }
 
 

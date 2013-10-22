@@ -522,7 +522,7 @@ extern "C" {
 
     }
 
-    return -1;
+    return 0;
   }
 
   int MR_Rev_FaceDir_i_FNR3R4(MRegion_ptr r, int i) {
@@ -539,6 +539,40 @@ extern "C" {
     adj->fdirs[j] ^= (1UL << k);
     return 1;
   }
+
+
+  int MR_Set_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f, int dir) {
+    int i,j,k, nf;
+    MRegion_Adj_FN *adj;
+
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
+
+    for (i = 0; i < nf; i++)
+      if (f == (MFace_ptr) List_Entry(adj->rfaces,i))
+        return MR_Set_FaceDir_i_FNR3R4(r,i,dir);
+
+    return 0;
+  }
+
+  int MR_Set_FaceDir_i_FNR3R4(MRegion_ptr r, int i, int dir) {
+    int j, k;
+    MRegion_Adj_FN *adj;
+    adj = (MRegion_Adj_FN *) r->adj;
+
+    if (i >= MAXPF3) {
+      MSTK_Report("MR_FaceDir_i","Not that many faces in region",MSTK_ERROR);
+      return 0;
+    }
+    
+    j = (int) i/(8*sizeof(unsigned int));
+    k = i%(8*sizeof(unsigned int));
+
+    adj->fdirs[j] = adj->fdirs[j] & ~(1<<i); /* Set bit to 0 */
+    adj->fdirs[j] = adj->fdirs[j] | (dir << k); /* Set it to desired dir */
+    return 1;
+  }
+
 
   int MR_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
     int i,j,k, nf;
@@ -643,12 +677,14 @@ extern "C" {
   /* If we allow replacing a face with multiple faces, we have to check if 
      we need to expand adj->fdirs */
 
-  void MR_Replace_Face_FNR3R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir) {
-    int i, j, k, nf;
+  void MR_Replace_Faces_FNR3R4(MRegion_ptr r, int nold, MFace_ptr *oldf, 
+                               int nnew, MFace_ptr *nuf, int *nudir) {
+    int i, j, k, nf, jf, kf, ii;
     MRegion_Adj_FN *adj;
+    MFace_ptr f;
 
 #ifdef DEBUG
-    if (MR_Mesh(r) != MF_Mesh(nuf))
+    if (MR_Mesh(r) != MF_Mesh(nuf[0]))
       MSTK_Report("MR_Replace_Face_FNR3R4",
 		  "Region and Face belong to different meshes",MSTK_FATAL);
 #endif
@@ -656,21 +692,47 @@ extern "C" {
     adj = (MRegion_Adj_FN *) r->adj;
     nf = List_Num_Entries(adj->rfaces);
 
-    for (i = 0; i < nf; i++)
-      if (f == (MFace_ptr) List_Entry(adj->rfaces,i)) {
+    kf = 0;
+    for (jf = 0; jf < nold; jf++) {
+      f = oldf[jf];
+      for (i = 0; i < nf; i++) {
+        if (f == (MFace_ptr) List_Entry(adj->rfaces,i)) {
+          if (kf < nnew) { 
 
-	j = (int) i/(8*sizeof(unsigned int));
-	k = i%(8*sizeof(unsigned int));
+            /* if there are new faces remaining to be added replace the 
+               old face with the new face - cheap to do */
 
-	adj->fdirs[j] = (adj->fdirs[j] & ~(1<<k)); /* set bit i to 0 */
-	adj->fdirs[j] = (adj->fdirs[j] | (nudir<<k)); /* set to nudir*/
+            List_Replacei(adj->rfaces,i,nuf[kf]);
+            MR_Set_FaceDir_i(r,i,nudir[kf]);
 
-	List_Replacei(adj->rfaces,i,nuf);
+            MF_Add_Region(nuf[kf],r,!nudir[kf]);
+            kf++;
+          }
+          else {
 
-	MF_Rem_Region(f,r);
-	MF_Add_Region(nuf,r,!nudir);
-	return;
+            /* no more new faces to put in place of old face - just remove
+               it from the list (this shifts all the subsequent faces up)
+               Similarly shift all the face dirs up */
+
+            for (ii = i; ii < nf-1; ii++)
+              if (MR_FaceDir_i(r,ii) != MR_FaceDir_i(r,ii+1))
+                MR_Set_FaceDir_i(r,ii,MR_FaceDir_i(r,ii+1));
+            List_Remi(adj->rfaces,i);
+          }
+          
+          MF_Rem_Region(f,r);
+        }
       }
+    }
+
+    /* If there are more new faces than old ones, add the left overs */
+    if (kf < nnew) {
+      for (jf = kf; jf < nnew; jf++) {
+        List_Add(adj->rfaces,nuf[jf]);
+        MR_Set_FaceDir_i(r,jf,nudir[jf]);        
+      }
+    }
+
   }
 
   void MR_Replace_Face_i_FNR3R4(MRegion_ptr r, int i, MFace_ptr nuf, int nudir) {

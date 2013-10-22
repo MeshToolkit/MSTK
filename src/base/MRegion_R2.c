@@ -129,14 +129,24 @@ extern "C" {
 #endif
   }
 
-  void MR_Replace_Face_R2(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int dir) {
+  void MR_Replace_Faces_R2(MRegion_ptr r, int nold, MFace_ptr *oldf, 
+                           int nnu, MFace_ptr *nuf, int *dir) {
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Face_R2",
 		"Function call not suitable for this representation",MSTK_WARN);
 #endif
   }
 
-  void MR_Replace_Face_i_R2(MRegion_ptr r, int i, MFace_ptr nuf, int dir) {
+  void MR_Replace_Face_R2(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, 
+                          int dir) {
+#ifdef DEBUG
+    MSTK_Report("MR_Replace_Face_R2",
+		"Function call not suitable for this representation",MSTK_WARN);
+#endif
+  }
+
+  void MR_Replace_Face_i_R2(MRegion_ptr r, int i, MFace_ptr nuf, 
+                            int dir) {
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Face_i_R2",
 		"Function call not suitable for this representation",MSTK_WARN);

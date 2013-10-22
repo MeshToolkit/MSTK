@@ -261,14 +261,25 @@ extern "C" {
     return (*MR_Rev_FaceDir_i_jmp[RTYPE])(r,i);
   }
 
+  int MR_Set_FaceDir(MRegion_ptr r, MFace_ptr f, int dir) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    return (*MR_Set_FaceDir_jmp[RTYPE])(r,f,dir);
+  }
+
+  int MR_Set_FaceDir_i(MRegion_ptr r, int i, int dir) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    return (*MR_Set_FaceDir_i_jmp[RTYPE])(r,i,dir);
+  }
+
   void MR_Rem_Face(MRegion_ptr r, MFace_ptr f) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
     (*MR_Rem_Face_jmp[RTYPE])(r,f);
   }
 
-  void MR_Replace_Face(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir) {
+  void MR_Replace_Faces(MRegion_ptr r, int nold, MFace_ptr *oldf, int nnu,
+                        MFace_ptr *nuf, int *nudir) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
-    (*MR_Replace_Face_jmp[RTYPE])(r,f,nuf,nudir);
+    (*MR_Replace_Faces_jmp[RTYPE])(r,nold,oldf,nnu,nuf,nudir);
   }
 
   void MR_Replace_Vertex(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv) {
@@ -276,7 +287,14 @@ extern "C" {
     (*MR_Replace_Vertex_jmp[RTYPE])(r,v,nuv);
   }
 
-  void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr nuf, int nudir) {
+  void MR_Replace_Face(MRegion_ptr r, MFace_ptr oldf, MFace_ptr nuf, 
+                       int nudir) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    (*MR_Replace_Faces_jmp[RTYPE])(r,1,&oldf,1,&nuf,&nudir);
+  }
+
+  void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr nuf, 
+                         int nudir) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
     (*MR_Replace_Face_i_jmp[RTYPE])(r,i,nuf,nudir);
   }
