@@ -69,12 +69,16 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
   /* Can be called by mesh modification routines */
   void MR_Rem_Face(MRegion_ptr r, MFace_ptr f);
+  void MR_Replace_Faces(MRegion_ptr r, int nold, MFace_ptr *oldf, int nnu,
+                        MFace_ptr *nuf, int *nudir);
   void MR_Replace_Face(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int dir);
   void MR_Replace_Vertex(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv);
   void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr f, int dir);
   void MR_Replace_Vertex_i(MRegion_ptr r, int i, MVertex_ptr v);
   int MR_Rev_FaceDir(MRegion_ptr r, MFace_ptr f);
   int MR_Rev_FaceDir_i(MRegion_ptr r, int i);
+  int MR_Set_FaceDir(MRegion_ptr r, MFace_ptr f, int dir);
+  int MR_Set_FaceDir_i(MRegion_ptr r, int i, int dir);
 
   int MR_ID(MRegion_ptr r);
   GEntity_ptr MR_GEntity(MRegion_ptr r);

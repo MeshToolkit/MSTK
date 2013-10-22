@@ -387,7 +387,7 @@ void MSTK_Init(void);
   int         MF_GEntID(MFace_ptr mface);
   GEntity_ptr MF_GEntity(MFace_ptr mface);
 
-  MFType MF_ElementType(MFace_ptr mf);
+  MFType      MF_ElementType(MFace_ptr mf);
   int         MF_Num_Vertices(MFace_ptr mface);
   int         MF_Num_Edges(MFace_ptr mface);
   int         MF_Num_AdjFaces(MFace_ptr mface);
@@ -395,7 +395,7 @@ void MSTK_Init(void);
   List_ptr    MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
   List_ptr    MF_AdjFaces(MFace_ptr mface);
 
-  /* Returns 1 or 0 */
+  /* Returns 1 or 0 for valid queries, -1 otherwise */
   int         MF_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
   int         MF_EdgeDir_i(MFace_ptr mface, int i);
 
@@ -443,14 +443,16 @@ void MSTK_Init(void);
 		       int nf, int **rfvtemplate);
 
   /* Can be called by mesh modification routines */
-  void        MR_Replace_Face(MRegion_ptr mregion, MFace_ptr mface, MFace_ptr nuface, int dir);
+  void        MR_Replace_Faces(MRegion_ptr mregion, int nold, MFace_ptr *oldf, 
+                               int nnu, MFace_ptr *nuf, int *nudir);
   void        MR_Replace_Vertex(MRegion_ptr mregion, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void        MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
   void        MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
   void        MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
   int         MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int         MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
-  
+  int         MR_Set_FaceDir(MRegion_ptr mregion, MFace_ptr mface, int dir);
+  int         MR_Set_FaceDir_i(MRegion_ptr mregion, int i, int dir);
 
 
   Mesh_ptr    MR_Mesh(MRegion_ptr mregion);
@@ -459,7 +461,7 @@ void MSTK_Init(void);
   int         MR_GEntID(MRegion_ptr mregion);
   GEntity_ptr MR_GEntity(MRegion_ptr mregion);
 
-  MRType MR_ElementType(MRegion_ptr mregion);
+  MRType      MR_ElementType(MRegion_ptr mregion);
   int         MR_Num_Vertices(MRegion_ptr mregion);
   int         MR_Num_Edges(MRegion_ptr mregion);
   int         MR_Num_Faces(MRegion_ptr mregion);
@@ -469,7 +471,7 @@ void MSTK_Init(void);
   List_ptr    MR_Faces(MRegion_ptr mregion);
   List_ptr    MR_AdjRegions(MRegion_ptr mregion);
 
-  /* Returns 1 or 0 */
+  /* Returns 1 or 0 for valid queries, -1 otherwise */
   int         MR_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int         MR_FaceDir_i(MRegion_ptr mregion, int i);
 
@@ -623,13 +625,16 @@ void MSTK_Init(void);
 /* Mesh Modification Operators                                         */
 /***********************************************************************/
 
+  MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
+
+  MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
   int         ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
   MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz);
-  MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
-  MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
+  MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag);
+
   MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
   MFace_ptr   MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
-  MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag);
+  MEdge_ptr   MF_Split(MFace_ptr fsplit, MVertex_ptr vnew0, MVertex_ptr vnew1);
   
 
 /**********************************************************************/
