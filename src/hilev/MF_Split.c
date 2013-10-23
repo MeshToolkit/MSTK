@@ -17,6 +17,10 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
   int nfe, n0, n1, *fedirs, *fedirs0, *fedirs1;;
   List_ptr fregions, felist;
 
+  enew = MVs_CommonEdge(v0,v1);
+  if (enew)
+    return enew;
+
   gdim = MF_GEntDim(fsplit);
   gid = MF_GEntID(fsplit);
  
@@ -32,6 +36,14 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
     fedirs[i] = MF_EdgeDir_i(fsplit,i);
 
   
+  /* Setup for making the left and right faces after splitting */
+
+  fedges0 = (MEdge_ptr *) malloc(nfe*sizeof(MEdge_ptr));
+  fedirs0 = (int *) malloc(nfe*sizeof(int));
+
+  fedges1 = (MEdge_ptr *) malloc(nfe*sizeof(MEdge_ptr));
+  fedirs1 = (int *) malloc(nfe*sizeof(int));
+
   /* Create the splitting edge */
 
   enew = ME_New(mesh);
@@ -40,14 +52,6 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
   ME_Set_GEntDim(enew,gdim);
   ME_Set_GEntID(enew,gid);
 
-
-  /* Setup for making the left and right faces after splitting */
-
-  fedges0 = (MEdge_ptr *) malloc(nfe*sizeof(MEdge_ptr));
-  fedirs0 = (int *) malloc(nfe*sizeof(int));
-
-  fedges1 = (MEdge_ptr *) malloc(nfe*sizeof(MEdge_ptr));
-  fedirs1 = (int *) malloc(nfe*sizeof(int));
 
   /* collect edges and dirs for right face */
   found = 0;
@@ -63,11 +67,12 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
     MSTK_Report("MF_Split","Cannot find first input vertex in face to be split",
                 MSTK_FATAL);
 
+
   n0 = 0;
   done = 0;
   while (!done) {
     fedges0[n0] = (MEdge_ptr) List_Entry(felist,i%nfe);
-    fedirs0[n0] = fedirs[i];
+    fedirs0[n0] = fedirs[i%nfe];
     vnext = ME_Vertex(fedges0[n0],fedirs0[n0]);
     n0++;
 
@@ -98,7 +103,7 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
   done = 0;
   while (!done) {
     fedges1[n1] = (MEdge_ptr) List_Entry(felist,i%nfe);
-    fedirs1[n1] = fedirs[i];
+    fedirs1[n1] = fedirs[i%nfe];
     vnext = ME_Vertex(fedges1[n1],fedirs1[n1]);
     n1++;
 
