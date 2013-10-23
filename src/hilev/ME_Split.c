@@ -54,5 +54,7 @@ MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz) {
       MF_Replace_Edges(ef,1,&esplit,2,enewrev);
   }
 
+  ME_Delete(esplit,0);
+
   return vnew;
 }
