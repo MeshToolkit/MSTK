@@ -729,7 +729,8 @@ extern "C" {
     if (kf < nnew) {
       for (jf = kf; jf < nnew; jf++) {
         List_Add(adj->rfaces,nuf[jf]);
-        MR_Set_FaceDir_i(r,jf,nudir[jf]);        
+        MR_Set_FaceDir(r,nuf[jf],nudir[jf]);        
+        MF_Add_Region(nuf[jf],r,!nudir[jf]);
       }
     }
 
