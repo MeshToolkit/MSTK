@@ -7,6 +7,10 @@
 /* A new edge is created and two new faces are created in place of the
    old face. The two new faces are incorporated into connected regions */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
   Mesh_ptr mesh;
   MVertex_ptr vnext;
@@ -138,7 +142,7 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
 
   idx = 0;
   while ((fr = List_Next_Entry(fregions,&idx))) {
-    unsigned int fdir[2];
+    int fdir[2];
     fdir[0] = fdir[1] = MR_FaceDir(fr,fsplit);
     MR_Replace_Faces(fr,1,&fsplit,2,fnew,fdir);
   }
@@ -152,3 +156,7 @@ MEdge_ptr MF_Split(MFace_ptr fsplit, MVertex_ptr v0, MVertex_ptr v1) {
 
   return enew;
 }
+
+#ifdef __cplusplus
+}
+#endif
