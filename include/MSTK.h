@@ -635,7 +635,8 @@ void MSTK_Init(void);
   MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
   MFace_ptr   MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
   MEdge_ptr   MF_Split(MFace_ptr fsplit, MVertex_ptr vnew0, MVertex_ptr vnew1);
-  
+
+  MFace_ptr   MR_Split(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges);
 
 /**********************************************************************/
 /* More parallel operators                                            */
