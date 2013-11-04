@@ -7,6 +7,10 @@
    edge are updated to reflect the new topology. The split edge is
    deleted */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz) {
   Mesh_ptr mesh;
   MEdge_ptr fe[4], fenew[6], enew[2], enewrev[2];
@@ -58,3 +62,7 @@ MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz) {
 
   return vnew;
 }
+
+#ifdef __cplusplus
+}
+#endif
