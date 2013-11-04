@@ -3,7 +3,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 
 add_executable(serial_example src/serial_example.c)
-message(STATUS "EXODUS_LIBRARIES ##############> ${EXODUS_LIBRARIES}")
 target_link_libraries(serial_example ${MSTKLIB} ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES} ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} m)
 install(TARGETS serial_example DESTINATION ${PROJECT_SOURCE_DIR}/example)
 
