@@ -918,8 +918,14 @@ extern "C" {
 	int idx2 = 0;
 	MVertex_ptr fv;
 
-	while ((fv = List_Next_Entry(fverts,&idx2)))
-	  connect[k++] = MV_ID(fv);
+	while ((fv = List_Next_Entry(fverts,&idx2))) {
+#ifdef MSTK_HAVE_MPI
+          MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
+#else
+          vid = MV_ID(fv);
+#endif
+	  connect[k++] = vid;
+        }
 
 	nnpe[i++] = List_Num_Entries(fverts);
 
