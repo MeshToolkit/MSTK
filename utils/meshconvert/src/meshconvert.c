@@ -48,10 +48,10 @@ int main(int argc, char *argv[]) {
   MSTK_Init();
 
 
+  int rank=0, numprocs=1;
 #ifdef MSTK_HAVE_MPI
 
   MSTK_Comm comm = MPI_COMM_WORLD;
-  int rank, numprocs;
 
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&numprocs);
