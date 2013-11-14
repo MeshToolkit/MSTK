@@ -29,10 +29,12 @@ double MSTK_VLenSqr3(double *a) {
 void MSTK_VNormalize3(double *a) {
   double len = sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
 
+  if (len <= 1.0e-28) {
+    return;
 #ifdef DEBUG
-  if (len <= 1.0e-28)
     fprintf(stderr,"Zero Length vector\n");
 #endif
+  }
 
   a[0] /= len; a[1] /= len; a[2] /= len;
 }
