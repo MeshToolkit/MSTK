@@ -287,12 +287,6 @@ extern "C" {
     (*MR_Replace_Vertex_jmp[RTYPE])(r,v,nuv);
   }
 
-  void MR_Replace_Face(MRegion_ptr r, MFace_ptr oldf, MFace_ptr nuf, 
-                       int nudir) {
-    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
-    (*MR_Replace_Faces_jmp[RTYPE])(r,1,&oldf,1,&nuf,&nudir);
-  }
-
   void MR_Replace_Face_i(MRegion_ptr r, int i, MFace_ptr nuf, 
                          int nudir) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);

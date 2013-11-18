@@ -216,17 +216,6 @@ static void (*MR_Replace_Faces_jmp[MSTK_MAXREP])(MRegion_ptr r,  int nold,
 {MR_Replace_Faces_F1, MR_Replace_Faces_F4, MR_Replace_Faces_R1, 
  MR_Replace_Faces_R2, MR_Replace_Faces_R4};
 
-void MR_Replace_Face_F1(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_F4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_R1(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_R2(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_FNR3R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-static void (*MR_Replace_Face_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f, 
-				      MFace_ptr nuf, int nudir) =
-{MR_Replace_Face_F1, MR_Replace_Face_F4, MR_Replace_Face_R1, 
- MR_Replace_Face_R2, MR_Replace_Face_R4};
-
 void MR_Replace_Face_i_F1(MRegion_ptr r, int i,MFace_ptr nuf,int nudir);
 void MR_Replace_Face_i_F4(MRegion_ptr r, int i,MFace_ptr nuf,int nudir);
 void MR_Replace_Face_i_R1(MRegion_ptr r, int i,MFace_ptr nuf,int nudir);
@@ -472,14 +461,6 @@ static void
                                     int *nudir)=
 {MR_Replace_Faces_FNR3R4, MR_Replace_Faces_FNR3R4, MR_Replace_Faces_R1, 
  MR_Replace_Faces_R2, MR_Replace_Faces_FNR3R4};
-
-void MR_Replace_Face_FNR3R4(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_R1(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-void MR_Replace_Face_R2(MRegion_ptr r, MFace_ptr f, MFace_ptr nuf, int nudir);
-static void 
-(*MR_Replace_Face_jmp[MSTK_MAXREP])(MRegion_ptr r, MFace_ptr f,MFace_ptr nuf,int nudir)=
-{MR_Replace_Face_FNR3R4, MR_Replace_Face_FNR3R4, MR_Replace_Face_R1, 
- MR_Replace_Face_R2, MR_Replace_Face_FNR3R4};
 
 void MR_Replace_Face_i_FNR3R4(MRegion_ptr r, int i,MFace_ptr nuf,int nudir);
 void MR_Replace_Face_i_R1(MRegion_ptr r, int i,MFace_ptr nuf,int nudir);
