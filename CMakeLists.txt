@@ -117,6 +117,23 @@ if (ENABLE_ExodusII)
   add_definitions("-DENABLE_ExodusII")
 
   ##############################################################################
+  # HDF5 - 
+  ##############################################################################
+
+ set(HDF5_ROOT ${HDF5_DIR})
+ find_package(HDF5 REQUIRED 
+              COMPONENTS C CXX HL)
+
+ if(NOT HDF5_FOUND)
+    message(FATAL_ERROR "Error: could not find hdf5 library\n"
+      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)")
+ endif()
+
+
+  message("---- HDF5_LIBRARY : " ${HDF5_LIBRARIES})
+  message("---- HDF5_IS_PARALLEL : " ${HDF5_IS_PARALLEL})
+
+  ##############################################################################
   # NetCDF - http://www.unidata.ucar.edu/software/netcdf/
   ##############################################################################
 
@@ -128,20 +145,6 @@ find_package(NetCDF REQUIRED)
   endif()
 
   message("---- NETCDF_LIBRARY : " ${NetCDF_LIBRARIES})
-
-  ##############################################################################
-  # HDF5 - 
-  ##############################################################################
-
- find_package(HDF5 REQUIRED)
-
- if(NOT HDF5_FOUND)
-    message(FATAL_ERROR "Error: could not find hdf5 library\n"
-      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)")
- endif()
-
-
-  message("---- HDF5_LIBRARY : " ${HDF5_LIBRARY})
 
   ##############################################################################
   # ExodusII - http://sourceforge.net/projects/exodusii/ or 
