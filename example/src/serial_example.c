@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     /* Basic info */
     fprintf(stderr,"\n");
-    fprintf(stderr,"Vertex: 0x%-x   ID: %-d   ",(unsigned int)v,MV_ID(v));
+    fprintf(stderr,"Vertex: %p   ID: %-d   ",v,MV_ID(v));
     
     
     /* Classification w.r.t. geometric model */
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MV_GEntID(v),
 	      MV_GEntDim(v));
       if ((gent = MV_GEntity(v)))
-	fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int) gent);
+	fprintf(stderr,"Model entity pointer: %p\n",gent);
     }
 
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 
     /* Basic info */
     fprintf(stderr,"\n");
-    fprintf(stderr,"Face: 0x%-x   ID: %-d   ",(unsigned int) f,MF_ID(f));
+    fprintf(stderr,"Face: %p   ID: %-d   ",f,MF_ID(f));
     
     
     /* Classification w.r.t. geometric model */
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MF_GEntID(f),
 	      MF_GEntDim(f));
       if ((gent = MF_GEntity(f)))
-	fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int) gent);
+	fprintf(stderr,"Model entity pointer: %p\n",gent);
     }
 
     fprintf(stderr,"\n");
@@ -126,12 +126,12 @@ int main(int argc, char *argv[]) {
     while ((e = List_Next_Entry(fedges,&idx2))) {
       edir = MF_EdgeDir_i(f,i);
       if (edir) 
-	fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		(unsigned int) e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+	fprintf(stderr,"%p    %-8d %-8d     %-1d       %-d  %-d\n",
+		e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
       else 
-	fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		(unsigned int) e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+	fprintf(stderr,"%p    %-8d %-8d     %-1d       %-d  %-d\n",
+		e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
       i++;
     }

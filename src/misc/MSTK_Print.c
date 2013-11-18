@@ -27,7 +27,7 @@ extern "C" {
     }
 
     fprintf(stderr,"\n");
-    fprintf(stderr,"Vertex: 0x%-x   ID: %-d   ",(unsigned int)v,MV_ID(v));
+    fprintf(stderr,"Vertex: %p   ID: %-d   ",v,MV_ID(v));
     
     
     if (lvl) {
@@ -39,7 +39,7 @@ extern "C" {
 	fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MV_GEntID(v),
 		MV_GEntDim(v));
 	if ((gent = MV_GEntity(v)))
-	  fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int)gent);	
+	  fprintf(stderr,"Model entity pointer: %p\n",gent);	
       }
 
       MV_Coords(v,xyz);
@@ -62,8 +62,8 @@ extern "C" {
 	    fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
 	    idx = 0;
 	    while ((e = List_Next_Entry(vedges,&idx))) {
-	      fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d    %-d  %-d\n",
-		      (unsigned int)e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+	      fprintf(stderr,"%p    %-8d %-8d     %-1d    %-d  %-d\n",
+		      e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		      MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
 	    }
 	    fprintf(stderr,"\n");
@@ -80,7 +80,7 @@ extern "C" {
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
 	  while ((f = List_Next_Entry(vfaces,&idx)))
-	    fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)f,
+	    fprintf(stderr,"%p    %-8d %-8d     %-1d\n",f,
 		    MF_ID(f),MF_GEntID(f),ME_GEntDim(f));
 	  fprintf(stderr,"\n");
 	  List_Delete(vfaces);
@@ -95,7 +95,7 @@ extern "C" {
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
 	  while ((r = List_Next_Entry(vregions,&idx)))
-	    fprintf(stderr,"0x%-8x %-8d %-8d     %-1d\n",(unsigned int)r,
+	    fprintf(stderr,"%p %-8d %-8d     %-1d\n",r,
 		    MR_ID(r),MR_GEntID(r),MR_GEntDim(r));
 	  
 	  fprintf(stderr,"\n");
@@ -131,7 +131,7 @@ extern "C" {
     }
 
     fprintf(stderr,"\n");
-    fprintf(stderr,"Edge: 0x%-x   ID: %-d   ",(unsigned int)e,ME_ID(e));
+    fprintf(stderr,"Edge: %p   ID: %-d   ",e,ME_ID(e));
     
     
     if (lvl) {
@@ -143,7 +143,7 @@ extern "C" {
 	fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", ME_GEntID(e),
 		ME_GEntDim(e));
 	if ((gent = ME_GEntity(e)))
-	  fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int)gent);
+	  fprintf(stderr,"Model entity pointer: %p\n",gent);
       }
 
       fprintf(stderr,"\n");
@@ -151,7 +151,7 @@ extern "C" {
       fprintf(stderr,"Vertices:\n");
       fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
       v0 = ME_Vertex(e,0);
-      fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)v0,
+      fprintf(stderr,"%p    %-8d %-8d     %-1d\n",v0,
 	      MV_ID(v0),MV_GEntID(v0),MV_GEntDim(v0));
       if (lvl > 1) {
 	MV_Coords(v0,xyz);
@@ -159,7 +159,7 @@ extern "C" {
       }
 
       v1 = ME_Vertex(e,1);
-      fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)v1,
+      fprintf(stderr,"%p    %-8d %-8d     %-1d\n",v1,
 	      MV_ID(v1),MV_GEntID(v1),MV_GEntDim(v1));
       if (lvl > 1) {
 	MV_Coords(v1,xyz);
@@ -180,7 +180,7 @@ extern "C" {
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
 	  while ((f = List_Next_Entry(efaces,&idx)))
-	    fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)f,
+	    fprintf(stderr,"%p    %-8d %-8d     %-1d\n",f,
 		    MF_ID(f),MF_GEntID(f),ME_GEntDim(f));
 	  fprintf(stderr,"\n");
 	  List_Delete(efaces);
@@ -195,7 +195,7 @@ extern "C" {
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
 	  while ((r = List_Next_Entry(eregions,&idx)))
-	    fprintf(stderr,"0x%-8x %-8d %-8d     %-1d\n",(unsigned int)r,
+	    fprintf(stderr,"%p %-8d %-8d     %-1d\n",r,
 		    MR_ID(r),MR_GEntID(r),MR_GEntDim(r));
 	  
 	  fprintf(stderr,"\n");
@@ -229,7 +229,7 @@ extern "C" {
     }
 
     fprintf(stderr,"\n");
-    fprintf(stderr,"Face: 0x%-x   ID: %-d   ",(unsigned int)f,MF_ID(f));
+    fprintf(stderr,"Face: %p   ID: %-d   ",f,MF_ID(f));
     
     
     if (lvl) {
@@ -241,7 +241,7 @@ extern "C" {
 	fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MF_GEntID(f),
 		MF_GEntDim(f));
 	if ((gent = MF_GEntity(f)))
-	  fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int)gent);
+	  fprintf(stderr,"Model entity pointer: %p\n",gent);
       }
 
       fprintf(stderr,"\n");
@@ -254,12 +254,12 @@ extern "C" {
       while ((e = List_Next_Entry(fedges,&idx))) {
 	edir = MF_EdgeDir_i(f,i);
 	if (edir) 
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		  (unsigned int)e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d       %-d  %-d\n",
+		  e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		  MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
 	else 
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		  (unsigned int)e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d       %-d  %-d\n",
+		  e,-ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		  MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
 	i++;
       }
@@ -277,7 +277,7 @@ extern "C" {
 	fprintf(stderr,"Vertices: %-d\n",nv);
 	fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	while ((v = List_Next_Entry(fvertices,&idx))) {
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)v,
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d\n",v,
 		  MV_ID(v),MV_GEntID(v),MV_GEntDim(v));
 	  if (lvl > 2) {
 	    MV_Coords(v,xyz);
@@ -296,7 +296,7 @@ extern "C" {
 	  fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	  idx = 0;
 	  while ((r = List_Next_Entry(fregions,&idx)))
-	    fprintf(stderr,"0x%-8x %-8d %-8d     %-1d\n",(unsigned int)r,
+	    fprintf(stderr,"%p %-8d %-8d     %-1d\n",r,
 		    MR_ID(r),MR_GEntID(r),MR_GEntDim(r));
 	  
 	  fprintf(stderr,"\n");
@@ -342,7 +342,7 @@ extern "C" {
     }
 
     fprintf(stderr,"\n");
-    fprintf(stderr,"Region: 0x%-x   ID: %-d   ",(unsigned int)r,MF_ID(r));
+    fprintf(stderr,"Region: %p   ID: %-d   ",r,MF_ID(r));
     
     
     if (lvl) {
@@ -354,7 +354,7 @@ extern "C" {
 	fprintf(stderr,"GEntID: %-d    GEntDim: %-d\n", MR_GEntID(r),
 		MR_GEntDim(r));
 	if ((gent = MR_GEntity(r)))
-	  fprintf(stderr,"Model entity pointer: 0x%-x\n",(unsigned int)gent);
+	  fprintf(stderr,"Model entity pointer: %p\n",gent);
       }
 
       fprintf(stderr,"\n");
@@ -367,10 +367,10 @@ extern "C" {
 	f = List_Entry(rfaces,i);
 	fdir = MR_FaceDir_i(r,i);
 	if (fdir)
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)f,
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d\n",f,
 		  MF_ID(f),MF_GEntID(f),ME_GEntDim(f));
 	else 
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)f,
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d\n",f,
 		  -MF_ID(f),MF_GEntID(f),ME_GEntDim(f));
       }
       fprintf(stderr,"\n");
@@ -388,8 +388,8 @@ extern "C" {
 	fprintf(stderr,"Object        ID      GEntID   GEntDim    Vertex IDs\n");
 	idx = 0; i = 0;
 	while ((e = List_Next_Entry(redges,&idx))) {
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d       %-d  %-d\n",
-		  (unsigned int)e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d       %-d  %-d\n",
+		  e,ME_ID(e),ME_GEntID(e),ME_GEntDim(e),
 		  MV_ID(ME_Vertex(e,0)),MV_ID(ME_Vertex(e,1)));
 	}
 	fprintf(stderr,"\n");
@@ -401,7 +401,7 @@ extern "C" {
 	fprintf(stderr,"Vertices:%-d\n",nv);
 	fprintf(stderr,"Object        ID      GEntID   GEntDim\n");
 	while ((v = List_Next_Entry(rvertices,&idx))) {
-	  fprintf(stderr,"0x%-8x    %-8d %-8d     %-1d\n",(unsigned int)v,
+	  fprintf(stderr,"%p    %-8d %-8d     %-1d\n",v,
 		  MV_ID(v),MV_GEntID(v),MV_GEntDim(v));
 	  if (lvl > 2) {
 	    MV_Coords(v,xyz);

@@ -985,12 +985,12 @@ extern "C" {
     ntot = nent + nrem;
 
 
-    fprintf(stderr,"List 0x%x:\n",(unsigned int) l);
+    fprintf(stderr,"List %p:\n",l);
     for (ip = 0, k = 0; ip < ntot; ip++) {
       lentry = l->entry[ip];
 
       if (lentry != (void *) NULL) {
-	fprintf(stderr,"0x%x ",(unsigned int)lentry);
+	fprintf(stderr,"%p ",lentry);
 	k++;
 	if (k%10 == 0)
 	  fprintf(stderr,"\n");
