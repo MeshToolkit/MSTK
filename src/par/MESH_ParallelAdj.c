@@ -68,7 +68,7 @@ extern "C" {
      processors are expecting ghost entities from this processor and
      what type of entities. This info then goes in as the overlap
      entity info for this processor */
-
+  for (i = 0; i < numprtns*numprtns; i++) global_par_adj[i] = 0;
   MPI_Allgather(local_par_adj,numprtns,MPI_INT,global_par_adj,numprtns,MPI_INT,comm);
 
   /* Now set overlap adjacency flags */

@@ -269,10 +269,13 @@ extern "C" {
     int i, recv_dim;
     int *send_dim, *part;
     int rank, num;
+    int DebugWait=0;
 
     MPI_Comm_rank(comm,&rank);
     MPI_Comm_size(comm,&num);
     recv_dim = rank+5;
+
+    while (DebugWait) ;
 
 #ifdef DEBUG
     double t0 = MPI_Wtime();
