@@ -31,6 +31,11 @@ foreach (FILE ${FILES})
   set (utilfiles ${utilfiles} ${FILE})
 endforeach ()
 
+file (GLOB FILES mod/*.c)
+foreach (FILE ${FILES})
+  set (modfiles ${modfiles} ${FILE})
+endforeach ()
+
 if (ENABLE_PARALLEL)
   file (GLOB FILES par/*.c)
   foreach (FILE ${FILES})
@@ -49,5 +54,5 @@ if (ENABLE_PARALLEL)
   endforeach ()
 endif ()
 
-set(mstkfiles ${basefiles} ${hilevfiles} ${iofiles} ${miscfiles} ${utilfiles} ${parfiles} PARENT_SCOPE)
+set(mstkfiles ${basefiles} ${hilevfiles} ${iofiles} ${miscfiles} ${utilfiles} ${modfiles} ${parfiles} PARENT_SCOPE)
 
