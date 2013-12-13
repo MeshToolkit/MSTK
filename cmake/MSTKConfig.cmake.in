@@ -67,13 +67,12 @@ if (ENABLE_ExodusII)
   set(NetCDF_LIBRARY_DIR @NetCDF_LIBRARY_DIR@ CACHE PATH "Path to NetCDF library")
   set(NetCDF_LIBRARIES @NetCDF_LIBRARIES@ CACHE STRING "NetCDF library names")
 
-  set(HDF5_DIR @HDF5_DIR@ CACHE STRING "Path to top level HDF5 installation dir")
+  set(HDF5_ROOT @HDF5_ROOT@ CACHE STRING "Path to top level HDF5 installation dir")
   set(HDF5_INCLUDE_DIRS @HDF5_INCLUDE_DIRS@ CACHE PATH "Path to HDF5 include files")
-  set(HDF5_LIBRARY_DIR @HDF5_LIBRARY_DIR@ CACHE PATH "Path to HDF5 library")
-  set(HDF5_LIBRARIES @HDF5_LIBRARIES@ CACHE STRING "HDF5 library names")
+  set(HDF5_LIBRARIES @HDF5_LIBRARIES_EXPORT@ CACHE STRING "HDF5 libraries and other necessary link libraries")
 endif()
 
-set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES@ CACHE STRING "All third party libraries MSTK is built with")
+set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "All third party libraries MSTK is built with")
 
 
 
