@@ -289,13 +289,13 @@ endif()
 
 
 # ------------------------------------ #
-# Preform CMake Search                 #
+# Perform CMake Search                 #
 # ------------------------------------ #
 
 
 
 if ( HDF5_INCLUDE_DIRS AND HDF5_LIBRARIES )
-  # Do nothing is the user has defined these
+  # Do nothing if the user has defined these on the command line
 else()
 
   # --- Target names used in both the CMake configure files
@@ -405,14 +405,12 @@ else()
     if (HDF5_SETTINGS_FILE)
       _HDF5_EXTRA_LIBRARIES(${HDF5_SETTINGS_FILE} HDF5_LINK_LIBRARIES)
     endif()  
+
     add_imported_library(${HDF5_C_TARGET}
                          LOCATION ${_HDF5_C_LIBRARY}
                          LINK_LANGUAGES "C"
                          LINK_INTERFACE_LIBRARIES "${HDF5_LINK_LIBRARIES}")
     set(HDF5_C_LIBRARY ${HDF5_C_TARGET})		       
-
-    message(STATUS "----- _HDF5_C_LIBRARY = " ${_HDF5_C_LIBRARY})
-    message(STATUS "----- HDF4_C_LIBRARY = " ${HDF5_C_LIBRARY})
 
     # --- Search for the other possible compnent libraries
 
@@ -422,6 +420,15 @@ else()
                  HINTS ${_hdf5_LIBRARY_SEARCH_DIRS}
                  ${_hdf5_FIND_OPTIONS})
 
+    # CXX Library
+    if ( _HDF5_CXX_LIBRARY )
+      add_imported_library(${HDF5_CXX_TARGET}
+                   LOCATION ${_HDF5_CXX_LIBRARY}
+                   LINK_LANGUAGES "CXX"
+                   LINK_INTERFACE_LIBRARIES "${HDF5_C_TARGET}")
+      set(HDF5_CXX_LIBRARY ${HDF5_CXX_TARGET})
+    endif() 
+      
     # Search for the high-level (HL) library
     find_library(_HDF5_HL_LIBRARY
                  NAMES hdf5_hl
@@ -437,15 +444,7 @@ else()
                    LOCATION ${_HDF5_HL_LIBRARY}
                    LINK_LANGUAGES "C"
                    LINK_INTERFACE_LIBRARIES "${HDF5_C_TARGET}")
-    endif() 
-      
-    # CXX Library
-    if ( _HDF5_CXX_LIBRARY )
-      add_imported_library(${HDF5_CXX_TARGET}
-                   LOCATION ${_HDF5_CXX_LIBRARY}
-                   LINK_LANGUAGES "CXX"
-                   LINK_INTERFACE_LIBRARIES "${HDF5_C_TARGET}")
-      set(HDF5_CXX_LIBRARY ${HDF5_CXX_TARGET})
+      set(HDF5_HL_LIBRARY ${HDF5_HL_TARGET})
     endif() 
       
     # Define the HDF5_<component>_LIBRARY to point to the target
@@ -455,13 +454,6 @@ else()
       endif()
     endforeach()
 
-    # Define the HDF5_LIBRARY_DIRS variable
-    if (HDF5_ROOT)
-      set(HDF5_LIBRARY_DIR ${HDF5_ROOT}/lib)
-    else ()
-      set(HDF5_LIBRARY_DIR ${_hdf5_LIBRARY_SEARCH_DIRS})
-    endif()
-
     # Define the HDF5_LIBRARIES variable
     set(HDF5_LIBRARIES
         ${HDF5_C_LIBRARY}
@@ -470,6 +462,23 @@ else()
 
     # Define the HDF5_C_LIBRARIES variable
     set(HDF5_C_LIBRARIES ${HDF5_C_LIBRARY} ${HDF5_HL_LIBRARY})
+
+    # HDF5 and extra libraries listed as full paths rather than 
+    # libraries for the purposes of exporting
+
+    set(HDF5_LIBRARIES_EXPORT)
+    foreach (_component ${HDF5_VALID_COMPONENTS})
+      if ( TARGET ${HDF5_${_component}_TARGET} )
+	list(APPEND HDF5_LIBRARIES_EXPORT ${_HDF5_${_component}_LIBRARY})
+      endif()
+    endforeach()
+    list(APPEND HDF5_LIBRARIES_EXPORT ${HDF5_LINK_LIBRARIES})      
+
+  elseif (NOT HDF5_LIBRARIES)
+
+    # HDF5_LIBRARIES is set. Copy it over to HDF5_LIBRARIES_EXPORT
+
+    set(HDF5_LIBRARIES_EXPORT ${HDF5_LIBRARIES})
 
   endif(NOT HDF5_LIBRARIES)
 
@@ -519,7 +528,7 @@ if ( NOT HDF5_FIND_QUIETLY )
   message(STATUS "HDF5 Version: ${HDF5_VERSION}")
   message(STATUS "\tHDF5_INCLUDE_DIRS      =${HDF5_INCLUDE_DIRS}")
   message(STATUS "\tHDF5_LIBRARIES         =${HDF5_LIBRARIES}")
-  message(STATUS "\tHDF5_LIBRARY_DIR       =${HDF5_LIBRARY_DIR}")
+  message(STATUS "\tHDF5_LIBRARIES_EXPORT  =${HDF5_LIBRARIES_EXPORT}")
   message(STATUS "\tHDF5_LINK_LIBRARIES    =${HDF5_LINK_LIBRARIES}")
   message(STATUS "\tHDF5_IS_PARALLEL       =${HDF5_IS_PARALLEL}")
   message(STATUS "Found the following HDF5 component libraries")
