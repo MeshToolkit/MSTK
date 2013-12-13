@@ -38,6 +38,9 @@ macro(_HDF5_BOOLEAN_CONVERT _var)
   endif()  
 endmacro(_HDF5_BOOLEAN_CONVERT)
 
+
+
+
 function(_HDF5_CHOMP_STRING old_str new_str_var)
 
   string(REGEX REPLACE "[\t\r\n]" " " _tmp "${old_str}")
@@ -48,6 +51,8 @@ function(_HDF5_CHOMP_STRING old_str new_str_var)
   set(${new_str_var} ${_tmp} PARENT_SCOPE)
 
 endfunction(_HDF5_CHOMP_STRING)
+
+
 
 function(_HDF5_PARSE_SETTINGS_FILE _file _key _value)
   
@@ -75,6 +80,8 @@ function(_HDF5_PARSE_SETTINGS_FILE _file _key _value)
 
 endfunction(_HDF5_PARSE_SETTINGS_FILE)
 
+
+
 function(_HDF5_DEFINE_VERSION _file _var)
 
   set(_search_key "HDF5 Version")
@@ -83,6 +90,8 @@ function(_HDF5_DEFINE_VERSION _file _var)
   set(${_var} ${_tmp} PARENT_SCOPE)
   
 endfunction(_HDF5_DEFINE_VERSION _var)
+
+
 
 function(_HDF5_DEFINE_PARALLEL_BUILD _file _var)
 
@@ -93,6 +102,8 @@ function(_HDF5_DEFINE_PARALLEL_BUILD _file _var)
   set(${_var} ${_tmp} PARENT_SCOPE)
 
 endfunction(_HDF5_DEFINE_PARALLEL_BUILD _file _var)
+
+
 
 function(_HDF5_EXTRA_LIBRARY_DIRS _file _var)
 
@@ -124,6 +135,8 @@ function(_HDF5_EXTRA_LIBRARY_DIRS _file _var)
   set(${_var} ${_directories} PARENT_SCOPE)
 
 endfunction(_HDF5_EXTRA_LIBRARY_DIRS _file _var)
+
+
 
 function(_HDF5_EXTRA_LIBRARIES _file _var)
 
@@ -172,6 +185,8 @@ function(_HDF5_EXTRA_LIBRARIES _file _var)
   set(${_var} ${_return_list} PARENT_SCOPE)
 
 endfunction(_HDF5_EXTRA_LIBRARIES _file _var)
+
+
 
 function(_HDF5_EXTRA_INCLUDE_DIRS _file _var)
 
@@ -256,7 +271,7 @@ if ( HDF5_NO_SYSTEM_PATHS )
 endif()
 
 # A list of valid components
-set(HDF5_VALID_COMPONENTS C CXX Fortran HL Fortran_HL)
+set(HDF5_VALID_COMPONENTS C CXX HL)
 
 # A list of requested components, invalid components are ignored.
 if ( NOT HDF5_FIND_COMPONENTS )
@@ -288,8 +303,6 @@ else()
   set( HDF5_C_TARGET hdf5 )
   set( HDF5_CXX_TARGET hdf5_cpp )
   set( HDF5_HL_TARGET hdf5_hl )
-  set( HDF5_Fortran_TARGET hdf5_fortran )
-  set( HDF5_Fortran_HL_TARGET hdf5_hl_fortran )
 
   # ------------------------------------------------------ #
   # Search Logic
@@ -398,6 +411,9 @@ else()
                          LINK_INTERFACE_LIBRARIES "${HDF5_LINK_LIBRARIES}")
     set(HDF5_C_LIBRARY ${HDF5_C_TARGET})		       
 
+    message(STATUS "----- _HDF5_C_LIBRARY = " ${_HDF5_C_LIBRARY})
+    message(STATUS "----- HDF4_C_LIBRARY = " ${HDF5_C_LIBRARY})
+
     # --- Search for the other possible compnent libraries
 
     # Search for the C++ (CXX) library
@@ -406,21 +422,9 @@ else()
                  HINTS ${_hdf5_LIBRARY_SEARCH_DIRS}
                  ${_hdf5_FIND_OPTIONS})
 
-    # Search for the Fortran library
-    find_library(_HDF5_Fortran_LIBRARY
-                 NAMES hdf5_fortran
-                 HINTS ${_hdf5_LIBRARY_SEARCH_DIRS}
-                 ${_hdf5_FIND_OPTIONS})
-    
     # Search for the high-level (HL) library
     find_library(_HDF5_HL_LIBRARY
                  NAMES hdf5_hl
-                 HINTS ${_hdf5_LIBRARY_SEARCH_DIRS}
-                 ${_hdf5_FIND_OPTIONS})
-
-    # Search for the Fortran high-level (HL) library
-    find_library(_HDF5_Fortran_HL_LIBRARY
-                 NAMES hdf5_hl_fortran hdf5hl_fortran
                  HINTS ${_hdf5_LIBRARY_SEARCH_DIRS}
                  ${_hdf5_FIND_OPTIONS})
 
@@ -444,24 +448,6 @@ else()
       set(HDF5_CXX_LIBRARY ${HDF5_CXX_TARGET})
     endif() 
       
-    # Fortran Library
-    if ( _HDF5_Fortran_LIBRARY )
-      add_imported_library(${HDF5_Fortran_TARGET}
-                   LOCATION ${_HDF5_Fortran_LIBRARY}
-                   LINK_LANGUAGES "Fortran"
-                   LINK_INTERFACE_LIBRARIES "${HDF5_C_TARGET}")
-      set(HDF5_Fortran_LIBRARY ${HDF5_Fortran_TARGET})
-    endif() 
-      
-    # Fortran HL Library
-    if ( _HDF5_Fortran_HL_LIBRARY )
-      add_imported_library(${HDF5_Fortran_HL_TARGET}
-                   LOCATION ${_HDF5_Fortran_HL_LIBRARY}
-                   LINK_LANGUAGES "Fortran"
-                   LINK_INTERFACE_LIBRARIES "${HDF5_Fortran_TARGET}")
-      set(HDF5_Fortran_LIBRARY ${HDF5_Fortran_HL_TARGET})
-    endif()
-
     # Define the HDF5_<component>_LIBRARY to point to the target
     foreach ( _component ${HDF5_VALID_COMPONENTS} )
       if ( TARGET ${HDF5_${_component}_TARGET} )
@@ -469,17 +455,21 @@ else()
       endif()
     endforeach()
 
+    # Define the HDF5_LIBRARY_DIRS variable
+    if (HDF5_ROOT)
+      set(HDF5_LIBRARY_DIR ${HDF5_ROOT}/lib)
+    else ()
+      set(HDF5_LIBRARY_DIR ${_hdf5_LIBRARY_SEARCH_DIRS})
+    endif()
+
     # Define the HDF5_LIBRARIES variable
     set(HDF5_LIBRARIES
         ${HDF5_C_LIBRARY}
         ${HDF5_HL_LIBRARY}
-	${HDF5_CXX_LIBRARY}
-	${HDF5_Fortran_LIBRARY}
-	${HDF5_Fortran_HL_LIBRARY})
+	${HDF5_CXX_LIBRARY})
 
     # Define the HDF5_C_LIBRARIES variable
     set(HDF5_C_LIBRARIES ${HDF5_C_LIBRARY} ${HDF5_HL_LIBRARY})
-
 
   endif(NOT HDF5_LIBRARIES)
 
@@ -527,10 +517,11 @@ if ( NOT HDF5_FIND_QUIETLY )
   # Create a not found list
 
   message(STATUS "HDF5 Version: ${HDF5_VERSION}")
-  #message(STATUS "\tHDF5_INCLUDE_DIRS      =${HDF5_INCLUDE_DIRS}")
-  #message(STATUS "\tHDF5_LIBRARIES         =${HDF5_LIBRARIES}")
-  #message(STATUS "\tHDF5_LINK_LIBRARIES    =${HDF5_LINK_LIBRARIES}")
-  #message(STATUS "\tHDF5_IS_PARALLEL       =${HDF5_IS_PARALLEL}")
+  message(STATUS "\tHDF5_INCLUDE_DIRS      =${HDF5_INCLUDE_DIRS}")
+  message(STATUS "\tHDF5_LIBRARIES         =${HDF5_LIBRARIES}")
+  message(STATUS "\tHDF5_LIBRARY_DIR       =${HDF5_LIBRARY_DIR}")
+  message(STATUS "\tHDF5_LINK_LIBRARIES    =${HDF5_LINK_LIBRARIES}")
+  message(STATUS "\tHDF5_IS_PARALLEL       =${HDF5_IS_PARALLEL}")
   message(STATUS "Found the following HDF5 component libraries")
   set(HDF5_COMPONENTS_NOTFOUND)
   foreach (_component ${HDF5_VALID_COMPONENTS} )
