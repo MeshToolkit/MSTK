@@ -61,33 +61,40 @@ ARCHOS=${ARCH}_${OS}
 
 # Top level directory where the code lives
 
-SOURCE=$HOME/develop/mstk/1.86par
+SOURCE=$HOME/develop/mstk/dev
 
 
 
 # Clear out old junk
 
 rm -f CMakeCache.txt
+rm -f cmake_install.cmake
+rm -fr CMakefiles/
+rm -f CTestTestfile.cmake
+rm -f MSTKConfig.cmake
+rm -fr Makefile
 
 
 # modify the paths that point to the location of the
 # installation directories below
 
-/usr/bin/cmake \
-  -D CMAKE_BUILD_TYPE:STRING=Release \
-  -D CMAKE_C_COMPILER:FILEPATH="mpicc" \
-  -D CMAKE_CXX_COMPILER:FILEPATH="mpiCC" \
-  -D ENABLE_ExodusII=yes \
-  -D NetCDF_DIR:FILEPATH=$HOME/packages/${ARCHOS}/netcdf-3.6.3 \
-  -D ExodusII_DIR:FILEPATH=$HOME/packages/${ARCHOS}/ACCESS/libraries/exodusii \
-  -D HDF5_DIR:FILEPATH=$HOME/packages/${ARCHOS}/hdf5-1.8.7 \
-  -D ENABLE_METIS=yes \
-  -D METIS_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0 \
-  -D METIS_INCLUDE_DIR:FILEPATH=$HOME/packages/${ARCHOS}/metis-4.0/Lib \
+cmake \
+  -D CMAKE_BUILD_TYPE:STRING=Debug \
+  -D CMAKE_C_COMPILER:FILEPATH=`which mpicc` \
+  -D CMAKE_CXX_COMPILER:FILEPATH=`which mpiCC` \
+  -D CMAKE_C_FLAGS:STRING="-g -Wall -Wno-unused" \
+  -D ENABLE_PARALLEL=yes \
   -D ENABLE_ZOLTAN=yes \
-  -D ZOLTAN_DIR:FILEPATH=$HOME/packages/${ARCHOS}/trilinos-10.6.4 \
+  -D ENABLE_METIS=yes \
+  -D ENABLE_ExodusII=yes \
+  -D NetCDF_DIR:FILEPATH=/research/rao/ascem-tpl \
+  -D ExodusII_DIR:FILEPATH=/research/rao/ascem-tpl \
+  -D HDF5_DIR:FILEPATH=/research/rao/ascem-tpl \
+  -D HDF5_NO_SYSTEM_PATHS=yes \
+  -D METIS_DIR:FILEPATH=/research/rao/ascem-tpl/metis-4.0.3 \
+  -D ZOLTAN_DIR:FILEPATH=/research/rao/ascem-tpl/trilinos-11.0.3 \
   -D ENABLE_Tests=yes \
-  -D UnitTest_DIR:FILEPATH=$HOME/packages/${ARCHOS}/UnitTest++ \
+  -D UnitTest_DIR:FILEPATH=/research/rao/ascem-tpl \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
   -D INSTALL_ADD_VERSION=no \
   ${SOURCE} 
