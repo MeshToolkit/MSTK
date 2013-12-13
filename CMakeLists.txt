@@ -116,6 +116,7 @@ if (ENABLE_ExodusII)
 
   add_definitions("-DENABLE_ExodusII")
 
+
   ##############################################################################
   # HDF5 - 
   ##############################################################################
@@ -130,7 +131,7 @@ if (ENABLE_ExodusII)
  endif()
 
 
-  message("---- HDF5_LIBRARY : " ${HDF5_LIBRARIES})
+  message("---- HDF5_LIBRARIES : " ${HDF5_LIBRARIES})
   message("---- HDF5_IS_PARALLEL : " ${HDF5_IS_PARALLEL})
 
   ##############################################################################
@@ -145,6 +146,7 @@ find_package(NetCDF REQUIRED)
   endif()
 
   message("---- NETCDF_LIBRARY : " ${NetCDF_LIBRARIES})
+
 
   ##############################################################################
   # ExodusII - http://sourceforge.net/projects/exodusii/ or 
@@ -269,7 +271,14 @@ endif()
 # What are all the TPLs that codes linking to MSTK have to link to
 
 set(MSTK_TPL_LIBRARIES ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} 
-  ${ExodusII_LIBRARIES})
+  ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES})
+
+# Make a separate variables where the HDF5 libraries are not targets
+# but expanded library paths. This will be exported for use by other
+# projects
+
+set(MSTK_TPL_LIBRARIES_EXPORT ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} 
+  ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES_EXPORT})
 
 
 #############################################################################
