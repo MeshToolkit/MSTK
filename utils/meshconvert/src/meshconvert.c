@@ -260,6 +260,10 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  /* Check that the imported mesh is ok */
+
+  ok = MESH_CheckTopo(mesh);
+
 
 #ifdef MSTK_HAVE_MPI
 
@@ -321,10 +325,6 @@ int main(int argc, char *argv[]) {
 
 #endif /* MSTK_HAVE_MPI */
 
-
-  /* Check that the imported mesh is ok */
-
-  ok = MESH_CheckTopo(mesh);
 
 #ifdef MSTK_HAVE_MPI
   if (numprocs > 1) {
