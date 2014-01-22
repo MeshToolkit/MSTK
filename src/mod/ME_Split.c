@@ -49,13 +49,15 @@ MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz) {
   enewrev[1] = enew[0];
 
   efaces = ME_Faces(esplit);
-  idx = 0;
-  while ((ef = List_Next_Entry(efaces,&idx))) {
-    fedir = MF_EdgeDir(ef,esplit);
-    if (fedir) 
-      MF_Replace_Edges(ef,1,&esplit,2,enew);
-    else
-      MF_Replace_Edges(ef,1,&esplit,2,enewrev);
+  if (efaces) {
+    idx = 0;
+    while ((ef = List_Next_Entry(efaces,&idx))) {
+      fedir = MF_EdgeDir(ef,esplit);
+      if (fedir) 
+        MF_Replace_Edges(ef,1,&esplit,2,enew);
+      else
+        MF_Replace_Edges(ef,1,&esplit,2,enewrev);
+    }
   }
 
   ME_Delete(esplit,0);
