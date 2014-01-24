@@ -22,7 +22,8 @@ extern "C" {
   int MESH_Num_Face_Set(List_ptr esides, int *side_set_id, int enable_set);
   int MESH_Num_Edge_Set(List_ptr esides, int *side_set_id, int enable_set);
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set, 
-			      List_ptr **side_sets, int **side_set_ids);
+			      List_ptr **side_sets, int **side_set_ids,
+                              char ***side_set_names);
   void MESH_Get_Node_Set_Info(Mesh_ptr mesh, int *num_node_set, 
 			      List_ptr **node_sets, int **node_set_ids);
 
@@ -73,7 +74,7 @@ extern "C" {
     int boundary_dim;  /* For pure 2D mesh, boundary_dim is 1, for surface mesh, it is 2 */
     int *element_block_ids, *side_set_ids, *node_set_ids;
     int num_face_block;
-    char **element_block_types, block_name[256];
+    char **element_block_types, block_name[256], **side_set_names;
     List_ptr *element_blocks, *side_sets, *node_sets, face_block;
     List_ptr fverts, rverts;
     MAttrib_ptr vidatt=NULL, fidatt=NULL;
@@ -352,13 +353,13 @@ extern "C" {
     int maxnum=0, maxnum1=0;
     MPI_Allreduce(&num_element_block,&maxnum,1,MPI_INT,MPI_MAX,comm);
 
-    int *ebids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
+    int *ebids_array_loc = (int *) calloc(maxnum,sizeof(int));
 
     for (i = 0; i < num_element_block; i++)
       ebids_array_loc[i] = element_block_ids[i];
 
     int *ebids_array_glob;
-    ebids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
+    ebids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
     
     MPI_Gather(ebids_array_loc,maxnum,MPI_INT,ebids_array_glob,maxnum,MPI_INT,0,comm);
 
@@ -408,7 +409,7 @@ extern "C" {
 
     /* Send everyone the IDs of these element blocks */
 
-    element_block_ids_glob = (int *) MSTK_malloc(num_element_block_glob*sizeof(int));
+    element_block_ids_glob = (int *) malloc(num_element_block_glob*sizeof(int));
     if (rank == 0)
       for (i = 0; i < num_element_block_glob; i++)
         element_block_ids_glob[i] = ebids_array_glob[i];
@@ -418,12 +419,12 @@ extern "C" {
 
     /* Populate the global element block data on each processor */
 
-    element_blocks_glob = (List_ptr *) MSTK_calloc(num_element_block_glob,
+    element_blocks_glob = (List_ptr *) calloc(num_element_block_glob,
                                                    sizeof(List_ptr));
-    element_block_types_glob = (char **) MSTK_calloc(num_element_block_glob,
+    element_block_types_glob = (char **) calloc(num_element_block_glob,
                                                    sizeof(char *));
     for (i = 0; i < num_element_block_glob; i++)
-      element_block_types_glob[i] = (char *) MSTK_malloc(16*sizeof(char));
+      element_block_types_glob[i] = (char *) malloc(16*sizeof(char));
 
     for (i = 0; i < num_element_block_glob; i++) {
       int found = 0;
@@ -544,7 +545,8 @@ extern "C" {
 
     /* COLLECT SIDE SET INFO */
 
-    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
+    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids,
+                           &side_set_names);
 
 
     int num_side_set_glob;
@@ -556,13 +558,13 @@ extern "C" {
     maxnum=0, maxnum1=0;
     MPI_Allreduce(&num_side_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
 
-    int *ssids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
+    int *ssids_array_loc = (int *) calloc(maxnum,sizeof(int));
 
     for (i = 0; i < num_side_set; i++)
       ssids_array_loc[i] = side_set_ids[i];
 
     int *ssids_array_glob = NULL;
-    ssids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
+    ssids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
     
     MPI_Gather(ssids_array_loc,maxnum,MPI_INT,ssids_array_glob,maxnum,MPI_INT,0,comm);
 
@@ -612,7 +614,7 @@ extern "C" {
 
     /* Send everyone the IDs of these sidesets */
 
-    side_set_ids_glob = (int *) MSTK_malloc(num_side_set_glob*sizeof(int));
+    side_set_ids_glob = (int *) malloc(num_side_set_glob*sizeof(int));
     if (rank == 0)
       for (i = 0; i < num_side_set_glob; i++)
         side_set_ids_glob[i] = ssids_array_glob[i];
@@ -621,7 +623,7 @@ extern "C" {
 
     /* Populate the global sideset data on each processor */
 
-    side_sets_glob = (List_ptr *) MSTK_calloc(num_side_set_glob,
+    side_sets_glob = (List_ptr *) calloc(num_side_set_glob,
                                                    sizeof(List_ptr));
 
     for (i = 0; i < num_side_set_glob; i++) {
@@ -672,13 +674,13 @@ extern "C" {
     maxnum=0, maxnum1=0;
     MPI_Allreduce(&num_node_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
 
-    int *nsids_array_loc = (int *) MSTK_calloc(maxnum,sizeof(int));
+    int *nsids_array_loc = (int *) calloc(maxnum,sizeof(int));
 
     for (i = 0; i < num_node_set; i++)
       nsids_array_loc[i] = node_set_ids[i];
 
     int *nsids_array_glob = NULL;
-    nsids_array_glob = (int *) MSTK_calloc(maxnum*numprocs,sizeof(int));
+    nsids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
     
     MPI_Gather(nsids_array_loc,maxnum,MPI_INT,nsids_array_glob,maxnum,MPI_INT,0,comm);
 
@@ -728,7 +730,7 @@ extern "C" {
 
     /* Send everyone the IDs of these nodesets */
 
-    node_set_ids_glob = (int *) MSTK_malloc(num_node_set_glob*sizeof(int));
+    node_set_ids_glob = (int *) malloc(num_node_set_glob*sizeof(int));
     if (rank == 0)
       for (i = 0; i < num_node_set_glob; i++)
         node_set_ids_glob[i] = nsids_array_glob[i];
@@ -739,7 +741,7 @@ extern "C" {
 
     /* Populate the global nodeset data on each processor */
 
-    node_sets_glob = (List_ptr *) MSTK_calloc(num_node_set_glob,
+    node_sets_glob = (List_ptr *) calloc(num_node_set_glob,
                                                    sizeof(List_ptr));
 
     for (i = 0; i < num_node_set_glob; i++) {
@@ -863,9 +865,9 @@ extern "C" {
     /* write coordinate values */
 
     double *xcoord, *ycoord, *zcoord, vxyz[3];
-    xcoord = (double *) MSTK_malloc(nv*sizeof(double));
-    ycoord = (double *) MSTK_malloc(nv*sizeof(double));
-    zcoord = (double *) MSTK_malloc(nv*sizeof(double));
+    xcoord = (double *) malloc(nv*sizeof(double));
+    ycoord = (double *) malloc(nv*sizeof(double));
+    zcoord = (double *) malloc(nv*sizeof(double));
 
     idx = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
@@ -963,7 +965,7 @@ extern "C" {
 	
 	int nfrblock = 0;
 
-	nnpe = (int *) MSTK_calloc(List_Num_Entries(element_blocks_glob[i]),
+	nnpe = (int *) calloc(List_Num_Entries(element_blocks_glob[i]),
 				   sizeof(int));	
 	idx = 0; j = 0;
 	while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {	  
@@ -972,7 +974,7 @@ extern "C" {
 	  j++;
 	}
 
-	connect = (int *) MSTK_calloc(nfrblock,sizeof(int));
+	connect = (int *) calloc(nfrblock,sizeof(int));
 	idx = 0; j = 0;
 	while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	  List_ptr rfaces = MR_Faces(mr);
@@ -1011,7 +1013,7 @@ extern "C" {
 
 	int nvfblock = 0;
 
-	nnpe = (int *) MSTK_calloc(List_Num_Entries(element_blocks_glob[i]),
+	nnpe = (int *) calloc(List_Num_Entries(element_blocks_glob[i]),
 				   sizeof(int));	
 	idx = 0; j = 0;
 	while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {	  
@@ -1020,7 +1022,7 @@ extern "C" {
 	  j++;
 	}
 
-	connect = (int *) MSTK_calloc(nvfblock,sizeof(int));
+	connect = (int *) calloc(nvfblock,sizeof(int));
 	idx = 0; j = 0;
 	while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	  List_ptr fverts = MF_Vertices(mf,1,0);
@@ -1084,7 +1086,7 @@ extern "C" {
 			"Element type unsupported by EXODUS II format",MSTK_FATAL);
 	  
 	  
-	  connect = (int *) MSTK_malloc(nelnodes*nelem*sizeof(int));
+	  connect = (int *) malloc(nelnodes*nelem*sizeof(int));
 	  
 	  idx = 0; k = 0;
 	  while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {
@@ -1119,7 +1121,7 @@ extern "C" {
 	    MSTK_Report("MESH_ExportToEXODUSII",
 			"Element type unsupported by EXODUS II format",MSTK_FATAL);
 
-	  connect = (int *) MSTK_malloc(nelnodes*nelem*sizeof(int));
+	  connect = (int *) malloc(nelnodes*nelem*sizeof(int));
 
 	  idx = 0; k = 0;
 	  while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {
@@ -1157,7 +1159,7 @@ extern "C" {
       int nnodes = List_Num_Entries(node_sets_glob[i]);
       ex_put_node_set_param(exoid, node_set_ids_glob[i], nnodes, 0);
 
-      int *node_list = (int *) MSTK_malloc(nnodes*sizeof(int));
+      int *node_list = (int *) malloc(nnodes*sizeof(int));
 
       idx = 0; j = 0;
       while ((mv = List_Next_Entry(node_sets_glob[i],&idx))) {
@@ -1188,8 +1190,8 @@ extern "C" {
       int nsides = List_Num_Entries(side_sets_glob[i]);
       ex_put_side_set_param(exoid, side_set_ids_glob[i], nsides, 0);
 
-      int *elem_list = (int *) MSTK_malloc(nsides*sizeof(int));
-      int *side_list = (int *) MSTK_malloc(nsides*sizeof(int));
+      int *elem_list = (int *) malloc(nsides*sizeof(int));
+      int *side_list = (int *) malloc(nsides*sizeof(int));
 
       if (nr) {
 	idx = 0; j = 0;
@@ -1661,91 +1663,173 @@ extern "C" {
 
  
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set, 
-			      List_ptr **side_sets, int **side_set_ids) {
+			      List_ptr **side_sets, int **side_set_ids,
+                              char ***side_set_names) {
+    MSet_ptr mset;
     MFace_ptr mf;
     MEdge_ptr me;
-    int idx = 0, i = 0, found;
-    int ns, nr, nf, ne, sid, nsalloc;
+    int idx, idx2, i = 0, found, dim;
+    int ns, nr, nf, sid, nsalloc;
+    char mset_name[256];
 
 
     ns = 0;
     nsalloc = 10;
-    *side_sets = (List_ptr *) MSTK_malloc(nsalloc*sizeof(List_ptr));
-    *side_set_ids = (int *) MSTK_malloc(nsalloc*sizeof(int));
+    *side_sets = (List_ptr *) malloc(nsalloc*sizeof(List_ptr));
+    *side_set_ids = (int *) malloc(nsalloc*sizeof(int));
+    *side_set_names = (char **) malloc(nsalloc*sizeof(char *));
 
     nr = MESH_Num_Regions(mesh);
     nf = MESH_Num_Faces(mesh);
-    ne = MESH_Num_Edges(mesh);
 
     if (nr) {
-      while ((mf = MESH_Next_Face(mesh,&idx))) {
-	if (MF_GEntDim(mf) == 3) continue; /* Internal face */
 
-#ifdef MSTK_HAVE_MPI
-        if (!MEnt_IsMarked(mf,ownedmk)) continue; /* Face cnctd to only ghost elements */
-#endif
+      /* first check if there are any mesh sets whose name has the
+         keyword sideset_. If so, write out only these mesh sets as
+         sidesets. Otherwise, use geometric classification of boundary
+         faces to form and write sidesets */
 
-	sid = MF_GEntID(mf);
+      idx = 0;
+      while ((mset = MESH_Next_MSet(mesh,&idx))) {
+        MSet_Name(mset,mset_name);
+        dim = MSet_EntDim(mset);
 
-	found = 0;
-	i = 0;
-	while (!found && i < ns) {
-	  if ((*side_set_ids)[i] == sid) {
-	    found = 1;
-	    List_Add((*side_sets)[i],mf);
-	    break;
-	  }
-	  i++;
-	}
+        if (dim != MFACE) continue; 
+        if (strncmp(mset_name,"sideset_",8) != 0) continue;
 
-	if (!found) {
-	  if (ns == nsalloc) {
-	    nsalloc *= 2;
-	    *side_sets = (List_ptr *) MSTK_realloc(*side_sets,nsalloc*sizeof(List_ptr));
-	    *side_set_ids = (int *) MSTK_realloc(*side_set_ids,nsalloc*sizeof(int));
-	  }
-	  (*side_sets)[ns] = List_New(10);
-	  List_Add((*side_sets)[ns],mf);
-	  (*side_set_ids)[ns] = sid;
-	  ns++;
-	}
+        sscanf(mset_name+8,"%d",&sid);
+
+        if (ns == nsalloc) {
+          nsalloc *= 2;
+          *side_sets = (List_ptr *) realloc(*side_sets,nsalloc*sizeof(List_ptr));
+          *side_set_ids = (int *) realloc(*side_set_ids,nsalloc*sizeof(int));
+          *side_set_names = (char **) realloc(*side_set_names,nsalloc*sizeof(int));
+        }
+        (*side_set_ids)[ns] = sid;
+        (*side_set_names)[ns] = (char *) malloc(256*sizeof(char));
+        strcpy((*side_set_names)[ns],mset_name);
+
+        (*side_sets)[ns] = List_New(MSet_Num_Entries(mset));
+        idx2 = 0;
+        while ((mf = (MFace_ptr) MSet_Next_Entry(mset,&idx2)))
+          List_Add((*side_sets)[ns],mf);
+
+        ns++;
       }
+    
+      if (!ns) { /* if we did not find mesh sets that were sidesets then we
+                    look to geometric classification to form sidesets */
+
+        idx = 0;
+        while ((mf = MESH_Next_Face(mesh,&idx))) {
+          if (MF_GEntDim(mf) == 3) continue; /* Internal face */
+          
+#ifdef MSTK_HAVE_MPI
+          if (!MEnt_IsMarked(mf,ownedmk)) continue; /* Face cnctd to only ghost elements */
+#endif
+          
+          sid = MF_GEntID(mf);
+          
+          found = 0;
+          i = 0;
+          while (!found && i < ns) {
+            if ((*side_set_ids)[i] == sid) {
+              found = 1;
+              List_Add((*side_sets)[i],mf);
+              break;
+            }
+            i++;
+          }
+          
+          if (!found) {
+            if (ns == nsalloc) {
+              nsalloc *= 2;
+              *side_sets = (List_ptr *) realloc(*side_sets,nsalloc*sizeof(List_ptr));
+              *side_set_ids = (int *) realloc(*side_set_ids,nsalloc*sizeof(int));
+            }
+            (*side_sets)[ns] = List_New(10);
+            List_Add((*side_sets)[ns],mf);
+            (*side_set_ids)[ns] = sid;
+            ns++;
+          }
+        }
+
+      }
+
     }
     else if (nf) {
-      while ((me = MESH_Next_Edge(mesh,&idx))) {
-	if (ME_GEntDim(me) != 1) continue;
 
+      /* first check if there are any mesh sets whose name has the
+         keyword sideset_. If so, write out only these mesh sets as
+         sidesets. Otherwise, use geometric classification of boundary
+         faces to form and write sidesets */
+
+      idx = 0;
+      while ((mset = MESH_Next_MSet(mesh,&idx))) {
+        MSet_Name(mset,mset_name);
+        dim = MSet_EntDim(mset);
+
+        if (dim != MEDGE) continue; 
+        if (strncmp(mset_name,"sideset_",8) != 0) continue;
+
+        sscanf(mset_name+8,"%d",&sid);
+
+        if (ns == nsalloc) {
+          nsalloc *= 2;
+          *side_sets = (List_ptr *) realloc(*side_sets,nsalloc*sizeof(List_ptr));
+          *side_set_ids = (int *) realloc(*side_set_ids,nsalloc*sizeof(int));
+          *side_set_names = (char **) realloc(*side_set_names,nsalloc*sizeof(int));
+        }
+        (*side_set_ids)[ns] = sid;
+        (*side_set_names)[ns] = (char *) malloc(256*sizeof(char));
+        strcpy((*side_set_names)[ns],mset_name);
+
+        (*side_sets)[ns] = List_New(MSet_Num_Entries(mset));
+        idx2 = 0;
+        while ((me = (MEdge_ptr) MSet_Next_Entry(mset,&idx2)))
+          List_Add((*side_sets)[ns],me);
+
+        ns++;
+      }
+
+      if (!ns) { /* if we did not find mesh sets that were sidesets then we
+                    look to geometric classification to form sidesets */
+
+        while ((me = MESH_Next_Edge(mesh,&idx))) {
+          if (ME_GEntDim(me) != 1) continue;
+          
 #ifdef MSTK_HAVE_MPI
-        if (!MEnt_IsMarked(me,ownedmk)) continue; /* Edge cnctd to only ghost elements */
+          if (!MEnt_IsMarked(me,ownedmk)) continue; /* Edge cnctd to only ghost elements */
 #endif
-
-	sid = ME_GEntID(me);
-
-	found = 0;
-	i = 0;
-	while (!found && i < ns) {
-	  if ((*side_set_ids)[i] == sid) {
-	    found = 1;
-	    List_Add((*side_sets)[i],me);
-	    break;
-	  }
-	  i++;
-	}
-
-	if (!found) {
-	  if (ns == nsalloc) {
-	    nsalloc *= 2;
-	    *side_sets = (List_ptr *) MSTK_realloc(*side_sets,nsalloc*sizeof(List_ptr));
-	    *side_set_ids = (int *) MSTK_realloc(*side_set_ids,nsalloc*sizeof(int));
-	  }
-	  (*side_sets)[ns] = List_New(10);
-	  List_Add((*side_sets)[ns],me);
-	  (*side_set_ids)[ns] = sid;
-	  ns++;
-	}
+          
+          sid = ME_GEntID(me);
+          
+          found = 0;
+          i = 0;
+          while (!found && i < ns) {
+            if ((*side_set_ids)[i] == sid) {
+              found = 1;
+              List_Add((*side_sets)[i],me);
+              break;
+            }
+            i++;
+          }
+          
+          if (!found) {
+            if (ns == nsalloc) {
+              nsalloc *= 2;
+              *side_sets = (List_ptr *) realloc(*side_sets,nsalloc*sizeof(List_ptr));
+              *side_set_ids = (int *) realloc(*side_set_ids,nsalloc*sizeof(int));
+            }
+            (*side_sets)[ns] = List_New(10);
+            List_Add((*side_sets)[ns],me);
+            (*side_set_ids)[ns] = sid;
+            ns++;
+          }
+        }
       }
     }
-
+      
     *num_side_set = ns;
   }
   
@@ -1763,8 +1847,8 @@ extern "C" {
 
     nn = 0;
     nnalloc = 10;
-    *node_sets = (List_ptr *) MSTK_malloc(nnalloc*sizeof(List_ptr));
-    *node_set_ids = (int *) MSTK_malloc(nnalloc*sizeof(int));
+    *node_sets = (List_ptr *) malloc(nnalloc*sizeof(List_ptr));
+    *node_set_ids = (int *) malloc(nnalloc*sizeof(int));
 
 
 
@@ -1795,8 +1879,8 @@ extern "C" {
       if (!found) {
 	if (nn == nnalloc) {
 	  nnalloc *= 2;
-	  *node_sets = (List_ptr *) MSTK_realloc(*node_sets,nnalloc*sizeof(List_ptr));
-	  *node_set_ids = (int *) MSTK_realloc(*node_set_ids,nnalloc*sizeof(int));
+	  *node_sets = (List_ptr *) realloc(*node_sets,nnalloc*sizeof(List_ptr));
+	  *node_set_ids = (int *) realloc(*node_set_ids,nnalloc*sizeof(int));
 	}
 	(*node_sets)[nn] = List_New(10);
 	List_Add((*node_sets)[nn],mv);
