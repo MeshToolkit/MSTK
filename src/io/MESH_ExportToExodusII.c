@@ -22,8 +22,7 @@ extern "C" {
   int MESH_Num_Face_Set(List_ptr esides, int *side_set_id, int enable_set);
   int MESH_Num_Edge_Set(List_ptr esides, int *side_set_id, int enable_set);
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set, 
-			      List_ptr **side_sets, int **side_set_ids,
-                              char ***side_set_names);
+			      List_ptr **side_sets, int **side_set_ids);
   void MESH_Get_Node_Set_Info(Mesh_ptr mesh, int *num_node_set, 
 			      List_ptr **node_sets, int **node_set_ids);
 
@@ -74,7 +73,7 @@ extern "C" {
     int boundary_dim;  /* For pure 2D mesh, boundary_dim is 1, for surface mesh, it is 2 */
     int *element_block_ids, *side_set_ids, *node_set_ids;
     int num_face_block;
-    char **element_block_types, block_name[256], **side_set_names;
+    char **element_block_types, block_name[256];
     List_ptr *element_blocks, *side_sets, *node_sets, face_block;
     List_ptr fverts, rverts;
     MAttrib_ptr vidatt=NULL, fidatt=NULL;
@@ -545,8 +544,7 @@ extern "C" {
 
     /* COLLECT SIDE SET INFO */
 
-    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids,
-                           &side_set_names);
+    MESH_Get_Side_Set_Info(mesh, &num_side_set, &side_sets, &side_set_ids);
 
 
     int num_side_set_glob;
@@ -1663,8 +1661,7 @@ extern "C" {
 
  
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set, 
-			      List_ptr **side_sets, int **side_set_ids,
-                              char ***side_set_names) {
+			      List_ptr **side_sets, int **side_set_ids) {
     MSet_ptr mset;
     MFace_ptr mf;
     MEdge_ptr me;
@@ -1677,15 +1674,14 @@ extern "C" {
     nsalloc = 10;
     *side_sets = (List_ptr *) malloc(nsalloc*sizeof(List_ptr));
     *side_set_ids = (int *) malloc(nsalloc*sizeof(int));
-    *side_set_names = (char **) malloc(nsalloc*sizeof(char *));
 
     nr = MESH_Num_Regions(mesh);
     nf = MESH_Num_Faces(mesh);
 
     if (nr) {
 
-      /* first check if there are any mesh sets whose name has the
-         keyword sideset_. If so, write out only these mesh sets as
+      /* first check if there are any mesh sets with entity type
+         MFACE.  If so, write out these mesh sets as
          sidesets. Otherwise, use geometric classification of boundary
          faces to form and write sidesets */
 
@@ -1695,7 +1691,6 @@ extern "C" {
         dim = MSet_EntDim(mset);
 
         if (dim != MFACE) continue; 
-        if (strncmp(mset_name,"sideset_",8) != 0) continue;
 
         sscanf(mset_name+8,"%d",&sid);
 
@@ -1703,11 +1698,8 @@ extern "C" {
           nsalloc *= 2;
           *side_sets = (List_ptr *) realloc(*side_sets,nsalloc*sizeof(List_ptr));
           *side_set_ids = (int *) realloc(*side_set_ids,nsalloc*sizeof(int));
-          *side_set_names = (char **) realloc(*side_set_names,nsalloc*sizeof(int));
         }
         (*side_set_ids)[ns] = sid;
-        (*side_set_names)[ns] = (char *) malloc(256*sizeof(char));
-        strcpy((*side_set_names)[ns],mset_name);
 
         (*side_sets)[ns] = List_New(MSet_Num_Entries(mset));
         idx2 = 0;
@@ -1759,8 +1751,8 @@ extern "C" {
     }
     else if (nf) {
 
-      /* first check if there are any mesh sets whose name has the
-         keyword sideset_. If so, write out only these mesh sets as
+      /* first check if there are any mesh sets with entity type
+         MEDGE. If so, write out these mesh sets as
          sidesets. Otherwise, use geometric classification of boundary
          faces to form and write sidesets */
 
@@ -1770,7 +1762,6 @@ extern "C" {
         dim = MSet_EntDim(mset);
 
         if (dim != MEDGE) continue; 
-        if (strncmp(mset_name,"sideset_",8) != 0) continue;
 
         sscanf(mset_name+8,"%d",&sid);
 
@@ -1778,11 +1769,8 @@ extern "C" {
           nsalloc *= 2;
           *side_sets = (List_ptr *) realloc(*side_sets,nsalloc*sizeof(List_ptr));
           *side_set_ids = (int *) realloc(*side_set_ids,nsalloc*sizeof(int));
-          *side_set_names = (char **) realloc(*side_set_names,nsalloc*sizeof(int));
         }
         (*side_set_ids)[ns] = sid;
-        (*side_set_names)[ns] = (char *) malloc(256*sizeof(char));
-        strcpy((*side_set_names)[ns],mset_name);
 
         (*side_sets)[ns] = List_New(MSet_Num_Entries(mset));
         idx2 = 0;
