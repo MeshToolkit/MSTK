@@ -153,18 +153,18 @@ MVertex_ptr ME_Split_SimplexMesh(MEdge_ptr esplit, double *splitxyz) {
 
   for (i = 0; i < ntets; i++) {
     rvarr[0] = vsplit;
-    rvarr[1] = tetverts[2];
-    rvarr[2] = tetverts[1];
-    rvarr[3] = tetverts[0];
+    rvarr[1] = tetverts[i][2];
+    rvarr[2] = tetverts[i][1];
+    rvarr[3] = tetverts[i][0];
 
     r = MR_New(mesh);
     MR_Set_Vertices(r,4,rvarr,0,NULL);
     MR_Set_GEntID(r,rid[i]);
 
     rvarr[0] = vsplit;
-    rvarr[1] = tetverts[1];
-    rvarr[2] = tetverts[2];
-    rvarr[3] = tetverts[3];
+    rvarr[1] = tetverts[i][1];
+    rvarr[2] = tetverts[i][2];
+    rvarr[3] = tetverts[i][3];
 
     r = MR_New(mesh);
     MR_Set_Vertices(r,4,rvarr,0,NULL);
