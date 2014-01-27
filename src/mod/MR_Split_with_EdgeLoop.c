@@ -11,6 +11,8 @@ extern "C" {
 /* A new face is created and two new regions are created in place of the
    old region */
 
+/* MISSING A UNIT TEST */
+
 MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges) {
   Mesh_ptr mesh;
   int i, j, idx1, idx2, fedirs[MAXPV2], rfdir_adj, curdir, edir, edir_adj;;
