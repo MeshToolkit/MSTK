@@ -196,6 +196,10 @@ if (ENABLE_PARALLEL)
 
     add_definitions(-D_MSTK_HAVE_METIS)
 
+    if (METIS_MAJOR_VER)
+      add_definitions(-DMETIS_${METIS_MAJOR_VER})
+    endif (METIS_MAJOR_VER)
+
   endif (ENABLE_METIS)
 
   ##############################################################################
