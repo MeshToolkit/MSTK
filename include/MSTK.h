@@ -188,6 +188,10 @@ void MSTK_Init(void);
   void        MESH_SetGModel(Mesh_ptr mesh, GModel_ptr geom);
   int         MESH_Change_RepType(Mesh_ptr mesh, int nurep);
 
+  /* Renumber all mesh entities so that they have contiguous IDs */
+  /* No algorithm for bandwidth reduction or any other criterion
+     is applied */
+
   void        MESH_Renumber(Mesh_ptr mesh);
 
 
@@ -629,14 +633,39 @@ void MSTK_Init(void);
 
   MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
   int         ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
+
+  /* Low level edge split - split edge only and incorporate into adjacent
+     faces/regions - works for any type of mesh */
   MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz);
+
+  /* High level edge split for tri/tet meshes - split all connected elements too */
+  MVertex_ptr ME_Split_SimplexMesh(MEdge_ptr esplit, double *xyz);
+
   MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag);
 
   MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
   MFace_ptr   MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
-  MEdge_ptr   MF_Split(MFace_ptr fsplit, MVertex_ptr vnew0, MVertex_ptr vnew1);
 
-  MFace_ptr   MR_Split(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges);
+  /* Low level face split - split a face along edge connecting vertex vnew0
+     and vnew1 and incorporate new faces into connected regions -
+     works for any type of mesh */
+  MEdge_ptr   MF_Split_with_Edge(MFace_ptr fsplit, MVertex_ptr vnew0, MVertex_ptr vnew1);
+
+  /* Low level face split - split a face at a given location, creating
+     new triangular faces from the split vertex and each of the face's
+     edges. Incorporate the new faces into the connected regions */
+
+  MVertex_ptr MF_Split(MFace_ptr fsplit, double *xyz);
+
+  /*  High level split for tri/tet meshes - split all connected elements too */
+  MVertex_ptr MF_Split_SimplexMesh(MFace_ptr fsplit, double *splitxyz);
+
+  /* Split a region into two given a loop of edges that would form an
+     face intersecting the edge - works for any type of mesh */
+
+  MFace_ptr   MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges);
+
+
 
 /**********************************************************************/
 /* More parallel operators                                            */
