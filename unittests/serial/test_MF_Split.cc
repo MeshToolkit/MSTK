@@ -6,15 +6,13 @@
 
 TEST(MF_Split) 
 {
- int idx, i, n, gid, gdim, ok;
-  unsigned int dir;
+  int idx, i, j, n, nfv, ok;
   Mesh_ptr mesh;
-  MVertex_ptr v0, v1, vnew0, vnew1;
-  MEdge_ptr enew, e0, e1;
-  MFace_ptr mf, efaces[2];
+  MVertex_ptr vsplit;
+  MFace_ptr mf;
   MRegion_ptr fr;
-  List_ptr fedges, eflist, fregions, rfaces;
-  double xyz0[3], xyz1[3], xyznew[3];
+  List_ptr fregions, vfaces;
+  double fxyz[MAXPV2][3], cxyz[3];
 
   MSTK_Init();
 
@@ -24,7 +22,7 @@ TEST(MF_Split)
 
   CHECK(MESH_Num_Vertices(mesh) > 0);
   
-  idx = 0;
+  idx = 0; n = 0;
   while ((mf = MESH_Next_Face(mesh,&idx))) {
     if (MF_GEntDim(mf) == 3) {
 
@@ -35,7 +33,7 @@ TEST(MF_Split)
       cxyz[0] = cxyz[1] = cxyz[2] = 0.0;
       for (i = 0; i < nfv; i++) {
         for (j = 0; j < 3; j++)
-          cxyz[j] += fxyz[i];
+          cxyz[j] += fxyz[i][j];
       }
       for (j = 0; j < 3; j++)
         cxyz[j] /= nfv;
