@@ -64,14 +64,16 @@ MVertex_ptr MF_Split(MFace_ptr fsplit, double *splitxyz) {
   nnew = nfv;
 
 
-  for (i = 0; i < List_Num_Entries(fregs); i++) {
-    fr = List_Entry(fregs,i);
-    rfdir = MR_FaceDir(fr,fsplit);
-    for (j = 0; j < nnew; j++)
-      fnewdir[j] = rfdir;
-    MR_Replace_Faces(fr,1,&fsplit,nnew,fnew,fnewdir);
+  if (fregs) {
+    for (i = 0; i < List_Num_Entries(fregs); i++) {
+      fr = List_Entry(fregs,i);
+      rfdir = MR_FaceDir(fr,fsplit);
+      for (j = 0; j < nnew; j++)
+        fnewdir[j] = rfdir;
+      MR_Replace_Faces(fr,1,&fsplit,nnew,fnew,fnewdir);
+    }
+    List_Delete(fregs);
   }
-  List_Delete(fregs);
 
   MF_Delete(fsplit,0);
 
