@@ -14,16 +14,21 @@
 #
 # Add version number to the library (libmstk-1.8.a instead of libmstk.a)
 #
-# -D INSTALL_ADD_VERSION=yes|no
+# -D INSTALL_ADD_VERSION=yes|no (default=no)
+#
+# Install libraries and binaries in a machine specific subdirectory
+# (typically given by ARCHOS or `uname -m`_`uname -s`
+# 
+# -D INSTALL_PREFIX_ARCHOS=yes|no (default=no)
 #
 # Use Metis or Zoltan as a partitioner (specify at least one)
 #
-# -D ENABLE_METIS=yes|no 
-# -D ENABLE_ZOLTAN=yes|no
+# -D ENABLE_METIS=yes|no  (default=no)
+# -D ENABLE_ZOLTAN=yes|no (default=no)
 #
 # Support for importing/exporting ExodusII file
 #
-# -D ENABLE_ExodusII=yes|no (default is yes)
+# -D ENABLE_ExodusII=yes|no (default=yes)
 #
 # Must define path to ExodusII and NetCDF packages
 # 
@@ -31,7 +36,7 @@
 # -D NetCDF_DIR:FILEPATH="/usr/packages/netcdf-4.0/"
 #
 #
-# -D ENABLE_Tests=yes|no (default is yes)
+# -D ENABLE_Tests=yes|no (default=yes)
 #
 # If tests are enabled then path to UnitTest++ has to be specified
 #
@@ -42,7 +47,7 @@
 #  -D Curl_INCLUDE_DIR:FILEPATH=/usr/local/lib/cmcurl/src/incs
 #
 # You can similarly force it to find a library in a particular location
-# by specifying PKGNAME_LIB_DIR
+# by specifying PKGNAME_LIBRARY_DIR
 #
 # Note that PKGNAME must be specified EXACTLY as it was specified for 
 # the PKGNAME_DIR variable, i.e, if the script uses Curl_DIR, then
@@ -97,5 +102,6 @@ cmake \
   -D UnitTest_DIR:FILEPATH=/research/rao/ascem-tpl \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
   -D INSTALL_ADD_VERSION=no \
+  -D INSTALL_PREFIX_ARCHOS=no \
   ${SOURCE} 
 
