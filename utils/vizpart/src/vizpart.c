@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef MSTK_HAVE_MPI
 #include "mpi.h"
+#endif
 
 #include "MSTK.h"
 
@@ -109,7 +111,7 @@ int main(int argc, char **argv) {
     if(MESH_Num_Regions(mesh)) {
       MAttrib_ptr region_part = MAttrib_New(mesh, "part", INT, MREGION);
       MRegion_ptr mr;
-      while (mr = MESH_Next_Region(mesh, &idx)) {
+      while ((mr = MESH_Next_Region(mesh, &idx))) {
         id = MR_ID(mr);
 	MEnt_Set_AttVal(mr,region_part,part[id-1],0,NULL);
       }
@@ -117,7 +119,7 @@ int main(int argc, char **argv) {
     else {
       MAttrib_ptr face_part = MAttrib_New(mesh, "part", INT, MFACE);
       MFace_ptr mf;
-      while (mf = MESH_Next_Face(mesh, &idx)) {
+      while ((mf = MESH_Next_Face(mesh, &idx))) {
         id = MF_ID(mf);
 	MEnt_Set_AttVal(mf,face_part,part[idx-1],0,NULL);
       }
@@ -140,7 +142,7 @@ int main(int argc, char **argv) {
   free(part);
 
   MPI_Finalize();
-
+  return 1;
 }
 
 
