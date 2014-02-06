@@ -9,5 +9,9 @@ target_link_libraries(meshconvert
 
 # Would be nice to specify it relative to the path of this CMakeLists.txt file
 
-install(TARGETS meshconvert DESTINATION ${PROJECT_SOURCE_DIR}/utils/meshconvert/bin/${ARCHOS})
+if (INSTALL_PREFIX_ARCHOS)
+  install(TARGETS meshconvert DESTINATION ${PROJECT_SOURCE_DIR}/utils/meshconvert/bin/${ARCHOS})
+else ()
+  install(TARGETS meshconvert DESTINATION ${PROJECT_SOURCE_DIR}/utils/meshconvert/bin)
+endif ()
 
