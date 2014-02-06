@@ -76,13 +76,21 @@ if (NOT INSTALL_DIR)
 endif ()
 
 # where to install library
-
-install(TARGETS ${MSTKLIB}
-  EXPORT mstk
-  ARCHIVE
-  DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
-  CONFIGURATIONS ${CMAKE_BUILD_TYPE}
+if (INSTALL_PREFIX_ARCHOS) 
+  install(TARGETS ${MSTKLIB}
+    EXPORT mstk
+    ARCHIVE
+    DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
   )
+else ()
+  install(TARGETS ${MSTKLIB}
+    EXPORT mstk
+    ARCHIVE
+    DESTINATION ${INSTALL_DIR}/lib
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
+  )
+endif ()
 
 # where to install include files
 
