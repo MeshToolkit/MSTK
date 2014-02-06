@@ -11,7 +11,7 @@
 */
 
 
-#define MSTK_VERSION "2.02rc1"
+#define MSTK_VERSION "2.11rc2"
 
 #include <stdarg.h>
 
@@ -254,7 +254,8 @@ void MSTK_Init(void);
 
   int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, 
                                    MPI_Comm comm);
-
+  int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
+	                         int with_attr, Mesh_ptr *submeshes);
 
 #endif /* MSTK_HAVE_MPI */
 
