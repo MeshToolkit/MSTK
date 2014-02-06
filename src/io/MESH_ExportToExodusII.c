@@ -1691,6 +1691,7 @@ extern "C" {
         dim = MSet_EntDim(mset);
 
         if (dim != MFACE) continue; 
+        if (strncmp(mset_name,"sideset_",8) != 0) continue;
 
         sscanf(mset_name+8,"%d",&sid);
 
@@ -1762,6 +1763,7 @@ extern "C" {
         dim = MSet_EntDim(mset);
 
         if (dim != MEDGE) continue; 
+        if (strncmp(mset_name,"sideset_",8) != 0) continue;
 
         sscanf(mset_name+8,"%d",&sid);
 
