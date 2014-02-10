@@ -87,45 +87,52 @@ extern "C" {
 				{0,0,0,0,0,0}, /* PYRAMID, no support in exo*/
 			        {4,5,1,2,3,0}, /* PRISM, must verify nums */
 			        {5,6,1,2,3,4}};/* HEX */
+    int rank, numprocs;
 
 
     reptype = MESH_RepType(mesh);
 
 
 #ifdef MSTK_HAVE_MPI
-    int rank, numprocs;
-    MPI_Comm_size(comm,&numprocs);
-    MPI_Comm_rank(comm,&rank);
-
-    if (numprocs > 1) {
-      char basename[256];
-
-      int ndigits = 0;
-      int div = 1;
-      while (numprocs/div) {div *= 10; ndigits++;}
- 
-      strcpy(basename,filename);
-      char *ext = strstr(basename,".par");
+    if (comm != NULL) {
+      MPI_Comm_size(comm,&numprocs);
+      MPI_Comm_rank(comm,&rank);
       
-      if (!ext) {
-        ext = strstr(basename,".exo");
-        if (!ext)
-          MSTK_Report(funcname,
-                      "Extension for parallel Exodus II output should be .exo or .par",
-                      MSTK_FATAL);
-        else {          
-          ext[0] = '\0';
-          sprintf(modfilename,"%s.exo.%d.%0*d",basename,numprocs,ndigits,rank);
+      if (numprocs > 1) {
+        char basename[256];
+        
+        int ndigits = 0;
+        int div = 1;
+        while (numprocs/div) {div *= 10; ndigits++;}
+        
+        strcpy(basename,filename);
+        char *ext = strstr(basename,".par");
+        
+        if (!ext) {
+          ext = strstr(basename,".exo");
+          if (!ext)
+            MSTK_Report(funcname,
+                        "Extension for parallel Exodus II output should be .exo or .par",
+                        MSTK_FATAL);
+          else {          
+            ext[0] = '\0';
+            sprintf(modfilename,"%s.exo.%d.%0*d",basename,numprocs,ndigits,rank);
+          }
         }
+        else {
+          ext[0] = '\0';
+          sprintf(modfilename,"%s.par.%d.%0*d",basename,numprocs,ndigits,rank);
+        }
+        
       }
-      else {
-        ext[0] = '\0';
-        sprintf(modfilename,"%s.par.%d.%0*d",basename,numprocs,ndigits,rank);
-      }
-
+      else
+        strcpy(modfilename,filename);
     }
-    else
-      strcpy(modfilename,filename);
+    else {
+      rank = 0;
+      numprocs = 1;
+      strcpy(modfilename,filename);      
+    }
 #else
     strcpy(modfilename,filename);
 #endif    
@@ -160,30 +167,30 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
 
       /* Mark only the owned regions */
-
+        
       ownedmk = MSTK_GetMarker();
-
+        
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx = 0;
       while ((mr = MESH_Next_Region(mesh,&idx))) {
-        if (MR_PType(mr) != PGHOST) {
+        if (comm == NULL || MR_PType(mr) != PGHOST) {
           MEnt_Mark(mr,ownedmk);
           nr++;
-
+            
           List_ptr rfaces = MR_Faces(mr);
           idx2 = 0;
           while ((mf = (MFace_ptr) List_Next_Entry(rfaces,&idx2))) {
             if (!MEnt_IsMarked(mf,ownedmk)) {
               MEnt_Mark(mf,ownedmk);
               nf++;
-
+                
               List_ptr fedges = MF_Edges(mf,1,0);
               int idx3 = 0;
               while ((me = (MEdge_ptr) List_Next_Entry(fedges,&idx3))) {
                 if (!MEnt_IsMarked(me,ownedmk)) {
                   MEnt_Mark(me,ownedmk);
                   ne++;
-
+                    
                   int kk;
                   for (kk = 0; kk < 2; kk++) {
                     mv = ME_Vertex(me,kk);
@@ -201,7 +208,7 @@ extern "C" {
           List_Delete(rfaces);
         }
       }
-
+      
 #endif
         
       
@@ -219,13 +226,13 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
 
       /* Mark only the owned faces */
-
+        
       ownedmk = MSTK_GetMarker();
-
+      
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx2 = 0;
       while ((mf = (MFace_ptr) MESH_Next_Face(mesh,&idx2))) {
-        if (MF_PType(mf) != PGHOST) {
+        if (comm == NULL || MF_PType(mf) != PGHOST) {
           MEnt_Mark(mf,ownedmk);
           nf++;
           
@@ -250,7 +257,7 @@ extern "C" {
           List_Delete(fedges);
         }
       } /* while (mf...) */
-
+        
 #endif
 
       num_element = nf; num_side = ne;
@@ -348,112 +355,122 @@ extern "C" {
     List_ptr *element_blocks_glob;
 
 #ifdef MSTK_HAVE_MPI
-    
+
     int maxnum=0, maxnum1=0;
-    MPI_Allreduce(&num_element_block,&maxnum,1,MPI_INT,MPI_MAX,comm);
-
-    int *ebids_array_loc = (int *) calloc(maxnum,sizeof(int));
-
-    for (i = 0; i < num_element_block; i++)
-      ebids_array_loc[i] = element_block_ids[i];
-
-    int *ebids_array_glob;
-    ebids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
-    
-    MPI_Gather(ebids_array_loc,maxnum,MPI_INT,ebids_array_glob,maxnum,MPI_INT,0,comm);
-
-    if (rank == 0) {
-
-      /* Make a unique list of block IDs */
-
-      maxnum1 = num_element_block;
-
-      for (i = 1; i < numprocs; i++) {
-
-        int offset = maxnum*i;
-        for (j = 0; j < maxnum; j++) {
-          if (ebids_array_glob[offset+j] == 0) continue;
-
-          /* Is this element block ID in the list of global element
-             block IDs being collected at the head of the
-             ebids_array_glob? */
-
-          int found = 0;
-          for (k = 0; k < maxnum1; k++) {
-            if (ebids_array_glob[offset+j] == ebids_array_glob[k]) {
-              found = 1;
-              break;
+    if (comm) {
+      MPI_Allreduce(&num_element_block,&maxnum,1,MPI_INT,MPI_MAX,comm);
+      
+      int *ebids_array_loc = (int *) calloc(maxnum,sizeof(int));
+      
+      for (i = 0; i < num_element_block; i++)
+        ebids_array_loc[i] = element_block_ids[i];
+      
+      int *ebids_array_glob;
+      ebids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
+      
+      MPI_Gather(ebids_array_loc,maxnum,MPI_INT,ebids_array_glob,maxnum,MPI_INT,0,comm);
+      
+      if (rank == 0) {
+        
+        /* Make a unique list of block IDs */
+        
+        maxnum1 = num_element_block;
+        
+        for (i = 1; i < numprocs; i++) {
+          
+          int offset = maxnum*i;
+          for (j = 0; j < maxnum; j++) {
+            if (ebids_array_glob[offset+j] == 0) continue;
+            
+            /* Is this element block ID in the list of global element
+               block IDs being collected at the head of the
+               ebids_array_glob? */
+            
+            int found = 0;
+            for (k = 0; k < maxnum1; k++) {
+              if (ebids_array_glob[offset+j] == ebids_array_glob[k]) {
+                found = 1;
+                break;
+              }
+            }
+            
+            if (!found) {
+              
+              /* Found element block ID on processor i that is not in
+                 the global list. Put it in. */
+              
+              ebids_array_glob[maxnum1] = ebids_array_glob[offset+j];
+              maxnum1++;
+              
             }
           }
-
-          if (!found) {
-            
-            /* Found element block ID on processor i that is not in
-               the global list. Put it in. */
-
-            ebids_array_glob[maxnum1] = ebids_array_glob[offset+j];
-            maxnum1++;
-
-          }
-        }
-      } /* for (i = 1; ....) */
-
-      num_element_block_glob = maxnum1;
-
-    } /* if (rank == 0) */
-
-    /* Tell everyone how many element blocks there really are */
-
-    MPI_Bcast(&num_element_block_glob,1,MPI_INT,0,comm);
-
-    /* Send everyone the IDs of these element blocks */
-
-    element_block_ids_glob = (int *) malloc(num_element_block_glob*sizeof(int));
-    if (rank == 0)
+        } /* for (i = 1; ....) */
+        
+        num_element_block_glob = maxnum1;
+        
+      } /* if (rank == 0) */
+      
+      /* Tell everyone how many element blocks there really are */
+      
+      MPI_Bcast(&num_element_block_glob,1,MPI_INT,0,comm);
+      
+      /* Send everyone the IDs of these element blocks */
+      
+      element_block_ids_glob = (int *) malloc(num_element_block_glob*sizeof(int));
+      if (rank == 0)
+        for (i = 0; i < num_element_block_glob; i++)
+          element_block_ids_glob[i] = ebids_array_glob[i];
+      
+      MPI_Bcast(element_block_ids_glob,num_element_block_glob,MPI_INT,
+                0,comm);
+      
+      /* Populate the global element block data on each processor */
+      
+      element_blocks_glob = (List_ptr *) calloc(num_element_block_glob,
+                                                sizeof(List_ptr));
+      element_block_types_glob = (char **) calloc(num_element_block_glob,
+                                                  sizeof(char *));
       for (i = 0; i < num_element_block_glob; i++)
-        element_block_ids_glob[i] = ebids_array_glob[i];
-
-    MPI_Bcast(element_block_ids_glob,num_element_block_glob,MPI_INT,
-              0,comm);
-
-    /* Populate the global element block data on each processor */
-
-    element_blocks_glob = (List_ptr *) calloc(num_element_block_glob,
-                                                   sizeof(List_ptr));
-    element_block_types_glob = (char **) calloc(num_element_block_glob,
-                                                   sizeof(char *));
-    for (i = 0; i < num_element_block_glob; i++)
-      element_block_types_glob[i] = (char *) malloc(16*sizeof(char));
-
-    for (i = 0; i < num_element_block_glob; i++) {
-      int found = 0;
-      for (j = 0; j < num_element_block; j++) {
-        if (element_block_ids[j] == element_block_ids_glob[i]) {
-          element_blocks_glob[i] = element_blocks[j];
-          strcpy(element_block_types_glob[i],element_block_types[j]);
-          found = 1;
-          break;
-        }        
-      }      
-      if (!found) {
-        element_blocks_glob[i] = List_New(1); /* dummy list */
-        if (element_dim == 3)
-          strcpy(element_block_types_glob[i],"HEX");
-        else if (element_dim == 2)
-          strcpy(element_block_types_glob[i],"QUAD");
-        else
-          strcpy(element_block_types_glob[i],"UNKNOWN");
+        element_block_types_glob[i] = (char *) malloc(16*sizeof(char));
+      
+      for (i = 0; i < num_element_block_glob; i++) {
+        int found = 0;
+        for (j = 0; j < num_element_block; j++) {
+          if (element_block_ids[j] == element_block_ids_glob[i]) {
+            element_blocks_glob[i] = element_blocks[j];
+            strcpy(element_block_types_glob[i],element_block_types[j]);
+            found = 1;
+            break;
+          }        
+        }      
+        if (!found) {
+          element_blocks_glob[i] = List_New(1); /* dummy list */
+          if (element_dim == 3)
+            strcpy(element_block_types_glob[i],"HEX");
+          else if (element_dim == 2)
+            strcpy(element_block_types_glob[i],"QUAD");
+          else
+            strcpy(element_block_types_glob[i],"UNKNOWN");
+        }
       }
+      
+      if (verbose) {
+        fprintf(stdout,"\nElement block information:\n");
+        fprintf(stdout,"total %d elements\n", num_element); 
+        fprintf(stdout,"total %d element blocks:\n\n", num_element_block);
+      }
+      
+      MSTK_free(ebids_array_loc);
+      MSTK_free(ebids_array_glob);
     }
+    else { /* No MPI communicator given - treat it as a serial run */
 
-    if (verbose) {
-      fprintf(stdout,"\nElement block information:\n");
-      fprintf(stdout,"total %d elements\n", num_element); 
-      fprintf(stdout,"total %d element blocks:\n\n", num_element_block);
+      num_element_block_glob = num_element_block;
+      element_block_ids_glob = element_block_ids;
+      element_blocks_glob = element_blocks;
+      element_block_types_glob = element_block_types;
+
     }
-
-    MSTK_free(ebids_array_loc);
-    MSTK_free(ebids_array_glob);
 
 #else
 
@@ -553,97 +570,108 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
     
-    maxnum=0, maxnum1=0;
-    MPI_Allreduce(&num_side_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
+    if (comm) {
 
-    int *ssids_array_loc = (int *) calloc(maxnum,sizeof(int));
-
-    for (i = 0; i < num_side_set; i++)
-      ssids_array_loc[i] = side_set_ids[i];
-
-    int *ssids_array_glob = NULL;
-    ssids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
-    
-    MPI_Gather(ssids_array_loc,maxnum,MPI_INT,ssids_array_glob,maxnum,MPI_INT,0,comm);
-
-    if (rank == 0) {
-
-      /* Make a unique list of block IDs */
-
-      maxnum1 = num_side_set;
-
-      for (i = 1; i < numprocs; i++) {
-
-        int offset = maxnum*i;
-        for (j = 0; j < maxnum; j++) {
-          if (ssids_array_glob[offset+j] == 0) continue;
-
-          /* Is this element block ID in the list of global sideset
-             IDs being collected at the head of the
-             ssids_array_glob? */
-
-          int found = 0;
-          for (k = 0; k < maxnum1; k++) {
-            if (ssids_array_glob[offset+j] == ssids_array_glob[k]) {
-              found = 1;
-              break;
+      maxnum=0, maxnum1=0;
+      MPI_Allreduce(&num_side_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
+      
+      int *ssids_array_loc = (int *) calloc(maxnum,sizeof(int));
+      
+      for (i = 0; i < num_side_set; i++)
+        ssids_array_loc[i] = side_set_ids[i];
+      
+      int *ssids_array_glob = NULL;
+      ssids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
+      
+      MPI_Gather(ssids_array_loc,maxnum,MPI_INT,ssids_array_glob,maxnum,MPI_INT,0,comm);
+      
+      if (rank == 0) {
+        
+        /* Make a unique list of block IDs */
+        
+        maxnum1 = num_side_set;
+        
+        for (i = 1; i < numprocs; i++) {
+          
+          int offset = maxnum*i;
+          for (j = 0; j < maxnum; j++) {
+            if (ssids_array_glob[offset+j] == 0) continue;
+            
+            /* Is this element block ID in the list of global sideset
+               IDs being collected at the head of the
+               ssids_array_glob? */
+            
+            int found = 0;
+            for (k = 0; k < maxnum1; k++) {
+              if (ssids_array_glob[offset+j] == ssids_array_glob[k]) {
+                found = 1;
+                break;
+              }
+            }
+            
+            if (!found) {
+              
+              /* Found sideset ID on processor i that is not in
+                 the global list. Put it in. */
+              
+              ssids_array_glob[maxnum1] = ssids_array_glob[offset+j];
+              maxnum1++;
+              
             }
           }
-
-          if (!found) {
-            
-            /* Found sideset ID on processor i that is not in
-               the global list. Put it in. */
-
-            ssids_array_glob[maxnum1] = ssids_array_glob[offset+j];
-            maxnum1++;
-
-          }
-        }
-      } /* for (i = 1; ....) */
-
-      num_side_set_glob = maxnum1;
+        } /* for (i = 1; ....) */
+        
+        num_side_set_glob = maxnum1;
+        
+      } /* if (rank == 0) */
       
-    } /* if (rank == 0) */
+      /* Tell everyone how many sidesets there really are */
+      
+      MPI_Bcast(&num_side_set_glob,1,MPI_INT,0,comm);
+      
+      /* Send everyone the IDs of these sidesets */
+      
+      side_set_ids_glob = (int *) malloc(num_side_set_glob*sizeof(int));
+      if (rank == 0)
+        for (i = 0; i < num_side_set_glob; i++)
+          side_set_ids_glob[i] = ssids_array_glob[i];
+      
+      MPI_Bcast(side_set_ids_glob,num_side_set_glob,MPI_INT,0,comm);
+      
+      /* Populate the global sideset data on each processor */
+      
+      side_sets_glob = (List_ptr *) calloc(num_side_set_glob,
+                                           sizeof(List_ptr));
+      
+      for (i = 0; i < num_side_set_glob; i++) {
+        int found = 0;
+        for (j = 0; j < num_side_set; j++) {
+          if (side_set_ids[j] == side_set_ids_glob[i]) {
+            side_sets_glob[i] = side_sets[j];
+            found = 1;
+            break;
+          }
+        }      
+        if (!found)
+          side_sets_glob[i] = List_New(1); /* dummy list */
+      }
+      
+      if (verbose) {
+        fprintf(stdout,"\nSide set information:\n");
+        fprintf(stdout,"total %d side sets:\n\n", num_side_set);
+      }
+      
+      MSTK_free(ssids_array_loc);
+      MSTK_free(ssids_array_glob);
 
-    /* Tell everyone how many sidesets there really are */
-
-    MPI_Bcast(&num_side_set_glob,1,MPI_INT,0,comm);
-
-    /* Send everyone the IDs of these sidesets */
-
-    side_set_ids_glob = (int *) malloc(num_side_set_glob*sizeof(int));
-    if (rank == 0)
-      for (i = 0; i < num_side_set_glob; i++)
-        side_set_ids_glob[i] = ssids_array_glob[i];
-
-    MPI_Bcast(side_set_ids_glob,num_side_set_glob,MPI_INT,0,comm);
-
-    /* Populate the global sideset data on each processor */
-
-    side_sets_glob = (List_ptr *) calloc(num_side_set_glob,
-                                                   sizeof(List_ptr));
-
-    for (i = 0; i < num_side_set_glob; i++) {
-      int found = 0;
-      for (j = 0; j < num_side_set; j++) {
-        if (side_set_ids[j] == side_set_ids_glob[i]) {
-          side_sets_glob[i] = side_sets[j];
-          found = 1;
-          break;
-        }
-      }      
-      if (!found)
-        side_sets_glob[i] = List_New(1); /* dummy list */
     }
+    else { /* No communicator given - treat it as a serial run */
 
-    if (verbose) {
-      fprintf(stdout,"\nSide set information:\n");
-      fprintf(stdout,"total %d side sets:\n\n", num_side_set);
+      num_side_set_glob = num_side_set;
+      side_set_ids_glob = side_set_ids;
+      side_sets_glob = side_sets;
+
     }
-
-    MSTK_free(ssids_array_loc);
-    MSTK_free(ssids_array_glob);
 
 #else
 
@@ -668,100 +696,111 @@ extern "C" {
     List_ptr *node_sets_glob;
 
 #ifdef MSTK_HAVE_MPI
+
+    if (comm) {
+
+      maxnum=0, maxnum1=0;
+      MPI_Allreduce(&num_node_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
+
+      int *nsids_array_loc = (int *) calloc(maxnum,sizeof(int));
+
+      for (i = 0; i < num_node_set; i++)
+        nsids_array_loc[i] = node_set_ids[i];
+
+      int *nsids_array_glob = NULL;
+      nsids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
     
-    maxnum=0, maxnum1=0;
-    MPI_Allreduce(&num_node_set,&maxnum,1,MPI_INT,MPI_MAX,comm);
+      MPI_Gather(nsids_array_loc,maxnum,MPI_INT,nsids_array_glob,maxnum,MPI_INT,0,comm);
 
-    int *nsids_array_loc = (int *) calloc(maxnum,sizeof(int));
+      if (rank == 0) {
 
-    for (i = 0; i < num_node_set; i++)
-      nsids_array_loc[i] = node_set_ids[i];
+        /* Make a unique list of block IDs */
 
-    int *nsids_array_glob = NULL;
-    nsids_array_glob = (int *) calloc(maxnum*numprocs,sizeof(int));
-    
-    MPI_Gather(nsids_array_loc,maxnum,MPI_INT,nsids_array_glob,maxnum,MPI_INT,0,comm);
+        maxnum1 = num_node_set;
 
-    if (rank == 0) {
+        for (i = 1; i < numprocs; i++) {
 
-      /* Make a unique list of block IDs */
+          int offset = maxnum*i;
+          for (j = 0; j < maxnum; j++) {
+            if (nsids_array_glob[offset+j] == 0) continue;
 
-      maxnum1 = num_node_set;
+            /* Is this element block ID in the list of global nodeset
+               IDs being collected at the head of the
+               nsids_array_glob? */
 
-      for (i = 1; i < numprocs; i++) {
+            int found = 0;
+            for (k = 0; k < maxnum1; k++) {
+              if (nsids_array_glob[offset+j] == nsids_array_glob[k]) {
+                found = 1;
+                break;
+              }
+            }
 
-        int offset = maxnum*i;
-        for (j = 0; j < maxnum; j++) {
-          if (nsids_array_glob[offset+j] == 0) continue;
+            if (!found) {
+            
+              /* Found nodeset ID on processor i that is not in
+                 the global list. Put it in. */
 
-          /* Is this element block ID in the list of global nodeset
-             IDs being collected at the head of the
-             nsids_array_glob? */
+              nsids_array_glob[maxnum1] = nsids_array_glob[offset+j];
+              maxnum1++;
 
-          int found = 0;
-          for (k = 0; k < maxnum1; k++) {
-            if (nsids_array_glob[offset+j] == nsids_array_glob[k]) {
-              found = 1;
-              break;
             }
           }
+        } /* for (i = 1; ....) */
 
-          if (!found) {
-            
-            /* Found nodeset ID on processor i that is not in
-               the global list. Put it in. */
+        num_node_set_glob = maxnum1;
 
-            nsids_array_glob[maxnum1] = nsids_array_glob[offset+j];
-            maxnum1++;
+      } /* if (rank == 0) */
 
-          }
-        }
-      } /* for (i = 1; ....) */
+      /* Tell everyone how many nodesets there really are */
 
-      num_node_set_glob = maxnum1;
+      MPI_Bcast(&num_node_set_glob,1,MPI_INT,0,comm);
 
-    } /* if (rank == 0) */
+      /* Send everyone the IDs of these nodesets */
 
-    /* Tell everyone how many nodesets there really are */
-
-    MPI_Bcast(&num_node_set_glob,1,MPI_INT,0,comm);
-
-    /* Send everyone the IDs of these nodesets */
-
-    node_set_ids_glob = (int *) malloc(num_node_set_glob*sizeof(int));
-    if (rank == 0)
-      for (i = 0; i < num_node_set_glob; i++)
-        node_set_ids_glob[i] = nsids_array_glob[i];
+      node_set_ids_glob = (int *) malloc(num_node_set_glob*sizeof(int));
+      if (rank == 0)
+        for (i = 0; i < num_node_set_glob; i++)
+          node_set_ids_glob[i] = nsids_array_glob[i];
   
 
-    MPI_Bcast(node_set_ids_glob,num_node_set_glob,MPI_INT,
-              0,comm);
+      MPI_Bcast(node_set_ids_glob,num_node_set_glob,MPI_INT,
+                0,comm);
 
-    /* Populate the global nodeset data on each processor */
+      /* Populate the global nodeset data on each processor */
 
-    node_sets_glob = (List_ptr *) calloc(num_node_set_glob,
-                                                   sizeof(List_ptr));
+      node_sets_glob = (List_ptr *) calloc(num_node_set_glob,
+                                           sizeof(List_ptr));
 
-    for (i = 0; i < num_node_set_glob; i++) {
-      int found = 0;
-      for (j = 0; j < num_node_set; j++) {
-        if (node_set_ids[j] == node_set_ids_glob[i]) {
-          node_sets_glob[i] = node_sets[j];
-          found = 1;
-          break;
-        }
-      }      
-      if (!found)
-        node_sets_glob[i] = List_New(1); /* dummy list */
+      for (i = 0; i < num_node_set_glob; i++) {
+        int found = 0;
+        for (j = 0; j < num_node_set; j++) {
+          if (node_set_ids[j] == node_set_ids_glob[i]) {
+            node_sets_glob[i] = node_sets[j];
+            found = 1;
+            break;
+          }
+        }      
+        if (!found)
+          node_sets_glob[i] = List_New(1); /* dummy list */
+      }
+
+      if (verbose) {
+        fprintf(stdout,"\nNode set information:\n");
+        fprintf(stdout,"total %d node sets:\n\n", num_node_set);
+      }
+
+      MSTK_free(nsids_array_loc);
+      MSTK_free(nsids_array_glob);
+
     }
+    else { /* No communicator given - treat it as a serial run */
 
-    if (verbose) {
-      fprintf(stdout,"\nNode set information:\n");
-      fprintf(stdout,"total %d node sets:\n\n", num_node_set);
+      num_node_set_glob = num_node_set;
+      node_set_ids_glob = node_set_ids;
+      node_sets_glob = node_sets;
+      
     }
-
-    MSTK_free(nsids_array_loc);
-    MSTK_free(nsids_array_glob);
 
 #else
 
@@ -871,8 +910,12 @@ extern "C" {
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
 
 #ifdef MSTK_HAVE_MPI 
-      if (!MEnt_IsMarked(mv,ownedmk)) continue;
-      MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
+      if (comm) {
+        if (!MEnt_IsMarked(mv,ownedmk)) continue;
+        MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
+      }
+      else
+        vid = MV_ID(mv);
 #else
       vid = MV_ID(mv);
 #endif
@@ -920,7 +963,10 @@ extern "C" {
 
 	while ((fv = List_Next_Entry(fverts,&idx2))) {
 #ifdef MSTK_HAVE_MPI
-          MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
+          if (comm)
+            MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
+          else
+            vid = MV_ID(fv);
 #else
           vid = MV_ID(fv);
 #endif
@@ -1028,7 +1074,10 @@ extern "C" {
 	  idx2 = 0;
 	  while ((fv = List_Next_Entry(fverts,&idx2))) {
 #ifdef MSTK_HAVE_MPI      
-            MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
+            if (comm)
+              MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
+            else
+              vid = MV_ID(fv);
 #else
             vid = MV_ID(fv);
 #endif
@@ -1091,7 +1140,10 @@ extern "C" {
 	    rverts = MR_Vertices(mr);
 	    for (j = 0; j < nelnodes; j++) {
 #ifdef MSTK_HAVE_MPI      
-              MEnt_Get_AttVal(List_Entry(rverts,j),vidatt,&vid,&rval,&pval);
+              if (comm)
+                MEnt_Get_AttVal(List_Entry(rverts,j),vidatt,&vid,&rval,&pval);
+              else
+                vid = MV_ID(List_Entry(rverts,j));
 #else
               vid = MV_ID(List_Entry(rverts,j));
 #endif
@@ -1126,9 +1178,12 @@ extern "C" {
 	    fverts = MF_Vertices(mf,1,0);
 	    for (j = 0; j < nelnodes; j++) {
 #ifdef MSTK_HAVE_MPI      
-              MEnt_Get_AttVal(List_Entry(fverts,j),vidatt,&vid,&rval,&pval);
+              if (comm)
+                MEnt_Get_AttVal(List_Entry(fverts,j),vidatt,&vid,&rval,&pval);
+              else
+                vid = MV_ID(List_Entry(fverts,j));                
 #else
-              vid = MV_ID(List_Entry(fverts,j);
+              vid = MV_ID(List_Entry(fverts,j));
 #endif
 	      connect[nelnodes*k+j] = vid;
             }
@@ -1162,7 +1217,10 @@ extern "C" {
       idx = 0; j = 0;
       while ((mv = List_Next_Entry(node_sets_glob[i],&idx))) {
 #ifdef MSTK_HAVE_MPI      
-        MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
+        if (comm)
+          MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
+        else
+          vid = MV_ID(mv);
 #else
         vid = MV_ID(mv);
 #endif
@@ -1204,7 +1262,7 @@ extern "C" {
 	  mr = List_Entry(fregs,0);
 
 #ifdef MSTK_HAVE_MPI
-          if (MR_PType(mr) == PGHOST)
+          if (comm && MR_PType(mr) == PGHOST)
             mr = List_Entry(fregs,1);  /* at least 1 region should be owned */
 #endif
 
@@ -1260,7 +1318,7 @@ extern "C" {
 	  mf = List_Entry(efaces,0);
 
 #ifdef MSTK_HAVE_MPI
-          if (MF_PType(mf) == PGHOST)
+          if (comm && MF_PType(mf) == PGHOST)
             mf = List_Entry(efaces,1);  /* at least 1 face should be owned */
 #endif
 
@@ -1390,39 +1448,39 @@ extern "C" {
     }
 
 #ifdef MSTK_HAVE_MPI
-    idx = 0;
-    while ((mr = MESH_Next_Region(mesh,&idx)))
-      MEnt_Unmark(mr,ownedmk);
-    idx = 0;
-    while ((mf = MESH_Next_Face(mesh,&idx)))
-      MEnt_Unmark(mf,ownedmk);
-    idx = 0;
-    while ((me = MESH_Next_Edge(mesh,&idx)))
-      MEnt_Unmark(me,ownedmk);
-    idx = 0;
-    while ((mv = MESH_Next_Vertex(mesh,&idx)))
-      MEnt_Unmark(mv,ownedmk);
-
-    MSTK_FreeMarker(ownedmk);
-
-
-    /* In parallel case, free the local lists also */
-    /* No need to delete the lists because they are not duplicated */
-
-    MSTK_free(element_block_ids);
-    MSTK_free(element_blocks);
-    for (i = 0; i < num_element_block; i++)
-      MSTK_free(element_block_types[i]);
-    MSTK_free(element_block_types);
-
-
-    MSTK_free(side_set_ids);
-    MSTK_free(side_sets);
+    if (comm) {
+      idx = 0;
+      while ((mr = MESH_Next_Region(mesh,&idx)))
+        MEnt_Unmark(mr,ownedmk);
+      idx = 0;
+      while ((mf = MESH_Next_Face(mesh,&idx)))
+        MEnt_Unmark(mf,ownedmk);
+      idx = 0;
+      while ((me = MESH_Next_Edge(mesh,&idx)))
+        MEnt_Unmark(me,ownedmk);
+      idx = 0;
+      while ((mv = MESH_Next_Vertex(mesh,&idx)))
+        MEnt_Unmark(mv,ownedmk);
       
-    
-    MSTK_free(node_set_ids);
-    MSTK_free(node_sets);    
+      MSTK_FreeMarker(ownedmk);
 
+      /* In parallel case, free the local lists also */
+      /* No need to delete the lists because they are not duplicated */
+      
+      MSTK_free(element_block_ids);
+      MSTK_free(element_blocks);
+      for (i = 0; i < num_element_block; i++)
+        MSTK_free(element_block_types[i]);
+      MSTK_free(element_block_types);
+      
+      
+      MSTK_free(side_set_ids);
+      MSTK_free(side_sets);
+      
+      
+      MSTK_free(node_set_ids);
+      MSTK_free(node_sets);    
+    }
 #endif
 
 
