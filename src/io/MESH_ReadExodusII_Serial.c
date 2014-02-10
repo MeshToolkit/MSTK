@@ -1030,7 +1030,7 @@ extern "C" {
 
 	connect = (int *) MSTK_malloc(nelnodes*sizeof(int));
 
-	status = ex_get_conn(exoid, EX_FACE_BLOCK, elem_blk_ids[i], connect,
+	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
 			   NULL, NULL);
 
 	if (status < 0) {
@@ -1043,7 +1043,7 @@ extern "C" {
       
 	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
 
-	status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
+	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
 	if (status < 0) {
 	  sprintf(mesg,
