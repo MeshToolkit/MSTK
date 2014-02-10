@@ -6,6 +6,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+  /* Function to export MSTK mesh to MSTK and other formats */
+
+  /* if natt = 0, all attributes are written out 
+     if natt = -1, no attributes are written out 
+     if natt > 0, only attributes specified in attnames are written out 
+
+     opts is an array of flags that controls how mesh is exported and is
+     specific to each format. See the specific MESH_ExportTo"Format" file
+ 
+     If you want default options, call the functions as
+
+     MESH_ExportToFile(mymesh,myfile,myformat,0,NULL,NULL,NULL);
+  */
 
 int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
 		      const int natt, const char **attnames, const int *opts, MSTK_Comm comm) {
@@ -19,7 +32,7 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
   else if (strncmp(format,"x3d",4) == 0) {
     return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts,comm);
   }
-  else if (strncmp(format,"exodusii",8) == 0) {
+  else if (strncmp(format,"exo",3) == 0) {
 #ifdef ENABLE_ExodusII
     return MESH_ExportToExodusII(mesh,filename,natt,attnames,opts,comm);
 #else
