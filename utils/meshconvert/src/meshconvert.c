@@ -389,6 +389,8 @@ int main(int argc, char *argv[]) {
 
 
   MESH_Delete(mesh);
+ 
+  // while (1);
 
 #ifdef MSTK_HAVE_MPI
   MPI_Finalize();

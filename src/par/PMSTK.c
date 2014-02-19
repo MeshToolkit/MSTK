@@ -25,7 +25,8 @@ extern "C" {
 
   int MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
 			  int with_attr, Mesh_ptr *submeshes) {
-    int i, j, natt, nset, idx;
+    int i, j, natt, nset, idx, ival;
+    double rval;
     char attr_name[256];
     MAttrib_ptr attrib, g2latt, l2gatt;
     MSet_ptr mset;
@@ -33,10 +34,15 @@ extern "C" {
     MEdge_ptr me;
     MFace_ptr mf;
     MRegion_ptr mr;
+    List_ptr g2llist;
 
 
     /* Create an attribute to keep track of the connections from
        entities of the global mesh to entities of submeshes */
+    /* This attribute value will be populated with lists in
+       MESH_Partition along with another attribute called Local2Global
+       and used in MESH_BuildPBoundary and MESH_AddGhost. They are not
+       needed subsequently */
 
     g2latt = MAttrib_New(mesh,"Global2Local",POINTER,MALLTYPE);
 
@@ -75,65 +81,34 @@ extern "C" {
       
     }
 
+    /* Delete the lists associated with g2latt attribute but don't
+       remove attribute itself from each of these entities - it will
+       get deleted when the mesh gets deleted */
 
-    /* Don't waste time removing these attributes */
-    /* */
-    /* /\* Remove these attributes from submeshes *\/ */
-
-    /* for (i = 0; i < num; i++) { */
-      
-    /*   l2gatt = MESH_AttribByName(submeshes[i],"Local2Global"); */
-      
-    /*   if (l2gatt) { */
+    idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+      MEnt_Get_AttVal(mv,g2latt,&ival,&rval,&g2llist);
+      if (g2llist) List_Delete(g2llist);
+    }
 	
-    /*     idx = 0; */
-    /*     while ((mv = MESH_Next_Vertex(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(mv,l2gatt); */
+    idx = 0;
+    while ((me = MESH_Next_Edge(mesh,&idx))) {
+      MEnt_Get_AttVal(me,g2latt,&ival,&rval,&g2llist);
+      if (g2llist) List_Delete(g2llist);
+    }
 	
-    /*     idx = 0; */
-    /*     while ((me = MESH_Next_Edge(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(me,l2gatt); */
+    idx = 0;
+    while ((mf = MESH_Next_Face(mesh,&idx))) {
+      MEnt_Get_AttVal(mf,g2latt,&ival,&rval,&g2llist);
+      if (g2llist) List_Delete(g2llist);
+    }
 	
-    /*     idx = 0; */
-    /*     while ((mf = MESH_Next_Face(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(mf,l2gatt); */
+    idx = 0;
+    while ((mr = MESH_Next_Region(mesh,&idx))) {
+      MEnt_Get_AttVal(mr,g2latt,&ival,&rval,&g2llist);
+      if (g2llist) List_Delete(g2llist);
+    }	
 	
-    /*     idx = 0; */
-    /*     while ((mr = MESH_Next_Region(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(mr,l2gatt); */
-	
-    /*     MAttrib_Delete(l2gatt); */
-	
-    /*   } /\* if (l2gatt) *\/ */
-
-
-    /*   g2latt = MESH_AttribByName(submeshes[i],"Global2Local"); */
-      
-    /*   if (g2latt) { */
-	
-    /*     idx = 0; */
-    /*     while ((mv = MESH_Next_Vertex(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(mv,g2latt); */
-	
-    /*     idx = 0; */
-    /*     while ((me = MESH_Next_Edge(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(me,g2latt); */
-	
-    /*     idx = 0; */
-    /*     while ((mf = MESH_Next_Face(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(mf,g2latt); */
-	
-    /*     idx = 0; */
-    /*     while ((mr = MESH_Next_Region(submeshes[i],&idx))) */
-    /*       MEnt_Rem_AttVal(mr,g2latt); */
-	
-    /*     MAttrib_Delete(g2latt); */
-	
-    /*   } /\* if (g2latt) *\/ */
-
-    /* } /\* for (i = 0; i < num; i++) *\/ */
-
-
     /*
     printf("global mesh has been partitioned into %d parts\n",num);
     */
@@ -336,7 +311,8 @@ extern "C" {
 #endif
 
       MESH_Build_GhostLists(*mymesh,*dim);
-     
+
+      free(submeshes);
     }
 
     if( rank > 0) {

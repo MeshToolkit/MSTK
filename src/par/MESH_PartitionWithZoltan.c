@@ -324,10 +324,7 @@ int NDIM_4_ZOLTAN = 3;
             fregions = MF_Regions(rface);
             nfr = List_Num_Entries(fregions);
 	  
-            if (nfr == 1) {
-              continue;          /* boundary face; nothing to do */
-            }
-            else {
+            if (nfr > 1) {
               oppr = List_Entry(fregions,0);
               if (oppr == mr)
                 oppr = List_Entry(fregions,1);

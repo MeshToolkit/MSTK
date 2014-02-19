@@ -129,10 +129,7 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
 	fregions = MF_Regions(rface);
 	nfr = List_Num_Entries(fregions);
 	
-	if (nfr == 1) {
-	  continue;          /* boundary face; nothing to do */
-	}
-	else {
+	if (nfr > 1) {
 	  oppr = List_Entry(fregions,0);
 	  if (oppr == mr)
 	    oppr = List_Entry(fregions,1);
@@ -140,8 +137,7 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
 	  adjncy[ipos] = MR_ID(oppr)-1;
 	  ipos++;
 	}
-	
-	List_Delete(fregions);
+        List_Delete(fregions);	
 	
       }
       
@@ -204,6 +200,7 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   for (i = 0; i < ncells; i++)
     (*part)[i] = (int) idxpart[i];
 
+  free(idxpart);
   return 1;
 
 }

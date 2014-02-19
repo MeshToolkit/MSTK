@@ -84,6 +84,7 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
     if (vgidlist[i] != vgidlist[i-1]+1)
       MSTK_Report("MESH_Parallel_Check_VertexGlobalID",
                   "Vertex Global IDs are not contiguous",MSTK_WARN);
+  if (vgidlist) free(vgidlist);
 
   /* Additional checks */
   /* collect overlap vertex list for fast checking */
@@ -323,6 +324,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
     if (egidlist[i] != egidlist[i-1]+1)
       MSTK_Report("MESH_Parallel_Check_EdgeGlobalID",
                   "Edge Global IDs are not contiguous",MSTK_WARN);
+  if (egidlist) free(egidlist);
 
   /* collect overlap edge list for fast checking */
   idx = 0; noe = 0; ov_edges = List_New(10);
@@ -547,6 +549,7 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
     if (fgidlist[i] != fgidlist[i-1]+1)
       MSTK_Report("MESH_Parallel_Check_FaceGlobalID",
                   "Face Global IDs are not contiguous",MSTK_WARN);
+  if (fgidlist) free(fgidlist);
 
   /* collect overlap face list for fast checking */
   idx = 0; nof = 0; ov_faces = List_New(10);
@@ -762,7 +765,7 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
     if (rgidlist[i] != rgidlist[i-1]+1)
       MSTK_Report("MESH_Parallel_Check_RegionGlobalID",
                   "Region Global IDs are not contiguous",MSTK_WARN);
-
+  if (rgidlist) free(rgidlist);
 
   /* collect overlap region list for fast checking */
   idx = 0; nor = 0; ov_regions = List_New(10);
