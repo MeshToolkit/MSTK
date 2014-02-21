@@ -606,6 +606,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
                 lfedges[k] = lme;
                 lfedirs[k] = MF_EdgeDir_i(gmf,k);
               } /* k */
+              List_Delete(fedges);
 
               MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
               MF_Set_GlobalID(lmf,MF_GlobalID(gmf));

@@ -302,8 +302,10 @@ extern "C" {
 
       if (*mymesh == NULL)
         *mymesh = submeshes[0];
-      else
+      else {
         MESH_Copy(submeshes[0],*mymesh,1,1);
+        MESH_Delete(submeshes[0]);
+      }
 
 
 #ifdef DEBUG

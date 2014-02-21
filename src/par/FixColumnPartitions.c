@@ -45,7 +45,10 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
       if (!interior) break;
     }
 
-    if (interior) continue;
+    if (interior) {
+      List_Delete(rfaces);
+      continue;
+    }
 
     /* Found a boundary region - Find the face whose centroid is
        most directly above the region centroid and check if this
