@@ -2093,38 +2093,6 @@ int  MESH_ChangeRepType(Mesh_ptr mesh, RepType nureptype){
 }
 
 
-
-  /* Enforce continuous numbering for mesh entities */
-
-void MESH_Renumber(Mesh_ptr mesh) {
-  MVertex_ptr mv;
-  MEdge_ptr me;
-  MFace_ptr mf;
-  MRegion_ptr mr;
-  int idx, n;
-
-  idx = 0; n = 0;
-  while ((mv = MESH_Next_Vertex(mesh,&idx)))
-    MV_Set_ID(mv,++n);
-
-  idx = 0; n = 0;
-  while ((me = MESH_Next_Edge(mesh,&idx)))
-    ME_Set_ID(me,++n);
-
-  idx = 0; n = 0;
-  while ((mf = MESH_Next_Face(mesh,&idx)))
-    MF_Set_ID(mf,++n);
-
-  idx = 0; n = 0;
-  while ((mr = MESH_Next_Region(mesh,&idx)))
-    MR_Set_ID(mr,++n);
-
-  return;
-}
-
-
-
-
   /* Extra functionality for hash-tables */
 
   Hash_ptr MESH_Hash_Edges(Mesh_ptr mesh) {
