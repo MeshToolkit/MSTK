@@ -189,10 +189,11 @@ void MSTK_Init(void);
   int         MESH_Change_RepType(Mesh_ptr mesh, int nurep);
 
   /* Renumber all mesh entities so that they have contiguous IDs */
-  /* No algorithm for bandwidth reduction or any other criterion
-     is applied */
+  /* type = 0 --- simple sequential numbering
+          = 1 --- renumbering using Reverse Cuthill-McKee algorithm 
+  */
 
-  void        MESH_Renumber(Mesh_ptr mesh);
+  void        MESH_Renumber(Mesh_ptr mesh, int type);
 
 
 #ifdef MSTK_HAVE_MPI
