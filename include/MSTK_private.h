@@ -221,6 +221,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int compareEdgeID(const void *a, const void *b);
   int compareFaceINT(const void *a, const void *b);
   int compareFaceID(const void *a, const void *b);
+  int compareValence(const void *a, const void *b);
 
 
 
