@@ -455,7 +455,7 @@ else()
     endforeach()
 
     # Define the HDF5_LIBRARIES variable
-    set(HDF5_LIBRARIES
+    set(HDF5_LIBRARY_TARGETS
         ${HDF5_C_LIBRARY}
         ${HDF5_HL_LIBRARY}
 	${HDF5_CXX_LIBRARY})
@@ -466,23 +466,20 @@ else()
     # HDF5 and extra libraries listed as full paths rather than 
     # libraries for the purposes of exporting
 
-    set(HDF5_LIBRARIES_EXPORT)
+    set(HDF5_LIBRARIES)
     foreach (_component ${HDF5_VALID_COMPONENTS})
       if ( TARGET ${HDF5_${_component}_TARGET} )
-	list(APPEND HDF5_LIBRARIES_EXPORT ${_HDF5_${_component}_LIBRARY})
+	list(APPEND HDF5_LIBRARIES ${_HDF5_${_component}_LIBRARY})
       endif()
     endforeach()
-    list(APPEND HDF5_LIBRARIES_EXPORT ${HDF5_LINK_LIBRARIES})      
-
-  elseif (NOT HDF5_LIBRARIES)
-
-    # HDF5_LIBRARIES is set. Copy it over to HDF5_LIBRARIES_EXPORT
-
-    set(HDF5_LIBRARIES_EXPORT ${HDF5_LIBRARIES})
+    list(APPEND HDF5_LIBRARIES ${HDF5_LINK_LIBRARIES})      
 
   endif(NOT HDF5_LIBRARIES)
 
 endif()
+
+set(HDF5_LIBRARIES_EXPORT ${HDF5_LIBRARIES})
+
 
 # --- Define the version string from the settings file if not already set
 if ( NOT HDF5_VERSION AND HDF5_SETTINGS_FILE )
@@ -527,6 +524,7 @@ if ( NOT HDF5_FIND_QUIETLY )
 
   message(STATUS "HDF5 Version: ${HDF5_VERSION}")
   message(STATUS "\tHDF5_INCLUDE_DIRS      =${HDF5_INCLUDE_DIRS}")
+  message(STATUS "\tHDF5_LIBRARY_TARGETS   =${HDF5_LIBRARY_TARGETS}")
   message(STATUS "\tHDF5_LIBRARIES         =${HDF5_LIBRARIES}")
   message(STATUS "\tHDF5_LIBRARIES_EXPORT  =${HDF5_LIBRARIES_EXPORT}")
   message(STATUS "\tHDF5_LINK_LIBRARIES    =${HDF5_LINK_LIBRARIES}")
