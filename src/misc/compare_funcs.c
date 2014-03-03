@@ -130,7 +130,7 @@ extern "C" {
 
 
   int compareValence(const void *a, const void *b) {
-    return ( MV_Num_Edges((MVertex_ptr)a) - MV_Num_Edges((MVertex_ptr)b) );
+    return ( MV_Num_Edges(*((MVertex_ptr*)a)) - MV_Num_Edges(*((MVertex_ptr*)b)) );
   }
 
 
