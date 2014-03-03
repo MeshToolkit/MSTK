@@ -189,11 +189,13 @@ void MSTK_Init(void);
   int         MESH_Change_RepType(Mesh_ptr mesh, int nurep);
 
   /* Renumber all mesh entities so that they have contiguous IDs */
-  /* type = 0 --- simple sequential numbering
-          = 1 --- renumbering using Reverse Cuthill-McKee algorithm 
+  /* renum_type = 0 --- simple sequential numbering
+                = 1 --- renumbering using Reverse Cuthill-McKee algorithm 
+     mtype      = Type of entity to renumber (MVERTEX, MEDGE, MFACE, MREGION
+                  or MALLTYPE)
   */
 
-  void        MESH_Renumber(Mesh_ptr mesh, int type);
+  void        MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype);
 
 
 #ifdef MSTK_HAVE_MPI
