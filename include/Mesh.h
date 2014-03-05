@@ -179,8 +179,6 @@ extern "C" {
   void       MESH_Set_GModel(Mesh_ptr mesh, GModel_ptr geom);
   int        MESH_Change_RepType(Mesh_ptr mesh, int nurep);
   
-  /* type = 0 -- sequential, = 1 --- Rev Cuthill-McKee */
-  void       MESH_Renumber(Mesh_ptr mesh, int type);
   int        MESH_Copy(Mesh_ptr srcmesh, Mesh_ptr dstmesh, int with_attr, int with_sets);
 
   int MESH_AutoLock(Mesh_ptr mesh);

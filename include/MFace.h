@@ -35,13 +35,13 @@ extern "C" {
    * functions for each R-representation */
 
   typedef struct MFace_Adj_F1F3 {
-    int edirs;
+    unsigned long long edirs;
     List_ptr fedges;
     MRegion_ptr fregions[2];
   } MFace_Adj_F1F3;
 
   typedef struct MFace_Adj_F2F4 {
-    int edirs;
+    unsigned long long edirs;
     List_ptr fedges;
   } MFace_Adj_F2F4;
 

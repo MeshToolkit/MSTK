@@ -111,7 +111,7 @@ extern "C" {
 #endif
 
     adj = (MFace_Adj_F2F4 *) f->adj;
-    adj->edirs = 0;
+    adj->edirs = 0UL;
     if (adj->fedges)
       List_Delete(adj->fedges);
     adj->fedges = List_New(n);
@@ -164,10 +164,10 @@ extern "C" {
     int k, dir;
     for (k = eindex+1; k < ne-1; k++) {
       /* set bit k to 0 */
-      adj->edirs = adj->edirs & ~(1<<k);
+      adj->edirs = adj->edirs & ~(1UL<<k);
 
       /* get bit k+1 */
-      dir = (adj->edirs>>(k+1)) & 1;
+      dir = (adj->edirs>>(k+1)) & 1UL;
 
       /* move bit k+1 to k'th position */
       adj->edirs = adj->edirs | (dir<<k);
@@ -207,7 +207,7 @@ extern "C" {
     for (j = 0; j < nold; j++) {
       k = (i+j)%ne;
       oldedges[j] = List_Entry(adj->fedges,k);
-      olddirs[j] = (adj->edirs>>k) & 1;
+      olddirs[j] = (adj->edirs>>k) & 1UL;
     }
 
     rev = 0;
@@ -251,7 +251,7 @@ extern "C" {
     for (j = 0; j < ncom; j++) {
       k = (i+j)%ne; 
       List_Replacei(adj->fedges,k,newedges[j]);		      
-      adj->edirs = (adj->edirs & ~(1<<k)); /* set bit k to 0 */
+      adj->edirs = (adj->edirs & ~(1UL<<k)); /* set bit k to 0 */
       adj->edirs = (adj->edirs | (newdirs[j]<<k)); /* set to dir */
     }
 
@@ -272,17 +272,17 @@ extern "C" {
 	for (k = ne-1; k >= i+j; k--) {
 
 	  /* set bit k+1 to 0 */
-	  adj->edirs = adj->edirs & ~(1<<(k+1));
+	  adj->edirs = adj->edirs & ~(1UL<<(k+1));
 
 	  /* get bit k */
-	  dir = (adj->edirs>>k) & 1;
+	  dir = (adj->edirs>>k) & 1UL;
 
 	  /* move bit k to (k+1)'th position */
 	  adj->edirs = adj->edirs | (dir<<(k+1));	
 	}
 
 	/* set bit j according to input */
-	adj->edirs = adj->edirs & ~(1<<(i+j)); /* Set bit to 0 */
+	adj->edirs = adj->edirs & ~(1UL<<(i+j)); /* Set bit to 0 */
 	adj->edirs = adj->edirs | (newdirs[j]<<(i+j)); /* set to newdir */
 
 	ne++;
@@ -301,10 +301,10 @@ extern "C" {
       for (j = 0; j < nold-ncom; j++) {
 	for (k = (i+ncom+j)%ne; k < ne-1; k++) {
 	  /* set bit k to 0 */
-	  adj->edirs = adj->edirs & ~(1<<k);
+	  adj->edirs = adj->edirs & ~(1UL<<k);
 
 	  /* get bit k+1 */
-	  dir = (adj->edirs>>(k+1)) & 1;
+	  dir = (adj->edirs>>(k+1)) & 1UL;
 
 	  /* move bit k+1 to k'th position */
 	  adj->edirs = adj->edirs | (dir<<k);
@@ -458,7 +458,7 @@ extern "C" {
       fnd = 0;
       for (i = 0; i < n; i++) {
 	e = List_Entry(adj->fedges,i);
-	edir = ((adj->edirs)>>i) & 1;
+	edir = ((adj->edirs)>>i) & 1UL;
 	if (ME_Vertex(e,edir^dir) == v0) {
 	  fnd = 1;
 	  k = i;
@@ -489,7 +489,7 @@ extern "C" {
     n = List_Num_Entries(adj->fedges);
     for (i = 0; i < n; i++) {
       if (List_Entry(adj->fedges,i) == e)
-	return ((adj->edirs)>>i) & 1;
+	return ((adj->edirs)>>i) & 1UL;
     }
 
     MSTK_Report("MF_Edges_F2F4","Cannot find edge in face!!",MSTK_FATAL);
@@ -507,7 +507,7 @@ extern "C" {
 
     adj = (MFace_Adj_F2F4 *) f->adj;
 
-    return ((adj->edirs)>>i) & 1;
+    return ((adj->edirs)>>i) & 1UL;
   }
 			
   int MF_UsesEdge_F2F4(MFace_ptr f, MEdge_ptr e) {

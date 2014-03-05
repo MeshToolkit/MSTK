@@ -89,7 +89,7 @@ extern "C" {
       for (i = 0; i < ne; i++) {
 	k = dir ? i : ne-1-i;
 	e = List_Entry(adj->fedges,k);
-	edir = ((adj->edirs)>>k) & 1;
+	edir = ((adj->edirs)>>k) & 1UL;
 	v = ME_Vertex(e,edir^dir);
 	List_Add(fverts,v);
       }
@@ -98,7 +98,7 @@ extern "C" {
       fnd = 0;
       for (i = 0; i < ne; i++) {
         e = List_Entry(adj->fedges,i);
-        edir = ((adj->edirs)>>i) & 1;
+        edir = ((adj->edirs)>>i) & 1UL;
         if (ME_Vertex(e,edir^dir) == v0) {
           fnd = 1;
           k = i;
@@ -112,8 +112,8 @@ extern "C" {
       for (i = 0; i < ne; i++) {
 	e = dir ? List_Entry(adj->fedges,(k+i)%ne) :
 	  List_Entry(adj->fedges,(k+ne-i)%ne);
-	edir = dir ? ((adj->edirs)>>(k+i)%ne) & 1 :
-	  ((adj->edirs)>>(k+ne-i)%ne) & 1;
+	edir = dir ? ((adj->edirs)>>(k+i)%ne) & 1UL :
+	  ((adj->edirs)>>(k+ne-i)%ne) & 1UL;
 	v = ME_Vertex(e,edir^dir);
 	List_Add(fverts,v);
       }
