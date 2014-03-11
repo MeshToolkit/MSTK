@@ -213,8 +213,22 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MEnt_IsLocked(MEntity_ptr ent);
 
 
+  /* MSTK's internal quicksort functionality that can sort with respect
+   to an auxilliary key */
+
+  void mstk_quicksort(int array[], int key[], int i_beg, int i_end);
+
+
+  /* MSTK's implementation of graph renumbering algorithm by Gibbs-Poole-Stockmeyer */
+
+  int Graph_Renumber_GPS(int nnodes, int nstart, int nadj[], int adj[], 
+                         int newmap[], int *depth, int *maxwidth);
+
+
+
   int compareINT(const void *a, const void *b);
   int compareGlobalID(const void *a, const void *b);
+  int compareID(const void *a, const void *b);
   int compareVertexCoor(const void *a, const void *b);
   int compareCoorDouble(const void * a, const void * b);
   int compareEdgeINT(const void *a, const void *b);

@@ -15,6 +15,10 @@ extern "C" {
     return ( MEnt_GlobalID(*(MEntity_ptr*)a) - MEnt_GlobalID(*(MEntity_ptr*)b) );
   }
 
+  int compareID(const void *a, const void *b) {
+    return ( MEnt_ID(*(MEntity_ptr*)a) - MEnt_ID(*(MEntity_ptr*)b) );
+  }
+
 
   int compareCoorDouble(const void * a, const void * b) {
     double tol = 1e-8;
