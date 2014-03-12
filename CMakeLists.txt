@@ -13,6 +13,8 @@ project (MSTK)
 
 cmake_minimum_required(VERSION 2.8)
 
+cmake_policy(SET CMP0017 NEW)
+
 set(MSTK_VERSION_MAJOR 2)
 set(MSTK_VERSION_MINOR 02)
 
