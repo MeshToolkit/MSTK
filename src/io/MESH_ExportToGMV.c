@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include "MSTK.h"
-
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +45,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   MFType		ftype;
   MRType                rtype;
   List_ptr		rverts, fverts, rfaces, fregs, efaces;
+  List_ptr              vlist=NULL, elist=NULL, flist=NULL, rlist=NULL;
   MVertex_ptr           vertex;
   MEdge_ptr             edge;
   MFace_ptr	        face;
@@ -53,11 +54,15 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   MAttType              atttype;
   char                  attname[256], matname[256], date_str[256];
   int                   jv, jf, gmodel, nrf, nrv, nfv, dir;
-  int			i, found, k, nmeshatt, noutatt, ival;
-  int                   nalloc, ngent, fnum, fid, vid, nv, icr;
+  int			i, found, k, nmeshatt, noutatt, ival, idgaps;
+  int                   nalloc, ngent, fnum, fid, vid, icr;
+  int                   nv, ne, nf, nr;
+  int                   minid, maxid, tempid, prev_tempid;
   int                   attentdim, j, ncells, polygons=0, cellmk, idx;
-  int                   ncells1=0, ncells2=0, ndup, NFACES, rid0, rid1, rid;
+  int                   ncells1=0, ncells2=0, ncells3=0;
+  int                   ndup, NFACES, rid0, rid1, rid;
   int                   oppfid, opprid;
+  int                   sorted;
   double		vxyz[3], rval, *xcoord, *ycoord, *zcoord;
   void                 *pval;
   FILE		        *fp;
@@ -105,17 +110,95 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   fprintf(fp,"simdate %s\n",date_str);
 
 
+  /* Check if there are gaps in the IDs of entities - if there are
+     then we cannot use the IDs directly to reference entities */
 
+  idgaps = 0;
 
-  vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
+  if (nv) {
+    maxid = 0;
+    minid = 1e+9;
+    idx = 0;
+    while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+      int id = MV_ID(vertex);
+      minid = (id < minid) ? id : minid;
+      maxid = (id > maxid) ? id : maxid;
+    }
+    if (minid != 1 || maxid != nv)
+      idgaps = 1;
+  }
+  ne = MESH_Num_Edges(mesh);
+  if (ne && !idgaps) {
+    maxid = 0;
+    minid = 1e+9;
+    idx = 0;
+    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+      int id = ME_ID(edge);
+      minid = (id < minid) ? id : minid;
+      maxid = (id > maxid) ? id : maxid;
+    }
+    if (minid != 1 || maxid != ne)
+      idgaps = 1;
+   }
+  nf = MESH_Num_Faces(mesh);
+  if (ne && !idgaps) {
+    maxid = 0;
+    minid = 1e+9;
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx))) {
+      int id = MF_ID(face);
+      minid = (id < minid) ? id : minid;
+      maxid = (id > maxid) ? id : maxid;
+    }
+    if (minid != 1 || maxid != nf)
+      idgaps = 1;
+   }
+  nr = MESH_Num_Regions(mesh);
+  if (nr && !idgaps) {
+    maxid = 0;
+    minid = 1e+9;
+    idx = 0;
+    while ((region = MESH_Next_Region(mesh,&idx))) {
+      int id = MR_ID(region);
+      minid = (id < minid) ? id : minid;
+      maxid = (id > maxid) ? id : maxid;
+    }
+    if (minid != 1 || maxid != nr)
+      idgaps = 1;
+   }
+  
+
+  /* Now build up the vertex list sorted by ID and write them out */
+
+  vidatt = MESH_AttribByName(mesh,"vidatt");
+  if (!vidatt)
+    vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
+
+  vlist = List_New(nv);
+  idx = 0; i = 1; 
+  prev_tempid = 0; sorted = 1;
+  while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+    List_Add(vlist,vertex);
+
+    tempid = idgaps ? i : MV_ID(vertex);
+    MEnt_Set_AttVal(vertex,vidatt,tempid,0.0,NULL);
+
+    if (tempid != prev_tempid+1) sorted = 0;
+    prev_tempid = tempid;
+
+    i++;
+  }
+
+  if (!sorted) /* Sort the vertices according to the IDs */
+    List_Sort(vlist,nv,sizeof(MVertex_ptr),compareID);
+
 
   if (!opts || opts[0] == 0) {
     fprintf(fp,"nodev %d\n",nv);
-    for (jv = 0; jv < nv; jv++) {
-      vertex = MESH_Vertex(mesh,jv);
+    idx = 0;
+    while ((vertex = List_Next_Entry(vlist,&idx))) {
       MV_Coords(vertex,vxyz);
       fprintf(fp,"% 20.12f % 20.12lf % 20.12lf\n",vxyz[0],vxyz[1],vxyz[2]);
-      MEnt_Set_AttVal(vertex,vidatt,(jv+1),0.0,NULL);
     }
   }
   else {
@@ -123,13 +206,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     xcoord = (double *) MSTK_malloc(nv*sizeof(double));
     ycoord = (double *) MSTK_malloc(nv*sizeof(double));
     zcoord = (double *) MSTK_malloc(nv*sizeof(double));
-    for (jv = 0; jv < nv; jv++) {
-      vertex = MESH_Vertex(mesh,jv);
+    idx = 0; jv = 0;
+    while ((vertex = List_Next_Entry(vlist,&idx))) {
       MV_Coords(vertex,vxyz);
       xcoord[jv] = vxyz[0];
       ycoord[jv] = vxyz[1];
       zcoord[jv] = vxyz[2];
-      MEnt_Set_AttVal(vertex,vidatt,(jv+1),0.0,NULL);
+      jv++;
     }
 
     for (jv = 0; jv < nv; jv++) {
@@ -153,393 +236,446 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   }
 
 
-
   cellmk = MSTK_GetMarker();
 
   /* number of regions */
 
-  ncells = MESH_Num_Regions(mesh); 
+  ncells = 0;
 
-  if (ncells) {
-    ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
+  if (nr) {    
+    ncells3 = nr;
+    ncells += nr;
 
-    idx = 0; i = 0;
-    while ((region = MESH_Next_Region(mesh,&idx)))
-      MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
+    ridatt = MESH_AttribByName(mesh,"ridatt");
+    if (!ridatt)
+      ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
+
+    rlist = List_New(nr);
+
+    idx = 0; i = 1;
+    prev_tempid = 0;
+    sorted = 1;
+    while ((region = MESH_Next_Region(mesh,&idx))) {
+      List_Add(rlist,region);
+      
+      tempid = idgaps? i : MR_ID(region);
+      MEnt_Set_AttVal(region,ridatt,tempid,0.0,NULL);
+
+      if (tempid != prev_tempid+1) sorted = 0;
+      prev_tempid = tempid;
+
+      i++;
+    }
+
+    if (!sorted) /* sort by region ID */ 
+      List_Sort(rlist,ncells,sizeof(MRegion_ptr),compareID);
   }
 
   /* May have problems if we want to write polygons as 'faces' */
   /* number of faces not connected to a region */  
 
-  if (MESH_Num_Faces(mesh)) {
+  if (nf) {
 
-    fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
+    fidatt = MESH_AttribByName(mesh,"fidatt");
+    if (!fidatt)
+      fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
+
+    flist = List_New(nf);
 
     ncells2 = 0;
-    idx = 0; i = 0;
+    idx = 0; i = 1;
+    prev_tempid = 0;
+    sorted = 1;
     while ((face = MESH_Next_Face(mesh,&idx))) {
       if ((fregs = MF_Regions(face)))
 	List_Delete(fregs);
       else {
 	MEnt_Mark(face,cellmk);
-	ncells++;
 	ncells2++;
       }
-      MEnt_Set_AttVal(face,fidatt,++i,0.0,NULL);
+
+      List_Add(flist,face);
+
+      tempid = idgaps? i : MF_ID(face);
+      MEnt_Set_AttVal(face,fidatt,tempid,0.0,NULL);
+
+      if (tempid != prev_tempid+1) sorted = 0;
+      prev_tempid = tempid;
+
+      i++;
     }
+    ncells += ncells2;
+    
+    if (!sorted)
+      List_Sort(flist,nf,sizeof(MFace_ptr),compareID);
   }
 
 
   /* number of edges not connected to a face */
-  if (MESH_Num_Edges(mesh)) {
+  if (ne) {
 
-    eidatt = MAttrib_New(mesh,"eidatt",INT,MEDGE);
+    elist = List_New(ne);
+
+    eidatt = MESH_AttribByName(mesh,"eidatt");
+    if (!eidatt)
+      eidatt = MAttrib_New(mesh,"eidatt",INT,MEDGE);
 
     ncells1 = 0;
-    idx = 0; i = 0;
+    idx = 0; i = 1;
+    prev_tempid = 0;
+    sorted = 1;
     while ((edge = MESH_Next_Edge(mesh,&idx))) {
       if ((efaces = ME_Faces(edge)))
 	List_Delete(efaces);
       else {
 	MEnt_Mark(edge,cellmk);
-	ncells++;
 	ncells1++;
       }
-      MEnt_Set_AttVal(edge,eidatt,++i,0.0,NULL);
+
+      List_Add(elist,edge);
+
+      tempid = idgaps ? i : ME_ID(edge);
+      MEnt_Set_AttVal(edge,eidatt,tempid,0.0,NULL);
+
+      if (tempid != prev_tempid) sorted = 0;
+      prev_tempid = tempid;
+
+      i++;
     }
+    ncells += ncells1;
+
+    if (!sorted)
+      List_Sort(elist,ne,sizeof(MEdge_ptr),compareID);
   }
 
 
 
   /* write region connectivity for entire mesh */
 
-  if (!opts || opts[1] == 0) { /* write out cells as cells*/
-    fprintf(fp,"cells %d\n",ncells);
-    
-    ngent = 0;
-    nalloc = 10;
-    gentities = (int *) MSTK_malloc(nalloc*sizeof(int));
+  ngent = 0;
+  nalloc = 10;
+  gentities = (int *) MSTK_malloc(nalloc*sizeof(int));
   
-    idx = 0;
-    while ((region = MESH_Next_Region(mesh,&idx))) {
+  fprintf(fp,"cells %d\n",ncells);
+    
+  if (ncells3) {
+    if (!opts || opts[1] == 0) { /* write out cells as cells*/
+      
+      idx = 0;
+      while ((region = List_Next_Entry(rlist,&idx))) {
 
-      rverts = MR_Vertices(region);
-      nrv = List_Num_Entries(rverts);
+        rverts = MR_Vertices(region);
+        nrv = List_Num_Entries(rverts);
 
-      rfaces = MR_Faces(region);
-      nrf = List_Num_Entries(rfaces);
+        rfaces = MR_Faces(region);
+        nrf = List_Num_Entries(rfaces);
 
-      switch (nrv) {
-      case 4:
-	rtype = TET;
-	fprintf(fp,"tet 4 ");
-	break;
-      case 5:
-	if (nrf == 5) {
-	  rtype = PYRAMID;
-	  fprintf(fp,"pyramid 5 ");
-	}
-	else 
-	  rtype = POLYHED;
-	break;
-      case 6:
-	if (nrf == 5) { /* need additional check to fully verify */
-	  rtype = PRISM;
-	fprintf(fp,"prism 6 ");
-	}
-      else
-	rtype = POLYHED;
-	break;
-      case 8:
-	if (nrf == 6) {
-	  /* Really verify that its a hex - all faces must be a quad */
-	  /* It is possible to have a non-hex with 6 faces, 8 vertices
-	     and 12 edges */
+        switch (nrv) {
+        case 4:
+          rtype = TET;
+          fprintf(fp,"tet 4 ");
+          break;
+        case 5:
+          if (nrf == 5) {
+            rtype = PYRAMID;
+            fprintf(fp,"pyramid 5 ");
+          }
+          else 
+            rtype = POLYHED;
+          break;
+        case 6:
+          if (nrf == 5) { /* need additional check to fully verify */
+            rtype = PRISM;
+            fprintf(fp,"prism 6 ");
+          }
+          else
+            rtype = POLYHED;
+          break;
+        case 8:
+          if (nrf == 6) {
+            /* Really verify that its a hex - all faces must be a quad */
+            /* It is possible to have a non-hex with 6 faces, 8 vertices
+               and 12 edges */
 
-	  int allquad = 1;
-	  for (jf = 0; jf < nrf; jf++) {
-	    face = List_Entry(rfaces,jf);
-	    if (MF_Num_Vertices(face) != 4) {
-	      allquad = 0;
-	      break;
-	    }
-	  }
+            int allquad = 1;
+            for (jf = 0; jf < nrf; jf++) {
+              face = List_Entry(rfaces,jf);
+              if (MF_Num_Vertices(face) != 4) {
+                allquad = 0;
+                break;
+              }
+            }
 
-	  if (allquad) {
-	    rtype = HEX;
-	    fprintf(fp,"hex 8 ");
-	  }
-	  else
-	    rtype = POLYHED;
-	}
-	else
-	  rtype = POLYHED;
-	break;
-      default:
-	rtype = POLYHED;
-	break;
-      }
-      if (rtype != POLYHED) {
-	for (jv = 0; jv < nrv; jv++) {
-	  vertex = List_Entry(rverts,rtmpl[nrv-4][jv]);
-	  MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
-	  fprintf(fp," % 8d",vid);
-	}
-	fprintf(fp,"\n");
-      }
-      else {
-	fprintf(fp,"general %d\n",nrf);
-	for (jf = 0; jf < nrf; jf++) {
-	  face = List_Entry(rfaces,jf);
-	  fprintf(fp,"%d ",MF_Num_Edges(face)); /* assuming linear elements */
-	}
-	fprintf(fp,"\n");
-	for (jf = 0; jf < nrf; jf++) {
-	  face = List_Entry(rfaces,jf);
-	  dir = MR_FaceDir_i(region,jf);
+            if (allquad) {
+              rtype = HEX;
+              fprintf(fp,"hex 8 ");
+            }
+            else
+              rtype = POLYHED;
+          }
+          else
+            rtype = POLYHED;
+          break;
+        default:
+          rtype = POLYHED;
+          break;
+        }
+        if (rtype != POLYHED) {
+          for (jv = 0; jv < nrv; jv++) {
+            vertex = List_Entry(rverts,rtmpl[nrv-4][jv]);
+            MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+            fprintf(fp," % 8d",vid);
+          }
+          fprintf(fp,"\n");
+        }
+        else {
+          fprintf(fp,"general %d\n",nrf);
+          for (jf = 0; jf < nrf; jf++) {
+            face = List_Entry(rfaces,jf);
+            fprintf(fp,"%d ",MF_Num_Edges(face)); /* assuming linear elements */
+          }
+          fprintf(fp,"\n");
+          for (jf = 0; jf < nrf; jf++) {
+            face = List_Entry(rfaces,jf);
+            dir = MR_FaceDir_i(region,jf);
 	  
-	  fverts = MF_Vertices(face,dir,0);
-	  nfv = List_Num_Entries(fverts);
+            fverts = MF_Vertices(face,dir,0);
+            nfv = List_Num_Entries(fverts);
 	  
-	  for (jv = 0; jv < nfv; jv++) {
-	    vertex = List_Entry(fverts,jv);
-	    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
-	    fprintf(fp," %8d",vid);
-	  }
-	  fprintf(fp,"\n");
-	  List_Delete(fverts);
-	}
+            for (jv = 0; jv < nfv; jv++) {
+              vertex = List_Entry(fverts,jv);
+              MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);
+              fprintf(fp," %8d",vid);
+            }
+            fprintf(fp,"\n");
+            List_Delete(fverts);
+          }
+        }
+      
+        gentid = MR_GEntID(region);
+      
+        found = 0;
+        for (i = 0; i < ngent; i++)
+          if (gentities[i] == gentid) {
+            found = 1;
+            break;
+          }
+      
+        if (!found) {
+          if (ngent+1 >= nalloc) {
+            nalloc *= 2;
+            gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+          }
+          gentities[ngent] = gentid;
+          ngent++;
+        }
+      
+        List_Delete(rfaces);
+        List_Delete(rverts);
       }
-      
-      gentid = MR_GEntID(region);
-      
-      found = 0;
-      for (i = 0; i < ngent; i++)
-	if (gentities[i] == gentid) {
-	  found = 1;
-	  break;
-	}
-      
-      if (!found) {
-	if (ngent+1 >= nalloc) {
-	  nalloc *= 2;
-	  gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
-	}
-	gentities[ngent] = gentid;
-	ngent++;
-      }
-      
-      List_Delete(rfaces);
-      List_Delete(rverts);
     }
-  }
-  else { /* Write out cells as vface3D and faces as vfaces */
-    NFACES = MESH_Num_Faces(mesh);
+    else { /* Write out cells as vface3D and faces as vfaces */
+      NFACES = nf;
 
-    oppatt = MAttrib_New(mesh,"oppfaceID",INT,MFACE); 
+      oppatt = MAttrib_New(mesh,"oppfaceID",INT,MFACE); 
 
-    fprintf(fp,"cells %d\n",ncells);
-    
-    ngent = 0;
-    nalloc = 10;
-    gentities = (int *) MSTK_malloc(nalloc*sizeof(int));
-  
-    ndup = 0;
-    idx = 0;
-    while ((region = MESH_Next_Region(mesh,&idx))) {      
-      MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
+      ndup = 0;
+      idx = 0;
+      while ((region = List_Next_Entry(rlist,&idx))) {      
+        MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
 
-      rfaces = MR_Faces(region);
-      nrf = List_Num_Entries(rfaces);
+        rfaces = MR_Faces(region);
+        nrf = List_Num_Entries(rfaces);
       
-      fprintf(fp,"vface3d % d ",nrf);
+        fprintf(fp,"vface3d % d ",nrf);
       
-      for (jf = 0; jf < nrf; jf++) {
-	face = List_Entry(rfaces,jf);
+        for (jf = 0; jf < nrf; jf++) {
+          face = List_Entry(rfaces,jf);
 
-	/* if face has a region on the other side, we will be writing
-	   out a duplicate face for the opposite region. We use the
-	   convention that if current region ID from which we are
-	   looking at the face is smaller, then the face ID will be
-	   written out as is, whereas for the opposite region a new
-	   face with ID = face_id+num_mesh_faces will be written
-	   out. Vice versa if this region ID is higher */
+          /* if face has a region on the other side, we will be writing
+             out a duplicate face for the opposite region. We use the
+             convention that if current region ID from which we are
+             looking at the face is smaller, then the face ID will be
+             written out as is, whereas for the opposite region a new
+             face with ID = face_id+num_mesh_faces will be written
+             out. Vice versa if this region ID is higher */
 
-	fregs = MF_Regions(face);
-	if (fregs && List_Num_Entries(fregs) == 2) {
+          fregs = MF_Regions(face);
+          if (fregs && List_Num_Entries(fregs) == 2) {
 	  
-	  oppreg = List_Entry(fregs,0);
-	  if (oppreg == region)
-	    oppreg = List_Entry(fregs,1);
+            oppreg = List_Entry(fregs,0);
+            if (oppreg == region)
+              oppreg = List_Entry(fregs,1);
 	  
-	  MEnt_Get_AttVal(oppreg,ridatt,&opprid,&rval,&pval);
-	  if (rid < opprid) {
-	    MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
-	    fprintf(fp," % d ",fid);
-	  }
-	  else {
-	    ndup++;
-	    fprintf(fp," % d ",NFACES+ndup);
-	    MEnt_Set_AttVal(face,oppatt,NFACES+ndup,0,NULL);
-	  }
-	}
-	else {
-	  MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
-	  fprintf(fp,"% d ",fid);
-	}
-      }
-      fprintf(fp,"\n");
+            MEnt_Get_AttVal(oppreg,ridatt,&opprid,&rval,&pval);
+            if (rid < opprid) {
+              MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+              fprintf(fp," % d ",fid);
+            }
+            else {
+              ndup++;
+              fprintf(fp," % d ",NFACES+ndup);
+              MEnt_Set_AttVal(face,oppatt,NFACES+ndup,0,NULL);
+            }
+          }
+          else {
+            MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+            fprintf(fp,"% d ",fid);
+          }
+        }
+        fprintf(fp,"\n");
 
-      gentid = MR_GEntID(region);
+        gentid = MR_GEntID(region);
       
-      found = 0;
-      for (i = 0; i < ngent; i++)
-	if (gentities[i] == gentid) {
-	  found = 1;
-	  break;
-	}
+        found = 0;
+        for (i = 0; i < ngent; i++)
+          if (gentities[i] == gentid) {
+            found = 1;
+            break;
+          }
       
-      if (!found) {
-	if (ngent+1 >= nalloc) {
-	  nalloc *= 2;
-	  gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
-	}
-	gentities[ngent] = gentid;
-	ngent++;
-      }
-    }   
+        if (!found) {
+          if (ngent+1 >= nalloc) {
+            nalloc *= 2;
+            gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+          }
+          gentities[ngent] = gentid;
+          ngent++;
+        }
+      }   
     
 
-    /* Now to write out vfaces */
+      /* Now to write out vfaces */
 
-    fprintf(fp,"vfaces % d\n",NFACES+ndup);
+      fprintf(fp,"vfaces % d\n",NFACES+ndup);
 
-    /* Write out all the faces of the mesh first */
-    ndup = 0;
-    idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {      
+      /* Write out all the faces of the mesh first */
+      ndup = 0;
+      idx = 0;
+      while ((face = List_Next_Entry(flist,&idx))) {      
 
-      fregs = MF_Regions(face);
-      if (!fregs)	
-	continue;
+        fregs = MF_Regions(face);
+        if (!fregs)	
+          continue;
 
-      if (List_Num_Entries(fregs) == 2) {
-	ndup++;
+        if (List_Num_Entries(fregs) == 2) {
+          ndup++;
 
-	region0 = List_Entry(fregs,0);
-	region1 = List_Entry(fregs,1);
+          region0 = List_Entry(fregs,0);
+          region1 = List_Entry(fregs,1);
 	  
-	/* This is the face written out with its regular ID. The
-	   connected region with the lower ID will use this face such
-	   that its normal points out of the region */
+          /* This is the face written out with its regular ID. The
+             connected region with the lower ID will use this face such
+             that its normal points out of the region */
 
-	MEnt_Get_AttVal(region0,ridatt,&rid0,&rval,&pval);
-	MEnt_Get_AttVal(region1,ridatt,&rid1,&rval,&pval);
-	if (rid0 < rid1) {
-	  region = region0;
-	  rid = rid0;
-	}
-	else {
-	  region = region1;
-	  rid = rid1;
-	}
+          MEnt_Get_AttVal(region0,ridatt,&rid0,&rval,&pval);
+          MEnt_Get_AttVal(region1,ridatt,&rid1,&rval,&pval);
+          if (rid0 < rid1) {
+            region = region0;
+            rid = rid0;
+          }
+          else {
+            region = region1;
+            rid = rid1;
+          }
 
-	dir = MR_FaceDir(region,face);	  
-	fverts = MF_Vertices(face,dir,0);
+          dir = MR_FaceDir(region,face);	  
+          fverts = MF_Vertices(face,dir,0);
 
-	nfv = List_Num_Entries(fverts);
+          nfv = List_Num_Entries(fverts);
 	
-	MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
-	MEnt_Get_AttVal(face,oppatt,&oppfid,&rval,&pval);
+          MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+          MEnt_Get_AttVal(face,oppatt,&oppfid,&rval,&pval);
 	
-	fprintf(fp,"% d  1  % d 1 % d ",nfv,oppfid,rid);
-	for (i = 0; i < nfv; i++) {
-	  MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
-	  fprintf(fp," % d ",vid);
-	}
-	fprintf(fp,"\n");
+          fprintf(fp,"% d  1  % d 1 % d ",nfv,oppfid,rid);
+          for (i = 0; i < nfv; i++) {
+            MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
+            fprintf(fp," % d ",vid);
+          }
+          fprintf(fp,"\n");
 	
-	List_Delete(fverts);
+          List_Delete(fverts);
+        }
+        else {
+          region = List_Entry(fregs,0);
+          MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
+          dir = MR_FaceDir(region,face);	  
+          fverts = MF_Vertices(face,dir,0);
+
+          nfv = List_Num_Entries(fverts);
+
+          MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+          oppfid = 0;
+	
+          fprintf(fp,"% d  1  % d 1 % d ",nfv,oppfid,rid);
+          for (i = 0; i < nfv; i++) {
+            MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
+            fprintf(fp," % d ",vid);
+          }
+          fprintf(fp,"\n");
+	
+          List_Delete(fverts);
+        }
+        List_Delete(fregs);
       }
-      else {
-	region = List_Entry(fregs,0);
-	MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
-	dir = MR_FaceDir(region,face);	  
-	fverts = MF_Vertices(face,dir,0);
 
-	nfv = List_Num_Entries(fverts);
-
-	MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
-	oppfid = 0;
-	
-	fprintf(fp,"% d  1  % d 1 % d ",nfv,oppfid,rid);
-	for (i = 0; i < nfv; i++) {
-	  MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
-	  fprintf(fp," % d ",vid);
-	}
-	fprintf(fp,"\n");
-	
-	List_Delete(fverts);
-      }
-      List_Delete(fregs);
-    }
-
-    /* Write out all the faces that are shared by two regions again.
-       Since we didn't store the order which the faces were assigned
-       the "duplicate face IDs" (and probably we don't want to store
-       this information) we need to loop over regions (cells) again,
-       to duplicate the constructive process so that the faces are
-       written out in the right order.
-    */
+      /* Write out all the faces that are shared by two regions again.
+         Since we didn't store the order which the faces were assigned
+         the "duplicate face IDs" (and probably we don't want to store
+         this information) we need to loop over regions (cells) again,
+         to duplicate the constructive process so that the faces are
+         written out in the right order.
+      */
     
-    idx = 0; 
-    ndup = 0;
+      idx = 0; 
+      ndup = 0;
 
-    while ((region = MESH_Next_Region(mesh,&idx))) {      
+      while ((region = List_Next_Entry(rlist,&idx))) {      
 
-      MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
+        MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
 
-      rfaces = MR_Faces(region);
-      nrf = List_Num_Entries(rfaces);
+        rfaces = MR_Faces(region);
+        nrf = List_Num_Entries(rfaces);
       
-      for (jf = 0; jf < nrf; jf++) {
+        for (jf = 0; jf < nrf; jf++) {
 
-	face = List_Entry(rfaces,jf);
+          face = List_Entry(rfaces,jf);
 
-	fregs = MF_Regions(face);
+          fregs = MF_Regions(face);
  
-	if (fregs && List_Num_Entries(fregs) == 2) {
+          if (fregs && List_Num_Entries(fregs) == 2) {
 
-	  oppreg = List_Entry(fregs,0);
-	  if (oppreg == region){
-	    oppreg = List_Entry(fregs,1);
-	  }
+            oppreg = List_Entry(fregs,0);
+            if (oppreg == region){
+              oppreg = List_Entry(fregs,1);
+            }
 
-	  MEnt_Get_AttVal(oppreg,ridatt,&opprid,&rval,&pval);
-	  if ( rid > opprid) {
-	    MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
-	    dir = MR_FaceDir(region,face);	  
-	    fverts = MF_Vertices(face,dir,0);
-	    nfv = List_Num_Entries(fverts);
-	    fprintf(fp,"% d  1  % d 1 % d ",nfv,fid,rid);
+            MEnt_Get_AttVal(oppreg,ridatt,&opprid,&rval,&pval);
+            if ( rid > opprid) {
+              MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+              dir = MR_FaceDir(region,face);	  
+              fverts = MF_Vertices(face,dir,0);
+              nfv = List_Num_Entries(fverts);
+              fprintf(fp,"% d  1  % d 1 % d ",nfv,fid,rid);
 
-	    for (i = 0; i < nfv; i++) {
-	      MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
-	      fprintf(fp," % d ",vid);
-	    }
-	    fprintf(fp,"\n");
-	    List_Delete(fverts);      
-	  }  
-	}
-	List_Delete(fregs);
+              for (i = 0; i < nfv; i++) {
+                MEnt_Get_AttVal(List_Entry(fverts,i),vidatt,&vid,&rval,&pval);
+                fprintf(fp," % d ",vid);
+              }
+              fprintf(fp,"\n");
+              List_Delete(fverts);      
+            }  
+          }
+          List_Delete(fregs);
+        }
+
       }
 
+      idx = 0;
+      while ((face = List_Next_Entry(flist,&idx)))
+        MEnt_Rem_AttVal(face,oppatt);
+      MAttrib_Delete(oppatt);
     }
-
-    idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx)))
-      MEnt_Rem_AttVal(face,oppatt);
-    MAttrib_Delete(oppatt);
   }
 
   
@@ -550,7 +686,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
 
     idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {
+    while ((face = List_Next_Entry(flist,&idx))) {
       if (!MEnt_IsMarked(face,cellmk))
 	continue;
       
@@ -566,7 +702,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       fprintf(fp,"faces %d 0\n",ncells2);
     
     idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {
+    while ((face = List_Next_Entry(flist,&idx))) {
       if (!MEnt_IsMarked(face,cellmk))
 	continue;
       
@@ -641,7 +777,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   if (ncells1) {
     idx = 0;
-    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+    while ((edge = List_Next_Entry(elist,&idx))) {
       if (!MEnt_IsMarked(edge,cellmk))
 	continue;
       
@@ -684,24 +820,26 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     }
     
     k = 0;
-    idx = 0;
-    while ((region = MESH_Next_Region(mesh,&idx))) {
-      gentid = MR_GEntID(region);
-      
-      for (i = 0, found = 0; i < ngent; i++) {
-	if (gentities[i] == gentid) {
-	  found = 1;
-	  break;
-	}
+    if (ncells3) {
+      idx = 0;
+      while ((region = List_Next_Entry(rlist,&idx))) {
+        gentid = MR_GEntID(region);
+        
+        for (i = 0, found = 0; i < ngent; i++) {
+          if (gentities[i] == gentid) {
+            found = 1;
+            break;
+          }
+        }
+        fprintf(fp,"%d ",(i+1));
+        if ((++k)%10 == 0)
+          fprintf(fp,"\n");
       }
-      fprintf(fp,"%d ",(i+1));
-      if ((++k)%10 == 0)
-	fprintf(fp,"\n");
     }
 
     if (ncells2) {
       idx = 0;
-      while ((face = MESH_Next_Face(mesh,&idx))) {
+      while ((face = List_Next_Entry(flist,&idx))) {
 	if (!MEnt_IsMarked(face,cellmk))
 	  continue;
 
@@ -720,7 +858,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
     if (ncells1) {
       idx = 0;
-      while ((edge = MESH_Next_Edge(mesh,&idx))) {
+      while ((edge = List_Next_Entry(elist,&idx))) {
 	if (!MEnt_IsMarked(edge,cellmk))
 	  continue;
 
@@ -745,16 +883,18 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     fprintf(fp,"itetclr  0\n");
     
     k = 0;
-    idx = 0;
-    while ((region = MESH_Next_Region(mesh,&idx))) {
-      gentid = MR_GEntID(region);
-      fprintf(fp,"%d ",gentid);      
-      if ((++k)%10 == 0)
-	fprintf(fp,"\n");
+    if (ncells3) {
+      idx = 0;
+      while ((region = List_Next_Entry(rlist,&idx))) {
+        gentid = MR_GEntID(region);
+        fprintf(fp,"%d ",gentid);      
+        if ((++k)%10 == 0)
+          fprintf(fp,"\n");
+      }
     }
 
     if (ncells2) {
-      while ((face = MESH_Next_Face(mesh,&idx))) {
+      while ((face = List_Next_Entry(flist,&idx))) {
 	if (!MEnt_IsMarked(face,cellmk))
 	  continue;
 	else {
@@ -768,7 +908,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
     if (ncells1) {
       idx = 0;
-      while ((edge = MESH_Next_Edge(mesh,&idx))) {
+      while ((edge = List_Next_Entry(elist,&idx))) {
 	if (!MEnt_IsMarked(edge,cellmk))
 	  continue;
 	else {
@@ -786,7 +926,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     fprintf(fp,"icr1   1 \n"); 
     k = 0;
     idx = 0;
-    while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+    while ((vertex = List_Next_Entry(vlist,&idx))) {
       icr = 3.0-MV_GEntDim(vertex);
       fprintf(fp,"%f ",(float)icr);
       if ((++k)%10 == 0)
@@ -857,7 +997,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	fprintf(fp," 1 \n");
 	
 	idx = 0;
-	while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+	while ((vertex = List_Next_Entry(vlist,&idx))) {
 	  
 	  MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
 	  
@@ -879,27 +1019,29 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	fprintf(fp,"%s ",attname);
 	fprintf(fp," 0 \n");
 	
-	idx = 0;
-	while ((region = MESH_Next_Region(mesh,&idx))) {
-	  
-	  MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
-	  
-	  if (atttype == INT) {
-	    fprintf(fp,"%d ",ival);
-	    if ((k+1)%10 == 0) fprintf(fp,"\n");
-	    k++;
-	  }
-	  else if (atttype == DOUBLE) {
-	    fprintf(fp,"%lf ", rval);
-	    if ((k+1)%5 == 0) fprintf(fp,"\n");
-	    k++;
-	  }
-	}
-	if (k%5 != 0) fprintf(fp,"\n");
+        if (ncells3) {
+          idx = 0;
+          while ((region = List_Next_Entry(rlist,&idx))) {
+            
+            MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
+            
+            if (atttype == INT) {
+              fprintf(fp,"%d ",ival);
+              if ((k+1)%10 == 0) fprintf(fp,"\n");
+              k++;
+            }
+            else if (atttype == DOUBLE) {
+              fprintf(fp,"%lf ", rval);
+              if ((k+1)%5 == 0) fprintf(fp,"\n");
+              k++;
+            }
+          }
+          if (k%5 != 0) fprintf(fp,"\n");
+        }
 
 	if (ncells2) {
 	  idx = 0;
-	  while ((face = MESH_Next_Face(mesh,&idx))) {
+	  while ((face = List_Next_Entry(flist,&idx))) {
 	    if (!MEnt_IsMarked(face,cellmk))
 	      continue;
 
@@ -921,7 +1063,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	
 	if (ncells1) {
 	  idx = 0;
-	  while ((edge = MESH_Next_Edge(mesh,&idx))) {
+	  while ((edge = List_Next_Entry(elist,&idx))) {
 	    if (!MEnt_IsMarked(edge,cellmk))
 	      continue;
 
@@ -957,7 +1099,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   fprintf(fp,"Node_GlobalID 1\n");
   idx = 0; k = 0;
-  while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+  while ((vertex = List_Next_Entry(vlist,&idx))) {
     fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)vertex));
     if ((k+1)%5 == 0) fprintf(fp,"\n");
     k++;
@@ -966,7 +1108,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   fprintf(fp,"Node_MasterPID 1\n");
   idx = 0; k = 0;
-  while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+  while ((vertex = List_Next_Entry(vlist,&idx))) {
     fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)vertex));
     if ((k+1)%10 == 0) fprintf(fp,"\n");
     k++;
@@ -976,16 +1118,19 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
 
   fprintf(fp,"Cell_GlobalID 0\n");
-  idx = 0; k = 0;
-  while ((region = MESH_Next_Region(mesh,&idx))) {
-    fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)region));
-    if ((k+1)%5 == 0) fprintf(fp,"\n");
-    k++;
+  k = 0;
+  if (ncells3) {
+    idx = 0;
+    while ((region = List_Next_Entry(rlist,&idx))) {
+      fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)region));
+      if ((k+1)%5 == 0) fprintf(fp,"\n");
+      k++;
+    }
   }
   
   if (ncells2) {
     idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {
+    while ((face = List_Next_Entry(flist,&idx))) {
       if (!MEnt_IsMarked(face,cellmk))
         continue;
       else {
@@ -998,7 +1143,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   if (ncells1) {
     idx = 0;
-    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+    while ((edge = List_Next_Entry(elist,&idx))) {
       if (!MEnt_IsMarked(edge,cellmk))
         continue;
       else {
@@ -1013,16 +1158,19 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
 
   fprintf(fp,"Cell_MasterPID 0\n");
-  idx = 0; k = 0;
-  while ((region = MESH_Next_Region(mesh,&idx))) {
-    fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)region));
-    if ((k+1)%10 == 0) fprintf(fp,"\n");
-    k++;
+  k = 0;
+  if (ncells3) {
+    idx = 0;
+    while ((region = List_Next_Entry(rlist,&idx))) {
+      fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)region));
+      if ((k+1)%10 == 0) fprintf(fp,"\n");
+      k++;
+    }
   }
   
   if (ncells2) {    
     idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {
+    while ((face = List_Next_Entry(flist,&idx))) {
       if (!MEnt_IsMarked(face,cellmk))
         continue;
       else {
@@ -1035,7 +1183,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   if (ncells1) {
     idx = 0;
-    while ((edge = MESH_Next_Edge(mesh,&idx))) {
+    while ((edge = List_Next_Entry(elist,&idx))) {
       if (!MEnt_IsMarked(edge,cellmk))
         continue;
       else {
@@ -1066,13 +1214,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   if (ncells2) {
     idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) 
+    while ((face = List_Next_Entry(flist,&idx))) 
       MEnt_Unmark(face,cellmk);
   }
 
   if (ncells1) {
     idx = 0;
-    while ((edge = MESH_Next_Edge(mesh,&idx)))
+    while ((edge = List_Next_Entry(elist,&idx)))
       MEnt_Unmark(edge,cellmk);
   }
 
@@ -1082,20 +1230,28 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   idx = 0;
   while ((vertex = MESH_Next_Vertex(mesh,&idx)))
     MEnt_Rem_AttVal(vertex,vidatt);
-
+   
   idx = 0;
   while ((face = MESH_Next_Face(mesh,&idx)))
-    MEnt_Rem_AttVal(face,fidatt);
+    MEnt_Rem_AttVal(face,eidatt);
+
+  idx = 0;
+  while ((edge = MESH_Next_Edge(mesh,&idx)))
+    MEnt_Rem_AttVal(edge,eidatt);
 
   idx = 0;
   while ((region = MESH_Next_Region(mesh,&idx)))
     MEnt_Rem_AttVal(region,ridatt);
 
   if (vidatt) MAttrib_Delete(vidatt);
-  if (MESH_Num_Faces(mesh))
-    MAttrib_Delete(fidatt);
-  if (MESH_Num_Regions(mesh))
-    MAttrib_Delete(ridatt);
+  if (eidatt) MAttrib_Delete(eidatt);
+  if (fidatt) MAttrib_Delete(fidatt);
+  if (ridatt) MAttrib_Delete(ridatt);
+
+  if (vlist) List_Delete(vlist);
+  if (elist) List_Delete(elist);
+  if (flist) List_Delete(flist);
+  if (rlist) List_Delete(rlist);
 
   return 1;
 }

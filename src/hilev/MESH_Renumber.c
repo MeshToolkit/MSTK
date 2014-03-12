@@ -72,7 +72,6 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
     int mkid = MSTK_GetMarker();
     int minid, maxid;
     int *nadj, *newmap, *adj, *offset, nconn;
-    int *nadj2, *adj2, *offset2, nconn2;
     int nalloc, depth, maxwidth;
         
 
@@ -100,22 +99,19 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
 
 
       nadj = (int *) malloc(nv*sizeof(int));
-      nadj2 = (int *) malloc(nv*sizeof(int));
       nalloc = nv*5;
       adj = (int *) malloc(nalloc*sizeof(int));
-      adj2 = (int *) malloc(nalloc*sizeof(int));
 
       if (!MESH_Num_Regions(mesh)) {
         int nentries = 0;
         i = 0;
         idx = 0;
         while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-          List_ptr vfaces, adjvlist, adjvlist2;
+          List_ptr vfaces, adjvlist;
           MFace_ptr vf;
           MVertex_ptr adjv;
 
           adjvlist = List_New(0);
-
           vfaces = MV_Faces(mv);
           idx2 = 0;
           while ((vf = List_Next_Entry(vfaces,&idx2))) {
@@ -131,13 +127,12 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
           }
           List_Delete(vfaces);
           List_Unmark(adjvlist,mkid);
-          
-          nadj[i] = List_Num_Entries(adjvlist);
 
+          nadj[i] = List_Num_Entries(adjvlist);
+          
           if (nentries+nadj[i] > nalloc) {
             nalloc *= 2;
             adj = (int *) realloc(adj,nalloc*sizeof(int));
-            adj2 = (int *) realloc(adj2,nalloc*sizeof(int));
           }
 
           idx2 = 0;
