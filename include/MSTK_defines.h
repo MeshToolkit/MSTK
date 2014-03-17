@@ -17,7 +17,7 @@ extern "C" {
 
 #define MAXPV2 30
 #define MAXPV3 200
-#define MAXPF3 4*(8*sizeof(unsigned int))  /* Expect this to be 128 */
+#define MAXPF3 16*(8*sizeof(unsigned int))  /* Actually it is unlimited */
 
 #define NMAXATT 10
 
