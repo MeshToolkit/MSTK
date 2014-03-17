@@ -44,9 +44,8 @@ int MESH_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh ) {
 int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   int idx;
   MVertex_ptr lmv;
-  MEdge_ptr lme, gme;
+  MEdge_ptr lme;
   MFace_ptr lmf;
-  List_ptr lmefaces, gmefaces;
   MAttrib_ptr l2gatt;
 
   l2gatt = MESH_AttribByName(submesh,"Local2Global");
@@ -56,9 +55,16 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   while((lmf = MESH_Next_Face(submesh,&idx)))  
     MF_Set_PType(lmf,PINTERIOR);
   
-  /* Loop through edges */
+  /* Loop through edges and label them as being on a partition
+     boundary or partition interior (even if an entity is on the
+     domain boundary it is considered as being in the interior of the
+     partition if it does not have a copy on another processor) */
+
   idx = 0;
   while((lme = MESH_Next_Edge(submesh,&idx))) {
+    MEdge_ptr gme;
+    List_ptr lmefaces, gmefaces;
+
     MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
     if (!gme)
       MSTK_Report("MESH_BuildPBoundary","Cannot find global edge of local edge",MSTK_ERROR);
@@ -71,7 +77,7 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     if(List_Num_Entries(lmefaces) != List_Num_Entries(gmefaces)) {
       ME_Set_PType(lme,PBOUNDARY);
 
-      /* By definition, its vertices must also be on the boundary */
+      /* By definition, its vertices must also be on the partition boundary */
 
       int i;
       for (i = 0; i < 2; i++) {
@@ -88,11 +94,35 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
 
 
 
-  /* Loop through vertices */
+  /* Loop through vertices and label them as being on a partition
+     boundary or partition interior. This catches cases where the
+     vertex is to be of PBOUNDARY but none of its connected edges are
+     (because they are on a model edge and hence labeled as
+     PINTERIOR) */
+
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    if (MV_PType(lmv) != PBOUNDARY)
+    MVertex_ptr gmv;
+    List_ptr lmvedges, gmvedges;
+
+    if (MV_PType(lmv) == PBOUNDARY) continue; /* It has already been labeled */
+
+    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
+    if (!gmv)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local edge",MSTK_ERROR);
+
+    lmvedges = MV_Edges(lmv);
+    gmvedges = MV_Edges(gmv);
+
+    /* If the number of neighbor faces is different, it is boundary vertex */
+
+    if (List_Num_Entries(lmvedges) != List_Num_Entries(gmvedges))
+      MV_Set_PType(lmv,PBOUNDARY);
+    else
       MV_Set_PType(lmv,PINTERIOR);
+
+    List_Delete(lmvedges);
+    List_Delete(gmvedges);
   }
 
   return 1;
@@ -104,9 +134,8 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
   int idx;
   MVertex_ptr lmv;
   MEdge_ptr lme;
-  MFace_ptr lmf, gmf;
-  MRegion_ptr lmr, gmr;
-  List_ptr lmfregs, gmfregs;
+  MFace_ptr lmf;
+  MRegion_ptr lmr;
   MAttrib_ptr l2gatt;
 
 
@@ -118,9 +147,16 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     MR_Set_PType(lmr,PINTERIOR);
   
 
-  /* Loop through faces */
+  /* Loop through faces and label them as being on a partition
+     boundary or partition interior (even if an entity is on the
+     domain boundary it is considered as being in the interior of the
+     partition if it does not have a copy on another processor) */
+
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx))) {
+    MFace_ptr gmf;
+    List_ptr lmfregs, gmfregs;
+
     MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
     if (!gmf)
       MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local vertex",MSTK_ERROR);
@@ -152,19 +188,67 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     List_Delete(gmfregs);
   }
 
-  /* Loop through edges */
+  /* Loop through edges. This catches cases where the vertex is to be
+     of PBOUNDARY but none of its connected faces are (because they
+     are on a model face and hence labeled as PINTERIOR) */
+
   idx = 0;
   while((lme = MESH_Next_Edge(submesh,&idx))) {
-    if (ME_PType(lme) != PBOUNDARY)
+    MEdge_ptr gme;
+    List_ptr lmefaces, gmefaces;
+
+    if (ME_PType(lme) == PBOUNDARY) continue;
+
+    MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
+
+    lmefaces = ME_Faces(lme);
+    gmefaces = ME_Faces(gme);
+    
+    if (List_Num_Entries(lmefaces) != List_Num_Entries(gmefaces)) {
+      ME_Set_PType(lme,PBOUNDARY);
+
+      /* By definition a PBOUNDARY edge's vertices are also PBOUNDARY */
+      int i;
+      for (i = 0; i < 2; i++) {
+        lmv = ME_Vertex(lme,i);
+        ME_Set_PType(lmv,PBOUNDARY);
+      }
+    }
+    else
       ME_Set_PType(lme,PINTERIOR);
+
+    List_Delete(lmefaces);
+    List_Delete(gmefaces);
   }
 
 
-  /* Loop through vertices */
+  /* Loop through vertices. This catches cases where the vertex is to
+     be of PBOUNDARY but none of its connected edges are (because they
+     are on a model edge and hence labeled as PINTERIOR)  */
+
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    if (MV_PType(lmv) != PBOUNDARY)
+    MVertex_ptr gmv;
+    List_ptr lmvedges, gmvedges;
+
+    if (MV_PType(lmv) == PBOUNDARY) continue; /* It has already been labeled */
+
+    MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
+    if (!gmv)
+      MSTK_Report("MESH_BuildPBoundary","Cannot find global vertex of local edge",MSTK_ERROR);
+
+    lmvedges = MV_Edges(lmv);
+    gmvedges = MV_Edges(gmv);
+
+    /* If the number of neighbor faces is different, it is boundary vertex */
+
+    if (List_Num_Entries(lmvedges) != List_Num_Entries(gmvedges))
+      MV_Set_PType(lmv,PBOUNDARY);
+    else
       MV_Set_PType(lmv,PINTERIOR);
+
+    List_Delete(lmvedges);
+    List_Delete(gmvedges);
   }
 
   return 1;
