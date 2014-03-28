@@ -382,15 +382,15 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
           eregions = ME_Regions(me);
           idx2 = 0;
           while ((er = List_Next_Entry(eregions,&idx2))) {
-            List_ptr rverts = MR_Vertices(er);
+            List_ptr redges = MR_Edges(er);
             idx3 = 0;
-            while ((adje = List_Next_Entry(rverts,&idx3))) {
+            while ((adje = List_Next_Entry(redges,&idx3))) {
               if (adje != me && !MEnt_IsMarked(adje,mkid)) {
                 List_Add(adjelist,adje);
                 MEnt_Mark(adje,mkid);
               }
             }
-            List_Delete(rverts);
+            List_Delete(redges);
           }
           List_Delete(eregions);
           List_Unmark(adjelist,mkid);
@@ -907,7 +907,7 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       
           idx = 0; i = 0;
           while ((mr = MESH_Next_Region(mesh,&idx))) {
-            MR_Set_ID(mf,newmap[i]+1);
+            MR_Set_ID(mr,newmap[i]+1);
             i++;
           }
 

@@ -308,10 +308,11 @@ void Graph_Find_ExtremalNodes(int nnodes, int adj[], int nadj[], int offset[],
 void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[], 
                                   int n_1, int n_k, int level[], int *depth, int *maxwidth) {
 
-  int i, j, k, done;
-  int *nodemap, *zeros, (*levelpairs)[2];
+  int i, j, k, done, iter;
+  int *nodemap, *zeros, (*levelpairs)[2], *unmarked_nodes;
   int *baselevelwidth, *deltawidth1, *deltawidth2, *cset, *tag, *maxcset;
-  int ncset, nmaxcset, maxwidth1, maxwidth2, curdepth, curmaxwidth;
+  int ncset, nmaxcset, num_unmarked;
+  int maxwidth1, maxwidth2, curdepth, curmaxwidth;
 
   zeros = (int *) calloc(nnodes,sizeof(int));
 
@@ -346,17 +347,22 @@ void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[
   deltawidth1 = (int *) malloc(curdepth*sizeof(int));
   deltawidth2 = (int *) malloc(curdepth*sizeof(int));
 
+  /* Also initiate a list of unmarked or unlabeled nodes */
+  unmarked_nodes = (int *) malloc(nnodes*sizeof(int));
 
   /* For those nodes whose levels match from both directions, the
      level assignment is trivial */
 
   memcpy(baselevelwidth,zeros,curdepth*sizeof(int));
+  num_unmarked = 0;
   for (i = 0; i < nnodes; i++)
     if (levelpairs[i][0] == levelpairs[i][1]) {
       int lev = levelpairs[i][0];
       level[i] = lev;
       baselevelwidth[lev-1]++;
     }
+    else 
+      unmarked_nodes[num_unmarked++] = i;
 
 
   /* Connected sets of nodes whose level pairs have a discrepancy are
@@ -366,8 +372,8 @@ void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[
 
   /* Allocate some space for connected sets of nodes with unassigned levels */
 
-  cset = (int *) malloc(nnodes*sizeof(int)); /* worst case allocation */
-  maxcset = (int *) malloc(nnodes*sizeof(int));
+  cset = (int *) malloc(num_unmarked*sizeof(int)); /* worst case allocation */
+  maxcset = (int *) malloc(num_unmarked*sizeof(int));
   tag = (int *) malloc(nnodes*sizeof(int));
 
 
@@ -376,12 +382,15 @@ void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[
      them in two different directions are not the same. Process them
      in increasing order of size until none are left */
 
-  done = 0;
+  done = 0; iter = 1;
   while (!done) { 
+    fprintf(stderr,"Iter %d    Unmarked nodes %d\n",iter++,num_unmarked);
     nmaxcset = 0;
-    for (i = 0; i < nnodes; i++) {
+    for (i = 0; i < num_unmarked; i++) {
 
-      if (level[i] == 0) { 
+      int unmarked_node = unmarked_nodes[i];
+
+      if (level[unmarked_node] == 0) { 
       
         /* level is not set for this node which means that there was a
            conflict between the two level predictions */
@@ -390,7 +399,7 @@ void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[
 
         memcpy(tag,zeros,nnodes*sizeof(int));
       
-        cset[0] = i;
+        cset[0] = unmarked_node;
         ncset = 1;
         tag[i] = 1;
       
@@ -417,6 +426,7 @@ void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[
     }
 
     if (nmaxcset > 0) {
+      int num_unmarked2;
 
       /* Find what the overall widths will be if the first or
          the second candidate for level numbers were chosen for
@@ -473,6 +483,15 @@ void Graph_Assign_Levels_MinWidth(int nnodes, int adj[], int nadj[], int offset[
           baselevelwidth[lev-1]++;
         }
       }
+
+      /* compress the unmarked nodes array */
+
+      num_unmarked2 = 0;
+      for (i = 0; i < num_unmarked; i++)
+        if (level[unmarked_nodes[i]] == 0)
+          unmarked_nodes[num_unmarked2++] = unmarked_nodes[i];
+
+      num_unmarked = num_unmarked2;
     }
     else 
       done = 1;
