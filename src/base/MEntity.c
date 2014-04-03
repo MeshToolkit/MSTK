@@ -18,14 +18,35 @@ extern "C" {
 
   void MEnt_Init_CmnData(MEntity_ptr ent) {
     ent->entdat.mesh = NULL;
-    ent->entdat.dim_id = 0;
-    ent->entdat.rtype_gdim_gid = 0;
-    ent->entdat.marker = 0;
-    ent->entdat.AttInsList = 0;
+    ent->entdat.AttInsList = NULL;
 
+    /* The first bit (from the right) in ent->dim_id contains flag
+       indicating if the entity is alive or deleted. Bit 2 indicates
+       if the entity is temporary/volatile or permanent (edges in all
+       reduced representations are temporary).Bits 3,4,5 combined
+       contain the dimension of the entity. If this number is greater
+       than or equal to 4, it means the dimension of the entity is
+       undefined. The rest of the bits encode the entity ID. Since
+       this is an unsigned int (32 bits), the max ID can be 2^(32-5)-1
+       = 134217727 (approx. 134.2 million entities of each type) */
+
+    ent->entdat.deleted = 0;
+    ent->entdat.temporary = 0;
+    ent->entdat.dim = MUNKNOWNTYPE;
+    ent->entdat.id = 0;
+
+    ent->entdat.rtype = UNKNOWN_REP;
+    ent->entdat.gdim = 4; /* unknown */
+    ent->entdat.gid = 0;
+
+     /* Empty marker field */
+
+     ent->entdat.marker = 0;
+ 
 #ifdef MSTK_HAVE_MPI
-    ent->entdat.ptype_masterparid = (0<<2 | PINTERIOR); /* ?? */
-    ent->entdat.globalid = 0;
+     ent->entdat.ptype = 0;
+     ent->entdat.masterparid = 0;
+     ent->entdat.globalid = 0;
 #endif
   }
 
@@ -56,62 +77,31 @@ extern "C" {
   /* MESH ENTITY ID */
 
   void MEnt_Set_Dim(MEntity_ptr ent, int dim) {
-    unsigned int data = ent->entdat.dim_id;
-
     if (dim == MDELETED)
-      data = data | 1; /* Set the first bit to 1 */
-    else {
-      /* zero out bits 3,4,5 by bitwise AND with inverse of 0...011100 (28) */
-      data = (data & ~28); 
-      data = (data | dim<<2); /* set bits 3,4,5 */
-    }
-
-    ent->entdat.dim_id = data;
+      ent->entdat.deleted = 1;
+    else
+      ent->entdat.dim = dim;
   }
 
   MType MEnt_Dim(MEntity_ptr ent) {
-    int del_flag=0;
-    MType dim=MVERTEX;
-    unsigned int data = ent->entdat.dim_id;
-
-    del_flag = data & 1; /* check the first bit */
-    if (del_flag)
-      return MDELETED;
-    
-    dim = (MType) ((data >> 2) & 7); /* check bits 2,3 and 4 */
-    if (dim <= MREGION)
-      return dim;
-    else
-      return MUNKNOWNTYPE;
+    return (ent->entdat.deleted ? MDELETED : ent->entdat.dim);
   }
 
   void MEnt_Set_Volatile(MEntity_ptr ent) {
-    unsigned int data = ent->entdat.dim_id;
-
-    data = data | 2; /* 2 is 0000.....00010, i.e. second bit is 1 */
+    ent->entdat.temporary = 1;
   }
 
   int MEnt_IsVolatile(MEntity_ptr ent) {
-    unsigned int data = ent->entdat.dim_id;
-    
-    return (data & 2);
+    return ent->entdat.temporary;
   }
 
   MType MEnt_OrigDim(MEntity_ptr ent) {
-    int del_flag=0;
-    MType dim=MVERTEX;
-    unsigned int data = ent->entdat.dim_id;
-
-    del_flag = data & 1;
-    dim = (MType) ((data>>2) & 7);
-
-    if (!del_flag)
+#ifdef DEBUG
+    if (!ent->entdat.deleted)
       MSTK_Report("MEnt_OrigDim","This is not a deleted entity",MSTK_WARN);    
+#endif
 
-    if (dim <= MREGION)
-      return dim;
-    else 
-      return MUNKNOWNTYPE;
+    return ((MType) ent->entdat.dim);
   }	
 
 
@@ -119,63 +109,28 @@ extern "C" {
   /* MESH ENTITY ID */
 
   void MEnt_Set_ID(MEntity_ptr ent, int id) {
-    unsigned int data = ent->entdat.dim_id;
-
+#ifdef DEBUG
     if (id > 134217727 )
       MSTK_Report("MEnt_SetID","ID too large",MSTK_WARN);
+#endif
 
-    /* Zero out all but the first 5 bits by bitwise AND with 0..11111 (31) */
-    data = (data & 31);
-    
-    /* Set the ID */
-    data = (data | (id<<5));
-
-    ent->entdat.dim_id = data;
+    ent->entdat.id = id;
   }
 
 
   int MEnt_ID(MEntity_ptr ent) {
-    unsigned int data = ent->entdat.dim_id;
-    return (data>>5);
+    return (ent->entdat.id);
   }
 
-
-
-
-  /* The first 4 bits (from the right) in ent->reptype_gdim_gid encode
-     the representation type (maximum of 14; 15, i.e., 1111 is
-     reserved to indicate that it is an unknown representation). The
-     next 3 bits from the right contain the dimension of the geometric
-     model entity that the mesh entity is classified on. If this
-     number is greater than 3 (specifically 7 or binary 111), then the
-     dimension of the geometric entity is unknown. The rest of the
-     bits are reserved for the ID of the geometric model entity */
 
   /* MESH ENTITY REPRESENTATION TYPE */
 
   void MEnt_Set_RepType_Data(MEntity_ptr ent, RepType rtype) {
-    unsigned int data = ent->entdat.rtype_gdim_gid;
-
-    /* first zero out the first four bits */
-    data = data & ~(15);
-
-    if (rtype == UNKNOWN_REP) 
-      data = data | 15; /* Set the first 4 bits to 1 */
-    else
-      data = data | rtype;
-
-    ent->entdat.rtype_gdim_gid = data;
+    ent->entdat.rtype = rtype;
   }
 
   void MEnt_Set_RepType(MEntity_ptr ent, RepType rtype) {
-    unsigned int data = ent->entdat.dim_id;
-    MType dim;
-
-    /* Get the dimension of the entity */
-
-    dim = (MType) ((data>>1) & 7);
-
-    switch (dim) {
+    switch (ent->entdat.dim) {
     case MVERTEX:
       MV_Set_RepType(ent,rtype);
       break;
@@ -194,15 +149,7 @@ extern "C" {
   }
 
   RepType MEnt_RepType(MEntity_ptr ent) {
-    RepType rtype;
-    unsigned int data = ent->entdat.rtype_gdim_gid;
-
-    rtype = (RepType) (data & 15);
-    
-    if (rtype == 15)
-      return UNKNOWN_REP;
-    else
-      return rtype;
+    return ((RepType) ent->entdat.rtype); 
   }
 
 
@@ -210,57 +157,23 @@ extern "C" {
   /* MODEL ENTITY DIMENSION */
 
   void MEnt_Set_GEntDim(MEntity_ptr ent, int gdim) {
-    unsigned int data = ent->entdat.rtype_gdim_gid;
-
-    /* zero out bits 5,6,7 by doing a bitwise AND with inverse of
-       0...01110000 (7<<4) */
-
-    data = data & ~(7<<4);  
-
-    /* now set these bits to the model entity dimension */
-
-    if (gdim <= 3)
-      data = data | (gdim<<4);
-    else
-      data = data | (7<<4);  /* set all 3 bits to 1 */
-
-    ent->entdat.rtype_gdim_gid = data;
+    ent->entdat.gdim = gdim;
   }
     
 
   int MEnt_GEntDim(MEntity_ptr ent) {
-    int gdim=0;
-    unsigned int data = ent->entdat.rtype_gdim_gid;
-
-    gdim = (data>>4) & 7;
-
-    if (gdim <= 3)
-      return gdim;
-    else
-      return 4; /* Code for unknown type */
+    return ent->entdat.gdim;
   }
 
 
   /* MODEL ENTITY ID */
 
   void MEnt_Set_GEntID(MEntity_ptr ent, int gid) {
-    unsigned int data = ent->entdat.rtype_gdim_gid;
-
-    /* first zero out all bits higher than the 7th bit by performing a
-       bitwise AND with 127 (0...01111111) */
-    data = data & 127;
-
-    if (gid == -1)
-      data = data | ~(127); /* all bits higher than 7 are 1 */
-    else
-      data = data | (gid<<7);
-    
-    ent->entdat.rtype_gdim_gid = data;
+    ent->entdat.gid = gid;
   }
 
   int MEnt_GEntID(MEntity_ptr ent) {
-    unsigned int data = ent->entdat.rtype_gdim_gid;
-    return (data>>7);
+    return ent->entdat.gid;
   }
 
   /* MODEL ENTITY PTR - We won't store it explicitly */
@@ -284,26 +197,20 @@ extern "C" {
   /* Mark an entity as deleted */
 
   void MEnt_Set_DelFlag(MEntity_ptr ent) {
-
-    /* Set first bit to 1 to indicate that this is a deleted entity */    
-
-    ent->entdat.dim_id = ent->entdat.dim_id | 1;
+    ent->entdat.deleted = 1;
   }
     
   /* Mark an entity as undeleted or restored or alive */
 
   void MEnt_Rem_DelFlag(MEntity_ptr ent) {
-
-    /* Set first bit to 0 to indicate that this is a valid entity */    
-
-    ent->entdat.dim_id = ent->entdat.dim_id & 0;
+    ent->entdat.deleted = 0;
   }
     
 
   /* Delete an entity */
 
   void MEnt_Delete(MEntity_ptr ent, int keep) {
-    switch ( MEnt_Dim(ent) ) {
+    switch (ent->entdat.dim) {
     case MVERTEX:
       MV_Delete(ent,keep);
       break;
@@ -333,7 +240,7 @@ extern "C" {
 
   void MEnt_Mark(MEntity_ptr ent, int markerID) {
 #ifdef DEBUG
-    int dim = MEnt_Dim(ent);
+    int dim = ent->entdat.dim;
     if (dim < MVERTEX && dim > MREGION)
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
@@ -343,7 +250,7 @@ extern "C" {
 
   void MEnt_Unmark(MEntity_ptr ent, int markerID) {
 #ifdef DEBUG
-    int dim = MEnt_Dim(ent);
+    int dim = ent->entdat.dim;
     if (dim < MVERTEX && dim > MREGION)
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
@@ -371,7 +278,7 @@ extern "C" {
 
 #ifdef DEBUG
     attentdim = MAttrib_Get_EntDim(attrib);
-    entdim = MEnt_Dim(ent);
+    entdim = ent->entdat.dim;
 
     if (attentdim != entdim)
       if (attentdim != MALLTYPE &&
@@ -411,7 +318,7 @@ extern "C" {
 
 #ifdef DEBUG    
     attentdim = MAttrib_Get_EntDim(attrib);
-    entdim = MEnt_Dim(ent);
+    entdim = ent->entdat.dim;
 
     if (attentdim != entdim)
       if (attentdim != MALLTYPE &&
@@ -450,7 +357,7 @@ extern "C" {
 
 #ifdef DEBUG
     attentdim = MAttrib_Get_EntDim(attrib);
-    entdim = MEnt_Dim(ent);
+    entdim = ent->entdat.dim;
 
     if (attentdim != entdim)
       if (attentdim != MALLTYPE &&
@@ -508,7 +415,7 @@ extern "C" {
 
 #ifdef DEBUG    
     attentdim = MAttrib_Get_EntDim(attrib);
-    entdim = MEnt_Dim(ent);
+    entdim = ent->entdat.dim;
     if (attentdim != entdim)
       if (attentdim != MALLTYPE &&
           ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
@@ -520,32 +427,32 @@ extern "C" {
     if (lval) *lval = 0;
     if (pval) *pval = NULL;
     
-      attinslist = ent->entdat.AttInsList;
-      if (!attinslist)
-	return 0;
-      
-      idx = 0; found = 0;
-      while ((attins = List_Next_Entry(attinslist,&idx))) {
-	if (MAttIns_Attrib(attins) == attrib) {
-	  found = 1;
-	  break;
-	}
+    attinslist = ent->entdat.AttInsList;
+    if (!attinslist)
+      return 0;
+    
+    idx = 0; found = 0;
+    while ((attins = List_Next_Entry(attinslist,&idx))) {
+      if (MAttIns_Attrib(attins) == attrib) {
+        found = 1;
+        break;
       }
-      
-      if (!found)
-	return 0;
-      
-      MAttIns_Get_Value(attins, ival, lval, pval);
-
-      return 1;
-
+    }
+    
+    if (!found)
+      return 0;
+    
+    MAttIns_Get_Value(attins, ival, lval, pval);
+    
+    return 1;
+    
   }
 
 
   /* Extra functionality for hash-tables */
 
   MEntity_ptr MEnt_NextInHash(MEntity_ptr ent) {
-    switch ( MEnt_Dim(ent) ) {
+    switch (ent->entdat.dim) {
     case MVERTEX:
       MSTK_Report("MEnt_NextInHash", "Entity is vertex", MSTK_WARN);
       break;
@@ -566,7 +473,7 @@ extern "C" {
   }
 
   void MEnt_Set_NextInHash(MEntity_ptr ent, MEntity_ptr next) {
-    switch ( MEnt_Dim(ent) ) {
+    switch (ent->entdat.dim) {
     case MVERTEX:
       MSTK_Report("MEnt_Set_NextInHash", "Entity is vertex", MSTK_WARN);
       break;
@@ -585,7 +492,7 @@ extern "C" {
     }
   }
   void MEnt_HashKey(MEntity_ptr ent, unsigned int *pn, void* **pp) {
-    switch ( MEnt_Dim(ent) ) {
+    switch (ent->entdat.dim) {
     case MVERTEX:
       MSTK_Report("MEnt_HashKey", "Entity is vertex", MSTK_WARN);
       break;
@@ -605,7 +512,7 @@ extern "C" {
   }
 
   int MEnt_IsLocked(MEntity_ptr ent) {
-    switch ( MEnt_Dim(ent) ) {
+    switch (ent->entdat.dim) {
     case MEDGE:
       return ME_IsLocked(ent);
     case MFACE:
@@ -625,27 +532,19 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
 
   PType MEnt_PType(MEntity_ptr ent) {
-    unsigned int data = ent->entdat.ptype_masterparid;
-    return data & 3 /*00...00011*/;
+    return ent->entdat.ptype;
   }
 
   void  MEnt_Set_PType(MEntity_ptr ent, PType ptype) {
-    unsigned int data = ent->entdat.ptype_masterparid;
-    data = (data & ~3); /* zero out last 2 digits*/
-    data = (data | ptype);
-    ent->entdat.ptype_masterparid = data;
+    ent->entdat.ptype = ptype;
   }
 
   int   MEnt_MasterParID(MEntity_ptr ent) {
-    unsigned int data = ent->entdat.ptype_masterparid;
-    return data>>2;
+    return ent->entdat.masterparid;
   }
 
   void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid) {
-    unsigned int data = ent->entdat.ptype_masterparid;
-    data = (data & 3); /* zero out high bits*/
-    data = (data | masterparid<<2);
-    ent->entdat.ptype_masterparid = data;
+    ent->entdat.masterparid = masterparid;
   }
 
   int   MEnt_GlobalID(MEntity_ptr ent) {
@@ -656,13 +555,14 @@ extern "C" {
     ent->entdat.globalid = globalid;
   }
 
-
+  /*
   int  MEnt_MasterLocalID(MEntity_ptr ent) {
     if (ent->entdat.globalid < 0)
       return -(ent->entdat.globalid);
     else
       return -1;
   }
+
 
   void  MEnt_Set_MasterLocalID(MEntity_ptr ent, int localid) {
 
@@ -673,6 +573,7 @@ extern "C" {
 
     ent->entdat.globalid = -abs(localid);
   }
+  */
 
 #endif /* MSTK_HAVE_MPI */
 

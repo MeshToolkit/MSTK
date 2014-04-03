@@ -11,15 +11,35 @@ extern "C" {
 #ifdef _H_MEntity_Private
 
   typedef struct MEntity_Data {
+
     Mesh_ptr mesh;
-    unsigned int dim_id;
-    unsigned int rtype_gdim_gid;
-    unsigned int marker;
     List_ptr AttInsList;
 
+    /* The first bit (from the right) in ent->dim_id contains flag
+       indicating if the entity is alive or deleted. Bit 2 indicates
+       if the entity is temporary/volatile or permanent (edges in all
+       reduced representations are temporary).Bits 3,4,5 combined
+       contain the dimension of the entity. If this number is greater
+       than or equal to 4, it means the dimension of the entity is
+       undefined. The rest of the bits encode the entity ID. Since
+       this is an unsigned int (32 bits), the max ID can be 2^(32-5)-1
+       = 134217727 (approx. 134.2 million entities of each type) */
+
+    unsigned int deleted:1;   /* flag indicating if entity is deleted */
+    unsigned int temporary:1; /* flag indicating if entity is temporary */
+    unsigned int dim:3;       /* dimension of entity */
+    unsigned int id:27;       /* ID of entity */
+
+    unsigned int rtype:3;     /* Representation type */
+    unsigned int gdim:3;      /* Geometric entity dimension */
+    unsigned int gid:26;      /* Geometric entity ID */
+
+    unsigned int marker;
+
 #ifdef MSTK_HAVE_MPI
-    unsigned int ptype_masterparid;
-    unsigned int globalid;  /* if -ve, it represents local id on master proc */
+    unsigned int ptype:2;
+    unsigned int masterparid:30;
+    unsigned int globalid;  
 #endif
 
   } MEntity_Data, *MEntity_Data_ptr;
@@ -43,8 +63,10 @@ extern "C" {
   void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
 
   /* local id of owning entity on master processor */
+  /*
   int   MEnt_MasterLocalID(MEntity_ptr ent);
   void   MEnt_Set_MasterLocalID(MEntity_ptr ent, int localid);
+  */
 #endif
 
   void MEnt_Init_CmnData(MEntity_ptr ent);
