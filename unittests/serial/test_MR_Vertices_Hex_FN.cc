@@ -4,7 +4,7 @@
 
 TEST(MR_Vertices_Hex_FN)
 {
-  int ok, i;
+  int ok, i, nv, vids[8];
   Mesh_ptr mesh;
   MRegion_ptr mr;
   List_ptr rverts;
@@ -26,6 +26,9 @@ TEST(MR_Vertices_Hex_FN)
   CHECK_EQUAL(exp_nv,MESH_Num_Vertices(mesh));
 
   mr = MESH_Region(mesh,0);
+
+  /* Check if we can get the correct vertices of a hex */
+
   rverts = MR_Vertices(mr);
 
   for (i = 0; i < exp_nv; i++) {
@@ -35,4 +38,12 @@ TEST(MR_Vertices_Hex_FN)
   }
   
   List_Delete(rverts);
+
+  /* Check if we get the correct result when we get the IDs directly */
+
+  MR_VertexIDs(mr,&nv,vids);
+  
+  CHECK_EQUAL(nv,exp_nv);
+  CHECK_ARRAY_EQUAL(exp_vids,vids,exp_nv);
+
 }

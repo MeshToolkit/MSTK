@@ -4,7 +4,7 @@
 
 TEST(MR_Edges_Prism_FN)
 {
-  int ok, i;
+  int ok, i, ne, eids[9];
   Mesh_ptr mesh;
   MRegion_ptr mr;
   List_ptr redges;
@@ -28,6 +28,9 @@ TEST(MR_Edges_Prism_FN)
   CHECK_EQUAL(exp_ne,MESH_Num_Edges(mesh));
 
   mr = MESH_Region(mesh,0);
+
+  /* Check if acn retrieve edges of a prism */
+
   redges = MR_Edges(mr);
 
   for (i = 0; i < exp_ne; i++) {
@@ -37,4 +40,12 @@ TEST(MR_Edges_Prism_FN)
   }
   
   List_Delete(redges);
+
+  /* Check if we can directly retrieve the IDs of edges of a prism */
+
+  MR_EdgeIDs(mr,&ne,eids);
+  
+  CHECK_EQUAL(ne,exp_ne);
+  CHECK_ARRAY_EQUAL(exp_eids,eids,exp_ne);
+  
 }

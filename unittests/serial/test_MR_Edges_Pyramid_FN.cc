@@ -4,7 +4,7 @@
 
 TEST(MR_Edges_Pyramid_FN)
 {
-  int ok, i;
+  int ok, i, ne, eids[8];
   Mesh_ptr mesh;
   MRegion_ptr mr;
   List_ptr redges;
@@ -26,6 +26,9 @@ TEST(MR_Edges_Pyramid_FN)
   CHECK_EQUAL(exp_ne,MESH_Num_Edges(mesh));
 
   mr = MESH_Region(mesh,0);
+
+  /* Check if we can retrieve edges of a pyramid */
+
   redges = MR_Edges(mr);
 
   for (i = 0; i < exp_ne; i++) {
@@ -35,4 +38,12 @@ TEST(MR_Edges_Pyramid_FN)
   }
   
   List_Delete(redges);
+
+  /* Check if we can directly retrieve the IDs of edges of a pyramid */
+
+  MR_EdgeIDs(mr,&ne,eids);
+  
+  CHECK_EQUAL(ne,exp_ne);
+  CHECK_ARRAY_EQUAL(exp_eids,eids,exp_ne);
+
 }

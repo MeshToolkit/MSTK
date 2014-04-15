@@ -4,7 +4,7 @@
 
 TEST(MR_Vertices_Tet_FN)
 {
-  int ok, i;
+  int ok, i, nv, vids[4];
   Mesh_ptr mesh;
   MRegion_ptr mr;
   List_ptr rverts;
@@ -26,8 +26,11 @@ TEST(MR_Vertices_Tet_FN)
   CHECK_EQUAL(exp_nv,MESH_Num_Vertices(mesh));
 
   mr = MESH_Region(mesh,0);
-  rverts = MR_Vertices(mr);
 
+  /* Check if we can get the correct vertices of a tet */
+
+  rverts = MR_Vertices(mr);
+  
   for (i = 0; i < exp_nv; i++) {
     MVertex_ptr v = List_Entry(rverts,i);
     int vid = MV_ID(v);
@@ -35,4 +38,11 @@ TEST(MR_Vertices_Tet_FN)
   }
   
   List_Delete(rverts);
+
+  /* Check if we get the correct result when we get the IDs directly */
+
+  MR_VertexIDs(mr,&nv,vids);
+  
+  CHECK_EQUAL(nv,exp_nv);
+  CHECK_ARRAY_EQUAL(exp_vids,vids,exp_nv);
 }
