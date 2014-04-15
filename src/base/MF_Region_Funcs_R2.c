@@ -58,6 +58,15 @@ extern "C" {
     }      
   }
 
+  void MF_RegionIDs_R2(MFace_ptr f, int *nfr, int *fregids) {
+    int i;
+    List_ptr fregs = MF_Regions_R2(f);
+    *nfr = List_Num_Entries(fregs);
+    for (i = 0; i < *nfr; i++)
+      fregids[i] = MEnt_ID(List_Entry(fregs,i));
+    List_Delete(fregs);
+  }
+
   MRegion_ptr MF_Region_R2(MFace_ptr f, int dir) {
     List_ptr fregs;
     int nr;
@@ -88,6 +97,11 @@ extern "C" {
     List_Delete(fregs);
 
     return ret;
+  }
+
+  int MF_RegionID_R2(MFace_ptr f, int ir) {
+    MRegion_ptr r = MF_Region_R2(f,ir);
+    return r ? MEnt_ID(r) : 0;
   }
 
 

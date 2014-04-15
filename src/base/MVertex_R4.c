@@ -109,6 +109,15 @@ extern "C" {
     return List_Copy(adj->adjverts);
   }
 
+  void MV_AdjVertexIDs_R4(MVertex_ptr v, int *nvadj, int *adjvids) {
+    int i;
+    MVertex_Adj_R4 *adj;
+    adj = (MVertex_Adj_R4 *)v->adj;
+    *nvadj = List_Num_Entries(adj->adjverts);
+    for (i = 0; i < *nvadj; i++)
+      adjvids[i] = MEnt_ID(List_Entry(adj->adjverts,i));
+  }
+
   List_ptr MV_Edges_R4(MVertex_ptr v) {
     int i, nvadj;
     MVertex_ptr adjv;
@@ -131,11 +140,36 @@ extern "C" {
     return vedges;
   }
 
+  void MV_EdgeIDs_R4(MVertex_ptr v, int *nve, int *vedgeids) {
+    List_ptr vedges = MV_Edges_R4(v);
+
+    if (vedges) {
+      int i;
+      *nve = List_Num_Entries(vedges);
+      for (i = 0; i < *nve; i++) 
+        vedgeids[i] = MEnt_ID(List_Entry(vedges,i));
+      List_Delete(vedges);
+    }
+    else
+      *nve = 0;
+  }
+
   List_ptr MV_Faces_R4(MVertex_ptr v) {
     MVertex_Adj_R4 *adj;
     adj = (MVertex_Adj_R4 *)v->adj;
 
     return List_Copy(adj->vfaces);
+  }
+
+
+  void MV_FaceIDs_R4(MVertex_ptr v, int *nvf, int *vfaceids) {
+    int i;
+    MVertex_Adj_R4 *adj;
+    adj = (MVertex_Adj_R4 *)v->adj;
+    
+    *nvf = List_Num_Entries(adj->vfaces);
+    for (i = 0; i < *nvf; i++)
+      vfaceids[i] = MEnt_ID(List_Entry(vfaceids,i));
   }
 
   List_ptr MV_Regions_R4(MVertex_ptr v) {
@@ -171,6 +205,19 @@ extern "C" {
       List_Delete(vregions);
       return 0;
     }
+  }
+
+  void MV_RegionIDs_R4(MVertex_ptr v, int *nvr, int *vregionids) {
+    int i;
+    List_ptr vregions = MV_Regions_R4(v);
+    if (vregions) {
+      *nvr = List_Num_Entries(vregions);
+      for (i = 0; i < *nvr; i++)
+        vregionids[i] = MEnt_ID(List_Entry(vregions,i));
+      List_Delete(vregions);
+    }
+    else
+      *nvr = 0;
   }
 
   void MV_Add_AdjVertex_R4(MVertex_ptr v, MVertex_ptr adjv) {

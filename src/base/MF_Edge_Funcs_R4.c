@@ -86,6 +86,12 @@ extern "C" {
     return fedges;
   }
 
+  void MF_EdgeIDs_R4(MFace_ptr f, int dir, int startvertid, int *nfe,
+                     int *fedgeids) {
+    *nfe = 0;
+    MSTK_Report("MF_EdgeIDs_R4","NOT IMPLEMENTED - No persistent edges in representation",MSTK_WARN);
+  }
+
 
   int MF_Rev_EdgeDir_R4(MFace_ptr f, MEdge_ptr e) {
     return -1;

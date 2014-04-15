@@ -226,9 +226,19 @@ extern "C" {
     return (*MR_Vertices_jmp[RTYPE])(r);
   }
 
+  void MR_VertexIDs(MRegion_ptr r, int *nrv, int *rvertids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    return (*MR_VertexIDs_jmp[RTYPE])(r,nrv,rvertids);
+  }
+
   List_ptr MR_Edges(MRegion_ptr r) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
     return (*MR_Edges_jmp[RTYPE])(r);
+  }
+
+  void MR_EdgeIDs(MRegion_ptr r, int *nre, int *redgeids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    return (*MR_EdgeIDs_jmp[RTYPE])(r,nre,redgeids);
   }
 
   List_ptr MR_Faces(MRegion_ptr r) {
@@ -236,9 +246,19 @@ extern "C" {
     return (*MR_Faces_jmp[RTYPE])(r);
   }
 
+  void MR_FaceIDs(MRegion_ptr r, int *nrf, int *rfaceids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    (*MR_FaceIDs_jmp[RTYPE])(r,nrf,rfaceids);
+  }
+
   List_ptr MR_AdjRegions(MRegion_ptr r) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
     return (*MR_AdjRegions_jmp[RTYPE])(r);
+  }
+
+  void MR_AdjRegionIDs(MRegion_ptr r, int *nradj, int *adjregids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
+    (*MR_AdjRegionIDs_jmp[RTYPE])(r,nradj,adjregids);
   }
 
   int MR_FaceDir(MRegion_ptr r, MFace_ptr f) {

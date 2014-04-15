@@ -480,6 +480,51 @@ extern "C" {
     return fedges;
   }
 
+
+  void MF_EdgeIDs_F2F4(MFace_ptr f, int dir, int startvertid, int *nfe,
+                       int *fedgeids) {
+    int i, k=0, n, fnd, edir;
+    List_ptr fedges;
+    MEdge_ptr e;
+    MFace_Adj_F2F4 *adj;
+
+    adj = (MFace_Adj_F2F4 *) f->adj;
+
+    *nfe = List_Num_Entries(adj->fedges);
+
+    if (startvertid == 0) {
+      if (dir) {
+        for (i = 0; i < *nfe; i++)
+          fedgeids[i] = MEnt_ID(List_Entry(adj->fedges,i));
+      }
+      else {
+	for (i = 0; i < *nfe; i++)
+	  fedgeids[i] = MEnt_ID(List_Entry(adj->fedges,*nfe-i-1));
+      }
+    }
+    else {
+      fnd = 0;
+      for (i = 0; i < *nfe; i++) {
+	e = List_Entry(adj->fedges,i);
+	edir = ((adj->edirs)>>i) & 1UL;
+	if (ME_VertexID(e,edir^dir) == startvertid) {
+	  fnd = 1;
+	  k = i;
+	  break;
+	}
+      }
+
+      if (!fnd)
+	MSTK_Report("MF_Edges_F2","Cannot find vertex in face!!",MSTK_FATAL);
+	
+      for (i = 0; i < *nfe; i++) {
+	e = dir ? List_Entry(adj->fedges,(k+i)%(*nfe)) :
+	  List_Entry(adj->fedges,(k+(*nfe)-i)%(*nfe));
+	fedgeids[i] = MEnt_ID(e);
+      }	
+    }
+  }
+
   int MF_EdgeDir_F2F4(MFace_ptr f, MEdge_ptr e) {
     int n, i;
     MFace_Adj_F2F4 *adj;

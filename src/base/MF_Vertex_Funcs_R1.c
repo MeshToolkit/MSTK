@@ -321,6 +321,45 @@ extern "C" {
     return fverts;      
   }
 	
+  void MF_VertexIDs_R1(MFace_ptr f, int dir, int startvertid, int *nfv,
+                       int *fvertids) {
+    MFace_Adj_R1 *adj;
+    int i, k=0, nv, fnd=0;
+
+    adj = (MFace_Adj_R1 *) f->adj;
+    nv = List_Num_Entries(adj->fvertices);
+
+    *nfv = 0;
+    if (!startvertid) {
+      if (dir)
+        for (i = 0; i < nv; i++)
+          fvertids[(*nfv)++] = MEnt_ID(List_Entry(adj->fvertices,i));
+      else
+	for (i = nv-1; i >= 0; i--)
+	  fvertids[(*nfv)++] = MEnt_ID(List_Entry(adj->fvertices,i));
+    }
+    else {
+      for (i = 0; i < nv; i++) {
+	if (MEnt_ID(List_Entry(adj->fvertices,i)) == startvertid) {
+	  fnd = 1;
+	  k = i;
+	  break;
+	}
+      }
+
+      if (!fnd)
+	MSTK_Report("MF_Vertices_R1","Cannot find starting vertex",MSTK_FATAL);
+
+      for (i = 0; i < nv; i++) {
+	if (dir)
+	  fvertids[(*nfv)++] = MEnt_ID(List_Entry(adj->fvertices,(k+i)%nv));
+	else
+	  fvertids[(*nfv)++] = MEnt_ID(List_Entry(adj->fvertices,(k+nv-i)%nv));
+      }
+    }
+
+  }
+	
   int MF_UsesVertex_R1(MFace_ptr f, MVertex_ptr v) {
     MFace_Adj_R1 *adj;
     adj = (MFace_Adj_R1 *) f->adj;

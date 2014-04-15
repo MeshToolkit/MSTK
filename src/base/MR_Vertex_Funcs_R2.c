@@ -59,9 +59,8 @@ extern "C" {
   void MR_Set_Vertices_R2(MRegion_ptr r, int nv, MVertex_ptr *rvertices, 
 			    int nf, int **rfvtemplate) {
     int i;
-    MRegion_Adj_R2 *adj;
+    MRegion_Adj_R2 *adj = (MRegion_Adj_R2 *) r->adj;
 
-    adj = (MRegion_Adj_R2 *) r->adj;
     adj->rvertices = List_New(nv);
     for (i = 0; i < nv; i++) {
 
@@ -168,9 +167,17 @@ extern "C" {
 
 
   List_ptr MR_Vertices_R2(MRegion_ptr r) {
-    MRegion_Adj_R2 *adj;
-    adj = (MRegion_Adj_R2 *) r->adj;
+    MRegion_Adj_R2 *adj = (MRegion_Adj_R2 *) r->adj;
     return List_Copy(adj->rvertices);
+  }
+
+  void MR_VertexIDs_R2(MRegion_ptr r, int *nrv, int *rvertids) {
+    int i;
+    MRegion_Adj_R2 *adj = (MRegion_Adj_R2 *) r->adj;
+    
+    *nrv = List_Num_Entries(adj->rvertices);
+    for (i = 0; i < *nrv; i++)
+      rvertids[i] = MEnt_ID(List_Entry(adj->rvertices,i));
   }
 
 

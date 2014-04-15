@@ -383,7 +383,16 @@ extern "C" {
     MSTK_FreeMarker(mkr);
     
     return redges;
-    }
+  }
+
+
+  void MR_EdgeIDs_FN(MRegion_ptr r, int *nre, int *redgeids) {
+    int i;
+    List_ptr redges = MR_Edges(r);
+    *nre = List_Num_Entries(redges);
+    for (i = 0; i < *nre; i++)
+      redgeids[i] = MEnt_ID(List_Entry(redges,i));
+  }
 
 
   int MR_UsesEdge_FN(MRegion_ptr r, MEdge_ptr e) {

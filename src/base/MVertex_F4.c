@@ -109,6 +109,28 @@ extern "C" {
 
     return adjv;
   }
+
+
+  void MV_AdjVertexIDs_F4(MVertex_ptr v, int *nvadj, int *adjvids) {
+    MVertex_Adj_F1F4 *adj;
+    List_ptr vedges, adjv;
+    int ne, i;
+    MEdge_ptr vedge;
+    MVertex_ptr ov;
+
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+
+    *nvadj = 0;
+    vedges = adj->vedges;
+    if (vedges) {
+      *nvadj = List_Num_Entries(vedges);
+      for (i = 0; i < *nvadj; i++) {
+        vedge = List_Entry(vedges,i);
+        ov = ME_OppVertex(vedge,v);
+        adjvids[i] = MEnt_ID((MEntity_ptr)ov);
+      }      
+    }
+  }  
     
 
   List_ptr MV_Edges_F4(MVertex_ptr v) {
@@ -119,6 +141,21 @@ extern "C" {
     vedges = List_Copy(adj->vedges);
     return vedges;
   }
+
+  void MV_EdgeIDs_F4(MVertex_ptr v, int *nve, int *vedgeids) {
+    MVertex_Adj_F1F4 *adj;
+    adj = (MVertex_Adj_F1F4 *) v->adj;
+
+    if (adj->vedges) {
+      int i;
+      *nve = List_Num_Entries(adj->vedges);
+      for (i = 0; i < *nve; i++) 
+        vedgeids[i] = MEnt_ID(List_Entry(adj->vedges,i));
+    }
+    else
+      *nve = 0;
+  }
+
 
   List_ptr MV_Faces_F4(MVertex_ptr v) {
     MVertex_Adj_F1F4 *adj;
@@ -193,6 +230,20 @@ extern "C" {
     }
   }
 
+  void MV_FaceIDs_F4(MVertex_ptr v, int *nvf, int *vfaceids) {
+    List_ptr vfaces = MV_Faces_F4(v);
+    if (vfaces) {
+      int i;
+      *nvf = List_Num_Entries(vfaces);
+      for (i = 0; i < *nvf; i++)
+        vfaceids[i] = MEnt_ID(List_Entry(vfaces,i));
+      List_Delete(vfaces);
+    }
+    else
+      *nvf = 0;
+  }
+
+
   List_ptr MV_Regions_F4(MVertex_ptr v) {
     MVertex_Adj_F1F4 *adj;
     int i, j, ne, nr, n, mkr;
@@ -237,6 +288,19 @@ extern "C" {
       List_Delete(vregions);
       return 0;
     }
+  }
+
+  void MV_RegionIDs_F4(MVertex_ptr v, int *nvr, int *vregionids) {
+    List_ptr vregions = MV_Regions_F4(v);
+    if (vregions) {
+      int i;
+      *nvr = List_Num_Entries(vregions);
+      for (i = 0; i < *nvr; i++)
+        vregionids[i] = MEnt_ID(List_Entry(vregions,i));
+      List_Delete(vregions);
+    }
+    else
+      *nvr = 0;
   }
 
   void MV_Add_AdjVertex_F4(MVertex_ptr v, MVertex_ptr av) {

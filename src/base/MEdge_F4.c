@@ -142,6 +142,17 @@ extern "C" {
 
   }
 
+  void ME_FaceIDs_F4(MEdge_ptr e, int *nef, int *efaceids) {
+    int i;
+    List_ptr efaces = ME_Faces_F4(e);
+    if (efaces) {
+      *nef = List_Num_Entries(efaces);
+      for (i = 0; i < *nef; i++)
+        efaceids[i] = MEnt_ID(List_Entry(efaces,i));
+    }
+    else
+      *nef = 0;
+  }
 
   List_ptr ME_Regions_F4(MEdge_ptr e) {
     int nr, nel, i;
@@ -170,6 +181,25 @@ extern "C" {
       List_Delete(eregs);
       return 0;
     }
+  }
+
+  void ME_RegionIDs_F4(MEdge_ptr e, int *ner, int *eregionids) {
+    int nel, i;
+    MEntity_ptr ent;
+    MEdge_Adj_F4 *adj;
+
+    adj = (MEdge_Adj_F4 *) e->adj;
+    
+    nel = List_Num_Entries(adj->elements);
+
+    *ner = 0;
+
+    for (i = 0; i < nel; i++) {
+      ent = List_Entry(adj->elements,i);
+      if (MEnt_Dim(ent) == MREGION)
+        eregionids[(*ner)++] = MEnt_ID(ent);
+    }
+
   }
 
   void ME_Add_Face_F4(MEdge_ptr e, MFace_ptr f) {

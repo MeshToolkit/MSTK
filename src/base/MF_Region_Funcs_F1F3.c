@@ -27,8 +27,23 @@ extern "C" {
     return fregs;
   }
 
+  void MF_RegionIDs_F1F3(MFace_ptr f, int *nfr, int *fregids) {
+    MFace_Adj_F1F3 *adj = (MFace_Adj_F1F3 *) f->adj;
+
+    *nfr = 0;
+    if (adj->fregions[0])
+      fregids[(*nfr)++] = MEnt_ID(adj->fregions[0]);
+    if (adj->fregions[1])
+      fregids[(*nfr)++] = MEnt_ID(adj->fregions[1]);
+
+  }
+
   MRegion_ptr MF_Region_F1F3(MFace_ptr f, int i) {
     return ((MFace_Adj_F1F3 *) f->adj)->fregions[i];
+  }
+
+  int MF_RegionID_F1F3(MFace_ptr f, int i) {
+    return MEnt_ID(((MFace_Adj_F1F3 *) f->adj)->fregions[i]);
   }
 
   void MF_Add_Region_F1F3(MFace_ptr f, MRegion_ptr r, int side) {

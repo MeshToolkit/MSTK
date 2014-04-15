@@ -168,11 +168,18 @@ extern "C" {
 
 
   List_ptr MR_Vertices_R1(MRegion_ptr r) {
-    MRegion_Adj_R1 *adj;
-    adj = (MRegion_Adj_R1 *) r->adj;
+    MRegion_Adj_R1 *adj = (MRegion_Adj_R1 *) r->adj;
     return List_Copy(adj->rvertices);
   }
 
+
+  void MR_VertexIDs_R1(MRegion_ptr r, int *nrv, int *rvertids) {
+    int i;
+    MRegion_Adj_R1 *adj = (MRegion_Adj_R1 *) r->adj;
+    *nrv = List_Num_Entries(adj->rvertices);
+    for (i = 0; i < *nrv; i++)
+      rvertids[i] = MEnt_ID(List_Entry(adj->rvertices,i));
+  }
 
   int MR_UsesVertex_R1(MRegion_ptr r, MVertex_ptr v) {
     MRegion_Adj_R1 *adj = (MRegion_Adj_R1 *) r->adj;

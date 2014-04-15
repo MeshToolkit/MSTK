@@ -145,6 +145,13 @@ extern "C" {
     return redges;
   }
 
+
+  void MR_EdgeIDs_R2(MRegion_ptr r, int *nre, int *redgeids) {
+    *nre = 0;    
+    MSTK_Report("MR_EdgeIDs_R2","NOT IMPLEMENTED - Edges are not persistent entities in R2 representation",MSTK_ERROR);
+  }
+
+
   int MR_UsesEdge_R2(MRegion_ptr r, MEdge_ptr e) {
     MRegion_Adj_R2 *adj;
     int i, j, j0, j1, nv, ne, nf, nfv;

@@ -100,9 +100,7 @@ extern "C" {
   }
 
   void MV_Set_Coords(MVertex_ptr v, double *xyz) {
-    v->xyz[0] = xyz[0];
-    v->xyz[1] = xyz[1];
-    v->xyz[2] = xyz[2];
+    memcpy(v->xyz,xyz,3*sizeof(double));
   }
 
   void MV_Set_GEntity(MVertex_ptr v, GEntity_ptr gent) {    
@@ -141,7 +139,7 @@ extern "C" {
   }
 
   void MV_Coords(MVertex_ptr v, double *xyz) {
-    xyz[0] = v->xyz[0]; xyz[1] = v->xyz[1]; xyz[2] = v->xyz[2];
+    memcpy(xyz,v->xyz,3*sizeof(double));
   }   
 
   int MV_Num_AdjVertices(MVertex_ptr v) {
@@ -174,14 +172,29 @@ extern "C" {
     return (*MV_Edges_jmp[RTYPE])(v);
   }
 
+  void MV_EdgeIDs(MVertex_ptr v, int *nve, int *vedgeids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
+    (*MV_EdgeIDs_jmp[RTYPE])(v,nve,vedgeids);
+  }
+
   List_ptr MV_Faces(MVertex_ptr v) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Faces_jmp[RTYPE])(v);
   }
 
+  void MV_FaceIDs(MVertex_ptr v, int *nvf, int *vfaceids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
+    (*MV_FaceIDs_jmp[RTYPE])(v,nvf,vfaceids);
+  }
+
   List_ptr MV_Regions(MVertex_ptr v) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
     return (*MV_Regions_jmp[RTYPE])(v);
+  }
+
+  void MV_RegionIDs(MVertex_ptr v, int *nvf, int *vfaceids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) v);
+    (*MV_RegionIDs_jmp[RTYPE])(v,nvf,vfaceids);
   }
 
   void MV_Add_AdjVertex(MVertex_ptr v, MVertex_ptr adjv) {

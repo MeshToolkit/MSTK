@@ -167,6 +167,15 @@ extern "C" {
   }
 
 
+  void MR_AdjRegionIDs_R2(MRegion_ptr r, int *nradj, int *adjregids) {
+    int i;
+    MRegion_Adj_R2 *adj = (MRegion_Adj_R2 *) r->adj;
+ 
+    *nradj = List_Num_Entries(adj->aregions);
+    for (i = 0; i < *nradj; i++)
+      adjregids[i] = MEnt_ID(List_Entry(adj->aregions,i));
+  }
+
 #ifdef __cplusplus
 }
 #endif

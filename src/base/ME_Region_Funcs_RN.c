@@ -48,6 +48,18 @@ extern "C" {
     }
   }
 
+  void ME_RegionIDs_RN(MEdge_ptr e, int *ner, int *eregids) {
+    int i;
+    List_ptr eregs = ME_Regions_RN(e);
+    if (eregs) {
+      *ner = List_Num_Entries(eregs);
+      for (i = 0; i < *ner; i++)
+        eregids[i] = MEnt_ID(List_Entry(eregs,i));
+    }
+    else
+      *ner = 0;
+  }
+
 #ifdef __cplusplus
 }
 #endif

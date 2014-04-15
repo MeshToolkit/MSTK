@@ -282,6 +282,12 @@ extern "C" {
     return redges;
   }
 
+  void MR_EdgeIDs_R3R4(MRegion_ptr r, int *nre, int *redgeids) {
+    *nre = 0;    
+    MSTK_Report("MR_EdgeIDs_R3R4","NOT IMPLEMENTED - Edges are not persistent entities in R3R4 representation",MSTK_ERROR);
+  }
+
+
   int MR_UsesEdge_R3R4(MRegion_ptr r, MEdge_ptr e) {
     int idx;
     MFace_ptr face;

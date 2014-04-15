@@ -47,6 +47,15 @@ extern "C" {
     }
   }
 
+  void MF_RegionIDs_F2F4(MFace_ptr f, int *nfr, int *fregids) {
+    int i;
+    List_ptr fregs = MF_Regions_F2F4(f);
+    *nfr = List_Num_Entries(fregs);
+    for (i = 0; i < *nfr; i++)
+      fregids[i] = MEnt_ID(List_Entry(fregs,i));
+    List_Delete(fregs);
+  }
+
   MRegion_ptr MF_Region_F2F4(MFace_ptr f, int ir) {
     List_ptr eregs;
     MRegion_ptr r, r1;
@@ -82,6 +91,11 @@ extern "C" {
     }
     
     return 0;
+  }
+
+  int MF_RegionID_F2F4(MFace_ptr f, int ir) {
+    MRegion_ptr r = MF_Region_F2F4(f,ir);
+    return r ? MEnt_ID(r) : 0;
   }
 
   void MF_Add_Region_F2F4(MFace_ptr f, MRegion_ptr r, int side) {

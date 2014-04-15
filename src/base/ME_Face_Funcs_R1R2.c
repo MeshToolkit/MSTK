@@ -100,6 +100,18 @@ extern "C" {
     }
   }
 
+  void ME_FaceIDs_R1R2(MEdge_ptr e, int *nef, int *efaceids) {
+    List_ptr efaces = ME_Faces_R1R2(e);
+    if (efaces) {
+      int i;
+      *nef = List_Num_Entries(efaces);
+      for (i = 0; i < *nef; i++) 
+        efaceids[i] = MEnt_ID(List_Entry(efaces,i));
+    }
+    else
+      *nef = 0;
+  }
+
 #ifdef __cplusplus
 }
 #endif

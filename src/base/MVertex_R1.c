@@ -123,6 +123,27 @@ extern "C" {
       return NULL;
   }
 
+  void MV_AdjVertexIDs_R1(MVertex_ptr v, int *nvadj, int *adjvids) {
+    List_ptr vedges, adjv;
+    int ne, i;
+    MEdge_ptr vedge;
+    MVertex_ptr ov;
+
+    vedges = MV_Edges_R1(v);
+    if (vedges) {
+      *nvadj = List_Num_Entries(vedges);
+      for (i = 0; i < *nvadj; i++) {
+        vedge = List_Entry(vedges,i);
+        ov = ME_OppVertex(vedge,v);
+        adjvids[i] = MEnt_ID((MEntity_ptr)ov);
+      }
+      List_Delete(vedges);
+    }
+    else
+      *nvadj = 0;
+
+  }
+    
   List_ptr MV_Edges_R1(MVertex_ptr v) {
     MVertex_Adj_R1 *adj;
     int idx, idx1, idx2, found, nfv;
@@ -260,6 +281,21 @@ extern "C" {
       
   }
 
+  void MV_EdgeIDs_R1(MVertex_ptr v, int *nve, int *vedgeids) {
+    List_ptr vedges = MV_Edges_R1(v);
+
+    if (vedges) {
+      int i;
+      *nve = List_Num_Entries(vedges);
+      for (i = 0; i < *nve; i++) 
+        vedgeids[i] = MEnt_ID(List_Entry(vedges,i));
+      List_Delete(vedges);
+    }
+    else
+      *nve = 0;
+  }
+
+
   List_ptr MV_Faces_R1(MVertex_ptr v) {
     MVertex_Adj_R1 *adj;
     int idx, idx1, idx2, found;
@@ -309,6 +345,20 @@ extern "C" {
     }
   }
 
+  void MV_FaceIDs_R1(MVertex_ptr v, int *nvf, int *vfaceids) {
+    List_ptr vfaces = MV_Faces_R1(v);
+    if (vfaces) {
+      int i;
+      *nvf = List_Num_Entries(vfaces);
+      for (i = 0; i < *nvf; i++)
+        vfaceids[i] = MEnt_ID(List_Entry(vfaces,i));
+      List_Delete(vfaces);
+    }
+    else
+      *nvf = 0;
+  }
+  
+
   List_ptr MV_Regions_R1(MVertex_ptr v) {
     MVertex_Adj_R1 *adj;
     int idx, nel, nr = 0;
@@ -332,6 +382,21 @@ extern "C" {
       List_Delete(vregions);
       return 0;
     }      
+  }
+
+  void MV_RegionIDs_R1(MVertex_ptr v, int *nvr, int *vregionids) {
+    MVertex_Adj_R1 *adj;
+    int idx;
+    MEntity_ptr ent;
+
+    adj = (MVertex_Adj_R1 *) v->adj;
+
+    *nvr = 0;
+    idx = 0;
+    while ((ent = (MEntity_ptr) List_Next_Entry(adj->velements,&idx))) {
+      if (MEnt_Dim(ent) == MREGION)
+	vregionids[(*nvr)++] = MEnt_ID(ent);
+    }
   }
 
   void MV_Add_Region_R1(MVertex_ptr v, MRegion_ptr mregion) {

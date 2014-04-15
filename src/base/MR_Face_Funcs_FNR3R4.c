@@ -375,6 +375,18 @@ extern "C" {
     return List_Copy(adj->rfaces);
   }
 
+  void MR_FaceIDs_FNR3R4(MRegion_ptr r, int *nrf, int *faceids) {
+    int i;
+    MFace_ptr f;
+    List_ptr rfaces = ((MRegion_Adj_FN *)r->adj)->rfaces;
+    *nrf = List_Num_Entries(rfaces);
+    for (i = 0; i < *nrf; i++) {
+      f = List_Entry(rfaces,i);
+      faceids[i] = MEnt_ID(f);
+    }
+  }
+
+
   List_ptr MR_AdjRegions_FNR3R4(MRegion_ptr r) {
     int i, nf;
     MRegion_ptr freg;
@@ -402,6 +414,34 @@ extern "C" {
     }
     return adjr;
   }
+
+  void MR_AdjRegionIDs_FNR3R4(MRegion_ptr r, int *nradj, int *adjregids) {
+    int i, k, nf, rid;
+    MRegion_Adj_FN *adj;
+    
+    rid = MEnt_ID((MEntity_ptr)r);
+    adj = (MRegion_Adj_FN *) r->adj;
+    nf = List_Num_Entries(adj->rfaces);
+
+    k = 0;
+    for (i = 0; i < nf; i++) {
+      MFace_ptr face = List_Entry(adj->rfaces,i);
+      int fregid = MF_RegionID(face,0);
+      if (fregid) {
+	if (fregid == rid) {
+	  fregid = MF_RegionID(face,1);
+	  if (fregid) {
+            adjregids[k++] = fregid;
+  	  }
+	}
+	else 
+	  adjregids[k++] = fregid;
+      }
+    }
+
+    *nradj = k;
+  }
+
 
   int MR_Rev_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
     int i,j,k, nf;

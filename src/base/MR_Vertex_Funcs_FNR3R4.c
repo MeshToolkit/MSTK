@@ -256,6 +256,14 @@ extern "C" {
     return NULL;
   }
 
+  void MR_VertexIDs_FNR3R4(MRegion_ptr r, int *nrv, int *rvertids) {
+    int i;
+    List_ptr rverts = MR_Vertices(r);
+    *nrv = List_Num_Entries(rverts);
+    for (i = 0; i < *nrv; i++)
+      rvertids[i] = MEnt_ID(List_Entry(rverts,i));
+  }
+
   void MR_Replace_Vertex_FNR3R4(MRegion_ptr r, MVertex_ptr v, MVertex_ptr nuv){
 #ifdef DEBUG
     MSTK_Report("MR_Replace_Vertex",

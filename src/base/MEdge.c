@@ -287,8 +287,23 @@ extern "C" {
     return e->vertex[i];
   }
 
+  int ME_VertexID(MEdge_ptr e, int i) {
+    return MEnt_ID(e->vertex[i]);
+  }
+
   MVertex_ptr ME_OppVertex(MEdge_ptr e, MVertex_ptr v) {
     return (e->vertex[0] == v ? e->vertex[1] : e->vertex[0]);
+  }
+
+  int ME_OppVertexID(MEdge_ptr e, int vid) {
+    int vid0 = MEnt_ID(e->vertex[0]);
+    int vid1 = MEnt_ID(e->vertex[1]);
+    if (vid0 == vid)
+      return vid1;
+    else if (vid1 == vid)
+      return vid0;
+    else
+      return 0;
   }
 
   int ME_Num_Faces(MEdge_ptr e) {
@@ -306,9 +321,19 @@ extern "C" {
     return (*ME_Faces_jmp[RTYPE])(e);
   }
 
+ void ME_FaceIDs(MEdge_ptr e, int *nef, int *efaceids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
+    (*ME_FaceIDs_jmp[RTYPE])(e,nef,efaceids);
+  } 
+
   List_ptr ME_Regions(MEdge_ptr e) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
     return (*ME_Regions_jmp[RTYPE])(e);
+  }
+
+  void ME_RegionIDs(MEdge_ptr e, int *ner, int *eregionids) {
+    RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
+    (*ME_RegionIDs_jmp[RTYPE])(e,ner,eregionids);
   }
 
   int ME_UsesEntity(MEdge_ptr e, MEntity_ptr ent, int etype) {

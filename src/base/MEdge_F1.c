@@ -82,6 +82,17 @@ extern "C" {
       return NULL;
   }
 
+  void ME_FaceIDs_F1(MEdge_ptr e, int *nef, int *efaceids) {
+    List_ptr efaces = ((MEdge_Adj_F1 *)e->adj)->efaces; 
+    *nef = 0;
+    if (efaces) {
+      int i;
+      *nef = List_Num_Entries(efaces);
+      for (i = 0; i < *nef; i++) 
+        efaceids[i] = MEnt_ID(List_Entry(efaces,i));
+    }
+  }
+
   List_ptr ME_Regions_F1(MEdge_ptr e) {
     MEdge_Adj_F1 *adj; 
     int i, j, nr, nf, mkr;
@@ -118,6 +129,17 @@ extern "C" {
     }
   }
 
+  void ME_RegionIDs_F1(MEdge_ptr e, int *ner, int *eregionids) {
+    int i;
+    List_ptr eregs = ME_Regions_F1(e);
+    *ner = 0;
+    if (eregs) {
+      *ner = List_Num_Entries(eregs);
+      for (i = 0; i < *ner; i++)
+        eregionids[i] = MEnt_ID(List_Entry(eregs,i));
+      List_Delete(eregs);
+    }
+  }
 
   void ME_Add_Face_F1(MEdge_ptr e, MFace_ptr f) {
     MEdge_Adj_F1 *adj;

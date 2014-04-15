@@ -146,6 +146,11 @@ extern "C" {
   }
 
 
+  void MR_AdjRegionIDs_R1(MRegion_ptr r, int *nradj, int *adjregids) {
+    MSTK_Report("MR_AdjRegionIDs",
+		"Not yet implemented for this representation",MSTK_WARN);
+  }
+
   void MR_Add_AdjRegion_R1(MRegion_ptr r, int facenum, MRegion_ptr ar) {
 #ifdef DEBUG
     MSTK_Report("MR_Add_AdjRegion_R1",

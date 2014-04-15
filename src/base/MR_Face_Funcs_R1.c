@@ -142,6 +142,9 @@ extern "C" {
     return rfaces;
   }
 
+  void MR_FaceIDs_R1(MRegion_ptr r, int *nrf, int *faceids) {
+    MSTK_Report("MR_FaceIDs_R1","Not implemented",MSTK_FATAL);
+  }
 
   int MR_Rev_FaceDir_R1(MRegion_ptr r, MFace_ptr f) {
     return 0;
