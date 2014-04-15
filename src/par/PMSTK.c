@@ -52,8 +52,13 @@ extern "C" {
     MESH_Partition(mesh, num, part, submeshes);
 
     for(i = 0; i < num; i++) {
+      /* Tag entities as being in the partition interior or on the
+         partition boundary */
+
       MESH_BuildPBoundary(mesh,submeshes[i]);
+
       /* Add ghost layers */
+
       MESH_AddGhost(mesh,submeshes[i],i,ring);
     }
 
