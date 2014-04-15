@@ -15,13 +15,23 @@ extern "C" {
 
   typedef struct MFace {
 
-    /* Common data structure for all mesh entities */
+    /*------------------------------------------------------------*/
+    /* Common data for all mesh entities */
 
-    MEntity_Data entdat;
+    Mesh_ptr mesh;
+    List_ptr AttInsList;
 
-    /* Specific to mesh faces */
+    unsigned int dim_id;
+    unsigned int rtype_gdim_gid;
+    unsigned int marker;
 
-    void *adj;
+#ifdef MSTK_HAVE_MPI
+    unsigned int ptype_masterparid;
+    unsigned int globalid;  /* if -ve, it represents local id on master proc */
+#endif
+    /*------------------------------------------------------------*/
+
+    void *adj; /* pointer to entity adjacency structure */
 
   } MFace, *MFace_ptr;
 

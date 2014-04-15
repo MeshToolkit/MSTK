@@ -45,15 +45,9 @@ extern "C" {
   int ME_Num_Faces_R4(MEdge_ptr e);
   int ME_Num_Faces_R1R2(MEdge_ptr e);
   int ME_Num_Faces_R3R4(MEdge_ptr e);
-#ifdef DEBUG
-  static int (*ME_Num_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) = 
-  {ME_Num_Faces_F1, ME_Num_Faces_F4, ME_Num_Faces_R1, ME_Num_Faces_R2,
-   ME_Num_Faces_R4};
-#else
   static int (*ME_Num_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) = 
   {ME_Num_Faces_F1, ME_Num_Faces_F4, ME_Num_Faces_R1R2, ME_Num_Faces_R1R2,
    ME_Num_Faces_R3R4};
-#endif
 
   int ME_Num_Regions_F1(MEdge_ptr e);
   int ME_Num_Regions_F4(MEdge_ptr e);
@@ -61,15 +55,9 @@ extern "C" {
   int ME_Num_Regions_R2(MEdge_ptr e);
   int ME_Num_Regions_R4(MEdge_ptr e);
   int ME_Num_Regions_RN(MEdge_ptr e);
-#ifdef DEBUG
-  static int (*ME_Num_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
-  {ME_Num_Regions_F1, ME_Num_Regions_F4, ME_Num_Regions_R1, ME_Num_Regions_R2,
-   ME_Num_Regions_R4};
-#else
   static int (*ME_Num_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Num_Regions_F1, ME_Num_Regions_F4, ME_Num_Regions_RN,
    ME_Num_Regions_RN, ME_Num_Regions_RN};
-#endif
 
   List_ptr ME_Faces_F1(MEdge_ptr e);
   List_ptr ME_Faces_F4(MEdge_ptr e);
@@ -78,13 +66,19 @@ extern "C" {
   List_ptr ME_Faces_R4(MEdge_ptr e);
   List_ptr ME_Faces_R1R2(MEdge_ptr e);
   List_ptr ME_Faces_R3R4(MEdge_ptr e);
-#ifdef DEBUG
-  static List_ptr (*ME_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) =
-  {ME_Faces_F1, ME_Faces_F4, ME_Faces_R1R2, ME_Faces_R1R2, ME_Faces_R4};
-#else
   static List_ptr (*ME_Faces_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Faces_F1, ME_Faces_F4, ME_Faces_R1R2, ME_Faces_R1R2, ME_Faces_R3R4};
-#endif
+
+  void ME_FaceIDs_F1(MEdge_ptr e, int *nef, int *efaceids);
+  void ME_FaceIDs_F4(MEdge_ptr e, int *nef, int *efaceids);
+  void ME_FaceIDs_R1(MEdge_ptr e, int *nef, int *efaceids);
+  void ME_FaceIDs_R2(MEdge_ptr e, int *nef, int *efaceids);
+  void ME_FaceIDs_R4(MEdge_ptr e, int *nef, int *efaceids);
+  void ME_FaceIDs_R1R2(MEdge_ptr e, int *nef, int *efaceids);
+  void ME_FaceIDs_R3R4(MEdge_ptr e, int *nef, int *efaceids);
+  static void (*ME_FaceIDs_jmp[MSTK_MAXREP])(MEdge_ptr e, int *nef, int *efaceids) =
+  {ME_FaceIDs_F1, ME_FaceIDs_F4, ME_FaceIDs_R1R2, ME_FaceIDs_R1R2, ME_FaceIDs_R3R4};
+  
   
   List_ptr ME_Regions_F1(MEdge_ptr e);
   List_ptr ME_Regions_F4(MEdge_ptr e);
@@ -92,14 +86,18 @@ extern "C" {
   List_ptr ME_Regions_R2(MEdge_ptr e);
   List_ptr ME_Regions_R4(MEdge_ptr e);
   List_ptr ME_Regions_RN(MEdge_ptr e);
-#ifdef DEBUG
-  static List_ptr (*ME_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
-  {ME_Regions_F1, ME_Regions_F4, ME_Regions_R1, ME_Regions_R2, ME_Regions_R4};
-#else
   static List_ptr (*ME_Regions_jmp[MSTK_MAXREP])(MEdge_ptr e) =
   {ME_Regions_F1, ME_Regions_F4, ME_Regions_RN, ME_Regions_RN, ME_Regions_RN};
-#endif
-
+  
+  void ME_RegionIDs_F1(MEdge_ptr e, int *nef, int *eregionids);
+  void ME_RegionIDs_F4(MEdge_ptr e, int *nef, int *eregionids);
+  void ME_RegionIDs_R1(MEdge_ptr e, int *nef, int *eregionids);
+  void ME_RegionIDs_R2(MEdge_ptr e, int *nef, int *eregionids);
+  void ME_RegionIDs_R4(MEdge_ptr e, int *nef, int *eregionids);
+  void ME_RegionIDs_RN(MEdge_ptr e, int *nef, int *eregionids);
+  static void (*ME_RegionIDs_jmp[MSTK_MAXREP])(MEdge_ptr e, int *nef, int *eregionids) =
+  {ME_RegionIDs_F1, ME_RegionIDs_F4, ME_RegionIDs_RN, ME_RegionIDs_RN, ME_RegionIDs_RN};
+  
   MEdge_ptr ME_NextInHash_F1(MEdge_ptr e);
   MEdge_ptr ME_NextInHash_F4(MEdge_ptr e);
   MEdge_ptr ME_NextInHash_R1(MEdge_ptr e);

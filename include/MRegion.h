@@ -17,12 +17,24 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
   typedef struct MRegion {
 
-    /* Common data structure for all mesh entities */
+    /*------------------------------------------------------------*/
+    /* Common data for all mesh entities */
 
-    MEntity_Data entdat;
+    Mesh_ptr mesh;
+    List_ptr AttInsList;
 
-    /* Specific to mesh regions */
-    void *adj;
+    unsigned int dim_id;
+    unsigned int rtype_gdim_gid;
+    unsigned int marker;
+
+#ifdef MSTK_HAVE_MPI
+    unsigned int ptype_masterparid;
+    unsigned int globalid;  /* if -ve, it represents local id on master proc */
+#endif
+
+    /*------------------------------------------------------------*/
+
+    void *adj; /* pointer to entity adjacency structure */
 
     /* Element type of region */
     MRType mrtype;

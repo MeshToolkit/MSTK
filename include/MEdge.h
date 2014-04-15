@@ -15,13 +15,24 @@ extern "C" {
 
   typedef struct MEdge {
 
-    /* Common data structure for all mesh entities */
+    /*------------------------------------------------------------*/
+    /* Common data for all mesh entities */
 
-    MEntity_Data entdat;
+    Mesh_ptr mesh;
+    List_ptr AttInsList;
 
-    /* Specific to mesh edges */
+    unsigned int dim_id;
+    unsigned int rtype_gdim_gid;
+    unsigned int marker;
 
-    void *adj;
+#ifdef MSTK_HAVE_MPI
+    unsigned int ptype_masterparid;
+    unsigned int globalid;  /* if -ve, it represents local id on master proc */
+#endif
+    /*------------------------------------------------------------*/
+
+    void *adj; /* pointer to entity adjacency structure */
+
     MVertex_ptr vertex[2];
 
   } MEdge, *MEdge_ptr;

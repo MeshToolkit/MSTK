@@ -93,6 +93,15 @@ extern "C" {
   {MV_AdjVertices_F1, MV_AdjVertices_F4, MV_AdjVertices_R1,
    MV_AdjVertices_R2, MV_AdjVertices_R4};
 
+  void MV_AdjVertexIDs_F1(MVertex_ptr v, int *nvadj, int *adjvertids);
+  void MV_AdjVertexIDs_F4(MVertex_ptr v, int *nvadj, int *adjvertids);
+  void MV_AdjVertexIDs_R1(MVertex_ptr v, int *nvadj, int *adjvertids);
+  void MV_AdjVertexIDs_R2(MVertex_ptr v, int *nvadj, int *adjvertids);
+  void MV_AdjVertexIDs_R4(MVertex_ptr v, int *nvadj, int *adjvertids);
+  static void (*MV_AdjVertexIDs_jmp[MSTK_MAXREP])(MVertex_ptr v, int *nvadj, int *adjvertids) =
+  {MV_AdjVertexIDs_F1, MV_AdjVertexIDs_F4, MV_AdjVertexIDs_R1,
+   MV_AdjVertexIDs_R2, MV_AdjVertexIDs_R4};
+
   List_ptr MV_Edges_F1(MVertex_ptr v);
   List_ptr MV_Edges_F4(MVertex_ptr v);
   List_ptr MV_Edges_R1(MVertex_ptr v);
@@ -101,6 +110,15 @@ extern "C" {
   static List_ptr (*MV_Edges_jmp[MSTK_MAXREP])(MVertex_ptr v) = 
   {MV_Edges_F1, MV_Edges_F4, MV_Edges_R1, MV_Edges_R2, 
    MV_Edges_R4};
+			
+  void MV_EdgeIDs_F1(MVertex_ptr v, int *nve, int *vedgeids);
+  void MV_EdgeIDs_F4(MVertex_ptr v, int *nve, int *vedgeids);
+  void MV_EdgeIDs_R1(MVertex_ptr v, int *nve, int *vedgeids);
+  void MV_EdgeIDs_R2(MVertex_ptr v, int *nve, int *vedgeids);
+  void MV_EdgeIDs_R4(MVertex_ptr v, int *nve, int *vedgeids);
+  static void (*MV_EdgeIDs_jmp[MSTK_MAXREP])(MVertex_ptr v, int *nve, int *vedgeids) = 
+  {MV_EdgeIDs_F1, MV_EdgeIDs_F4, MV_EdgeIDs_R1, MV_EdgeIDs_R2, 
+   MV_EdgeIDs_R4};
 			
   List_ptr MV_Faces_F1(MVertex_ptr v);
   List_ptr MV_Faces_F4(MVertex_ptr v);
@@ -111,6 +129,15 @@ extern "C" {
   {MV_Faces_F1, MV_Faces_F4, MV_Faces_R1, MV_Faces_R2, 
    MV_Faces_R4};
 			
+  void MV_FaceIDs_F1(MVertex_ptr v, int *nvf, int *vfaceids);
+  void MV_FaceIDs_F4(MVertex_ptr v, int *nvf, int *vfaceids);
+  void MV_FaceIDs_R1(MVertex_ptr v, int *nvf, int *vfaceids);
+  void MV_FaceIDs_R2(MVertex_ptr v, int *nvf, int *vfaceids);
+  void MV_FaceIDs_R4(MVertex_ptr v, int *nvf, int *vfaceids);
+  static void (*MV_FaceIDs_jmp[MSTK_MAXREP])(MVertex_ptr v, int *nvf, int *vfaceids) = 
+  {MV_FaceIDs_F1, MV_FaceIDs_F4, MV_FaceIDs_R1, MV_FaceIDs_R2, 
+   MV_FaceIDs_R4};
+			
   List_ptr MV_Regions_F1(MVertex_ptr v);
   List_ptr MV_Regions_F4(MVertex_ptr v);
   List_ptr MV_Regions_R1(MVertex_ptr v);
@@ -120,6 +147,15 @@ extern "C" {
   {MV_Regions_F1, MV_Regions_F4, MV_Regions_R1, MV_Regions_R2, 
    MV_Regions_R4};
 
+  void MV_RegionIDs_F1(MVertex_ptr v, int *nvr, int *vregionids);
+  void MV_RegionIDs_F4(MVertex_ptr v, int *nvr, int *vregionids);
+  void MV_RegionIDs_R1(MVertex_ptr v, int *nvr, int *vregionids);
+  void MV_RegionIDs_R2(MVertex_ptr v, int *nvr, int *vregionids);
+  void MV_RegionIDs_R4(MVertex_ptr v, int *nvr, int *vregionids);
+  static void (*MV_RegionIDs_jmp[MSTK_MAXREP])(MVertex_ptr v, int *nvr, int *vregionids) = 
+  {MV_RegionIDs_F1, MV_RegionIDs_F4, MV_RegionIDs_R1, MV_RegionIDs_R2, 
+   MV_RegionIDs_R4};
+			
   void MV_Add_AdjVertex_F1(MVertex_ptr v, MVertex_ptr av);
   void MV_Add_AdjVertex_F4(MVertex_ptr v, MVertex_ptr av);
   void MV_Add_AdjVertex_R1(MVertex_ptr v, MVertex_ptr av);

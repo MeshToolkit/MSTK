@@ -299,9 +299,13 @@ void MSTK_Init(void);
   int         MV_Num_Faces(MVertex_ptr mvertex);
   int         MV_Num_Regions(MVertex_ptr mvertex);
   List_ptr    MV_AdjVertices(MVertex_ptr mvertex);
+  void        MV_AdjVertexIDs(MVertex_ptr mvertex, int *nvadj, int *adjvertids);
   List_ptr    MV_Edges(MVertex_ptr mvertex);
+  void        MV_EdgeIDs(MVertex_ptr mvertex, int *nve, int *vedgeids);
   List_ptr    MV_Faces(MVertex_ptr mvertex);
+  void        MV_FaceIDs(MVertex_ptr mvertex, int *nvf, int *vfaceids);
   List_ptr    MV_Regions(MVertex_ptr mvertex);
+  void        MV_RegionIDs(MVertex_ptr mvertex, int *nvr, int *vregionids);
 
 #ifdef MSTK_HAVE_MPI
 
@@ -336,10 +340,14 @@ void MSTK_Init(void);
   int         ME_Num_Faces(MEdge_ptr medge);
   int         ME_Num_Regions(MEdge_ptr medge);
   MVertex_ptr ME_Vertex(MEdge_ptr medge, int i);
-  MVertex_ptr ME_OppVertex(MEdge_ptr medge, MVertex_ptr ov);
+  int         ME_VertexID(MEdge_ptr medge, int i);
+  MVertex_ptr ME_OppVertex(MEdge_ptr medge, MVertex_ptr v);
+  int         ME_OppVertexID(MEdge_ptr medge, int vid);
   int         ME_UsesEntity(MEdge_ptr medge, MEntity_ptr mentity, int etype);
   List_ptr    ME_Faces(MEdge_ptr medge);
+  void        ME_FaceIDs(MEdge_ptr medge, int *nef, int *efaceids);
   List_ptr    ME_Regions(MEdge_ptr medge);
+  void        ME_RegionIDs(MEdge_ptr medge, int *ner, int *eregionids);
 
 
   MEdge_ptr   MVs_CommonEdge(MVertex_ptr v1, MVertex_ptr v2);  
@@ -399,9 +407,12 @@ void MSTK_Init(void);
   int         MF_Num_Vertices(MFace_ptr mface);
   int         MF_Num_Edges(MFace_ptr mface);
   int         MF_Num_AdjFaces(MFace_ptr mface);
-  List_ptr    MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr mvert);
-  List_ptr    MF_Edges(MFace_ptr mface, int dir, MVertex_ptr mvert);
+  List_ptr    MF_Vertices(MFace_ptr mface, int dir, MVertex_ptr startvert);
+  void        MF_VertexIDs(MFace_ptr mface, int dir, int startvertid, int *nfv, int *fvertids);
+  List_ptr    MF_Edges(MFace_ptr mface, int dir, MVertex_ptr startvert);
+  void        MF_EdgeIDs(MFace_ptr mface, int dir, int startvertid, int *nfe, int *fedgeids);
   List_ptr    MF_AdjFaces(MFace_ptr mface);
+  /* void        MF_AdjFaceIDs(MFace_ptr mface, int *nadjf, int *adjfaceids); */
 
   /* Returns 1 or 0 for valid queries, -1 otherwise */
   int         MF_EdgeDir(MFace_ptr mface, MEdge_ptr medge);
@@ -410,7 +421,9 @@ void MSTK_Init(void);
 
   int         MF_UsesEntity(MFace_ptr mface, MEntity_ptr mentity, int type);
   List_ptr    MF_Regions(MFace_ptr mface);
+  void        MF_RegionIDs(MFace_ptr mface, int *nfr, int *fregids);
   MRegion_ptr MF_Region(MFace_ptr mface, int side);
+  int         MF_RegionID(MFace_ptr mface, int side);
 
   MFace_ptr   MVs_CommonFace(int nv, MVertex_ptr *fverts);
   MFace_ptr   MEs_CommonFace(int ne, MEdge_ptr *fedges);
@@ -475,9 +488,14 @@ void MSTK_Init(void);
   int         MR_Num_Faces(MRegion_ptr mregion);
   int         MR_Num_AdjRegions(MRegion_ptr mregion);
   List_ptr    MR_Vertices(MRegion_ptr mregion);
+  void        MR_VertexIDs(MRegion_ptr mregion, int *nrv, int *rvertids);
   List_ptr    MR_Edges(MRegion_ptr mregion);
+  void        MR_EdgeIDs(MRegion_ptr mregion, int *nre, int *redgeids);
   List_ptr    MR_Faces(MRegion_ptr mregion);
+  void        MR_FaceIDs(MRegion_ptr mregion, int *nrf, int *rfaceids);
   List_ptr    MR_AdjRegions(MRegion_ptr mregion);
+  void        MR_AdjRegionIDs(MRegion_ptr mregion, int *nradj, int *adjregids);
+
 
   /* Returns 1 or 0 for valid queries, -1 otherwise */
   int         MR_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
@@ -641,6 +659,13 @@ void MSTK_Init(void);
   /* Low level edge split - split edge only and incorporate into adjacent
      faces/regions - works for any type of mesh */
   MVertex_ptr ME_Split(MEdge_ptr esplit, double *xyz);
+
+  /* Low level edge split with multiple points - split edge only and
+     incorporate into adjacent faces/regions - works for any type of
+     mesh. RETURN IS A LIST OF NEW EDGES. 'xyz' can be NULL in which
+     case, split points are equispaced */
+
+  List_ptr    ME_MultiSplit(MEdge_ptr esplit, int n, double (*xyz)[3]);
 
   /* High level edge split for tri/tet meshes - split all connected elements too */
   MVertex_ptr ME_Split_SimplexMesh(MEdge_ptr esplit, double *xyz);

@@ -173,6 +173,15 @@ static List_ptr (*MF_Vertices_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_pt
 {MF_Vertices_F1F3, MF_Vertices_F2F4, MF_Vertices_R1, MF_Vertices_R2, 
  MF_Vertices_R4};
 
+void MF_VertexIDs_F1F3(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+void MF_VertexIDs_F2F4(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+void MF_VertexIDs_R1(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+void MF_VertexIDs_R2(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+void MF_VertexIDs_R4(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+static void (*MF_VertexIDs_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids) =
+{MF_VertexIDs_F1F3, MF_VertexIDs_F2F4, MF_VertexIDs_R1, MF_VertexIDs_R2, 
+ MF_VertexIDs_R4};
+
 List_ptr MF_Edges_F1F3(MFace_ptr f, int dir, MVertex_ptr v);
 List_ptr MF_Edges_F2F4(MFace_ptr f, int dir, MVertex_ptr v);
 List_ptr MF_Edges_R1(MFace_ptr f, int dir, MVertex_ptr v);
@@ -180,6 +189,15 @@ List_ptr MF_Edges_R2(MFace_ptr f, int dir, MVertex_ptr v);
 List_ptr MF_Edges_R4(MFace_ptr f, int dir, MVertex_ptr v);
 static List_ptr (*MF_Edges_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, MVertex_ptr v) =
 {MF_Edges_F1F3, MF_Edges_F2F4, MF_Edges_R1, MF_Edges_R2, MF_Edges_R4};
+
+void MF_EdgeIDs_F1F3(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+void MF_EdgeIDs_F2F4(MFace_ptr f, int dir, int startvid, int *nfv, int *fvertids);
+void MF_EdgeIDs_R1(MFace_ptr f, int dir, int startvid, int *nfe, int *fedgeids);
+void MF_EdgeIDs_R2(MFace_ptr f, int dir, int startvid, int *nfe, int *fedgeids);
+void MF_EdgeIDs_R4(MFace_ptr f, int dir, int startvid, int *nfe, int *fedgeids);
+static void (*MF_EdgeIDs_jmp[MSTK_MAXREP])(MFace_ptr f, int dir, int startvid, int *nfe, int *fedgeids) =
+{MF_EdgeIDs_F1F3, MF_EdgeIDs_F2F4, MF_EdgeIDs_R1, MF_EdgeIDs_R2, 
+ MF_EdgeIDs_R4};
 
 int MF_EdgeDir_F1F3(MFace_ptr f, MEdge_ptr e);
 int MF_EdgeDir_F2F4(MFace_ptr f, MEdge_ptr e);
@@ -224,6 +242,14 @@ List_ptr MF_Regions_R4(MFace_ptr f);
 static List_ptr (*MF_Regions_jmp[MSTK_MAXREP])(MFace_ptr f) =
 {MF_Regions_F1F3, MF_Regions_F2F4, MF_Regions_R1, MF_Regions_R2, MF_Regions_R4};
 
+void MF_RegionIDs_F1F3(MFace_ptr f, int *nfr, int *fregids);
+void MF_RegionIDs_F2F4(MFace_ptr f, int *nfe, int *fregids);
+void MF_RegionIDs_R1(MFace_ptr f, int *nfe, int *fregids);
+void MF_RegionIDs_R2(MFace_ptr f, int *nfe, int *fregids);
+void MF_RegionIDs_R4(MFace_ptr f, int *nfe, int *fregids);
+static void (*MF_RegionIDs_jmp[MSTK_MAXREP])(MFace_ptr f, int *nfe, int *fregids) =
+{MF_RegionIDs_F1F3, MF_RegionIDs_F2F4, MF_RegionIDs_R1, MF_RegionIDs_R2, MF_RegionIDs_R4};
+
 MRegion_ptr MF_Region_F1F3(MFace_ptr f, int side);
 MRegion_ptr MF_Region_F2F4(MFace_ptr f, int side);
 MRegion_ptr MF_Region_R1(MFace_ptr f, int side);
@@ -231,6 +257,14 @@ MRegion_ptr MF_Region_R2(MFace_ptr f, int side);
 MRegion_ptr MF_Region_R4(MFace_ptr f, int side);
 static MRegion_ptr (*MF_Region_jmp[MSTK_MAXREP])(MFace_ptr f, int side) =
 {MF_Region_F1F3, MF_Region_F2F4, MF_Region_R1, MF_Region_R2, MF_Region_R4};
+
+int MF_RegionID_F1F3(MFace_ptr f, int side);
+int MF_RegionID_F2F4(MFace_ptr f, int side);
+int MF_RegionID_R1(MFace_ptr f, int side);
+int MF_RegionID_R2(MFace_ptr f, int side);
+int MF_RegionID_R4(MFace_ptr f, int side);
+static int (*MF_RegionID_jmp[MSTK_MAXREP])(MFace_ptr f, int side) =
+{MF_RegionID_F1F3, MF_RegionID_F2F4, MF_RegionID_R1, MF_RegionID_R2, MF_RegionID_R4};
 
 
 void MF_Dummy1(MFace_ptr f);

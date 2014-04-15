@@ -54,7 +54,7 @@ extern "C" {
   typedef void     *Hash_ptr;
 #endif
 
-typedef enum RepType {UNKNOWN_REP=-1, F1=0, F4, R1, R2, R4} RepType;
+  typedef enum RepType {F1=0, F4, R1, R2, R4, UNKNOWN_REP} RepType;
 
 typedef enum MFType {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
 typedef enum MRType {RDELETED=-1, RUNKNOWN=0, TET, PYRAMID, PRISM, HEX, POLYHED} MRType;
@@ -67,12 +67,24 @@ typedef enum MAttType {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
 
 #ifdef MSTK_HAVE_MPI  
 
-/* PINTERIOR is the interior in a submesh, no need to get broadcast 
-   POVERLAP also belongs to this submesh, but may be used as ghost entities 
-   of another processor
-   PBOUNDARY indicates processor boundary
-   PGHOST indicates ghost elements;
-*/
+/* Parallel status of entity 
+
+   PINTERIOR entity is in the interior in a submesh and is independent of any
+   other partition
+
+   POVERLAP entity may be in the partition interior or boundary and is
+   the original of a copy on another partition
+
+   PBOUNDARY indicates that an entity is on the processor boundary
+   (THIS IS A TEMPORARY FLAG THAT IS USED INTERNALLY DURING
+   CONSTRUCTION OF PARTITIONS AND HALOS. NO ENTITY WILL RETURN
+   PBOUNDARY OUTSIDE OF THE INITIAL CONSTRUCTION AND SHOULD NOT BE USED)
+
+   PGHOST indicates ghost entity on the boundary of a partition or
+   outside the partition in the halo. These types of entities must be
+   updated whenever any field variable changes on the original entity.
+
+ */
 typedef enum PType {PINTERIOR=0, POVERLAP=1, PBOUNDARY=2, PGHOST=3} PType;
 
 #endif
