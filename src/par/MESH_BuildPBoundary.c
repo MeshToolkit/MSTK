@@ -50,7 +50,7 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
 
   l2gatt = MESH_AttribByName(submesh,"Local2Global");
 
-  /* Mark all the face to be interior */
+  /* Mark all the faces to be interior */
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx)))  
     MF_Set_PType(lmf,PINTERIOR);
