@@ -112,6 +112,9 @@ extern "C" {
   /* delete recvmeshes */
   for (i = 0; i < num_recv_procs; i++) 
     MESH_Delete(recv_meshes[i]);
+  free(recv_meshes);
+
+  MESH_Delete(send_mesh);
 
   return 1;
 }
@@ -176,6 +179,9 @@ extern "C" {
   /* delete recvmeshes */
   for (i = 0; i < num_recv_procs; i++) 
     MESH_Delete(recv_meshes[i]);
+  free(recv_meshes);
+
+  MESH_Delete(send_mesh);
 
   return 1;
 

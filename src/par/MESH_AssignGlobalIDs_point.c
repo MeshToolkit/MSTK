@@ -55,9 +55,12 @@ static int vertex_on_face_boundary(MVertex_ptr mv) {
   List_ptr vedges = MV_Edges(mv);
   nve = List_Num_Entries(vedges);
   for(i = 0; i < nve; i++) {
+    List_ptr efaces;
     me = List_Entry(vedges,i);
-    if(List_Num_Entries(ME_Faces(me)) <= 1)
+    efaces = ME_Faces(me);
+    if(List_Num_Entries(efaces) <= 1)
       ok = 1;
+    List_Delete(efaces);
   }
   List_Delete(vedges);
   return ok;
@@ -73,9 +76,12 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
   List_ptr vfaces = MV_Faces(mv);
   nrf = List_Num_Entries(vfaces);
   for(i = 0; i < nrf; i++) {
+    List_ptr fregs;
     mf = List_Entry(vfaces,i);
-    if(List_Num_Entries(MF_Regions(mf)) <= 1)
+    fregs = MF_Regions(mf);
+    if(List_Num_Entries(fregs) <= 1)
       ok = 1;
+    List_Delete(fregs);
   }
   List_Delete(vfaces);
   return ok;

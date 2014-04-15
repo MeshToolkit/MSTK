@@ -112,6 +112,7 @@ extern "C" {
 	break;
       }
     }
+    List_Delete(rverts);
   }
 
   /* if the region is marked, mark its vertices, edges and faces */

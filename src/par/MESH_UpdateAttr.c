@@ -337,8 +337,9 @@ extern "C" {
     MSTK_free(list_info_recv);
     MSTK_free(list_value_int_recv);
     MSTK_free(list_value_double_recv);
+    MSTK_free(recv_procs);
     MSTK_free(recv_pos);    
-    MSTK_free(rank_g2l);    
+    MSTK_free(rank_g2l);  
     return 1;
 }
   
