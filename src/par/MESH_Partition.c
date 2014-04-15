@@ -271,7 +271,7 @@ extern "C" {
 	lmf = MF_New(submeshes[part_no]);
 	MF_Set_GEntID(lmf,MF_GEntID(gmf));
 	MF_Set_GEntDim(lmf,MF_GEntDim(gmf));
-	MF_Set_PType(lmf,PINTERIOR);
+        //	MF_Set_PType(lmf,PINTERIOR);
 	MF_Set_MasterParID(lmf,part_no);
 	MF_Set_MasterParID(gmf,part_no);
 	MF_Set_GlobalID(lmf,gfid);
@@ -484,7 +484,7 @@ extern "C" {
 	lmr = MR_New(submeshes[part_no]);
 	MR_Set_GEntID(lmr,MR_GEntID(gmr));
 	MR_Set_GEntDim(lmr,MR_GEntDim(gmr));
-	MR_Set_PType(lmr,PINTERIOR);
+        //	MR_Set_PType(lmr,PINTERIOR);
 	MR_Set_MasterParID(lmr,part_no);
 	MR_Set_MasterParID(gmr,part_no);
 	MR_Set_GlobalID(lmr,grid);
