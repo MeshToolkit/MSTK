@@ -124,11 +124,19 @@ extern "C" {
     List_Sort(mfverts1,nfv1,sizeof(MFace_ptr),compareGlobalID);
     List_Sort(mfverts2,nfv2,sizeof(MFace_ptr),compareGlobalID);
     for(i = 0; i < nfv1; i++) {
-      if ( MV_GlobalID(List_Entry(mfverts1,i)) > MV_GlobalID(List_Entry(mfverts2,i)) )
+      if ( MV_GlobalID(List_Entry(mfverts1,i)) > MV_GlobalID(List_Entry(mfverts2,i)) ) {
+        List_Delete(mfverts1);
+        List_Delete(mfverts2);
 	return 1;
-      if ( MV_GlobalID(List_Entry(mfverts1,i)) < MV_GlobalID(List_Entry(mfverts2,i)) )
+      }
+      if ( MV_GlobalID(List_Entry(mfverts1,i)) < MV_GlobalID(List_Entry(mfverts2,i)) ) {
+        List_Delete(mfverts1);
+        List_Delete(mfverts2);
 	return -1;
+      }
     }
+    List_Delete(mfverts1);
+    List_Delete(mfverts2);
     return 0;
   }
 
