@@ -174,12 +174,12 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    MV_Coords(mv,coor);
 	    if(compareCoorDouble(coor, &recv_list_coor[3*j]) != 0 ) {
 	      valid = 0;
-	      printf("the recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
-	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate value mismatch", global_id, i, rank);
+              // printf("The recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate values mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-	    if(!valid) 
-	      printf("the mismatch vertex coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+            //	    if(!valid) 
+            //	      printf("the mismatch vertex coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	  }
 	}
       }
@@ -276,12 +276,12 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    MV_Coords(mv,coor);
 	    if(compareCoorDouble(coor, &recv_list_coor[3*j]) != 0 ) {
 	      valid = 0;
-	      printf("the recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
+              //	      printf("the recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate value mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-	    if(!valid) 
-	      printf("the mismatch vertex %d coor: (%f,%f,%f)\n", MV_GlobalID(mv), coor[0], coor[1], coor[2]);
+            //	    if(!valid) 
+            //	      printf("the mismatch vertex %d coor: (%f,%f,%f)\n", MV_GlobalID(mv), coor[0], coor[1], coor[2]);
 	  }
 	}
       }
@@ -371,7 +371,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 			       sizeof(int),
 			       compareINT);
 	  if(!loc) {
-	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+            //	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	    sprintf(mesg,"Global edge %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
@@ -410,12 +410,12 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    edge_int[1] = recv_list_edge[5*j+1];
 	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
 	      valid = 0;
-	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+              //	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d endpoints mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-	    if(!valid) 
-	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
+            //	    if(!valid) 
+            //	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
 	  }
 	}
       }	
@@ -463,7 +463,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 			       sizeof(int),
 			       compareINT);
 	  if(!loc) {
-	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+            //	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	    sprintf(mesg,"Global edge %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
@@ -502,12 +502,12 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    edge_int[1] = recv_list_edge[5*j+1];
 	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
 	      valid = 0;
-	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
+              //	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d endpoints mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-	    if(!valid) 
-	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
+            //	    if(!valid) 
+            //	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
 	  }
 	}	
       }
@@ -994,7 +994,7 @@ int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank) {
     if(ME_PType(me) == PGHOST) {
       if (ME_MasterParID(me) == rank) {
 	sprintf(mesg,"Ghost Edge %-d has master partition id %d but it is on partition %d", ME_GlobalID(me), ME_MasterParID(me),rank);
-	printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), MV_GlobalID(ME_Vertex(me,0)), MV_GlobalID(ME_Vertex(me,1)));
+        //	printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), MV_GlobalID(ME_Vertex(me,0)), MV_GlobalID(ME_Vertex(me,1)));
 	MSTK_Report(funcname,mesg,MSTK_ERROR);
 	valid = 0;
       }
@@ -1003,7 +1003,7 @@ int MESH_Parallel_Check_Ghost(Mesh_ptr mesh, int rank) {
       if(ME_MasterParID(me) != rank) {
 	sprintf(mesg,"Non-Ghost Edge %-d has master partition id %d but it is on partition %d", ME_GlobalID(me), ME_MasterParID(me),rank);
 	MSTK_Report(funcname,mesg,MSTK_ERROR);
-	printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), MV_GlobalID(ME_Vertex(me,0)), MV_GlobalID(ME_Vertex(me,1)));
+        //	printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), MV_GlobalID(ME_Vertex(me,0)), MV_GlobalID(ME_Vertex(me,1)));
 	valid = 0;
       }	
     }
