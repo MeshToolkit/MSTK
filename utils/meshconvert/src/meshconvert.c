@@ -188,11 +188,14 @@ int main(int argc, char *argv[]) {
   if (inmeshformat == MSTK) {
     mesh = MESH_New(UNKNOWN_REP);
 
-    fprintf(stderr,"Reading file in MSTK format...");
+    if (rank == 0) {
 
-    ok = MESH_InitFromFile(mesh,infname,comm);
+      fprintf(stderr,"Reading file in MSTK format...");
 
-    fprintf(stderr,"Done\n");
+      ok = MESH_InitFromFile(mesh,infname,comm);
+
+      fprintf(stderr,"Done\n");
+    }
   }
   else {
     mesh = MESH_New(F1);
