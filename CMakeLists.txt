@@ -55,7 +55,9 @@ add_subdirectory(src)
 # Extra library suffix for Debug builds
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-  set (CONFIG_SUFFIX -d)
+  if (INSTALL_ADD_DEBUG_SUFFIX)
+    set (CONFIG_SUFFIX -d)
+  endif ()
   add_definitions(-DDEBUG)
 endif ()
 
