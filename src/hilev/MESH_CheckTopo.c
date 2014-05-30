@@ -51,7 +51,12 @@ extern "C" {
       gvid  = MV_GEntID(mv);
       
       vedges = MV_Edges(mv);
-      
+      if (!vedges) {
+        sprintf(mesg,"Vertex %-d does not have any connected edges\n",vid);
+        MSTK_Report(funcname,mesg,MSTK_WARN);
+        continue;
+      }
+
       idx2 = 0;
       while ((ve = List_Next_Entry(vedges,&idx2))) {
 	
