@@ -651,9 +651,18 @@ void MSTK_Init(void);
 /* Mesh Modification Operators                                         */
 /***********************************************************************/
 
-  MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2); /* v2 is deleted */
+  /* Merge vertices v1 and v2 - v2 is deleted */
+  /* topoflag = 1 means respect model topology (as given by mesh entity
+   classification) and do not allow dimensional reduction in the mesh.
+   topoflag = 0 means the caller does not care about classification
+   and would like the two faces to be merged as requested */
 
-  MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2); /* e2 is deleted */
+  MVertex_ptr MVs_Merge(MVertex_ptr v1, MVertex_ptr v2, int topoflag);
+
+  /* Merge edges e1 and e2 - e2 is deleted */
+  /* See MVs_Merge for meaning of topoflag */
+  MEdge_ptr   MEs_Merge(MEdge_ptr e1, MEdge_ptr e2, int topoflag); 
+
   int         ME_Swap2D(MEdge_ptr e, MEdge_ptr *enew, MFace_ptr fnew[2]);
 
   /* Low level edge split - split edge only and incorporate into adjacent
@@ -670,15 +679,22 @@ void MSTK_Init(void);
   /* High level edge split for tri/tet meshes - split all connected elements too */
   MVertex_ptr ME_Split_SimplexMesh(MEdge_ptr esplit, double *xyz);
 
-  MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag);
+  /* collapse out edge and delete any faces and regions connected to it */
+  /* See MVs_Merge for meaning of topoflag                              */
+  MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag,
+                          List_ptr *deleted_entities);
 
-  MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2); /* f2 is deleted */
+  /* Merge faces f1 and f2 - f2 is deleted                      */
+  /* See MVs_Merge for meaning of topoflag                      */
+  MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2, int topoflag); 
+
   MFace_ptr   MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
 
   /* Low level face split - split a face along edge connecting vertex vnew0
      and vnew1 and incorporate new faces into connected regions -
      works for any type of mesh */
-  MEdge_ptr   MF_Split_with_Edge(MFace_ptr fsplit, MVertex_ptr vnew0, MVertex_ptr vnew1);
+  MEdge_ptr   MF_Split_with_Edge(MFace_ptr fsplit, MVertex_ptr vnew0, 
+                                 MVertex_ptr vnew1);
 
   /* Low level face split - split a face at a given location, creating
      new triangular faces from the split vertex and each of the face's

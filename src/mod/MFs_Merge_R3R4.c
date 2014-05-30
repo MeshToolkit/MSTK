@@ -5,7 +5,7 @@
 
 /* Replace f2 with f1 in all the regions using f2 and delete f2 */
 
-MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
+MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2, int topoflag) {
   int i, idx, gdim, gid, dir;
   MRegion_ptr reg;
   Mesh_ptr    mesh;
@@ -22,9 +22,11 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2) {
     MSTK_Report("MFs_Merge","Faces not from same mesh - Cannot merge",MSTK_ERROR);
     return 0;
   }
-  else if (gid != MF_GEntID(f2) || gdim != MF_GEntDim(f2)) {
-    MSTK_Report("MFs_Merge","Faces not from same geometric entity - Cannot merge",MSTK_ERROR);
-    return 0;
+  else if (topoflag) { /* Make sure model topology is not violated */
+    if (gid != MF_GEntID(f2) || gdim != MF_GEntDim(f2)) {
+      MSTK_Report("MFs_Merge","Faces not from same geometric entity - Cannot merge",MSTK_ERROR);
+      return 0;
+    }
   }
   
 

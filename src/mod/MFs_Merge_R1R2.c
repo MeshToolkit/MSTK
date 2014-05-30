@@ -4,7 +4,7 @@
 #include "MSTK_private.h"
 
 
-MFace_ptr MFs_Merge_R1R2(MFace_ptr f1, MFace_ptr f2) {
+MFace_ptr MFs_Merge_R1R2(MFace_ptr f1, MFace_ptr f2, int topoflag) {
 
   /* Faces are not explicit entities in reduced representations -
      nothing to do */

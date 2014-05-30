@@ -4,7 +4,7 @@
 #include "MSTK_private.h"
 
 
-MVertex_ptr MVs_Merge_FN(MVertex_ptr v1, MVertex_ptr v2) {
+MVertex_ptr MVs_Merge_FN(MVertex_ptr v1, MVertex_ptr v2, int topoflag) {
   int idx, gdim, gid;
   MEdge_ptr   edge;
   Mesh_ptr    mesh;
@@ -18,9 +18,11 @@ MVertex_ptr MVs_Merge_FN(MVertex_ptr v1, MVertex_ptr v2) {
     MSTK_Report("MVs_Join","Vertices not from same mesh",MSTK_ERROR);
     return 0;
   }
-  else if (gid != MV_GEntID(v2) || gdim != MV_GEntDim(v2)) {
-    MSTK_Report("MFs_Join","Faces not from same geometric entity",MSTK_ERROR);
-    return 0;
+  else if (topoflag) { /* Make sure model topology is not violated */
+    if (gid != MV_GEntID(v2) || gdim != MV_GEntDim(v2)) {
+      MSTK_Report("MFs_Join","Faces not from same geometric entity",MSTK_ERROR);
+      return 0;
+    }
   }
 
   vedges2 = MV_Edges(v2);

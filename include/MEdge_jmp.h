@@ -152,9 +152,10 @@ extern "C" {
    ME_Rem_Region_R4};
 
 
-  MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2);
-  MEdge_ptr MEs_Merge_RN(MEdge_ptr e1, MEdge_ptr e2);
-  static MEdge_ptr (*MEs_Merge_jmp[MSTK_MAXREP])(MEdge_ptr e1, MEdge_ptr e2) = 
+  MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2, int topoflag);
+  MEdge_ptr MEs_Merge_RN(MEdge_ptr e1, MEdge_ptr e2, int topoflag);
+  static MEdge_ptr (*MEs_Merge_jmp[MSTK_MAXREP])(MEdge_ptr e1, MEdge_ptr e2,
+                                                 int topoflag) = 
   {MEs_Merge_FN, MEs_Merge_FN, MEs_Merge_RN, MEs_Merge_RN, MEs_Merge_RN};
 
   void ME_Lock_R1(MEdge_ptr e);

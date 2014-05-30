@@ -362,10 +362,11 @@ static void (*MF_Rem_AdjFace_jmp[MSTK_MAXREP])(MFace_ptr f, int edgnum, MFace_pt
  MF_Rem_AdjFace_R4};
 
 
-MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2);
-MFace_ptr MFs_Merge_R1R2(MFace_ptr f1, MFace_ptr f2);
-MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2);
-static MFace_ptr (*MFs_Merge_jmp[MSTK_MAXREP])(MFace_ptr f1, MFace_ptr f2) =
+MFace_ptr MFs_Merge_FN(MFace_ptr f1, MFace_ptr f2, int topoflag);
+MFace_ptr MFs_Merge_R1R2(MFace_ptr f1, MFace_ptr f2, int topoflag);
+MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2, int topoflag);
+static MFace_ptr (*MFs_Merge_jmp[MSTK_MAXREP])(MFace_ptr f1, MFace_ptr f2,
+                                               int topoflag) =
 {MFs_Merge_FN, MFs_Merge_FN, MFs_Merge_R1R2, MFs_Merge_R1R2, MFs_Merge_R3R4};
 
 
