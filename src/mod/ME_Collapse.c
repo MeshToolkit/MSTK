@@ -28,7 +28,8 @@
 /* The routine returns the retained vertex if collapse was successful   */
 
 
-MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
+MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
+                        List_ptr *deleted_entities) {
   MVertex_ptr vdel, vkeep, ev00, ev01, ev10, ev11, vert;
   MEdge_ptr edge, edge2, oldedges[3], nuedges[2];
   MFace_ptr face, face2, rface1, rface2;
@@ -48,30 +49,93 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
     vdel = ME_OppVertex(e,vkeep);
   }
 
-  if (topoflag == 1) {  /* keep topological conformity with geometric model */
-    int dimkeep, dimdel;
+  int dimkeep, dimdel;
     
-    dimkeep = MV_GEntDim(vkeep); /* Model entity dim of vertex to keep */
-    dimdel = MV_GEntDim(vdel);   /* Model entity dim  of vertex to delete */
-    
+  dimkeep = MV_GEntDim(vkeep); /* Model entity dim of vertex to keep */
+  dimdel = MV_GEntDim(vdel);   /* Model entity dim  of vertex to delete */
+  
+  if (topoflag == 1) {
     if (dimkeep == dimdel) {
+      
       if (MV_GEntID(vkeep) != MV_GEntID(vdel))
-	status = 0;                 /* cannot allow since it will cause 
-				       a dimensional reduction in mesh */
+        status = 0;                 /* cannot allow since it will cause 
+                                       a dimensional reduction in mesh */
     }
     else if (dimdel < dimkeep) {
-      status = 0;                  /* boundary of mesh will get messed up */
-
+      
       if (vkeep_in == NULL) {
-	
-	/* If no preference was indicated on which vertex to retain,
+        /* If no preference was indicated on which vertex to retain,
 	   we can collapse in the other direction */
-
-	vdel = ME_Vertex(e,1);
-	vkeep = ME_Vertex(e,0);
-	status = 1;
+        MVertex_ptr vtemp = vdel;
+	vdel = vkeep;
+	vkeep = vtemp;
       }
+      else
+        status = 0; /* can't reverse order or vertices and boundary of
+                       mesh will get messed up if we go through as is */
     }
+  }
+  else if (vkeep_in == NULL) { 
+
+    /* If no preference was indicated for the kept vertex and
+       topological conformity with the underlying geometric model was
+       not requested, we prefer to keep an external boundary vertex
+       over an interior vertex or interior boundary vertex. This is
+       because it is more likely that the external boundary vertex
+       would have a boundary condition applied to it. If a preference
+       was indicated, we just have to respect that. */
+
+    int vdel_external = 0;
+
+    /* Check if any edges connected to vdel have only one connected face */
+
+    vedges = MV_Edges(vdel);    
+
+    idx1 = 0;
+    while ((edge = (MEdge_ptr) List_Next_Entry(vedges,&idx1))) {
+      List_ptr efaces = ME_Faces(edge);
+      int nef = List_Num_Entries(efaces);
+      List_Delete(efaces);
+      if (nef < 2) {
+        vdel_external = 1;
+        break;
+      }
+    }                                          
+    
+    List_Delete(vedges);
+
+    /* check if any face connected to vdel has only one region
+       connected to it */
+
+    if (!vdel_external) {
+      vfaces = MV_Faces(vdel);
+
+      idx1 = 0;
+      while ((face = (MFace_ptr) List_Next_Entry(vfaces,&idx1))) {
+        List_ptr fregs = MF_Regions(face);
+        int nfr = fregs ? List_Num_Entries(fregs) : 0;
+        if (fregs) List_Delete(fregs);
+
+        if (nfr == 1) {
+          vdel_external = 0;
+          break;
+        }
+      }
+
+      List_Delete(vfaces);
+    }
+
+    if (vdel_external) {
+      /* swap the vertices in the hope that vkeep is not also on an
+         external boundary. Since we have to go through with the
+         collapse anyway, there is no use of doing a detailed check
+         for whether vkeep is also on an external boundary */
+
+      MVertex_ptr vtemp = vdel;
+      vdel = vkeep;
+      vkeep = vtemp;
+    }
+    
   }
 
 
@@ -79,6 +143,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
     return NULL;   /* Cannot collapse due to constraints of topological
 		   conformity with geometric model */
 
+  *deleted_entities = List_New(10);
 
   /* Need to collect this in advance because the info gets messed up later */
 
@@ -201,8 +266,10 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
 
 	} /* for (i = 0; i < nrf;.... */
 
-	if (degenerate) 
+	if (degenerate) {
+          List_Add(*deleted_entities,reg);
 	  MR_Delete(reg,0);
+        }
 
       } /* if (nrf == 4) .. else ... */
 
@@ -233,6 +300,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
           List_Delete(fregs);
         }
 
+        List_Add(*deleted_entities,face);
 	MF_Delete(face,0);
       }
 
@@ -244,6 +312,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
 
 
   /* Now merge edges which have the same end vertices */
+  /* Prefer to preserve edges on external boundaries over internal edges */
 
   vedges = MV_Edges(vkeep);
   idx1 = 0; 
@@ -262,17 +331,74 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
 
       if ((ev00 == ev10 && ev01 == ev11) ||
 	  (ev00 == ev11 && ev10 == ev01)) {
+
+        int external_edge, external_edge2;
+        int edim = 4;
 	    
-	MEs_Merge(edge,edge2);
-	
-	List_Rem(vedges,edge2);
-	
-	break;
+        external_edge = 0;
+        edim = ME_GEntDim(edge);
+        if (edim == 1 || edim == 2 || edim == 4) { /* check if external edge */
+          
+          efaces = ME_Faces(edge);
+          int nef = List_Num_Entries(efaces);
+          if (nef == 1) {
+            external_edge = 1;
+          }
+          else {
+            idx3 = 0;
+            while ((face = List_Next_Entry(efaces,&idx2))) {
+              List_ptr fregs = MF_Regions(face);
+              int nfr = fregs ? List_Num_Entries(fregs) : 0;
+              if (fregs) List_Delete(fregs);
+              if (nfr == 1) {
+                external_edge = 1;
+                break;
+              }
+            }
+          }
+          List_Delete(efaces);
+          
+        }
+    
+        external_edge2 = 0;
+        edim = ME_GEntDim(edge2);
+        if (edim == 1 || edim == 2 || edim == 4) { /* check if external edge */
+
+          efaces = ME_Faces(edge2);
+          int nef = List_Num_Entries(efaces);
+          if (nef == 1) {
+            external_edge2 = 1;
+          }
+          else {
+            idx3 = 0;
+            while ((face = List_Next_Entry(efaces,&idx2))) {
+              List_ptr fregs = MF_Regions(face);
+              int nfr = fregs ? List_Num_Entries(fregs) : 0;
+              if (fregs) List_Delete(fregs);
+              if (nfr == 1) {
+                external_edge2 = 1;
+                break;
+              }
+            }
+          }
+          List_Delete(efaces);
+          
+        }
+
+        /* If edge2 is not external or both edges are external, go
+           ahead and merge (edge2 will be deleted subject to
+           topological checks if topoflag is 1) */
+
+        if (!external_edge2 || (external_edge && external_edge2)) {
+          MEs_Merge(edge,edge2,topoflag);	
+          List_Rem(vedges,edge2);	
+          List_Add(*deleted_entities,edge2);
+          break;
+        }
       }
     }
   }
   List_Delete(vedges);
-
 
 
   /* Merge faces with the same set of edges */
@@ -312,10 +438,26 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
 	List_Delete(fedges2);
 
 	if (allfound) {
-	  MFs_Merge(face,face2);	
-	  List_Rem(vfaces,face2);
-	  break;
-	}
+
+          List_ptr fregs = MF_Regions(face);
+          int external_face = fregs ? (List_Num_Entries(fregs) == 1) : 0;
+          if (fregs) List_Delete(fregs);
+
+          List_ptr fregs2 = MF_Regions(face2);
+          int external_face2 = fregs2 ? (List_Num_Entries(fregs2) == 1) : 0;
+          if (fregs2) List_Delete(fregs2);
+
+          /* Proceed with merge (which will delete face2) only if face2 is
+             not an external face or both face and face2 are external */
+
+          if (!external_face2 || (external_face && external_face2)) {
+            MFs_Merge(face,face2,topoflag);	
+            List_Rem(vfaces,face2);
+            List_Add(*deleted_entities,face2);
+            break;
+          }
+
+        }
 	
       } /* while (face2 = List_Next_Entry(vfaces,... */
 
@@ -328,7 +470,10 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag) {
   /* Now actually delete the collapse edge and the to-be-merged vertex */
 
   ME_Delete(e,0);
+  List_Add(*deleted_entities,e);
+
   MV_Delete(vdel,0);
+  List_Add(*deleted_entities,vdel);
 
   if (eregs) {
     idx1 = 0;
