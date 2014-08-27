@@ -216,11 +216,13 @@ void MSTK_Init(void);
      distribute it to 'num' processors. The resulting mesh on my
      partition is in mymesh. If mymesh is already initialized, that
      mesh pointer is used as is and the information filled in. It is
-     safest to set mymesh to NULL*/
+     safest to set mymesh to NULL. If the del_inmesh flag is non-zero,
+     the input mesh 'globalmesh' will be deleted soon after partitioning
+     and creation of submeshes - this will save memory */
 
   int         MSTK_Mesh_Distribute(Mesh_ptr globalmesh, Mesh_ptr *mymesh, 
                                    int *topodim, int ring, int with_attr, 
-                                   int method, MSTK_Comm comm);
+                                   int method, int del_inmesh, MSTK_Comm comm);
 
 
 

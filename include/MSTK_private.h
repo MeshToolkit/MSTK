@@ -318,14 +318,32 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   /* add ghost elements */
   int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
   /* send and receive mesh */
-  int        MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, MSTK_Comm comm);
-  int        MESH_SendMesh(Mesh_ptr mesh, int torank, MSTK_Comm comm);
-  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, MSTK_Comm comm);
-  int        MESH_SendMSet(Mesh_ptr mesh, const char *attr_name, int torank, MSTK_Comm comm);
-  int        MSTK_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, int with_attr, MSTK_Comm comm);
+  int        MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, 
+                           MSTK_Comm comm, int *numreq, int *maxreq, 
+                           MPI_Request **requests,
+                           int *numptrs2free, int *maxptrs2free,
+                           void ***ptrs2free);
+  int        MESH_SendMesh(Mesh_ptr mesh, int torank, MSTK_Comm comm,
+                           int *numreq, int *maxreq, MPI_Request **requests,
+                           int *numptrs2free, int *maxptrs2free,
+                           void ***ptrs2free);
+  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, 
+                           MSTK_Comm comm, int *numreq, int *maxreq, 
+                           MPI_Request **requests,
+                           int *numptrs2free, int *maxptrs2free,
+                           void ***ptrs2free);
+  int        MESH_SendMSet(Mesh_ptr mesh, const char *attr_name, int torank, 
+                           MSTK_Comm comm, int *numreq, int *maxreq, 
+                           MPI_Request **requests,
+                           int *numptrs2free, int *maxptrs2free,
+                           void ***ptrs2free);
+  int        MSTK_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, int with_attr,
+                           MSTK_Comm comm);
   int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, MSTK_Comm comm);
-  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank, MSTK_Comm comm);
-  int        MESH_RecvMSet(Mesh_ptr mesh, const char *attr_name, int fromrank, MSTK_Comm comm);
+  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank,
+                           MSTK_Comm comm);
+  int        MESH_RecvMSet(Mesh_ptr mesh, const char *attr_name, int fromrank, 
+                           MSTK_Comm comm);
 
 
 
