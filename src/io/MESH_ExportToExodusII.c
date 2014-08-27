@@ -988,6 +988,8 @@ extern "C" {
 
       free(connect);
       free(nnpe);
+      
+      List_Delete(face_block);
     }
 
     
