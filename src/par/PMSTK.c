@@ -24,7 +24,7 @@ extern "C" {
      routine does not send the meshes to other partitions */
 
   int MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
-			  int with_attr, Mesh_ptr *submeshes) {
+			  int with_attr, int del_inmesh, Mesh_ptr *submeshes) {
     int i, j, natt, nset, idx, ival;
     double rval;
     char attr_name[256];
@@ -114,6 +114,7 @@ extern "C" {
       if (g2llist) List_Delete(g2llist);
     }	
 	
+    if (del_inmesh) MESH_Delete(mesh);
     /*
     printf("global mesh has been partitioned into %d parts\n",num);
     */
@@ -123,44 +124,66 @@ extern "C" {
 
   /* Send a mesh to a processor 'torank' with or without attributes */
 
-  int MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, MSTK_Comm comm) {
+  int MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, MSTK_Comm comm,
+                    int *numreq, int *maxreq, MPI_Request **requests,
+                    int *numptrs2free, int *maxptrs2free,
+                    void ***ptrs2free) {
     int i, natt, nset;
     char attr_name[256], mset_name[256];
     MAttrib_ptr attrib;
     MSet_ptr mset;
-
+    
+    if (requests == NULL)
+      MSTK_Report("MSTK_SendMesh","Invalid MPI request buffer",MSTK_FATAL);
+    
+    if (*maxreq == 0) {
+      *maxreq = 25;
+      *requests = (MPI_Request *) malloc(*maxreq*sizeof(MPI_Request));
+      *numreq = 0;
+    }
+    else if (*maxreq < (*numreq) + 2) {
+      *maxreq *= 2;
+      *requests = (MPI_Request *) realloc(*requests,*maxreq*sizeof(MPI_Request));
+    }
+    
+    if (ptrs2free == NULL)
+      MSTK_Report("MSTK_SendMesh","Invalid ptrs2free buffer",MSTK_FATAL);
+    
     /* Send mesh only */
-
-    MESH_SendMesh(mesh,torank,comm);
-
+    
+    MESH_SendMesh(mesh,torank,comm,numreq,maxreq,requests,numptrs2free,
+                  maxptrs2free,ptrs2free);
+    
+    
     if (!with_attr) 
       return 1;
-
+    
     /* Send attributes as well */
-
+    
     natt = MESH_Num_Attribs(mesh);
     for(i = 0; i < natt; i++) {
       attrib = MESH_Attrib(mesh,i);
       MAttrib_Get_Name(attrib,attr_name);
       /*
-      fprintf(stderr,"Sending attribute %s of type %d of entity dim %d \n",
-	      attr_name, MAttrib_Get_Type(attrib),
-	      MAttrib_Get_EntDim(attrib));
+        fprintf(stderr,"Sending attribute %s of type %d of entity dim %d \n",
+        attr_name, MAttrib_Get_Type(attrib),
+        MAttrib_Get_EntDim(attrib));
       */
-      MESH_SendAttr(mesh,attr_name,torank,comm);
+      MESH_SendAttr(mesh,attr_name,torank,comm,numreq,maxreq,requests,
+                    numptrs2free,maxptrs2free,ptrs2free);
     }
-
+    
     /* Distribute entity sets */
-
+    
     nset = MESH_Num_MSets(mesh);
     for(i = 0; i < nset; i++) {
       mset = MESH_MSet(mesh,i);
       MSet_Name(mset,mset_name);
-      MESH_SendMSet(mesh,mset_name,torank,comm);
+      MESH_SendMSet(mesh,mset_name,torank,comm,numreq,maxreq,requests,
+                    numptrs2free,maxptrs2free,ptrs2free);
     }
-
-
-    return 1;
+    
+   return 1;
   }
 
   /* Receive a mesh of dimension 'dim' from processor 'send_rank' with
@@ -180,7 +203,7 @@ extern "C" {
 
     MESH_Build_GhostLists(mesh,dim);
 
-    if(!with_attr)
+    if (!with_attr)
       return 1;
 
     /* Receive attributes as well */
@@ -232,10 +255,9 @@ extern "C" {
       *dim = MESH_Num_Regions(mesh) ? 3 : 2;
     }
 
-    MSTK_Mesh_Distribute(mesh, recv_mesh, dim, ring, with_attr, method, comm);
-
-    if (rank == 0)
-      MESH_Delete(mesh);
+    int del_inmesh = 1;
+    MSTK_Mesh_Distribute(mesh, recv_mesh, dim, ring, with_attr, method, 
+			 del_inmesh, comm);
 
     return 1;
   }
@@ -245,7 +267,8 @@ extern "C" {
   /* The rank, num and comm arguments will go away soon           */
 
   int MSTK_Mesh_Distribute(Mesh_ptr globalmesh, Mesh_ptr *mymesh, int *dim, 
-			   int ring, int with_attr, int method, MSTK_Comm comm) {
+			   int ring, int with_attr, int method, 
+			   int del_inmesh, MSTK_Comm comm) {
     int i, recv_dim;
     int *send_dim, *part;
     int rank, num;
@@ -279,9 +302,10 @@ extern "C" {
 
     if(rank == 0) {    
 
-      /* Partition the mesh*/
+      /* Partition the mesh */
       Mesh_ptr *submeshes = (Mesh_ptr *) MSTK_malloc((num)*sizeof(Mesh_ptr));
-      MSTK_Mesh_Partition(globalmesh, num, part, ring, with_attr, submeshes);
+      MSTK_Mesh_Partition(globalmesh, num, part, ring, with_attr, 
+			  del_inmesh, submeshes);
 
 #ifdef DEBUG
       fprintf(stderr,"Finished partitioning\n");
@@ -291,19 +315,67 @@ extern "C" {
 
       fprintf(stderr,"Elapsed time after creating partitions on processor %d is %lf s\n",rank,elapsed_time);
 #endif
-      
+    
+      int numreq = 0;
+      int maxreq = 25; /* should be 17*(num-1) to avoid realloc */
+      MPI_Request *requests = (MPI_Request *) malloc(maxreq*sizeof(MPI_Request));
+      int numptrs2free = 0;
+      int maxptrs2free = 25; /* should be about 12*(num-1) to avoid realloc */
+      void ** ptrs2free = (void **) malloc(maxptrs2free*sizeof(void *));
+
       for(i = 1; i < num; i++) {
 
         int torank = i;
-	MSTK_SendMesh(submeshes[i],torank,with_attr,comm);
+	MSTK_SendMesh(submeshes[i],torank,with_attr,comm,&numreq,&maxreq,
+                      &requests,&numptrs2free,&maxptrs2free,&ptrs2free);
 
 	MESH_Delete(submeshes[i]);  
-#ifdef DEBUG
-      elapsed_time = MPI_Wtime() - t0;
 
-      fprintf(stderr,"Elapsed time after sending out mesh #%-d on processor %-d is %lf s\n",i, rank, elapsed_time);
+#ifdef DEBUG
+	elapsed_time = MPI_Wtime() - t0;
+
+	fprintf(stderr,"Elapsed time after sending out mesh #%-d on processor %-d is %lf s\n",i, rank, elapsed_time);
 #endif
+
+	
+	int flag;
+
+	MPI_Testall(numreq,requests,&flag,MPI_STATUSES_IGNORE);
+	if (flag) {
+	  /* all queued requests are completed - reset the requests array 
+	     and free up memory allocated in the MESH_Send* routines */
+
+	  numreq = 0;
+	  
+	  /* free all the memory allocated in the send subroutines */
+
+	  int p;
+	  for (p = 0; p < numptrs2free; ++p) free(ptrs2free[p]); 
+	  numptrs2free = 0;
+	}
+	else {
+	  /* check if we buffered too many requests or this is the
+	   last loop iteration - if so, we wait until all the data is
+	   sent out; if not, we continue. One can control how
+	   frequently we do a blocking wait for the send requests by
+	   adjusting maxpendreq */
+
+	  int maxpendreq = 200;
+	  if (numreq > maxreqpend || i == num-1) {
+	    if (MPI_Waitall(numreq,requests,MPI_STATUSES_IGNORE) != MPI_SUCCESS)
+	      MSTK_Report("MSTK_Mesh_Distribute","Could not send mesh",
+			  MSTK_FATAL);
+	    numreq = 0;
+
+	    int p;
+	    for (p = 0; p < numptrs2free; ++p) free(ptrs2free[p]);
+	    numptrs2free = 0;
+	  }
+	    
+	}
       }
+      if (maxptrs2free) free(ptrs2free);
+      if (maxreq) free(requests);
 
       if (*mymesh == NULL)
         *mymesh = submeshes[0];
@@ -320,6 +392,7 @@ extern "C" {
       MESH_Build_GhostLists(*mymesh,*dim);
 
       free(submeshes);
+
     }
 
     if( rank > 0) {

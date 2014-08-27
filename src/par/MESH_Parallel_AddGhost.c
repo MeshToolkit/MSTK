@@ -89,22 +89,42 @@ extern "C" {
 
   /* printf(" number of recv_procs %d,on rank %d\n", num_recv_procs, rank); */
 
-  index_recv_mesh = 0;
+  int numreq = 0;
+  int maxreq = 25; /* should be 17*(num-1) but use small number for testing 
+                      realloc of the request array */
+  MPI_Request *requests = (MPI_Request *) malloc(maxreq*sizeof(MPI_Request));
+  int numptrs2free = 0;
+  int maxptrs2free = 25; /* should be about 12*(num-1) to avoid realloc */
+  void ** ptrs2free = (void **) malloc(maxptrs2free*sizeof(void *));
+
+  index_recv_mesh = 0;  
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i,comm);
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) 
-	MESH_SendMesh(send_mesh,i,comm);
+	MESH_SendMesh(send_mesh,i,comm,&numreq,&maxreq,&requests,&numptrs2free,
+                      &maxptrs2free,&ptrs2free);
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MFACE) ) 
-	MESH_SendMesh(send_mesh,i,comm);
+	MESH_SendMesh(send_mesh,i,comm,&numreq,&maxreq,&requests,&numptrs2free,
+                      &maxptrs2free,&ptrs2free);
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MFACE) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],2,i,comm);
     }
   }
+
+  MPI_Status *status = (MPI_Status *) malloc(numreq*sizeof(MPI_Status));
+  if (MPI_Waitall(numreq,requests,status) != MPI_SUCCESS)
+    MSTK_Report("MSTK_Mesh_Distribute","Problem distributing mesh",MSTK_FATAL);
+  free(requests);
+  
+  /* free all the memory allocated in sendmesh routines */
+  int p;
+  for (p = 0; p < numptrs2free; ++p) free(ptrs2free[p]);
+  
 
   /* install the recv_meshes */
   MESH_ConcatSubMesh(submesh, 2, num_recv_procs, recv_meshes);
@@ -156,6 +176,15 @@ extern "C" {
 
   /* printf(" 3D number of recv_procs %d,on rank %d\n", num_recv_procs, rank); */
 
+  int numreq = 0;
+  int maxreq = 25; /* should be 17*(num-1) but use small number for testing 
+                      realloc of the request array */
+  MPI_Request *requests = (MPI_Request *) malloc(maxreq*sizeof(MPI_Request));
+
+  int numptrs2free = 0;
+  int maxptrs2free = 25; /* should be about 12*(num-1) to avoid realloc */
+  void ** ptrs2free = (void **) malloc(maxptrs2free*sizeof(void *));
+
   index_recv_mesh = 0;
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
@@ -163,16 +192,28 @@ extern "C" {
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i,comm);
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) 
-	MESH_SendMesh(send_mesh,i,comm);
+	MESH_SendMesh(send_mesh,i,comm,&numreq,&maxreq,&requests,&numptrs2free,
+                      &maxptrs2free,&ptrs2free);
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MREGION) ) 
-	MESH_SendMesh(send_mesh,i,comm);
+	MESH_SendMesh(send_mesh,i,comm,&numreq,&maxreq,&requests,&numptrs2free,
+                      &maxptrs2free,&ptrs2free);
       if( MESH_Has_Ghosts_From_Prtn(submesh,i,MREGION) ) 
 	MESH_RecvMesh(recv_meshes[index_recv_mesh++],3,i,comm);
     }
   }
   
+  MPI_Status *status = (MPI_Status *) malloc(numreq*sizeof(MPI_Status));
+  if (MPI_Waitall(numreq,requests,status) != MPI_SUCCESS)
+    MSTK_Report("MSTK_Mesh_Distribute","Problem distributing mesh",MSTK_FATAL);
+  free(requests);
+  
+  /* free all the memory allocated in sendmesh routines */
+  int p;
+  for (p = 0; p < numptrs2free; ++p) free(ptrs2free[p]);
+  
+
   /* concatenate the recv_meshes */
   MESH_ConcatSubMesh(submesh, 3, num_recv_procs, recv_meshes);
 

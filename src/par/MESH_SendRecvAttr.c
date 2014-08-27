@@ -11,128 +11,166 @@ extern "C" {
 
   /* 
      this function send attributes
-
+     
      Used only when distributing mesh, for communication, use MESH_UpdateAttr()
      caller should be the root processor, and recv processor call MESH_RecvAttr()
      
      attr_name: the name of the attribute 
-
+     
      Author(s): Rao Garimella
   */
-  int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, MSTK_Comm comm) {
-  int j, k;
-  int num, ncomp, ival;
-  double rval;
-  void *pval;
-  double *rval_arr;
-  int *list_info;
-
-  MType mtype;
-  MAttType att_type;
-  MEntity_ptr ment;
-  MAttrib_ptr attrib;
-
-  int nreq=0;
-  MPI_Request request[5];
-  MPI_Status  status[5];
-
-
-  attrib = MESH_AttribByName(mesh,attr_name);
-  /* if there is no such attribute */
-  if(!attrib) {
-    MSTK_Report("MESH_SendAttr","There is no such attribute",MSTK_ERROR);
-    printf("attribute name %s\n",attr_name);
-    return 0;
-  }
-  /* get attribute properties */
-  att_type = MAttrib_Get_Type(attrib);
-  ncomp = MAttrib_Get_NumComps(attrib);
-  mtype = MAttrib_Get_EntDim(attrib);
   
-  /* attribute entity type, used before ghost list established, so no ghost */
-  switch (mtype) {
-  case MVERTEX:
-    num = MESH_Num_Vertices(mesh);
-    break;
-  case MEDGE:
-    num = MESH_Num_Edges(mesh);
-    break;
-  case MFACE:
-    num = MESH_Num_Faces(mesh);
-    break;
-  case MREGION:
-    num = MESH_Num_Regions(mesh);
-    break;
-  default:
-    num = 0;
-#ifdef DEBUG2
-    MSTK_Report("MESH_SendAttr()","Cannot send attributes on entity type MALLTYPE",MSTK_WARN);
-#endif
-    return 0;
-  }
+  int MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, 
+                    MSTK_Comm comm, int *numreq, int *maxreq, 
+                    MPI_Request **requests,
+                    int *numptrs2free, int *maxptrs2free,
+                    void ***ptrs2free) {
+    int j, k;
+    int num, ncomp, ival;
+    double rval;
+    void *pval;
+    double *rval_arr;
+    int *list_info;
+
+    MType mtype;
+    MAttType att_type;
+    MEntity_ptr ment;
+    MAttrib_ptr attrib;
+    MPI_Request mpirequest;
+
+    if (requests == NULL)
+      MSTK_Report("MSTK_SendMSet","Invalid MPI request buffer",MSTK_FATAL);
+  
+    if (*maxreq == 0) {
+      *maxreq = 25;
+      *requests = (MPI_Request *) malloc(*maxreq*sizeof(MPI_Request));
+      *numreq = 0;
+    }
+    else if (*maxreq < (*numreq) + 2) {
+      *maxreq *= 2;
+      *requests = (MPI_Request *) realloc(*requests,*maxreq*sizeof(MPI_Request));
+    }
+  
+    attrib = MESH_AttribByName(mesh,attr_name);
     
-  /* attribute index and global id */ 
-  list_info = (int *)MSTK_malloc(num*sizeof(int));
-  /* attribute values */
-  int *list_value_int = (int *)MSTK_malloc(num*ncomp*sizeof(int));
-  double *list_value_double = (double *)MSTK_malloc(num*ncomp*sizeof(double));
+    if (!attrib) { /* if there is no such attribute */
+      MSTK_Report("MESH_SendAttr","There is no such attribute",MSTK_ERROR);
+      printf("attribute name %s\n",attr_name);
+      return 0;
+    }
+
+    /* get attribute properties */
+    att_type = MAttrib_Get_Type(attrib);
+    ncomp = MAttrib_Get_NumComps(attrib);
+    mtype = MAttrib_Get_EntDim(attrib);
   
-  /* collect data */
-  for(j = 0; j < num; j++) {
+    /* attribute entity type, used before ghost list established, so no ghost */
     switch (mtype) {
     case MVERTEX:
-      ment = MESH_Vertex(mesh,j);
+      num = MESH_Num_Vertices(mesh);
       break;
     case MEDGE:
-      ment = MESH_Edge(mesh,j);
+      num = MESH_Num_Edges(mesh);
       break;
     case MFACE:
-      ment = MESH_Face(mesh,j);
+      num = MESH_Num_Faces(mesh);
       break;
     case MREGION:
-      ment = MESH_Region(mesh,j);
+      num = MESH_Num_Regions(mesh);
       break;
     default:
-      MSTK_Report("MESH_SendAttr()","Invalid entity type",MSTK_WARN);
+      num = 0;
+#ifdef DEBUG2
+      MSTK_Report("MESH_SendAttr()","Cannot send attributes on entity type MALLTYPE",MSTK_WARN);
+#endif
       return 0;
     }
     
-    MEnt_Get_AttVal(ment,attrib,&ival,&rval,&pval);
+    /* attribute index and global id */ 
+    list_info = (int *) malloc(num*sizeof(int));
 
-    list_info[j] = MEnt_GlobalID(ment);
+    /* attribute values */
+    int *list_value_int = NULL;
+    double *list_value_double = NULL;
     if (att_type == INT)
-      list_value_int[j] = ival;
-    else {
-      if(ncomp == 1)
-	list_value_double[j] = rval;
-      if(ncomp > 1) {
-	rval_arr = (double *)pval;
-	for(k = 0; k < ncomp; k++)
-	  list_value_double[ncomp*j+k] = rval_arr[k];
+      list_value_int = (int *) malloc(num*ncomp*sizeof(int));
+    else
+      list_value_double = (double *) malloc(num*ncomp*sizeof(double));
+  
+    /* collect data */
+    for(j = 0; j < num; j++) {
+      switch (mtype) {
+      case MVERTEX:
+        ment = MESH_Vertex(mesh,j);
+        break;
+      case MEDGE:
+        ment = MESH_Edge(mesh,j);
+        break;
+      case MFACE:
+        ment = MESH_Face(mesh,j);
+        break;
+      case MREGION:
+        ment = MESH_Region(mesh,j);
+        break;
+      default:
+        MSTK_Report("MESH_SendAttr()","Invalid entity type",MSTK_WARN);
+        return 0;
+      }
+    
+      MEnt_Get_AttVal(ment,attrib,&ival,&rval,&pval);
+
+      list_info[j] = MEnt_GlobalID(ment);
+      if (att_type == INT)
+        list_value_int[j] = ival;
+      else {
+        if(ncomp == 1)
+          list_value_double[j] = rval;
+        if(ncomp > 1) {
+          rval_arr = (double *)pval;
+          for(k = 0; k < ncomp; k++)
+            list_value_double[ncomp*j+k] = rval_arr[k];
+        }
       }
     }
+  
+    /* send info */
+    MPI_Isend(list_info,num,MPI_INT,torank,torank,comm,&mpirequest);
+    (*requests)[*numreq] = mpirequest;
+    (*numreq)++;
+
+    /* send value */
+    if (att_type == INT) {
+      MPI_Isend(list_value_int,num*ncomp,MPI_INT,torank,torank,comm,&mpirequest);
+      (*requests)[*numreq] = mpirequest;
+    }
+    else {
+      MPI_Isend(list_value_double,num*ncomp,MPI_DOUBLE,torank,torank,comm,
+                &mpirequest);
+      (*requests)[*numreq] = mpirequest;
+    }
+    (*numreq)++;
+
+    /* release the send buffer */
+    int nptrs = 2;
+
+    if (*maxptrs2free == 0) {
+      *maxptrs2free = 25;
+      *ptrs2free = (void **) malloc(*maxptrs2free*sizeof(void *));
+      *numptrs2free = 0;
+    }
+    else if (*maxptrs2free < (*numptrs2free) + 3) {
+      *maxptrs2free *= 2;
+      *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
+    }
+
+    (*ptrs2free)[(*numptrs2free)++] = list_info;
+    if (att_type == INT) 
+      (*ptrs2free)[(*numptrs2free)++] = list_value_int;  
+    else
+      (*ptrs2free)[(*numptrs2free)++] = list_value_double;
+
+    return 1;
   }
-  
-  /* send info */
-  MPI_Isend(list_info,num,MPI_INT,torank,torank,comm,&(request[nreq]));
-  nreq++;
-  /* send value */
-  if (att_type == INT)
-    MPI_Isend(list_value_int,num*ncomp,MPI_INT,torank,torank,comm,&(request[nreq]));
-  else
-    MPI_Isend(list_value_double,num*ncomp,MPI_DOUBLE,torank,torank,comm,&(request[nreq]));
-  nreq++;
-
-  if (MPI_Waitall(nreq,request,status) != MPI_SUCCESS)
-    MSTK_Report("MESH_SendAttr","Trouble sending mesh attributes",MSTK_FATAL);
-
-  /* release the send buffer */
-  MSTK_free(list_info);
-  MSTK_free(list_value_int);
-  MSTK_free(list_value_double);
-  
-  return 1;
-}
 
 
   /* 
@@ -157,6 +195,7 @@ extern "C" {
   MAttrib_ptr attrib;
   MPI_Request request;
   MPI_Status status;
+  int result;
   
   int rank;
   MPI_Comm_rank(comm,&rank);
@@ -195,31 +234,25 @@ extern "C" {
   }
 
   /* receive info */
-  list_info = (int *)MSTK_malloc((num)*sizeof(int));
-  MPI_Irecv(list_info,num,MPI_INT,fromrank,rank,comm,&request);
-  if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+  list_info = (int *) malloc((num)*sizeof(int));
+  result = MPI_Recv(list_info,num,MPI_INT,fromrank,rank,comm,&status);
+  if (result != MPI_SUCCESS)
     MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);
 
-  MPI_Get_count(&status,MPI_INT,&count);
-  assert((num)==count);
   /* printf("received %d attributes of attribute index %d in MESH_RecvAttr() from rank %d on rank %d\n",count,attr_index,fromrank,rank); */
 
-  list_value_int = (int *)MSTK_malloc((num)*ncomp*sizeof(int));
-  list_value_double = (double *)MSTK_malloc(num*ncomp*sizeof(double));
+  list_value_int = (int *) malloc((num)*ncomp*sizeof(int));
+  list_value_double = (double *) malloc(num*ncomp*sizeof(double));
   /* reveive value */
   if (att_type == INT) {
-    MPI_Irecv(list_value_int,(num)*ncomp,MPI_INT,fromrank,rank,comm, &request);
-    if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+    result = MPI_Recv(list_value_int,(num)*ncomp,MPI_INT,fromrank,rank,comm, &status);
+    if (result != MPI_SUCCESS)
       MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);    
-    MPI_Get_count(&status,MPI_INT,&count);
-    assert(num*ncomp==count);
   }
   else {
-    MPI_Irecv(list_value_double,num*ncomp,MPI_DOUBLE,fromrank,rank,comm, &request);
-    if (MPI_Wait(&request,&status) != MPI_SUCCESS)
+    result = MPI_Recv(list_value_double,num*ncomp,MPI_DOUBLE,fromrank,rank,comm, &status);
+    if (result != MPI_SUCCESS)
       MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);    
-    MPI_Get_count(&status,MPI_DOUBLE,&count);
-    assert(ncomp*num==count);
   }
 
   /* associate attributes with entities */  
@@ -258,7 +291,7 @@ extern "C" {
           for (k = 0; k < ncomp; k++)
             if (list_value_double[j*ncomp+k] != 0) nullval = 0;
           if (!nullval) {
-            rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
+            rval_arr = (double *) malloc(ncomp*sizeof(double));
             for(k = 0; k < ncomp; k++)
               rval_arr[k] = list_value_double[j*ncomp+k];
           }
@@ -269,9 +302,9 @@ extern "C" {
     MEnt_Set_AttVal(ment,attrib,ival,rval,(void*) rval_arr);
   }
   
-  MSTK_free(list_info);
-  MSTK_free(list_value_int);
-  MSTK_free(list_value_double);
+   free(list_info);
+   free(list_value_int);
+   free(list_value_double);
 
   return 1;
 }

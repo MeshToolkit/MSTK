@@ -49,6 +49,8 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
   
   if (num == 1) {
     *part = (int *) calloc(ncells,sizeof(int)); /* will initialize to 0 */
+    for (i = 0; i < 10; ++i) free(options[i]);
+    free(options);
     return 1;
   }
 
