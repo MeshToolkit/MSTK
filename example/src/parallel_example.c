@@ -70,10 +70,9 @@ int main(int argc, char *argv[]) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int method = 0; /* Use Metis as the partitioner */
-  MSTK_Mesh_Distribute(mesh, &mymesh, &dim, ring, with_attr, method, comm); 
-
-  if (rank == 0)
-    MESH_Delete(mesh);
+  int del_inmesh = 1; /* Delete input mesh after partitioning */
+  MSTK_Mesh_Distribute(mesh, &mymesh, &dim, ring, with_attr, method, 
+		       del_inmesh, comm); 
 
   /* Can just do this too */
 

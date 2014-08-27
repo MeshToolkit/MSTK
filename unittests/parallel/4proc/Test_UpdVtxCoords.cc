@@ -44,6 +44,7 @@ TEST(VertexUpdate2D) {
 
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
+  int del_inmesh = 1; /* Delete input mesh after partitioning */
   int method;
 #if defined (_MSTK_HAVE_METIS)
   method = 0;
@@ -56,9 +57,10 @@ TEST(VertexUpdate2D) {
 #endif
 
   mesh = NULL;
-  status = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method, comm);
+  status = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method, 
+				del_inmesh, comm);
 
-  if (rank == 0) MESH_Delete(mesh0);
+  /* if (rank == 0) MESH_Delete(mesh0); */
 
   MAttrib_ptr xyzatt;
   xyzatt = MAttrib_New(mesh,"xyzatt",VECTOR,MVERTEX,3);

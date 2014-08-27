@@ -66,8 +66,9 @@ TEST(Partition3D_sym_0ring_METIS) {
   mymesh = NULL;
   int num_ghost_layers = 0;
   int with_attr = 0;
+  int del_inmesh = 1;
   status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
-                                with_attr, method, comm);
+                                with_attr, method, del_inmesh, comm);
 
   CHECK(status);
 
@@ -109,7 +110,9 @@ TEST(Partition3D_sym_0ring_METIS) {
 
   MESH_Delete(mymesh);
 
+  /*
   if (rank == 0) MESH_Delete(globalmesh);    
+  */
 
   return;
 }
@@ -176,8 +179,9 @@ TEST(Partition3D_sym_1ring_METIS) {
   mymesh = NULL;
   int num_ghost_layers = 1;
   int with_attr = 0;
-  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, with_attr, 
-                                method, comm);
+  int del_inmesh = 1;
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
+				with_attr, method, del_inmesh, comm);
   
   CHECK(status);
   
@@ -218,8 +222,10 @@ TEST(Partition3D_sym_1ring_METIS) {
   CHECK_EQUAL(expnv[rank],nv);
   
   MESH_Delete(mymesh);
-  
+
+  /*
   if (rank == 0) MESH_Delete(globalmesh);
+  */
 
   return;
 }
@@ -289,8 +295,9 @@ TEST(Partition3D_sym_0ring_ZOLTAN_GRAPH) {
   mymesh = NULL;
   int num_ghost_layers = 0;
   int with_attr = 0;
+  int del_inmesh = 1;
   status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
-                                with_attr, method, comm);
+                                with_attr, method, del_inmesh, comm);
 
   CHECK(status);
 
@@ -332,7 +339,9 @@ TEST(Partition3D_sym_0ring_ZOLTAN_GRAPH) {
 
   MESH_Delete(mymesh);
 
+  /*
   if (rank == 0) MESH_Delete(globalmesh);    
+  */
 
   return;
 }
@@ -399,8 +408,9 @@ TEST(Partition3D_sym_1ring_ZOLTAN_GRAPH) {
   mymesh = NULL;
   int num_ghost_layers = 1;
   int with_attr = 0;
-  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, with_attr, 
-                                method, comm);
+  int del_inmesh = 1;
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
+				with_attr, method, del_inmesh, comm);
   
   CHECK(status);
   
@@ -442,7 +452,7 @@ TEST(Partition3D_sym_1ring_ZOLTAN_GRAPH) {
   
   MESH_Delete(mymesh);
   
-  if (rank == 0) MESH_Delete(globalmesh);
+  /* if (rank == 0) MESH_Delete(globalmesh); */
 
   return;
 }
@@ -516,8 +526,9 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
   mymesh = NULL;
   int num_ghost_layers = 0;
   int with_attr = 0;
+  int del_inmesh = 1;
   status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
-                                with_attr, method, comm);
+                                with_attr, method, del_inmesh, comm);
 
   CHECK(status);
 
@@ -559,7 +570,7 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
 
   MESH_Delete(mymesh);
 
-  if (rank == 0) MESH_Delete(globalmesh);    
+  /* if (rank == 0) MESH_Delete(globalmesh); */
 
   return;
 }

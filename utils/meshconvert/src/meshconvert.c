@@ -15,14 +15,15 @@ typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;
-  int len, ok, build_classfn=1, partition=0, weave=0, use_geometry=0;
+  int len, ok;
+  int build_classfn=1, partition=0, weave=0, use_geometry=0, parallel_check=0;
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
 
 
   if (argc < 3) {
     fprintf(stderr,"\n");
-    fprintf(stderr,"usage: meshconvert <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n\n");
+    fprintf(stderr,"usage: meshconvert <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n\n");
     fprintf(stderr,"partition-method = 0, METIS\n");
     fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
     fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
@@ -65,13 +66,13 @@ int main(int argc, char *argv[]) {
     int i;
     for (i = 1; i < argc-2; i++) {
       if (strncmp(argv[i],"--classify",10) == 0) {
-        if (strncmp(argv[i],"--classify=y",12) == 0 ||
-            strncmp(argv[i],"--classify=1",12) == 0)
+        if (strncmp(argv[i]+11,"y",1) == 0 ||
+            strncmp(argv[i]+11,"1",1) == 0)
           build_classfn = 1;
-        else if (strncmp(argv[i],"--classify=n",12) == 0 ||
-                 strncmp(argv[i],"--classify=0",12) == 0)
+        else if (strncmp(argv[i]+11,"n",1) == 0 ||
+                 strncmp(argv[i]+11,"0",1) == 0)
           build_classfn = 0;
-        else if (strncmp(argv[i],"--classify=2",12) == 0) {
+        else if (strncmp(argv[i]+11,"2",1) == 0) {
           build_classfn = 1;
           use_geometry = 1;
         }
@@ -81,22 +82,31 @@ int main(int argc, char *argv[]) {
                       MSTK_FATAL);          
            
       }
-      else if (strncmp(argv[i],"--partition",11) == 0 &&
-               strncmp(argv[i],"--partition-method",18) != 0) {
-        if (strncmp(argv[i],"--partition=y",13) == 0 ||
-            strncmp(argv[i],"--partition=1",13) == 1)
+      else if (strncmp(argv[i],"--partition=",12) == 0) {
+        if (strncmp(argv[i]+12,"y",1) == 0 ||
+            strncmp(argv[i]+12,"1",1) == 0)
           partition = 1;
-        else if (strncmp(argv[i],"--partition=n",13) == 0 ||
-                 strncmp(argv[i],"--partition=0",13) == 1) 
+        else if (strncmp(argv[i]+12,"n",1) == 0 ||
+                 strncmp(argv[i]+12,"0",1) == 0) 
           partition = 0;
-        else 
+        else
           MSTK_Report("meshconvert",
                       "--partition option should be y, n, 1 or 0",
                       MSTK_FATAL);          
       }
-      else if (strncmp(argv[i],"--partition-method",18) == 0) {
+      else if (strncmp(argv[i],"--partition-method",18) == 0 ||
+               strncmp(argv[i],"--partition_method",18) == 0) {
         sscanf(argv[i]+19,"%d",&partmethod);
         partition = 1;
+      }
+      else if (strncmp(argv[i],"--parallel-check",16) == 0 ||
+               strncmp(argv[i],"--parallel_check",16) == 0) {
+        if (strncmp(argv[i]+17,"y",1) == 0 ||
+            strncmp(argv[i]+17,"1",1) == 1)
+          parallel_check = 1;
+        else if (strncmp(argv[i]+17,"n",13) == 0 ||
+                 strncmp(argv[i]+17,"0",13) == 0) 
+          parallel_check = 0;
       }
       else if (strncmp(argv[i],"--weave",7) == 0) {
         if (strncmp(argv[i],"--weave=y",11) == 0 ||
@@ -307,9 +317,10 @@ int main(int argc, char *argv[]) {
       
       int ring = 0; /* No ghost ring of elements */
       int with_attr = 1; /* Do allow exchange of attributes */
-      
+      int del_inmesh = 1; /* Delete input mesh after partitioning */
+
       int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
-                                    partmethod, comm);
+                                    partmethod, del_inmesh, comm);
       
       if (rank == 0) {
         if (ok)
@@ -320,8 +331,9 @@ int main(int argc, char *argv[]) {
         }
       }
 
-      if (rank == 0)
-        MESH_Delete(mesh0);
+      /*      if (rank == 0)
+	      MESH_Delete(mesh0);
+      */
 
     }    
   }
@@ -330,7 +342,7 @@ int main(int argc, char *argv[]) {
 
 
 #ifdef MSTK_HAVE_MPI
-  if (numprocs > 1) {
+  if (numprocs > 1 && parallel_check == 1) {
 
     /* Do a parallel consistency check too */
 

@@ -119,13 +119,16 @@ TEST(Partition2D_0ring) {
   mymesh = NULL;
   num_ghost_layers = 0;
   with_attr = 1;
-  status = MSTK_Mesh_Distribute(globalmesh,&mymesh, &dim, num_ghost_layers, with_attr, method, comm);
+  int del_inmesh = 1;
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
+				with_attr, method, del_inmesh, comm);
 
   CHECK(status);
 
-
+  /*
   if (rank == 0)
     MESH_Delete(globalmesh);
+  */
 
 
   status = MESH_Parallel_Check(mymesh, comm);
@@ -329,13 +332,16 @@ TEST(Partition2D_1ring) {
   mymesh = NULL;
   num_ghost_layers = 1;
   with_attr = 1;
-  status = MSTK_Mesh_Distribute(globalmesh,&mymesh, &dim, num_ghost_layers, with_attr, method, comm);
+  int del_inmesh = 1;
+  status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
+				with_attr, method, del_inmesh, comm);
 
   CHECK(status);
 
-
+  /*
   if (rank == 0)
     MESH_Delete(globalmesh);
+  */
 
 
   status = MESH_Parallel_Check(mymesh, comm);
