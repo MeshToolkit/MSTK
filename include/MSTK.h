@@ -260,7 +260,8 @@ void MSTK_Init(void);
   int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, 
                                    MPI_Comm comm);
   int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
-	                         int with_attr, Mesh_ptr *submeshes);
+	                         int with_attr, int del_inmesh,
+                                 Mesh_ptr *submeshes);
 
 #endif /* MSTK_HAVE_MPI */
 
