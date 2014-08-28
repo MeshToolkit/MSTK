@@ -155,10 +155,11 @@ extern "C" {
         globalmesh = NULL;
       
       int with_attr = 1;      
-
+      int del_inmesh = 1;
       int dist_status = MSTK_Mesh_Distribute(globalmesh, &mesh, &topodim, 
                                              num_ghost_layers,
-                                             with_attr, part_method, comm);
+                                             with_attr, part_method, 
+                                             del_inmesh, comm);
       if (!dist_status)
         MSTK_Report(funcname,
                     "Could not distribute meshes to other processors",
