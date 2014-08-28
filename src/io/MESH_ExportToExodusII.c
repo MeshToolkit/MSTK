@@ -94,7 +94,7 @@ extern "C" {
 
 
 #ifdef MSTK_HAVE_MPI
-    if (comm != NULL) {
+    if (comm != MPI_COMM_NULL) {
       MPI_Comm_size(comm,&numprocs);
       MPI_Comm_rank(comm,&rank);
       
@@ -173,7 +173,7 @@ extern "C" {
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx = 0;
       while ((mr = MESH_Next_Region(mesh,&idx))) {
-        if (comm == NULL || MR_PType(mr) != PGHOST) {
+        if (comm == MPI_COMM_NULL || MR_PType(mr) != PGHOST) {
           MEnt_Mark(mr,ownedmk);
           nr++;
             
@@ -232,7 +232,7 @@ extern "C" {
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx2 = 0;
       while ((mf = (MFace_ptr) MESH_Next_Face(mesh,&idx2))) {
-        if (comm == NULL || MF_PType(mf) != PGHOST) {
+        if (comm == MPI_COMM_NULL || MF_PType(mf) != PGHOST) {
           MEnt_Mark(mf,ownedmk);
           nf++;
           
