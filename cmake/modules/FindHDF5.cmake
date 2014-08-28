@@ -271,7 +271,7 @@ if ( HDF5_NO_SYSTEM_PATHS )
 endif()
 
 # A list of valid components
-set(HDF5_VALID_COMPONENTS C CXX HL)
+set(HDF5_VALID_COMPONENTS HL C CXX)
 
 # A list of requested components, invalid components are ignored.
 if ( NOT HDF5_FIND_COMPONENTS )
@@ -344,7 +344,7 @@ else()
       endforeach()
 
       # Define HDF5_C_LIBRARIES to contain hdf5 and hdf5_hl C libraries
-      set(HDF5_C_LIBRARIES ${HDF5_C_LIBRARY} ${HDF5_HL_LIBRARY})
+      set(HDF5_C_LIBRARIES ${HDF5_HL_LIBRARY} ${HDF5_CLIBRARY})
 
     endif(HDF5_FOUND)  
     
@@ -456,12 +456,12 @@ else()
 
     # Define the HDF5_LIBRARIES variable
     set(HDF5_LIBRARY_TARGETS
-        ${HDF5_C_LIBRARY}
         ${HDF5_HL_LIBRARY}
+        ${HDF5_C_LIBRARY}
 	${HDF5_CXX_LIBRARY})
 
     # Define the HDF5_C_LIBRARIES variable
-    set(HDF5_C_LIBRARIES ${HDF5_C_LIBRARY} ${HDF5_HL_LIBRARY})
+    set(HDF5_C_LIBRARIES ${HDF5_HL_LIBRARY} ${HDF5_C_LIBRARY})
 
     # HDF5 and extra libraries listed as full paths rather than 
     # libraries for the purposes of exporting
