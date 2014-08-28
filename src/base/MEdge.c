@@ -425,7 +425,7 @@ extern "C" {
   
   void ME_Set_NextInHash(MEdge_ptr e, MEdge_ptr next) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) e);
-    return ME_Set_NextInHash_jmp[RTYPE](e, next);
+    ME_Set_NextInHash_jmp[RTYPE](e, next);
   }
 
   void ME_HashKey(MEdge_ptr e, unsigned int *pn, void* **pp) {

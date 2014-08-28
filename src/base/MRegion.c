@@ -165,7 +165,7 @@ extern "C" {
 
   void MR_Update_ElementType(MRegion_ptr r) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
-    return (*MR_Update_ElementType_jmp[RTYPE])(r);
+    (*MR_Update_ElementType_jmp[RTYPE])(r);
   }
 
   int MR_Num_Vertices(MRegion_ptr r) {
@@ -228,7 +228,7 @@ extern "C" {
 
   void MR_VertexIDs(MRegion_ptr r, int *nrv, int *rvertids) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
-    return (*MR_VertexIDs_jmp[RTYPE])(r,nrv,rvertids);
+    (*MR_VertexIDs_jmp[RTYPE])(r,nrv,rvertids);
   }
 
   List_ptr MR_Edges(MRegion_ptr r) {
@@ -238,7 +238,7 @@ extern "C" {
 
   void MR_EdgeIDs(MRegion_ptr r, int *nre, int *redgeids) {
     RepType RTYPE = MEnt_RepType((MEntity_ptr) r);
-    return (*MR_EdgeIDs_jmp[RTYPE])(r,nre,redgeids);
+    (*MR_EdgeIDs_jmp[RTYPE])(r,nre,redgeids);
   }
 
   List_ptr MR_Faces(MRegion_ptr r) {
