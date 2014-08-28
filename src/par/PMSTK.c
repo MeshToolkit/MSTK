@@ -361,7 +361,7 @@ extern "C" {
 	   adjusting maxpendreq */
 
 	  int maxpendreq = 200;
-	  if (numreq > maxreqpend || i == num-1) {
+	  if (numreq > maxpendreq || i == num-1) {
 	    if (MPI_Waitall(numreq,requests,MPI_STATUSES_IGNORE) != MPI_SUCCESS)
 	      MSTK_Report("MSTK_Mesh_Distribute","Could not send mesh",
 			  MSTK_FATAL);
