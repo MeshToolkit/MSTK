@@ -165,8 +165,6 @@ extern "C" {
                     "Could not distribute meshes to other processors",
                     MSTK_FATAL);
       
-      if (rank == 0)
-        MESH_Delete(globalmesh);
     }
     else if (parallel_opts[1] == 1) {
 
