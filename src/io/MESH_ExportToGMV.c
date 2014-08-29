@@ -82,7 +82,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   int rank=0, numprocs=1;
 #ifdef MSTK_HAVE_MPI
-  if (comm != MPI_COMM_NULL) {
+  if (comm != 0 && comm != MPI_COMM_NULL) {
     MPI_Comm_size(comm,&numprocs);
     MPI_Comm_rank(comm,&rank);
   }
