@@ -99,7 +99,7 @@ extern "C" {
                             void ***ptrs2free) {
     int i, j, nv, ne, nf, nevs, nfes, nfv, natt, nset, ncomp, dir;
     int nfe;
-    int *mesh_info;
+    int mesh_info[10];
     MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
@@ -132,30 +132,40 @@ extern "C" {
     }
   
 
-    mesh_info = (int *) malloc(10*sizeof(int));
-    for (i = 0; i < 10; i++) mesh_info[i] = 0;
-
     /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
+
     rtype = MESH_RepType(mesh);
     nv = MESH_Num_Vertices(mesh);
     ne = MESH_Num_Edges(mesh);
     nf = MESH_Num_Faces(mesh);
 
+    /* some other known quantitites - 5 items per edge (2 for verts
+       and 3 for extra data), MAXPV2+4 items per face (1 for number of
+       edges, MAXPV2 for edge indices, anad 3 for extra data) */
+
+    nevs = (2+3)*ne;  
+    nfes = (1 + MAXPV2 + 3)*nf;
+    
     mesh_info[0] = rtype;
     mesh_info[1] = nv;
     mesh_info[2] = ne;
     mesh_info[3] = nf;
     mesh_info[4] = 0;
-    mesh_info[5] = natt;
-    mesh_info[6] = nset;
+    mesh_info[5] = nevs;
+    mesh_info[6] = nfes;
+    mesh_info[7] = 0;
+    mesh_info[8] = natt;
+    mesh_info[9] = nset;
 
 
     /* Send some global mesh info */
 
-    MPI_Isend(mesh_info,7,MPI_INT,torank,torank,comm,&mpirequest);
+    MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;
 
+
+    /* Now send out detailed vertex info */
 
     int *list_vertex = (int *) malloc(3*nv*sizeof(int));
     double *list_coor = (double *) malloc(3*nv*sizeof(double));
@@ -182,10 +192,9 @@ extern "C" {
 
 
 
-    /* Reserve 5 spots for each edge, 2 for the vertices and 3 for extra
-       data */
+    /* Reserve nevs spots for each edge */
 
-    int *list_edge = (int *) malloc(5*ne*sizeof(int));
+    int *list_edge = (int *) malloc(nevs*sizeof(int));
 
     nevs = 0;
 
@@ -200,25 +209,21 @@ extern "C" {
       nevs += 5;
     }
 
-  
-    /* send edges */
-    MPI_Isend(&nevs,1,MPI_INT,torank,torank,comm,&mpirequest);
-    (*requests)[*numreq] = mpirequest;
-    (*numreq)++;;
+    /* send detailed edge info */
+
     MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;;
 
 
 
-
-    /* Reserve 1 spot for number of edges in each face, MAXPV2 spots for edges 
-       of each face, 3 for the additional data */
+    /* Reserve nfes spots for each face */
 
     int *list_face = (int *) malloc((MAXPV2+4)*nf*sizeof(int));
 
     nfes = 0;
-    /* first int store nfe, then the edge ids, then the 3 auxilliary data fields */
+
+    /* first store nfe, then the edge ids, then the 3 auxilliary data fields */
     for(i = 0; i < nf; i++) {
       mf = MESH_Face(mesh,i);
       mfedges = MF_Edges(mf,1,0);
@@ -235,10 +240,7 @@ extern "C" {
       List_Delete(mfedges);
     }
 
-    /* send faces */
-    MPI_Isend(&nfes,1,MPI_INT,torank,torank,comm,&mpirequest);
-    (*requests)[*numreq] = mpirequest;
-    (*numreq)++;;
+    /* send detailed face info */
     MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;;
@@ -306,7 +308,6 @@ extern "C" {
       *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
     }
 
-    (*ptrs2free)[(*numptrs2free)++] = mesh_info;
     (*ptrs2free)[(*numptrs2free)++] = list_vertex;
     (*ptrs2free)[(*numptrs2free)++] = list_coor;  
     (*ptrs2free)[(*numptrs2free)++] = list_edge;
@@ -330,7 +331,7 @@ extern "C" {
                            void ***ptrs2free) {
     int i, j, nv, ne, nf, nr;
     int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
-    int *mesh_info;
+    int mesh_info[10];
     MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
@@ -363,30 +364,46 @@ extern "C" {
       *requests = (MPI_Request *) realloc(*requests,*maxreq*sizeof(MPI_Request));
     }
   
-    mesh_info = (int *) malloc(10*sizeof(int));
-    for (i = 0; i < 10; i++) mesh_info[i] = 0;
 
-    /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
+    /* mesh_info store the mesh reptype, nv, ne, nf, nr and natt, nset */
+
     rtype = MESH_RepType(mesh);
     nv = MESH_Num_Vertices(mesh);
     ne = MESH_Num_Edges(mesh);
     nf = MESH_Num_Faces(mesh);
     nr = MESH_Num_Regions(mesh);
+
+    /* some other known quantitites - 5 items per edge (2 for verts
+       and 3 for extra data), MAXPV2+4 items per face (1 for number of
+       edges, MAXPV2 for edge indices, anad 3 for extra data),
+       MAXPF3+4 items per region (1 for number of faces, MAXPF3 for
+       face indices and 3 for extra data */
+
+    nevs = (2+3)*ne;  
+    nfes = (1 + MAXPV2 + 3)*nf;
+    nrfs = (1 + MAXPF3 + 3)*nr;
+    
+
     mesh_info[0] = rtype;
     mesh_info[1] = nv;
     mesh_info[2] = ne;
     mesh_info[3] = nf;
     mesh_info[4] = nr;
-    mesh_info[5] = natt;
-    mesh_info[6] = nset;
+    mesh_info[5] = nevs;
+    mesh_info[6] = nfes;
+    mesh_info[7] = nrfs;
+    mesh_info[8] = natt;
+    mesh_info[9] = nset;
 
     /* send mesh_info */
-    MPI_Isend(mesh_info,7,MPI_INT,torank,torank,comm,&mpirequest);
+
+    MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;;
 
 
     /* collect data */
+
     int *list_vertex = (int *) malloc(3*nv*sizeof(int));
     double *list_coor = (double *) malloc(3*nv*sizeof(double));
     for(i = 0; i < nv; i++) {
@@ -401,7 +418,7 @@ extern "C" {
     }
 
     /* send vertices */
-    /* printf("%d vertices sent to torank %d\n",nv,torank); */
+
     MPI_Isend(list_vertex,3*nv,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;
@@ -414,7 +431,9 @@ extern "C" {
     int *list_edge = (int *) malloc(5*ne*sizeof(int));
 
     nevs = 0;
+
     /* Store the vertex ids, then the 3 auxilliary data fields */
+
     for(i = 0; i < ne; i++) {
       me = MESH_Edge(mesh,i);
       list_edge[nevs]   = MV_ID(ME_Vertex(me,0));
@@ -425,20 +444,20 @@ extern "C" {
       nevs += 5;
     }
 
-    /* send edges */
-    MPI_Isend(&nevs,1,MPI_INT,torank,torank,comm,&mpirequest);
-    (*requests)[*numreq] = mpirequest;
-    (*numreq)++;
+    /* send detailed edge info */
+
     MPI_Isend(list_edge,nevs,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;
   
 
 
-    int *list_face = (int *) malloc((MAXPV2+4)*nf*sizeof(int));
+    int *list_face = (int *) malloc(nfes*sizeof(int));
 
     nfes = 0;
-    /* first int store nfe, then the edge ids, then the 3 auxilliary data fields */
+
+    /* first store nfe, then the edge ids, then the 3 auxilliary data fields */
+
     for(i = 0; i < nf; i++) {
       mf = MESH_Face(mesh,i);
       mfedges = MF_Edges(mf,1,0);
@@ -456,19 +475,19 @@ extern "C" {
     }
 
 
-    /* send faces */
-    MPI_Isend(&nfes,1,MPI_INT,torank,torank,comm,&mpirequest);
-    (*requests)[*numreq] = mpirequest;
-    (*numreq)++;
+    /* send detailed face info */
+
     MPI_Isend(list_face,nfes,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;
 
 
-    int *list_region = (int *) malloc((MAXPF3+4)*nr*sizeof(int));
+    int *list_region = (int *) malloc(nrfs*sizeof(int));
 
     nrfs = 0;
+
     /* first store nrf, then the face ids, then the 3 auxilliary data fields */
+
     for(i = 0; i < nr; i++) {
       mr = MESH_Region(mesh,i);
       mrfaces = MR_Faces(mr);
@@ -485,10 +504,8 @@ extern "C" {
       List_Delete(mrfaces);
     }
 
-    /* send regions */
-    MPI_Isend(&nrfs,1,MPI_INT,torank,torank,comm,&mpirequest);
-    (*requests)[*numreq] = mpirequest;
-    (*numreq)++;
+    /* send detailed region info */
+
     MPI_Isend(list_region,nrfs,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;
@@ -497,7 +514,8 @@ extern "C" {
 
 
     /* collect attrs */
-    if(natt) {
+
+    if (natt) {
       list_attr = (int *) malloc((natt+1)*sizeof(int));
       list_attr_names = (char *) malloc((natt+1)*256*sizeof(char));
       for(i = 0; i < natt; i++) {
@@ -564,7 +582,6 @@ extern "C" {
       *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
     }
 
-    (*ptrs2free)[(*numptrs2free)++] = mesh_info;
     (*ptrs2free)[(*numptrs2free)++] = list_vertex;
     (*ptrs2free)[(*numptrs2free)++] = list_coor;  
     (*ptrs2free)[(*numptrs2free)++] = list_edge;
