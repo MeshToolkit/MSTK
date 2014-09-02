@@ -49,8 +49,8 @@ extern "C" {
 
   /* derive which processors this processor has overlaps with */
 
-  int *local_par_adj = (int *) MSTK_malloc(numprtns*sizeof(int));
-  int *global_par_adj = (int *) MSTK_malloc(numprtns*numprtns*sizeof(int));
+  int *local_par_adj = (int *) malloc(numprtns*sizeof(int));
+  int *global_par_adj = (int *) malloc(numprtns*numprtns*sizeof(int));
 
   for (i = 0; i < numprtns; i++) {
     local_par_adj[i] = 0;
@@ -91,7 +91,7 @@ extern "C" {
      know the total number of overlap entities on partition 'j' in
      order to allocate sufficient receive buffers */
 
-  int *global_ov_num = (int *) MSTK_malloc(4*numprtns*sizeof(int));
+  int *global_ov_num = (int *) malloc(4*numprtns*sizeof(int));
 
   /* local overlap entity numbers */
   local_ov_num[0] = MESH_Num_OverlapVertices(mesh);
@@ -112,10 +112,10 @@ extern "C" {
     }
   }
 
-  MSTK_free(global_ov_num);
-  MSTK_free(local_par_adj);
-  MSTK_free(global_par_adj);
-  MSTK_free(prtnums);
+  free(global_ov_num);
+  free(local_par_adj);
+  free(global_par_adj);
+  free(prtnums);
 
   MESH_Mark_ParallelAdj_Current(mesh);
 
