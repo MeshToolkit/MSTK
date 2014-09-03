@@ -173,7 +173,7 @@ extern "C" {
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx = 0;
       while ((mr = MESH_Next_Region(mesh,&idx))) {
-        if (comm == MPI_COMM_NULL || MR_PType(mr) != PGHOST) {
+        if (comm == 0 || comm == MPI_COMM_NULL || MR_PType(mr) != PGHOST) {
           MEnt_Mark(mr,ownedmk);
           nr++;
             
@@ -232,7 +232,7 @@ extern "C" {
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx2 = 0;
       while ((mf = (MFace_ptr) MESH_Next_Face(mesh,&idx2))) {
-        if (comm == MPI_COMM_NULL || MF_PType(mf) != PGHOST) {
+        if (comm == 0 || comm == MPI_COMM_NULL || MF_PType(mf) != PGHOST) {
           MEnt_Mark(mf,ownedmk);
           nf++;
           
