@@ -98,8 +98,8 @@ extern "C" {
                             int *numptrs2free, int *maxptrs2free,
                             void ***ptrs2free) {
     int i, j, nv, ne, nf, nevs, nfes, nfv, natt, nset, ncomp, dir;
-    int nfe;
-    int mesh_info[10];
+    int nfe, maxnfe;
+    int mesh_info[9];
     MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
@@ -139,28 +139,41 @@ extern "C" {
     ne = MESH_Num_Edges(mesh);
     nf = MESH_Num_Faces(mesh);
 
+
     /* some other known quantitites - 5 items per edge (2 for verts
-       and 3 for extra data), MAXPV2+4 items per face (1 for number of
-       edges, MAXPV2 for edge indices, anad 3 for extra data) */
+       and 3 for extra data), maxnfe+4 items per face (1 for number of
+       edges, maxnfe (computed) for edge indices, anad 3 for extra data) */
+
+
+    maxnfe = 0;
+    for (i = 0; i < nf; i++) {
+      mf = MESH_Face(mesh,i);
+      nfe = MF_Num_Edges(mf);
+      if (nfe > maxnfe)
+        maxnfe = nfe;
+    }
+
+    // The amount of extra info we are sending and their meaning is obviously
+    // known on the receiving side too. So nevs and nfes can be
+    // calculated without us sending it
 
     nevs = (2+3)*ne;  
-    nfes = (1 + MAXPV2 + 3)*nf;
+    nfes = (1 + maxnfe + 3)*nf;
     
     mesh_info[0] = rtype;
     mesh_info[1] = nv;
     mesh_info[2] = ne;
     mesh_info[3] = nf;
     mesh_info[4] = 0;
-    mesh_info[5] = nevs;
-    mesh_info[6] = nfes;
-    mesh_info[7] = 0;
-    mesh_info[8] = natt;
-    mesh_info[9] = nset;
+    mesh_info[5] = maxnfe;
+    mesh_info[6] = 0;
+    mesh_info[7] = natt;
+    mesh_info[8] = nset;
 
 
     /* Send some global mesh info */
 
-    MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&mpirequest);
+    MPI_Isend(mesh_info,9,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;
 
@@ -219,7 +232,7 @@ extern "C" {
 
     /* Reserve nfes spots for each face */
 
-    int *list_face = (int *) malloc((MAXPV2+4)*nf*sizeof(int));
+    int *list_face = (int *) malloc((maxnfe+4)*nf*sizeof(int));
 
     nfes = 0;
 
@@ -331,7 +344,8 @@ extern "C" {
                            void ***ptrs2free) {
     int i, j, nv, ne, nf, nr;
     int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
-    int mesh_info[10];
+    int maxnfe, maxnrf;
+    int mesh_info[9];
     MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
@@ -374,14 +388,36 @@ extern "C" {
     nr = MESH_Num_Regions(mesh);
 
     /* some other known quantitites - 5 items per edge (2 for verts
-       and 3 for extra data), MAXPV2+4 items per face (1 for number of
-       edges, MAXPV2 for edge indices, anad 3 for extra data),
-       MAXPF3+4 items per region (1 for number of faces, MAXPF3 for
+       and 3 for extra data), maxnfe+4 items per face (1 for number of
+       edges, maxnfe for edge indices, anad 3 for extra data),
+       maxnrf+4 items per region (1 for number of faces, maxnrf for
        face indices and 3 for extra data */
 
-    nevs = (2+3)*ne;  
-    nfes = (1 + MAXPV2 + 3)*nf;
-    nrfs = (1 + MAXPF3 + 3)*nr;
+
+    maxnfe = 0;
+    for (i = 0; i < nf; i++) {
+      mf = MESH_Face(mesh,i);
+      nfe = MF_Num_Edges(mf);
+      if (nfe > maxnfe)
+        maxnfe = nfe;
+    }
+
+    maxnrf = 0;
+    for (i = 0; i < nr; i++) {
+      mr = MESH_Region(mesh,i);
+      nrf = MR_Num_Faces(mr);
+      if (nrf > maxnrf)
+        maxnrf = nrf;
+    }
+
+    // The amount of extra info we are sending and their meaning is obviously
+    // known on the receiving side too. So nevs, nfes and nrfs can be 
+    // calculated without us sending it
+
+
+    nevs = (2+3)*ne;    
+    nfes = (1 + maxnfe + 3)*nf;
+    nrfs = (1 + maxnrf + 3)*nr;
     
 
     mesh_info[0] = rtype;
@@ -389,15 +425,14 @@ extern "C" {
     mesh_info[2] = ne;
     mesh_info[3] = nf;
     mesh_info[4] = nr;
-    mesh_info[5] = nevs;
-    mesh_info[6] = nfes;
-    mesh_info[7] = nrfs;
-    mesh_info[8] = natt;
-    mesh_info[9] = nset;
+    mesh_info[5] = maxnfe;
+    mesh_info[6] = maxnrf;
+    mesh_info[7] = natt;
+    mesh_info[8] = nset;
 
     /* send mesh_info */
 
-    MPI_Isend(mesh_info,10,MPI_INT,torank,torank,comm,&mpirequest);
+    MPI_Isend(mesh_info,9,MPI_INT,torank,torank,comm,&mpirequest);
     (*requests)[*numreq] = mpirequest;
     (*numreq)++;;
 

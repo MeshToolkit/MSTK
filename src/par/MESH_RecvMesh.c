@@ -41,7 +41,7 @@ extern "C" {
 
 
   int MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, MSTK_Comm comm) {
-    int mesh_info[10], count;
+    int mesh_info[12], count;
     RepType rtype;
     MPI_Request request;
     MPI_Status status;
@@ -53,7 +53,7 @@ extern "C" {
 
     /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
     /* receive mesh_info */
-    errcode = MPI_Recv(mesh_info,10,MPI_INT,fromrank,rank,comm,&status);
+    errcode = MPI_Recv(mesh_info,12,MPI_INT,fromrank,rank,comm,&status);
     if (errcode != MPI_SUCCESS) {
       MPI_Error_string(errcode,errorstr,&len);
       sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
@@ -82,6 +82,7 @@ extern "C" {
   int MESH_Surf_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MSTK_Comm comm) {
     int i, j, nevs, nfe, nfes, natt, nset, count, ncomp;
     int nv, ne, nf, nr, nrfs, *fedirs;
+    int maxnfe, maxnrf;
     MVertex_ptr *verts, *fverts;
     MEdge_ptr me, *edges, *fedges;
     MFace_ptr mf;
@@ -109,13 +110,17 @@ extern "C" {
     ne = mesh_info[2];
     nf = mesh_info[3];
     nr = mesh_info[4]; /* should be 0 since its a surface mesh */
-    nevs = mesh_info[5];
-    nfes = mesh_info[6];
-    nrfs = mesh_info[7]; /* should be 0 since its a surface mesh */
-    natt = mesh_info[8];
-    nset = mesh_info[9];
+    maxnfe = mesh_info[5];
+    maxnrf = mesh_info[6]; /* should be 0 since its a surface mesh */
+    natt = mesh_info[7];
+    nset = mesh_info[8];
     
     MESH_SetRepType(mesh,rtype);
+
+    /* copied from MESH_SendMesh */
+
+    nevs = (2+3)*ne;
+    nfes = (1 + maxnfe + 3)*nf; 
 
 
     /* allocate receive buffer */
@@ -205,8 +210,8 @@ extern "C" {
     
     /* build faces */
 
-    fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
-    fedirs = (int *) malloc(MAXPV2*sizeof(int));
+    fedges = (MEdge_ptr *) malloc(maxnfe*sizeof(MEdge_ptr));
+    fedirs = (int *) malloc(maxnfe*sizeof(int));
     nfes = 0;
     for (i = 0; i < nf; i++) {
       mf = MF_New(mesh);
@@ -312,7 +317,7 @@ extern "C" {
 
 
   int MESH_Vol_RecvMesh_FN(Mesh_ptr mesh, int *mesh_info, int fromrank, MPI_Comm comm) {
-    int i, j, nevs, nfes, nrv, nrfs;
+    int i, j, nevs, nfes, nrv, nrfs, maxnfe, maxnrf;
     int count, natt, nset, ncomp, nv, ne, nf, nr, nfe, nrf, *fedirs, *rfdirs;
     MVertex_ptr *verts, *rverts;
     MEdge_ptr me, *edges, *fedges;
@@ -344,14 +349,18 @@ extern "C" {
     ne = mesh_info[2];
     nf = mesh_info[3];
     nr = mesh_info[4];    
-    nevs = mesh_info[5];
-    nfes = mesh_info[6];
-    nrfs = mesh_info[7];
-    natt = mesh_info[8];
-    nset = mesh_info[9];
+    maxnfe = mesh_info[5];
+    maxnrf = mesh_info[6];
+    natt = mesh_info[7];
+    nset = mesh_info[8];
     
     MESH_SetRepType(mesh,rtype);
 
+    /* copied from MESH_SendMesh */
+
+    nevs = (2+3)*ne;
+    nfes = (1 + maxnfe + 3)*nf; 
+    nrfs = (1 + maxnrf + 3)*nr;
 
     /* allocate receive buffer */
     int *list_vertex = (int *) malloc(3*nv*sizeof(int));
@@ -441,8 +450,8 @@ extern "C" {
 
     /* build faces */
 
-    fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
-    fedirs = (int *) malloc(MAXPV2*sizeof(int));
+    fedges = (MEdge_ptr *) malloc(maxnfe*sizeof(MEdge_ptr));
+    fedirs = (int *) malloc(maxnfe*sizeof(int));
 
     faces = (MFace_ptr *) malloc(nf*sizeof(MFace_ptr));
 
@@ -483,8 +492,8 @@ extern "C" {
 
     /* build regions */
 
-    rfaces = (MFace_ptr *) malloc(MAXPF3*sizeof(MFace_ptr));
-    rfdirs = (int *) malloc(MAXPF3*sizeof(int));
+    rfaces = (MFace_ptr *) malloc(maxnrf*sizeof(MFace_ptr));
+    rfdirs = (int *) malloc(maxnrf*sizeof(int));
     nrfs = 0;
     for (i = 0; i < nr; i++) {
       mr = MR_New(mesh);
