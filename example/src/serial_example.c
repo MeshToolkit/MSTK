@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   strcat(filename,".mstk");
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_InitFromFile(mesh,filename,NULL);
+  ok = MESH_InitFromFile(mesh,filename,0);
   if (!ok) {
     fprintf(stderr,"Cannot open input file %s\n\n\n",filename);
     exit(-1);
@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
 
   strcpy(filename,mname);
   strcat(filename,"-copy.mstk");
-  MESH_WriteToFile(mesh,filename,F1,NULL);
+  MESH_WriteToFile(mesh,filename,F1,0);
 
   
   /* Deleting of mesh is not necessary if this the end of the program */
