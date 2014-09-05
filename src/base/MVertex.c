@@ -238,6 +238,14 @@ extern "C" {
   }
 
 
+  int   MV_GlobalID(MVertex_ptr v) {
+#ifdef MSTK_HAVE_MPI
+    return   MEnt_GlobalID((MEntity_ptr) v);
+#else
+    return MEnt_ID((MEntity_ptr) v);
+#endif
+  }
+
 #ifdef MSTK_HAVE_MPI
 
 
@@ -255,10 +263,6 @@ extern "C" {
 
   void  MV_Set_MasterParID(MVertex_ptr v, int masterparid) {
     MEnt_Set_MasterParID((MEntity_ptr) v, masterparid) ;
-  }
-
-  int   MV_GlobalID(MVertex_ptr v) {
-    return   MEnt_GlobalID((MEntity_ptr) v);
   }
 
   void  MV_Set_GlobalID(MVertex_ptr v, int globalid) {

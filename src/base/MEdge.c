@@ -448,6 +448,14 @@ extern "C" {
     return ME_IsLocked_jmp[RTYPE](e);
   }
 
+  int   ME_GlobalID(MEdge_ptr e) {
+#ifdef MSTK_HAVE_MPI
+    return   MEnt_GlobalID((MEntity_ptr) e);
+#else
+    return MEnt_ID((MEntity_ptr) e);
+#endif
+  }
+
 #ifdef MSTK_HAVE_MPI
 
   PType ME_PType(MEdge_ptr e) {
@@ -466,10 +474,6 @@ extern "C" {
 
   void  ME_Set_MasterParID(MEdge_ptr e, int masterparid) {
     MEnt_Set_MasterParID((MEntity_ptr) e, masterparid) ;
-  }
-
-  int   ME_GlobalID(MEdge_ptr e) {
-    return   MEnt_GlobalID((MEntity_ptr) e);
   }
 
   void  ME_Set_GlobalID(MEdge_ptr e, int globalid) {

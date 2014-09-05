@@ -346,6 +346,14 @@ extern "C" {
     return 0;
   }
 
+  int   MR_GlobalID(MRegion_ptr r) {
+#ifdef MSTK_HAVE_MPI
+    return   MEnt_GlobalID((MEntity_ptr) r);
+#else
+    return MEnt_ID((MEntity_ptr) r);
+#endif
+  }
+
 #ifdef MSTK_HAVE_MPI
 
   PType MR_PType(MRegion_ptr r) {
@@ -362,10 +370,6 @@ extern "C" {
 
   void  MR_Set_MasterParID(MRegion_ptr r, int masterparid) {
     MEnt_Set_MasterParID((MEntity_ptr) r, masterparid) ;
-  }
-
-  int   MR_GlobalID(MRegion_ptr r) {
-    return   MEnt_GlobalID((MEntity_ptr) r);
   }
 
   void  MR_Set_GlobalID(MRegion_ptr r, int globalid) {

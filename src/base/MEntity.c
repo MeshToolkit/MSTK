@@ -529,6 +529,16 @@ extern "C" {
   }
 
 
+  int   MEnt_GlobalID(MEntity_ptr ent) {
+#ifdef MSTK_HAVE_MPI
+    return ent->entdat.globalid;
+#else
+    return ent->entdat.id;
+#endif
+  }
+
+
+
 #ifdef MSTK_HAVE_MPI
 
   PType MEnt_PType(MEntity_ptr ent) {
@@ -545,10 +555,6 @@ extern "C" {
 
   void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid) {
     ent->entdat.masterparid = masterparid;
-  }
-
-  int   MEnt_GlobalID(MEntity_ptr ent) {
-    return ent->entdat.globalid;
   }
 
   void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid) {
