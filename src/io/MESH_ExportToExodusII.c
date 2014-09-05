@@ -94,7 +94,7 @@ extern "C" {
 
 
 #ifdef MSTK_HAVE_MPI
-    if (comm != MPI_COMM_NULL) {
+    if (comm != 0 && comm != MPI_COMM_NULL) {
       MPI_Comm_size(comm,&numprocs);
       MPI_Comm_rank(comm,&rank);
       
