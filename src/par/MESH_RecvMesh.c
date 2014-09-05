@@ -141,6 +141,51 @@ extern "C" {
 		  MSTK_FATAL);
     
 
+    /* receive edge-vertex info */
+
+    int *list_edge = (int *) malloc(nevs*sizeof(int));
+
+    errcode = MPI_Irecv(list_edge,nevs,MPI_INT,fromrank,rank,comm,
+                        &(request[nreq++]));
+    if (errcode != MPI_SUCCESS)
+      MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
+		  MSTK_FATAL);
+
+    /* receive face-edge info */
+
+    int *list_face = (int *) malloc(nfes*sizeof(int));
+
+    errcode = MPI_Irecv(list_face,nfes,MPI_INT,fromrank,rank,comm,
+                        &(request[nreq++]));
+    if (errcode != MPI_SUCCESS)
+      MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
+		  MSTK_FATAL);
+
+
+    if (natt) {
+      list_attr = (int *) malloc(natt*sizeof(int));
+      list_attr_names = (char *) malloc((natt)*256*sizeof(char));
+
+      errcode = MPI_Irecv(list_attr,natt,MPI_INT,fromrank,rank,comm,
+			  &(request[nreq++]));
+      
+
+      errcode = MPI_Irecv(list_attr_names,natt*256,MPI_CHAR,fromrank,rank,comm,
+			  &(request[nreq++]));
+    }
+
+    if (nset) {
+      list_mset = (int *) malloc(nset*sizeof(int));
+      list_mset_names = (char *) malloc((nset)*256*sizeof(char));
+      
+      errcode = MPI_Irecv(list_mset,nset,MPI_INT,fromrank,rank,comm,
+			  &(request[nreq++]));
+
+      errcode = MPI_Irecv(list_mset_names,nset*256,MPI_CHAR,fromrank,rank,comm,
+			  &(request[nreq++]));
+    }
+
+
     errcode = MPI_Waitall(nreq,request,MPI_STATUSES_IGNORE);
     if (errcode != MPI_SUCCESS)
       MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
@@ -167,16 +212,6 @@ extern "C" {
     }
 
 
-    /* receive edge-vertex info */
-
-    int *list_edge = (int *) malloc(nevs*sizeof(int));
-
-    errcode = MPI_Recv(list_edge,nevs,MPI_INT,fromrank,rank,comm,
-		       MPI_STATUS_IGNORE);
-    if (errcode != MPI_SUCCESS)
-      MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
-		  MSTK_FATAL);
-
     /* build edges */
 
     edges = (MEdge_ptr *) malloc(ne*sizeof(MEdge_ptr));
@@ -195,17 +230,6 @@ extern "C" {
       nevs += 5;
     }
     if (verts) free(verts);
-
-
-    /* receive face-edge info */
-
-    int *list_face = (int *) malloc(nfes*sizeof(int));
-
-    errcode = MPI_Recv(list_face,nfes,MPI_INT,fromrank,rank,comm,
-		       MPI_STATUS_IGNORE);
-    if (errcode != MPI_SUCCESS)
-      MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
-		  MSTK_FATAL);
 
     
     /* build faces */
@@ -234,83 +258,50 @@ extern "C" {
     if (edges) free(edges);
 
 
+    free(list_vertex);    
+    free(list_face);    
+    free(list_coor);
+
 
     /* receive and build attributes */
 
+    for(i = 0; i < natt; i++) {
+      strcpy(attname,&list_attr_names[i*256]);
+      
+      if (MESH_AttribByName(mesh,attname)) 	/* see if the attrib exists */
+        continue;
+      
+      att_type = list_attr[i] & 7;
+      mtype = (list_attr[i] >> 3) & 7;
+      ncomp = list_attr[i] >> 6;
+      if(ncomp == 1)
+        attrib =  MAttrib_New(mesh, attname, att_type, mtype);
+      else
+        attrib =  MAttrib_New(mesh, attname, att_type, mtype, ncomp);
+    }
+    
     if (natt) {
-      list_attr = (int *) malloc(natt*sizeof(int));
-      list_attr_names = (char *) malloc((natt)*256*sizeof(char));
-
-      errcode = MPI_Irecv(list_attr,natt,MPI_INT,fromrank,rank,comm,
-			  &(request[nreq++]));
-      
-
-      errcode = MPI_Irecv(list_attr_names,natt*256,MPI_CHAR,fromrank,rank,comm,
-			  &(request[nreq++]));
-
-
-      errcode = MPI_Waitall(nreq,request,MPI_STATUSES_IGNORE);
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
-		    MSTK_FATAL);
-      nreq = 0;  // reset requests
-
-      
-
-      for(i = 0; i < natt; i++) {
-	strcpy(attname,&list_attr_names[i*256]);
-
-	if (MESH_AttribByName(mesh,attname)) 	/* see if the attrib exists */
-	  continue;
-
-	att_type = list_attr[i] & 7;
-	mtype = (list_attr[i] >> 3) & 7;
-	ncomp = list_attr[i] >> 6;
-	if(ncomp == 1)
-	  attrib =  MAttrib_New(mesh, attname, att_type, mtype);
-	else
-	  attrib =  MAttrib_New(mesh, attname, att_type, mtype, ncomp);
-      }
       free(list_attr);    
       free(list_attr_names);
     }
     
 
     /* receive mesh entity sets */
+   
+    for(i = 0; i < nset; i++) {
+      strcpy(msetname,&list_mset_names[i*256]);
+      
+      if(MESH_MSetByName(mesh,msetname)) /* see if the mset exists */
+        continue;
+      mtype = list_mset[i];
+      mset =  MSet_New(mesh, msetname, mtype);
+    }
+
 
     if (nset) {
-      list_mset = (int *) malloc(nset*sizeof(int));
-      list_mset_names = (char *) malloc((nset)*256*sizeof(char));
-    
-      errcode = MPI_Irecv(list_mset,nset,MPI_INT,fromrank,rank,comm,
-			  &(request[nreq++]));
-
-      errcode = MPI_Irecv(list_mset_names,nset*256,MPI_CHAR,fromrank,rank,comm,
-			  &(request[nreq++]));
-
-
-      errcode = MPI_Waitall(nreq,request,MPI_STATUSES_IGNORE);
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Surf_RecvMesh_FN","Trouble receiving mesh",
-		    MSTK_FATAL);
-      nreq = 0;  // reset requests
-
-
-      for(i = 0; i < nset; i++) {
-	strcpy(msetname,&list_mset_names[i*256]);
-	
-	if(MESH_MSetByName(mesh,msetname)) /* see if the mset exists */
-	  continue;
-	mtype = list_mset[i];
-	mset =  MSet_New(mesh, msetname, mtype);
-      }
       free(list_mset);    
       free(list_mset_names);
     }
-
-    free(list_vertex);    
-    free(list_face);    
-    free(list_coor);
 
     return 1;
   }
@@ -382,6 +373,83 @@ extern "C" {
 		  MSTK_FATAL);
 
 
+    /* receive edge-vertex info */
+
+    int *list_edge = (int *) malloc(nevs*sizeof(int));
+
+    errcode = MPI_Irecv(list_edge,nevs,MPI_INT,fromrank,rank,comm,
+		       &(request[nreq++]));
+    if (errcode != MPI_SUCCESS)
+      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		  MSTK_FATAL);
+    
+
+    /* receive face-edge info */
+    
+    int *list_face = (int *) malloc(nfes*sizeof(int));
+
+    errcode = MPI_Irecv(list_face,nfes,MPI_INT,fromrank,rank,comm,
+		       &(request[nreq++]));
+    if (errcode != MPI_SUCCESS)
+      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		  MSTK_FATAL);
+    
+
+
+    /* receive region-face info */
+    
+    int *list_region = (int *) malloc(nrfs*sizeof(int));
+    
+    errcode = MPI_Irecv(list_region,nrfs,MPI_INT,fromrank,rank,comm,
+		       &(request[nreq++]));
+    if (errcode != MPI_SUCCESS)
+      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		  MSTK_FATAL);
+    
+    
+    /* receive and build attributes */
+    
+    if (natt) {
+      list_attr = (int *) malloc(natt*sizeof(int));
+      list_attr_names = (char *) malloc((natt)*256*sizeof(char));
+    
+      errcode = MPI_Irecv(list_attr,natt,MPI_INT,fromrank,rank,comm,
+			  &(request[nreq++]));
+      if (errcode != MPI_SUCCESS)
+	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		    MSTK_FATAL);
+
+      
+      errcode = MPI_Irecv(list_attr_names,natt*256,MPI_CHAR,fromrank,rank,comm,
+                          &(request[nreq++]));
+      if (errcode != MPI_SUCCESS)
+	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		    MSTK_FATAL);
+      
+    }
+    
+
+    /* receive mesh entity sets */
+
+    if (nset) {
+      list_mset = (int *) malloc(nset*sizeof(int));
+      list_mset_names = (char *) malloc((nset)*256*sizeof(char));
+    
+      errcode = MPI_Irecv(list_mset,nset,MPI_INT,fromrank,rank,comm,
+			  &(request[nreq++]));
+          if (errcode != MPI_SUCCESS)
+      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		  MSTK_FATAL);
+
+
+      errcode = MPI_Irecv(list_mset_names,nset*256,MPI_CHAR,fromrank,rank,comm,
+			  &(request[nreq++]));
+      if (errcode != MPI_SUCCESS)
+	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
+		    MSTK_FATAL);
+    }
+
+
     errcode = MPI_Waitall(nreq,request,MPI_STATUSES_IGNORE);
     if (errcode != MPI_SUCCESS)
       MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",MSTK_FATAL);
@@ -406,16 +474,6 @@ extern "C" {
     }
 
 
-    /* receive edge-vertex info */
-
-    int *list_edge = (int *) malloc(nevs*sizeof(int));
-
-    errcode = MPI_Recv(list_edge,nevs,MPI_INT,fromrank,rank,comm,
-		       MPI_STATUS_IGNORE);
-    if (errcode != MPI_SUCCESS)
-      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		  MSTK_FATAL);
-    
     /* build edges */
 
     edges = (MEdge_ptr *) malloc(ne*sizeof(MEdge_ptr));
@@ -435,17 +493,6 @@ extern "C" {
     }
     if (verts) free(verts);
 
-
-    /* receive face-edge info */
-    
-    int *list_face = (int *) malloc(nfes*sizeof(int));
-
-    errcode = MPI_Recv(list_face,nfes,MPI_INT,fromrank,rank,comm,
-		       MPI_STATUS_IGNORE);
-    if (errcode != MPI_SUCCESS)
-      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		  MSTK_FATAL);
-    
 
 
     /* build faces */
@@ -477,19 +524,6 @@ extern "C" {
     if (edges) free(edges);
 
 
-
-
-    /* receive region-face info */
-
-    int *list_region = (int *) malloc(nrfs*sizeof(int));
-
-    errcode = MPI_Recv(list_region,nrfs,MPI_INT,fromrank,rank,comm,
-		       MPI_STATUS_IGNORE);
-    if (errcode != MPI_SUCCESS)
-      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		  MSTK_FATAL);
-
-
     /* build regions */
 
     rfaces = (MFace_ptr *) malloc(maxnrf*sizeof(MFace_ptr));
@@ -516,97 +550,52 @@ extern "C" {
     if (faces) free(faces);
 
 
-
-    /* receive and build attributes */
-
-    if (natt) {
-      list_attr = (int *) malloc(natt*sizeof(int));
-      list_attr_names = (char *) malloc((natt)*256*sizeof(char));
-    
-      errcode = MPI_Irecv(list_attr,natt,MPI_INT,fromrank,rank,comm,
-			  &(request[nreq++]));
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		    MSTK_FATAL);
-
-      
-      errcode = MPI_Irecv(list_attr_names,natt*256,MPI_CHAR,fromrank,rank,comm,
-			 &(request[nreq++]));
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		    MSTK_FATAL);
-
-
-      errcode = MPI_Waitall(nreq,request,MPI_STATUSES_IGNORE);
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",MSTK_FATAL);
-      nreq = 0;  // reset requests
-
-
-      for(i = 0; i < natt; i++) {
-	strcpy(attname,&list_attr_names[i*256]);
-	
-	if(MESH_AttribByName(mesh,attname)) /* see of the attrib exists */
-	  continue;
-
-	att_type = list_attr[i] & 7;
-	mtype = (list_attr[i] >> 3) & 7;
-	ncomp = list_attr[i] >> 6;
-	if(ncomp == 1)
-	  attrib =  MAttrib_New(mesh, attname, att_type, mtype);
-	else
-	  attrib =  MAttrib_New(mesh, attname, att_type, mtype, ncomp);
-      }
-      free(list_attr);    
-      free(list_attr_names);
-    }
-
-
-    /* receive mesh entity sets */
-
-    if (nset) {
-      list_mset = (int *) malloc(nset*sizeof(int));
-      list_mset_names = (char *) malloc((nset)*256*sizeof(char));
-    
-      errcode = MPI_Irecv(list_mset,nset,MPI_INT,fromrank,rank,comm,
-			  &(request[nreq++]));
-          if (errcode != MPI_SUCCESS)
-      MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		  MSTK_FATAL);
-
-
-      errcode = MPI_Irecv(list_mset_names,nset*256,MPI_CHAR,fromrank,rank,comm,
-			  &(request[nreq++]));
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",
-		    MSTK_FATAL);
-      
-
-      errcode = MPI_Waitall(nreq,request,MPI_STATUSES_IGNORE);
-      if (errcode != MPI_SUCCESS)
-	MSTK_Report("MESH_Vol_RecvMesh_FN","Trouble receiving mesh",MSTK_FATAL);
-      nreq = 0;  // reset requests
-
-      
-      for(i = 0; i < nset; i++) {
-	strcpy(msetname,&list_mset_names[i*256]);
-	
-	if (MESH_MSetByName(mesh,msetname)) /* see if the mset exists */
-	  continue;
-	mtype = list_mset[i];
-	mset =  MSet_New(mesh, msetname, mtype);
-      }
-      free(list_mset);    
-      free(list_mset_names);
-    }
-
-
     free(list_vertex);   
     free(list_face);
     free(list_edge);
     free(list_region);    
     free(list_coor);    
 
+
+    /* build attributes */
+
+    for(i = 0; i < natt; i++) {
+      strcpy(attname,&list_attr_names[i*256]);
+      
+      if(MESH_AttribByName(mesh,attname)) /* see of the attrib exists */
+        continue;
+      
+      att_type = list_attr[i] & 7;
+      mtype = (list_attr[i] >> 3) & 7;
+      ncomp = list_attr[i] >> 6;
+      if(ncomp == 1)
+        attrib =  MAttrib_New(mesh, attname, att_type, mtype);
+      else
+        attrib =  MAttrib_New(mesh, attname, att_type, mtype, ncomp);
+    }
+
+    if (natt) {
+      free(list_attr);    
+      free(list_attr_names);
+    }
+
+
+    /* build sets */
+    
+    for(i = 0; i < nset; i++) {
+      strcpy(msetname,&list_mset_names[i*256]);
+      
+      if (MESH_MSetByName(mesh,msetname)) /* see if the mset exists */
+        continue;
+      mtype = list_mset[i];
+      mset =  MSet_New(mesh, msetname, mtype);
+    }
+    
+    if (nset) {
+      free(list_mset);    
+      free(list_mset_names);
+    }
+    
     return 1;
   }
 
