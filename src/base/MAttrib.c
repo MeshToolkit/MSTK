@@ -95,6 +95,19 @@ extern "C" {
     MSTK_free(attrib);
   }
 
+  void MAttrib_Destroy_For_MESH_Delete(MAttrib_ptr attrib) {
+    /*    
+	  Don't need to remove the attribute from the mesh as the 
+	  atttribute list will get destroyed and all attributes
+	  will get removed from the entities during their destruction 
+	  
+	  MESH_Rem_Attrib(attrib->mesh,attrib); 
+    */
+
+    MSTK_free(attrib->name);
+    MSTK_free(attrib);
+  }
+
 
   void MAttrib_Clear(MAttrib_ptr attrib) {
     MESH_Clear_Attrib(attrib->mesh,attrib);
