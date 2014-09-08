@@ -102,10 +102,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
      point to them */
 
   void MR_Destroy_For_MESH_Delete(MRegion_ptr r);
-  void MF_Destroy_For_MESH_Delete(MFace_ptr r);
-  void ME_Destroy_For_MESH_Delete(MEdge_ptr r);
-  void MV_Destroy_For_MESH_Delete(MVertex_ptr r);
+  void MF_Destroy_For_MESH_Delete(MFace_ptr f);
+  void ME_Destroy_For_MESH_Delete(MEdge_ptr e);
+  void MV_Destroy_For_MESH_Delete(MVertex_ptr v);
 
+  void MAttrib_Destroy_For_MESH_Delete(MAttrib_ptr att);
 
   /* Init/Free data common to all entities */
   void MEnt_Init_CmnData(MEntity_ptr ent);
