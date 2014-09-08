@@ -16,8 +16,8 @@ extern "C" {
 
  */
 
-int MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr gmset) {
-  int idx, idx2, found;
+  int MESH_CopySet(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, MSet_ptr gmset) {
+  int i, idx, idx2, found;
   MType mtype;
   MEntity_ptr lment, gment;
   MSet_ptr lmset;
@@ -25,33 +25,44 @@ int MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr gmset) {
   void *loc;
   MAttrib_ptr g2latt;
   List_ptr lmentlist;
+  MSet_ptr *lmset_array;
+  Mesh_ptr submesh;
+
+  lmset_array = (MSet_ptr *) calloc(num,sizeof(MSet_ptr));
 
   g2latt = MESH_AttribByName(mesh,"Global2Local");
 
   MSet_Name(gmset,msetname);
-  lmset = MESH_MSetByName(submesh,msetname);
+  mtype = MSet_EntDim(gmset);
 
-  if (!lmset) {
-    /* Create the mesh set */
-    mtype = MSet_EntDim(gmset);
-    lmset = MSet_New(submesh,msetname,mtype);
-  }
+  for (i = 0; i < num; ++i)
+    lmset_array[i] = MESH_MSetByName(submeshes[i],msetname);
+ 
+  
 
   idx = 0;
   while ((gment = MSet_Next_Entry(gmset,&idx))) {
     MEnt_Get_AttVal(gment,g2latt,0,0,&lmentlist);
     
     idx2 = 0;
-    found = 0;
     while ((lment = List_Next_Entry(lmentlist,&idx2))) {
-      if (MEnt_Mesh(lment) == submesh) {
-	found = 1;
-	MSet_Add(lmset,lment);
-        break;
+      submesh = MEnt_Mesh(lment);
+
+      for (i = 0; i < num; ++i) {
+	if (submesh == submeshes[i]) {
+	  lmset = lmset_array[i];
+	  if (!lmset)
+	    lmset = lmset_array[i] = MSet_New(submesh,msetname,mtype);
+      
+	  MSet_Add(lmset,lment);
+	  break;
+	}
       }
+
     }
   }
 
+  free(lmset_array);
   return 1;
 }
   
