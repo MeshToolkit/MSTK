@@ -79,9 +79,7 @@ extern "C" {
       nset = MESH_Num_MSets(mesh);
       for (j = 0; j < nset; j++) {
 	mset = MESH_MSet(mesh,j);
-	
-	for (i = 0; i < num; i++)
-	  MESH_CopySet(mesh,submeshes[i],mset);
+	MESH_CopySet(mesh,num,submeshes,mset);
       }
       
     }
