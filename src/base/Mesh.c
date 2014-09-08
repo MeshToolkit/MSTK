@@ -111,7 +111,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   if (mesh->AttribList) {
     i = 0;
     while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
-      MAttrib_Delete(attrib);
+      MAttrib_Destroy_For_MESH_Delete(attrib);
     List_Delete(mesh->AttribList);
   }
 
@@ -308,28 +308,61 @@ void MESH_Add_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
 }
 
 void MESH_Rem_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib) {
+  int idx;
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+
   if (mesh->AttribList) {
     List_Rem(mesh->AttribList,attrib);
 
-    int idx = 0;
-    MVertex_ptr mv;
-    while ((mv = MESH_Next_Vertex(mesh,&idx)))
-      MEnt_Rem_AttVal(mv,attrib);
+    switch (MAttrib_Get_EntDim(attrib)) {
+    case MVERTEX:
+      idx = 0;
+      while ((mv = MESH_Next_Vertex(mesh,&idx)))
+	MEnt_Rem_AttVal(mv,attrib);
+      break;
 
-    idx = 0;
-    MEdge_ptr me;
-    while ((me = MESH_Next_Edge(mesh,&idx)))
-      MEnt_Rem_AttVal(me,attrib);
+    case MEDGE:
+      idx = 0;
+      while ((me = MESH_Next_Edge(mesh,&idx)))
+	MEnt_Rem_AttVal(me,attrib);
+      break;
 
-    idx = 0;
-    MFace_ptr mf;
-    while ((mf = MESH_Next_Face(mesh,&idx)))
-      MEnt_Rem_AttVal(mf,attrib);
+    case MFACE:
+      idx = 0;
+      while ((mf = MESH_Next_Face(mesh,&idx)))
+	MEnt_Rem_AttVal(mf,attrib);
+      break;
 
-    idx = 0;
-    MRegion_ptr mr;
-    while ((mr = MESH_Next_Region(mesh,&idx)))
-      MEnt_Rem_AttVal(mr,attrib);
+    case MREGION:
+      idx = 0;
+      while ((mr = MESH_Next_Region(mesh,&idx)))
+	MEnt_Rem_AttVal(mr,attrib);
+      break;
+
+    case MALLTYPE:
+      idx = 0;
+      while ((mv = MESH_Next_Vertex(mesh,&idx)))
+	MEnt_Rem_AttVal(mv,attrib);
+
+      idx = 0;
+      while ((me = MESH_Next_Edge(mesh,&idx)))
+	MEnt_Rem_AttVal(me,attrib);
+      
+      idx = 0;
+      while ((mf = MESH_Next_Face(mesh,&idx)))
+	MEnt_Rem_AttVal(mf,attrib);
+      
+      idx = 0;
+      while ((mr = MESH_Next_Region(mesh,&idx)))
+	MEnt_Rem_AttVal(mr,attrib);
+      break;
+
+    default:
+      break;
+    }
   }
 }
 
