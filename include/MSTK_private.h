@@ -391,7 +391,8 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   /* Functions for entity sets */
 
-  int        MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr mset);
+  int        MESH_CopySet(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, 
+                          MSet_ptr mset);
 
   /* Functions for improving searching for entities by global ID */
 
