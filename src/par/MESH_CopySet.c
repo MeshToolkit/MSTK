@@ -47,6 +47,7 @@ int MESH_CopySet(Mesh_ptr mesh, Mesh_ptr submesh, MSet_ptr gmset) {
       if (MEnt_Mesh(lment) == submesh) {
 	found = 1;
 	MSet_Add(lmset,lment);
+        break;
       }
     }
   }
