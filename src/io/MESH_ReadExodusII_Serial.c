@@ -1070,7 +1070,7 @@ extern "C" {
 	  MF_Set_GEntID(mf, elem_blk_ids[i]);
 	  MF_Set_GEntID(mf, 2);
 
-	  if (mesh_type == 1 && mesh_type == 3) {
+	  if (mesh_type == 1 || mesh_type == 3) {
 	    MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
 	    MSet_Add(matset,mf);
 	  }
@@ -1115,7 +1115,7 @@ extern "C" {
 	  MF_Set_GEntID(mf, elem_blk_ids[i]);
 	  MF_Set_GEntID(mf, 2);
 
-	  if (mesh_type == 1 && mesh_type == 3) {
+	  if (mesh_type == 1 || mesh_type == 3) {
 	    MEnt_Set_AttVal(mf,elblockatt,elem_blk_ids[i],0.0,NULL);
 	    MSet_Add(matset,mf);
 	  }
