@@ -2288,9 +2288,13 @@ extern "C" {
 
       MPI_Gather(&natt_loc,1,MPI_INT,natt_all,1,MPI_INT,0,comm);
 
-      maxnum = natt_loc;
-      for (i = 1; i < numprocs; ++i) 
-        maxnum = (natt_all[i] > maxnum) ? natt_all[i] : maxnum;
+      if (rank == 0) {
+        maxnum = natt_loc;
+        for (i = 1; i < numprocs; ++i) 
+          maxnum = (natt_all[i] > maxnum) ? natt_all[i] : maxnum;
+      }
+
+      MPI_Bcast(&maxnum,1,MPI_INT,0,comm);
 
       if (maxnum) {
 
