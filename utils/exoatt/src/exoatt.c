@@ -132,29 +132,34 @@ int main(int argc, char *argv[]) {
   /* Import the Exodus II mesh */
 
   mesh = MESH_New(F1);
+
+#ifdef MSTK_HAVE_MPI
+  if (rank == 0) {
+#endif
+
+    int opts[5]={0,0,0,0,0};
   
-  int opts[5]={0,0,0,0,0};
-  
-  ok = 0;
-  MSTK_Report(progname,"Importing mesh from ExodusII file...",MSTK_MESG);
-  opts[0] = 0; /* don't partition while importing - do it later */
-  opts[1] = 0;
-  opts[2] = 0; /* no ghost layers */  
-  opts[3] = 0;
-  ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
-  if (ok)
-    MSTK_Report("","Done\n",MSTK_MESG);
-  else {
-    MSTK_Report(progname,"Failed\n",MSTK_FATAL);
+    ok = 0;
+    MSTK_Report(progname,"Importing mesh from ExodusII file...",MSTK_MESG);
+    opts[0] = 0; /* don't partition while importing - do it later */
+    opts[1] = 0;
+    opts[2] = 0; /* no ghost layers */  
+    opts[3] = 0;
+    ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
+    if (ok)
+      MSTK_Report("","Done\n",MSTK_MESG);
+    else {
+      MSTK_Report(progname,"Failed\n",MSTK_FATAL);
+    }
+    
+
+    /* Read in the attributes only on rank 0 and attach it to the mesh */
+
+    import_attributes(mesh, attfname);
+
+#ifdef MSTK_HAVE_MPI
   }
-
-
-
-  /* Read in the attributes and attach it to the mesh */
-
-
-  import_attributes(mesh, attfname);
-
+#endif
 
 
 #ifdef MSTK_HAVE_MPI
