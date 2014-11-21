@@ -683,7 +683,7 @@ extern "C" {
     int nfalloc=0;
     int nrealloc;
     int a_prime = 31;
-    unsigned int nums[4] = {nnodes,nnodes,nnodes,nnodes};
+    unsigned int nums[4] = {nnodes-3,nnodes-2,nnodes-1,nnodes};
     unsigned int max_hash_key = hash_ints(4,nums);
     unsigned int hash_key;
 

@@ -228,49 +228,6 @@ extern "C" {
       
 #endif
 
-
-      /*-------------------------------------------
-        Just for testing attach real valued attributes to mesh
-      */
-
-      elatt = MAttrib_New(mesh,"elatt",DOUBLE,MREGION);
-      idx = 0;
-      while ((mr = MESH_Next_Region(mesh,&idx))) {
-        MEnt_Set_AttVal(mr,elatt,0,MR_ID(mr),NULL);
-      }
-
-      MAttrib_ptr elatt2;
-
-      elatt2 = MAttrib_New(mesh,"elatt2",DOUBLE,MREGION);
-      idx = 0;
-      while ((mr = MESH_Next_Region(mesh,&idx))) {
-        MEnt_Set_AttVal(mr,elatt2,0,rand(),NULL);
-      }
-
-      ndatt = MAttrib_New(mesh,"ndatt",DOUBLE,MVERTEX);
-      idx = 0;
-      while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-        MEnt_Set_AttVal(mv,ndatt,0,MV_ID(mv),NULL);
-      }
-
-      MAttrib_ptr allatt;
-      allatt = MAttrib_New(mesh,"allatt",DOUBLE,MALLTYPE);
-      idx = 0;
-      while ((mr = MESH_Next_Region(mesh,&idx))) {
-        MEnt_Set_AttVal(mr,allatt,0,MESH_Num_Regions(mesh)-MR_ID(mr),NULL);
-      }
-
-      idx = 0;
-      while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-        MEnt_Set_AttVal(mv,allatt,0,MESH_Num_Vertices(mesh)-MV_ID(mv),NULL);
-      }
-
-
-
-      /*----------
-        End Just for testing section
-      */
-        
       
       num_element = nr; num_side = nf;
 
@@ -1223,8 +1180,8 @@ extern "C" {
     }
 
     if (num_sideset_atts_glob) {
-      MSTK_Report(funcname,"Variable writing not implement for sidesets",
-                  MSTK_WARN);
+      /* MSTK_Report(funcname,"Variable writing not implement for sidesets",
+         MSTK_WARN); */
 
       /*
       status = ex_put_var_param(exoid, "s", num_sideset_atts_glob);
