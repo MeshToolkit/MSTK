@@ -1,0 +1,79 @@
+exoatt is a utility to read in a _SERIAL_ Exodus II mesh and augment it
+with real valued attributes read from an auxiliary file and write out
+a new Exodus II mesh containing those attributes.
+
+Run 'exoatt' as follows:
+
+usage: exoatt <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> infilename attfilename <outfilename>
+
+partition-method = 0, METIS
+                 = 1, ZOLTAN with GRAPH partioning
+                 = 2, ZOLTAN with RCB partitioning
+Choose 2 if you want to avoid partitioning models
+with high aspect ratio along the short directions
+
+infilename   = Input Exodus II File
+attfilename  = Auxiliary file with real valued attributes
+outfilename  = Output Exodus II file name
+
+
+FORMAT of attfilename
+++++++++++++++++++++++++++
+
+attfilename can be anything, there is no requirement that it be
+something.att or something.txt etc. The format is as follows:
+
+---------------------------------------------------
+number_of_attributes
+attname1   entitytype   num_specified 
+attrib_data_line_1
+attrib_data_line_2
+.
+.
+.
+attname2   entitytype   num_specified
+.
+.
+.
+-----------------------------------------------------
+
+attname is the attribute name
+
+entitytype is keyword NODE, CELL
+
+num_specified is the number of entities for which values are
+specified. If it is -1, it means all entities of type entitytype in
+the mesh.
+
+
+The way an attribute data line is specified is different depending on
+whether the values are specified on the whole mesh (num_specified =
+-1) or on a subset (num_specified > 0). 
+
+If values are specified on the whole mesh, then the attribute values
+can be listed as is without any element IDs. There must be as many
+values as there are entities of that type in the mesh.
+
+If values are specified on a set of entities, then each attribute data
+line must contain an entity ID followed by the value to assigned to
+it.
+
+
+NO COMMENT LINES ARE ALLOWED. 
+
+
+Example file for a mesh of 5 cells and 12 node
+----------------------------------
+3
+cell_density  ceLL  -1
+2.0 3.0 
+1.0 
+1.55 2.35
+cell_color CELL 3
+1 2 2
+node_color nodE -1
+3.5 4.5 100.5 2.5 
+6.0 2.0
+1.0 5.0 5.5 3.5 -2.0
+--------------------------------- 
+
