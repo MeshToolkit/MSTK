@@ -24,7 +24,7 @@ extern "C" {
     int initstatus;
     MPI_Initialized(&initstatus);
     if (initstatus == 0) {
-      int loc_argc=1;
+      int loc_argc=0;
       char **loc_argv=NULL;
       
       MPI_Init(&loc_argc,&loc_argv);
