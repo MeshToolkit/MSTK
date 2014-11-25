@@ -41,7 +41,7 @@ extern "C" {
 
 
   int MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, MSTK_Comm comm) {
-    int mesh_info[12], count;
+    int mesh_info[9], count;
     RepType rtype;
     MPI_Request request;
     MPI_Status status;
@@ -53,7 +53,7 @@ extern "C" {
 
     /* mesh_info store the mesh reptype, nv, nf, nfvs and natt */
     /* receive mesh_info */
-    errcode = MPI_Recv(mesh_info,12,MPI_INT,fromrank,rank,comm,&status);
+    errcode = MPI_Recv(mesh_info,9,MPI_INT,fromrank,rank,comm,&status);
     if (errcode != MPI_SUCCESS) {
       MPI_Error_string(errcode,errorstr,&len);
       sprintf(mesg,"MPI_Recv failed with error %s",errorstr);
