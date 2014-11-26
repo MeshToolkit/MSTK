@@ -99,7 +99,7 @@ extern "C" {
                             void ***ptrs2free) {
     int i, j, nv, ne, nf, nevs, nfes, nfv, natt, nset, ncomp, dir;
     int nfe, maxnfe;
-    int mesh_info[9];
+    int *mesh_info;
     MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
@@ -159,6 +159,8 @@ extern "C" {
 
     nevs = (2+3)*ne;  
     nfes = (1 + maxnfe + 3)*nf;
+
+    mesh_info = (int *) malloc(9*sizeof(int));
     
     mesh_info[0] = rtype;
     mesh_info[1] = nv;
@@ -321,6 +323,7 @@ extern "C" {
       *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
     }
 
+    (*ptrs2free)[(*numptrs2free)++] = mesh_info;
     (*ptrs2free)[(*numptrs2free)++] = list_vertex;
     (*ptrs2free)[(*numptrs2free)++] = list_coor;  
     (*ptrs2free)[(*numptrs2free)++] = list_edge;
@@ -345,7 +348,7 @@ extern "C" {
     int i, j, nv, ne, nf, nr;
     int nevs, nfes, nrfs, nfe, nrv, nrf, natt, nset, ncomp, dir;
     int maxnfe, maxnrf;
-    int mesh_info[9];
+    int *mesh_info;
     MVertex_ptr mv;
     MEdge_ptr me;
     MFace_ptr mf;
@@ -419,6 +422,7 @@ extern "C" {
     nfes = (1 + maxnfe + 3)*nf;
     nrfs = (1 + maxnrf + 3)*nr;
     
+    mesh_info = (int *) malloc(9*sizeof(int));
 
     mesh_info[0] = rtype;
     mesh_info[1] = nv;
@@ -617,6 +621,7 @@ extern "C" {
       *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
     }
 
+    (*ptrs2free)[(*numptrs2free)++] = mesh_info;
     (*ptrs2free)[(*numptrs2free)++] = list_vertex;
     (*ptrs2free)[(*numptrs2free)++] = list_coor;  
     (*ptrs2free)[(*numptrs2free)++] = list_edge;
@@ -630,7 +635,6 @@ extern "C" {
       (*ptrs2free)[(*numptrs2free)++] = list_mset;
       (*ptrs2free)[(*numptrs2free)++] = list_mset_names;
     }
-
 
     return 1;
   }
