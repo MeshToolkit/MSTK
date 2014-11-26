@@ -158,8 +158,8 @@ extern "C" {
       *ptrs2free = (void **) malloc(*maxptrs2free*sizeof(void *));
       *numptrs2free = 0;
     }
-    else if (*maxptrs2free < (*numptrs2free) + 3) {
-      *maxptrs2free *= 2;
+    else if (*maxptrs2free < (*numptrs2free) + 2) {
+      *maxptrs2free = 2*(*maxptrs2free) + 2;
       *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
     }
 
@@ -241,15 +241,15 @@ extern "C" {
 
   /* printf("received %d attributes of attribute index %d in MESH_RecvAttr() from rank %d on rank %d\n",count,attr_index,fromrank,rank); */
 
-  list_value_int = (int *) malloc((num)*ncomp*sizeof(int));
-  list_value_double = (double *) malloc(num*ncomp*sizeof(double));
   /* reveive value */
   if (att_type == INT) {
+    list_value_int = (int *) malloc((num)*ncomp*sizeof(int));
     result = MPI_Recv(list_value_int,(num)*ncomp,MPI_INT,fromrank,rank,comm, &status);
     if (result != MPI_SUCCESS)
       MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);    
   }
   else {
+    list_value_double = (double *) malloc(num*ncomp*sizeof(double));
     result = MPI_Recv(list_value_double,num*ncomp,MPI_DOUBLE,fromrank,rank,comm, &status);
     if (result != MPI_SUCCESS)
       MSTK_Report("MESH_RecvAttr","Trouble with receiving attributes",MSTK_FATAL);    
@@ -303,8 +303,10 @@ extern "C" {
   }
   
    free(list_info);
-   free(list_value_int);
-   free(list_value_double);
+   if (att_type == INT) 
+     free(list_value_int);
+   else if (att_type == DOUBLE)
+     free(list_value_double);
 
   return 1;
 }
