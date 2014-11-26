@@ -55,7 +55,7 @@ extern "C" {
   mtype = MSet_EntDim(mset);
   nent = MSet_Num_Entries(mset);
 
-  list_info = (int *)MSTK_malloc(sizeof(int));
+  list_info = (int *)malloc(sizeof(int));
   list_info[0] = nent;
 
   MPI_Isend(list_info,1,MPI_INT,torank,torank,comm,&mpirequest);
@@ -63,13 +63,13 @@ extern "C" {
   (*numreq)++;
 
   if (!nent) {
-    MSTK_free(list_info);
+    free(list_info);
     return 1;
   }
 
   /* attribute index and global id */ 
   num = 2*nent;
-  list_value_int = (int *)MSTK_malloc(num*sizeof(int));
+  list_value_int = (int *)malloc(num*sizeof(int));
 
   idx = 0; i = 0;
   while ((ment = MSet_Next_Entry(mset,&idx))) {
@@ -91,7 +91,7 @@ extern "C" {
     *numptrs2free = 0;
   }
   else if (*maxptrs2free < (*numptrs2free) + 2) {
-    *maxptrs2free *= 2;
+    *maxptrs2free = 2*(*maxptrs2free) + 2 ;
     *ptrs2free = (void **) realloc(*ptrs2free,(*maxptrs2free)*sizeof(void *));
   }
 
@@ -144,7 +144,7 @@ extern "C" {
   mtype = MSet_EntDim(mset);
 
   /* receive info */
-  list_info = (int *)MSTK_malloc(sizeof(int));
+  list_info = (int *)malloc(sizeof(int));
   result = MPI_Recv(list_info,1,MPI_INT,fromrank,rank,comm,&status); 
   if (result != MPI_SUCCESS)
     MSTK_Report("MESH_RecvMSet","Error receiving mesh set info",MSTK_FATAL);
@@ -152,12 +152,12 @@ extern "C" {
   nent = list_info[0];
 
   if (!nent) {
-    MSTK_free(list_info);
+    free(list_info);
     return 1;
   }
 
   num = 2*nent;
-  list_value_int = (int *)MSTK_malloc(num*sizeof(int));
+  list_value_int = (int *)malloc(num*sizeof(int));
 
   result = MPI_Recv(list_value_int,num,MPI_INT,fromrank,rank,comm,&status);
   if (result != MPI_SUCCESS)
@@ -199,8 +199,8 @@ extern "C" {
     MSet_Add(mset,ment);
   }
   
-  MSTK_free(list_info);
-  MSTK_free(list_value_int);
+  free(list_info);
+  free(list_value_int);
 
   return 1;
 }
