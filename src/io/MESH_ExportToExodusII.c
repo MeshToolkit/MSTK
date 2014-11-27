@@ -1607,7 +1607,7 @@ extern "C" {
       
       for (i = 0; i < (*num_element_block_glob); i++) {
         int found = 0;
-        for (j = 0; j < (*num_element_block_glob); j++) {
+        for (j = 0; j < nb; j++) {
           if (element_block_ids[j] == (*element_block_ids_glob)[i]) {
 
             /* This global element block ID is present on this partition.
