@@ -21,7 +21,7 @@ void import_attributes(Mesh_ptr mesh, char *attfname);
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256], attfname[256];
   Mesh_ptr mesh;
-  int len, ok;
+  int len, ok=0;
   int build_classfn=1, partition=0, weave=0, use_geometry=0, parallel_check=0;
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
       int with_attr = 1; /* Do allow exchange of attributes */
       int del_inmesh = 1; /* Delete input mesh after partitioning */
 
-      int ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
+      ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
                                     partmethod, del_inmesh, comm);
       
       if (rank == 0) {
