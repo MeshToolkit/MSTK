@@ -307,7 +307,11 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
                                       int noptions, char **options,
                                       MSTK_Comm comm);
   int        FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm);
-  int        MESH_Partition(Mesh_ptr mesh, int num, int *part, Mesh_ptr *submeshes);
+  int        MESH_Partition(Mesh_ptr parentmesh, int num, int *part, Mesh_ptr *submeshes);
+  int        MESH_Partition_and_Send(Mesh_ptr parentmesh, int num, int *parts,
+                                     int *toranks, int ring, int with_attr, 
+                                     int del_inmesh, MSTK_Comm comm, 
+                                     Mesh_ptr *mymesh);
   int        MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submesh, const char *attr_name);
 
   /* build processor boundary */
@@ -315,36 +319,87 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int        MESH_AssignGlobalIDs(Mesh_ptr submesh, int topodim, int have_GIDs, MSTK_Comm comm);
   int        MESH_LabelPType(Mesh_ptr submesh, int topodim, MSTK_Comm comm);
   int        MESH_BuildSubMesh(Mesh_ptr mesh, int topodim, Mesh_ptr submesh);
-  int        MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes);
+  int        MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, 
+                                Mesh_ptr *submeshes);
   /* add ghost elements */
-  int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring);
+  int        MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, 
+                           int ring);
   /* send and receive mesh */
-  int        MSTK_SendMesh(Mesh_ptr mesh, int torank, int with_attr, 
-                           MSTK_Comm comm, int *numreq, int *maxreq, 
-                           MPI_Request **requests,
-                           int *numptrs2free, int *maxptrs2free,
-                           void ***ptrs2free);
-  int        MESH_SendMesh(Mesh_ptr mesh, int torank, MSTK_Comm comm,
+  int        MESH_SendMesh(Mesh_ptr mesh, int torank, int with_attr,
+                           MSTK_Comm comm,
                            int *numreq, int *maxreq, MPI_Request **requests,
                            int *numptrs2free, int *maxptrs2free,
                            void ***ptrs2free);
-  int        MESH_SendAttr(Mesh_ptr mesh, const char *attr_name, int torank, 
-                           MSTK_Comm comm, int *numreq, int *maxreq, 
-                           MPI_Request **requests,
-                           int *numptrs2free, int *maxptrs2free,
-                           void ***ptrs2free);
-  int        MESH_SendMSet(Mesh_ptr mesh, const char *attr_name, int torank, 
-                           MSTK_Comm comm, int *numreq, int *maxreq, 
-                           MPI_Request **requests,
-                           int *numptrs2free, int *maxptrs2free,
-                           void ***ptrs2free);
-  int        MSTK_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, int with_attr,
+  int        MESH_Send_MetaData(Mesh_ptr mesh, int torank, MSTK_Comm comm,
+                                int *numreq, int *maxreq, 
+                                MPI_Request **requests,
+                                int *numptrs2free, int *maxptrs2free,
+                                void ***ptrs2free);
+  int        MESH_Send_Vertices(Mesh_ptr mesh, int torank, MSTK_Comm comm, 
+                                int *numreq, int *maxreq, 
+                                MPI_Request **requests,
+                                int *numptrs2free, int *maxptrs2free,
+                                void ***ptrs2free);
+  int        MESH_Send_VertexCoords(Mesh_ptr mesh, int torank, MSTK_Comm comm, 
+                                    int *numreq, int *maxreq, 
+                                    MPI_Request **requests,
+                                    int *numptrs2free, int *maxptrs2free,
+                                    void ***ptrs2free);
+  int        MESH_Send_NonVertexEntities(Mesh_ptr mesh, int torank, 
+                                         MSTK_Comm comm, 
+                                         int *numreq, int *maxreq, 
+                                         MPI_Request **requests,
+                                         int *numptrs2free, int *maxptrs2free,
+                                         void ***ptrs2free);
+  int        MESH_SendAttributes(Mesh_ptr mesh, int torank, MSTK_Comm comm,
+                                 int *numreq, int *maxreq, 
+                                 MPI_Request **requests, int *numptrs2free, 
+                                 int *maxptrs2free, void ***ptrs2free);
+  int        MESH_Send_AttributeMetaData(Mesh_ptr mesh, int torank, 
+                                         MSTK_Comm comm,
+                                         int *numreq, int *maxreq, 
+                                         MPI_Request **requests, 
+                                         int *numptrs2free, 
+                                         int *maxptrs2free, void ***ptrs2free);
+  int        MESH_Send_Attribute(Mesh_ptr mesh, MAttrib_ptr attrib, int torank, 
+                                 MSTK_Comm comm, int *numreq, int *maxreq, 
+                                 MPI_Request **requests, int *numptrs2free, 
+                                 int *maxptrs2free, void ***ptrs2free);
+  int        MESH_Send_MSetMetaData(Mesh_ptr mesh, int torank, 
+                                    MSTK_Comm comm,
+                                    int *numreq, int *maxreq, 
+                                    MPI_Request **requests, 
+                                    int *numptrs2free, 
+                                    int *maxptrs2free, void ***ptrs2free);
+  int        MESH_SendMSets(Mesh_ptr mesh, int torank, MSTK_Comm comm,
+                            int *numreq, int *maxreq, MPI_Request **requests, 
+                            int *numptrs2free, int *maxptrs2free, 
+                            void ***ptrs2free);
+  int        MESH_Send_MSet(Mesh_ptr mesh, MSet_ptr attrib, int torank, 
+                            MSTK_Comm comm, int *numreq, int *maxreq, 
+                            MPI_Request **requests, int *numptrs2free, 
+                            int *maxptrs2free, void ***ptrs2free);
+  int        MESH_RecvMesh(Mesh_ptr mesh, int fromrank, int with_attr,
                            MSTK_Comm comm);
-  int        MESH_RecvMesh(Mesh_ptr mesh, int dim, int fromrank, MSTK_Comm comm);
-  int        MESH_RecvAttr(Mesh_ptr mesh, const char *attr_name, int fromrank,
-                           MSTK_Comm comm);
-  int        MESH_RecvMSet(Mesh_ptr mesh, const char *attr_name, int fromrank, 
-                           MSTK_Comm comm);
+  int        MESH_Recv_MetaData(Mesh_ptr mesh, int fromrank, RepType *rtype,
+                                int *nv, int *ne, int *nf, int *nr,
+                                MSTK_Comm comm);
+  int        MESH_Recv_Vertices(Mesh_ptr mesh, int fromrank, int nv,
+                                MSTK_Comm comm);
+  int        MESH_Recv_VertexCoords(Mesh_ptr mesh, int fromrank, int nv,
+                                MSTK_Comm comm);
+  int        MESH_Recv_NonVertexEntities(Mesh_ptr mesh, int fromrank, int ne,
+                                         int nf, int nr, MSTK_Comm comm);
+  int        MESH_RecvAttributes(Mesh_ptr mesh, int fromrank, MSTK_Comm comm);
+  int        MESH_Recv_AttributeMetaData(Mesh_ptr mesh, int fromrank, 
+                                         MSTK_Comm comm);
+  int        MESH_Recv_Attribute(Mesh_ptr mesh, MAttrib_ptr attrib, 
+                                 int fromrank, MSTK_Comm comm);
+  int        MESH_RecvMSets(Mesh_ptr mesh, int fromrank, MSTK_Comm comm);
+  int        MESH_Recv_MSetMetaData(Mesh_ptr mesh, int fromrank, 
+                                    MSTK_Comm comm);
+  int        MESH_Recv_MSet(Mesh_ptr mesh, MSet_ptr mset, int fromrank, 
+                            MSTK_Comm comm);
 
 
 
@@ -352,7 +407,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int        MESH_Build_GhostLists(Mesh_ptr mesh, int topodim);
 
   /* create entity */
-  /* no OvEntity create function since they are just pointers to regular Entity */
+
   MVertex_ptr MV_GhostNew(Mesh_ptr mesh);
   MEdge_ptr   ME_GhostNew(Mesh_ptr mesh);
   MFace_ptr   MF_GhostNew(Mesh_ptr mesh);
@@ -360,7 +415,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 
   /* functions to update ghost info and attributes */
-  int        MESH_UpdateAttr(Mesh_ptr mesh, const char *attr_name, MSTK_Comm comm);
   int        MESH_ParallelAdj_Current(Mesh_ptr mesh);
   void       MESH_Mark_ParallelAdj_Current(Mesh_ptr mesh);
   void       MESH_Mark_ParallelAdj_Stale(Mesh_ptr mesh);
