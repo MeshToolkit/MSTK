@@ -10,8 +10,18 @@ extern "C" {
 #endif
 
  /* 
+    *** WARNING WARNING:***
+
+    THIS IS AN INTERNAL MSTK ROUTINE AND MUST BE USED UNDER SPECIFIC
+    CIRCUMSTANCES AND IS APPROPRIATE TO BE CALLED BY
+    'MSTK_Mesh_Distribute' or 'MSTK_Mesh_Partition' ONLY. IT RELIES ON
+    THE ASSUMPTION THAT THERE ARE LINKS FROM THE ENTITIES OF THE
+    GLOBAL MESH TO CORRESPONDING ENTITIES OF THE SUBMESHES THROUGH AN
+    ATTRIBUTE CALLED 'g2latt'
+    
+
     this function copy attribute information from mesh to submesh
-    assume mesh and submesh have the same attributes list
+    assume mesh and submesh have the same attributes list. 
 
     attr_name: the attribute name
 
