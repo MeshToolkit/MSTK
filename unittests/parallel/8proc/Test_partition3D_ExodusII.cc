@@ -26,6 +26,13 @@ TEST(Partition3D_sym_1ring_exo) {
 
   CHECK(status);
 
+
+  // The classification info may be incomplete since the mesh is being imported 
+  // from an Exodus II file, so turn off the following call.
+
+  // status = MESH_CheckTopo(mesh);
+  // CHECK(status);
+
   return;
 }
 }

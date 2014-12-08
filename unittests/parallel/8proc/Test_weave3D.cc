@@ -240,6 +240,13 @@ TEST(Weave3D_from_MSTK) {
 
   CHECK(status);
 
+  // Have to get the classifications of entities in the individual files 
+  // consistent with those on a box before this check will pass - turn it
+  // off for now
+
+  // status = MESH_CheckTopo(mesh);
+  // CHECK(status);
+
 
   nr = MESH_Num_Regions(mesh); /* includes ghost regionss */
 

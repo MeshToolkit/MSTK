@@ -57,6 +57,9 @@ TEST(Partition3D_sym_0ring_METIS) {
     status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex2x2x2.mstk",comm);
       
     CHECK(status);
+
+    status = MESH_CheckTopo(globalmesh);
+    CHECK(status);
       
     CHECK(MESH_Num_Regions(globalmesh));
       
@@ -170,6 +173,9 @@ TEST(Partition3D_sym_1ring_METIS) {
     status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex2x2x2.mstk",comm);
     
     CHECK(status);
+
+    status = MESH_CheckTopo(globalmesh);
+    CHECK(status);
     
     CHECK(MESH_Num_Regions(globalmesh));
     
@@ -183,6 +189,9 @@ TEST(Partition3D_sym_1ring_METIS) {
   status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
 				with_attr, method, del_inmesh, comm);
   
+  CHECK(status);
+
+  status = MESH_CheckTopo(mymesh);
   CHECK(status);
   
   ngr = MESH_Num_GhostRegions(mymesh);
@@ -285,6 +294,9 @@ TEST(Partition3D_sym_0ring_ZOLTAN_GRAPH) {
     globalmesh = MESH_New(UNKNOWN_REP);
     status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex2x2x2.mstk",comm);
       
+    CHECK(status);
+
+    status = MESH_CheckTopo(globalmesh);
     CHECK(status);
       
     CHECK(MESH_Num_Regions(globalmesh));
@@ -399,6 +411,9 @@ TEST(Partition3D_sym_1ring_ZOLTAN_GRAPH) {
     status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex2x2x2.mstk",comm);
     
     CHECK(status);
+
+    status = MESH_CheckTopo(globalmesh);
+    CHECK(status);
     
     CHECK(MESH_Num_Regions(globalmesh));
     
@@ -412,6 +427,9 @@ TEST(Partition3D_sym_1ring_ZOLTAN_GRAPH) {
   status = MSTK_Mesh_Distribute(globalmesh, &mymesh, &dim, num_ghost_layers, 
 				with_attr, method, del_inmesh, comm);
   
+  CHECK(status);
+
+  status = MESH_CheckTopo(mymesh);
   CHECK(status);
   
   ngr = MESH_Num_GhostRegions(mymesh);
@@ -514,8 +532,11 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
   if (rank == 0) {
       
     globalmesh = MESH_New(UNKNOWN_REP);
-    status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex_4x4x2.mstk",comm);
+    status = MESH_InitFromFile(globalmesh,"parallel/8proc/hex4x4x2.mstk",comm);
       
+    CHECK(status);
+
+    status = MESH_CheckTopo(globalmesh);
     CHECK(status);
       
     CHECK(MESH_Num_Regions(globalmesh));
