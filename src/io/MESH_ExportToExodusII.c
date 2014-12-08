@@ -1579,9 +1579,6 @@ extern "C" {
         
       } /* if (rank == 0) */
 
-      if (verbose)
-        fprintf(stderr,"Finished counting up global blocks\n");
-      
       /* Tell everyone how many element blocks there really are */
       
       MPI_Bcast(num_element_block_glob,1,MPI_INT,0,comm);
@@ -2309,8 +2306,6 @@ extern "C" {
         
         } /* if (rank == 0) */
         
-        if (verbose)
-          fprintf(stderr,"Finished counting up attributes\n");
         
         /* Tell everyone how many attributes there really are */
         
