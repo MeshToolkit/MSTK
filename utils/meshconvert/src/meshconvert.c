@@ -151,8 +151,12 @@ int main(int argc, char *argv[]) {
     inmeshformat = GMV;
   else if ((len > 4 && strncmp(&(infname[len-4]),".exo",4) == 0) ||
 	   (len > 2 && strncmp(&(infname[len-2]),".g",2) == 0) ||
-	   (len > 2 && strncmp(&(infname[len-2]),".e",2) == 0))
-    inmeshformat = EXODUSII;
+	   (len > 2 && strncmp(&(infname[len-2]),".e",2) == 0)) {
+    if (weave)
+      inmeshformat = NEMESISI; /* clearly user wants weave distributed meshes */
+    else
+      inmeshformat = EXODUSII;
+  }
   else if (len > 4 && strncmp(&(infname[len-4]),".par",4) == 0) 
     inmeshformat = NEMESISI;
   else if ((len > 4 && strncmp(&(infname[len-4]),".avs",4) == 0) ||
