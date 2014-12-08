@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
   if(rank == 0) {
 
     int del_inmesh = 0;
-    MSTK_Mesh_Partition(mesh, num_parts, part, 0, 0, del_inmesh, submeshes);
+    Mesh_Partition(mesh, num_parts, part, submeshes);
 
     idx = 0;
     if(MESH_Num_Regions(mesh)) {
