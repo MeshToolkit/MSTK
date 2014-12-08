@@ -219,11 +219,13 @@ int main(int argc, char *argv[]) {
     ok = 0;
     switch(inmeshformat) {
     case GMV:
-      fprintf(stderr,"Importing mesh from GMV file...");
+      if (rank == 0)
+        fprintf(stderr,"Importing mesh from GMV file...");
       ok = MESH_ImportFromFile(mesh,infname,"gmv",opts,comm);
       break;
     case EXODUSII:
-      fprintf(stderr,"Importing mesh from ExodusII file...");
+      if (rank == 0)
+        fprintf(stderr,"Importing mesh from ExodusII file...");
       opts[0] = 0; /* don't partition while importing - do it later */
       opts[1] = 0;
       opts[2] = 0; /* no ghost layers */  
@@ -231,32 +233,40 @@ int main(int argc, char *argv[]) {
       ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
       break;
     case NEMESISI:
-      fprintf(stderr,"Importing mesh from NemesisI file...");
+      if (rank == 0)
+        fprintf(stderr,"Importing mesh from NemesisI file...");
       opts[0] = weave ? 1 : 0; 
       opts[1] = num_ghost_layers; /* no ghost layers */      
       ok = MESH_ImportFromFile(mesh,infname,"nemesisi",opts,comm);      
       break;
     case CGNS:
-      fprintf(stderr,"Cannot import mesh from CGNS format. ");
+      if (rank == 0)
+        fprintf(stderr,"Cannot import mesh from CGNS format. ");
       break;
     case VTK:
-      fprintf(stderr,"Cannot import mesh from VTK format. ");
+      if (rank == 0)
+        fprintf(stderr,"Cannot import mesh from VTK format. ");
       break;
     case AVSUCD:
-      fprintf(stderr,"Cannot import mesh from AVS format. ");
+      if (rank == 0)
+        fprintf(stderr,"Cannot import mesh from AVS format. ");
       break;
     case X3D:
-      fprintf(stderr,"Importing mesh from X3D format...");
+      if (rank == 0)
+        fprintf(stderr,"Importing mesh from X3D format...");
       ok = MESH_ImportFromFile(mesh,infname,"x3d",opts,comm);
       break;
     default:
       fprintf(stderr,"Cannot import from unrecognized format. ");
     }
 
-    if (ok)
-      fprintf(stderr,"Done\n");
+    if (ok) {
+      if (rank == 0)
+        fprintf(stderr,"Done\n");
+    }
     else {
-      fprintf(stderr,"Failed\n");
+      if (rank == 0)
+        fprintf(stderr,"Failed\n");
       exit(-1);
     }
   }
@@ -265,21 +275,28 @@ int main(int argc, char *argv[]) {
 
 
   if (build_classfn) {
-    fprintf(stderr,"Building classification information....");
+    if (rank == 0)
+      fprintf(stderr,"Building classification information....");
 
     ok = MESH_BuildClassfn(mesh,use_geometry);  
 
-    if (ok)
-      fprintf(stderr,"Done\n");
+    if (ok) {
+      if (rank == 0)
+        fprintf(stderr,"Done\n");
+    }
     else {
-      fprintf(stderr,"Failed\n");
+      if (rank == 0)
+        fprintf(stderr,"Failed\n");
       exit(-1);
     }
   }
 
-  /* Check that the imported mesh is ok */
+  /* Check that the imported mesh is ok - but only if the input mesh is
+   not pre-partitioned. Pre-partitioned meshes will not conform to the 
+   rules that a complete mesh will */
 
-  ok = MESH_CheckTopo(mesh);
+  if (!weave)
+    ok = MESH_CheckTopo(mesh);
 
 
 #ifdef MSTK_HAVE_MPI
@@ -335,10 +352,6 @@ int main(int argc, char *argv[]) {
         }
       }
 
-      /*      if (rank == 0)
-	      MESH_Delete(mesh0);
-      */
-
     }    
   }
 
@@ -351,7 +364,11 @@ int main(int argc, char *argv[]) {
     /* Do a parallel consistency check too */
 
     ok = ok && MESH_Parallel_Check(mesh,comm);
-    
+
+    MPI_Reduce(&ok,&ok,1,MPI_INT,MPI_MIN,0,comm);
+
+    if (rank == 0 && ok)
+      fprintf(stderr,"Parallel checks passed...\n");
   }
 #endif
 
@@ -359,50 +376,62 @@ int main(int argc, char *argv[]) {
 
 
   if (outmeshformat == MSTK) {
-    fprintf(stderr,"Writing mesh to MSTK file...");
+    if (rank == 0)
+      fprintf(stderr,"Writing mesh to MSTK file...");
     MESH_WriteToFile(mesh,outfname,MESH_RepType(mesh),comm);
     fprintf(stderr,"Done\n");
   }
   else {
     switch(outmeshformat) {
     case GMV:
-      fprintf(stderr,"Exporting mesh to GMV format...");
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to GMV format...");
       ok = MESH_ExportToFile(mesh,outfname,"gmv",-1,NULL,NULL,comm);
       break;
     case EXODUSII:case NEMESISI:
-      fprintf(stderr,"Exporting mesh to ExodusII format...");
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to ExodusII/NemesisI format...");
       ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL,comm);
       break;
     case CGNS:
-      fprintf(stderr,"Cannot export to CGNS format. ");
+      if (rank == 0)
+        fprintf(stderr,"Cannot export to CGNS format. ");
       break;
     case VTK:
-      fprintf(stderr,"Cannot export to VTK format. ");
+      if (rank == 0)
+        fprintf(stderr,"Cannot export to VTK format. ");
       break;
     case AVSUCD:
-      fprintf(stderr,"Cannot export to AVS format. ");
+      if (rank == 0)
+        fprintf(stderr,"Cannot export to AVS format. ");
       break;
     case X3D:
-      fprintf(stderr,"Exporting mesh to FLAG/X3D format...");
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to FLAG/X3D format...");
       ok = MESH_ExportToFile(mesh,outfname,"x3d",-1,NULL,NULL,comm);
       break;
     case STL:
-      fprintf(stderr,"Exporting mesh to STL format...");
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to STL format...");
       ok = MESH_ExportToFile(mesh, outfname,"stl",-1,NULL,NULL,comm);
       break;
     case DX:
-      fprintf(stderr,"Exporting mesh to DX format...");
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to DX format...");
       ok = MESH_ExportToDX(mesh, outfname, 1);
       break;
     default:
-      fprintf(stderr,"Cannot export mesh to unrecognized format. \n");      
+      if (rank == 0)
+        fprintf(stderr,"Cannot export mesh to unrecognized format. \n");      
     }
 
-    if (ok)
-      fprintf(stderr,"Done\n");
-    else {
-      fprintf(stderr,"Failed\n");
-      exit(-1);
+    if (rank == 0) {
+      if (ok)
+        fprintf(stderr,"Done\n");
+      else {
+        fprintf(stderr,"Failed\n");
+        exit(-1);
+      }
     }
   }
 
