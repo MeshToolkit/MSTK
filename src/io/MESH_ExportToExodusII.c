@@ -1579,7 +1579,8 @@ extern "C" {
         
       } /* if (rank == 0) */
 
-      fprintf(stderr,"Finished counting up global blocks\n");
+      if (verbose)
+        fprintf(stderr,"Finished counting up global blocks\n");
       
       /* Tell everyone how many element blocks there really are */
       
@@ -2308,7 +2309,8 @@ extern "C" {
         
         } /* if (rank == 0) */
         
-        fprintf(stderr,"Finished counting up attributes\n");
+        if (verbose)
+          fprintf(stderr,"Finished counting up attributes\n");
         
         /* Tell everyone how many attributes there really are */
         
