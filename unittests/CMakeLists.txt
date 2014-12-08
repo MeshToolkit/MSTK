@@ -31,7 +31,7 @@ if (BUILD_TESTS)
     ${ExodusII_LIBRARIES} 
     ${NetCDF_LIBRARIES}
     ${HDF5_LIBRARIES}
-    ${UNITTEST_LIBRARY} m)
+    ${UNITTEST_LIBRARY})
 
   add_test(NAME serial_unittests COMMAND mstk_serial_unit_tests)
 
