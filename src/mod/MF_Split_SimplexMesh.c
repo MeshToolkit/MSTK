@@ -13,8 +13,8 @@
 
 
 MVertex_ptr MF_Split_SimplexMesh(MFace_ptr fsplit, double *splitxyz) {
-  int i, j, k, rfdir, ntets=0, ntris=0, *rid, fgdim, fgid, found;
-  MVertex_ptr vsplit, ev[2], (*tetverts)[4], triverts[3], fv;
+  int i, j, k, rfdir=1, ntets=0, ntris=0, *rid=NULL, fgdim, fgid, found;
+  MVertex_ptr vsplit, ev[2], (*tetverts)[4]=NULL, triverts[3], fv;
   MVertex_ptr fvarr[3], rvarr[4];
   MFace_ptr f;
   MRegion_ptr r;

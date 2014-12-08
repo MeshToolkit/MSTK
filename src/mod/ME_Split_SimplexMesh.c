@@ -6,8 +6,8 @@
 /* Split an edge in a simplex mesh and also subdivide elements (triangles or tetrahedra connected to this edge */
 
 MVertex_ptr ME_Split_SimplexMesh(MEdge_ptr esplit, double *splitxyz) {
-  int i, j, k, rfdir, ntets=0, ntris=0, *fdim, *fid, *rid, found;
-  MVertex_ptr vsplit, ev[2], (*tetverts)[4], (*triverts)[3], fv;
+  int i, j, k, rfdir, ntets=0, ntris=0, *fdim, *fid, *rid=NULL, found;
+  MVertex_ptr vsplit, ev[2], (*tetverts)[4]=NULL, (*triverts)[3]=NULL, fv;
   MVertex_ptr fvarr[3], rvarr[4];
   MFace_ptr f;
   MRegion_ptr r;
