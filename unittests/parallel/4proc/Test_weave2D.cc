@@ -69,13 +69,14 @@ TEST(Weave2D) {
   CHECK(!MESH_Num_Regions(mesh));
   CHECK(MESH_Num_Faces(mesh));
 
-
   int input_type = 0;  /* no parallel info present in meshes */
   int num_ghost_layers = 1; /* always */
   int topodim = 2;
   status = MSTK_Weave_DistributedMeshes(mesh, topodim, num_ghost_layers, input_type, comm);
 
   CHECK(status);
+
+  CHECK(MESH_CheckTopo(mesh));
 
 
   nf = MESH_Num_Faces(mesh); /* includes ghost faces */

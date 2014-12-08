@@ -40,6 +40,8 @@ TEST(VertexUpdate2D) {
       status = 0;
       CHECK(status);
     }
+
+    CHECK(MESH_CheckTopo(mesh0));
   }
 
   int ring = 1; /* One ring ghosts */
@@ -59,6 +61,8 @@ TEST(VertexUpdate2D) {
   mesh = NULL;
   status = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method, 
 				del_inmesh, comm);
+
+  CHECK(MESH_CheckTopo(mesh));
 
   /* if (rank == 0) MESH_Delete(mesh0); */
 
@@ -83,7 +87,7 @@ TEST(VertexUpdate2D) {
   //  fprintf(stderr,"Deformed mesh proc %-d\n",rank);
 
   MESH_UpdateVertexCoords(mesh, comm);
-  MSTK_UpdateAttr(mesh, comm);
+  MESH_UpdateAttributes(mesh, comm);
 
   //  fprintf(stderr,"Updated vertex coordinates proc %-d\n",rank);
 

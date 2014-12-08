@@ -5,9 +5,9 @@
 SUITE(Parallel) {
 TEST(UpdAtt2D_Dist) {
 
-  int i, idx, ival;
+  int i, idx, ival, status;
   int vcol, fcol, mpid;
-  int nproc, rank, status, dim;
+  int nproc, rank, dim;
   double rval;
   void *pval;
   Mesh_ptr mesh;
@@ -38,6 +38,9 @@ TEST(UpdAtt2D_Dist) {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
       exit(-1);
     }
+
+    status = MESH_CheckTopo(mesh0);
+    CHECK(status);
   }
 
 //  DebugWait=1;
@@ -54,13 +57,16 @@ TEST(UpdAtt2D_Dist) {
   method = 1;
 #else
   fprintf(stderr,"Cannot find partitioner\n");
-  int status = 0;
+  status = 0;
   CHECK(status);
 #endif
 
   mesh = NULL;
   MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr, method, 
 		       del_inmesh, comm);
+
+  status = MESH_CheckTopo(mesh);
+  CHECK(status);
 
   /*  if (rank == 0) MESH_Delete(mesh0); */
 
@@ -78,7 +84,7 @@ TEST(UpdAtt2D_Dist) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh, comm);
+  MESH_UpdateAttributes(mesh, comm);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {
@@ -143,6 +149,9 @@ TEST(UpdAtt2D_Weave) {
 
    CHECK(status);
 
+   status = MESH_CheckTopo(mesh);
+   CHECK(status);
+
    int DebugWait=0;
    while (DebugWait);
 
@@ -161,7 +170,7 @@ TEST(UpdAtt2D_Weave) {
     MEnt_Set_AttVal(mf,fcolatt,rank+1,0.0,NULL);
 
 
-  MSTK_UpdateAttr(mesh,comm);
+  MESH_UpdateAttributes(mesh,comm);
 
   idx = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx))) {

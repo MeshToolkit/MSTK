@@ -102,6 +102,9 @@ TEST(Partition2D_0ring) {
     CHECK(MESH_Num_Faces(globalmesh));
 
     dim = 2;
+
+    status = MESH_CheckTopo(globalmesh);
+    CHECK(status);
   }
 
   int method;
@@ -311,6 +314,9 @@ TEST(Partition2D_1ring) {
 
     CHECK(status);
 
+    status = MESH_CheckTopo(globalmesh);
+    CHECK(status);
+
     CHECK(!MESH_Num_Regions(globalmesh));
     CHECK(MESH_Num_Faces(globalmesh));
 
@@ -348,6 +354,9 @@ TEST(Partition2D_1ring) {
 
   CHECK(status);
 
+
+  status = MESH_CheckTopo(mymesh);
+  CHECK(status);
 
   nf = MESH_Num_Faces(mymesh)-MESH_Num_GhostFaces(mymesh);
 
