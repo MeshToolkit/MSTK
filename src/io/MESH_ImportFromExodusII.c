@@ -99,90 +99,98 @@ extern "C" {
     MPI_Comm_rank(comm,&rank);
   }
 
-  if (numprocs > 1 && parallel_opts && parallel_opts[0]) {
+  if (numprocs > 1 && parallel_opts) {
 
-    int num_ghost_layers = parallel_opts[2];
+    if (parallel_opts[0] == 1) { /* distribute the mesh */
 
-    int have_zoltan = 0, have_metis = 0;
+      int num_ghost_layers = parallel_opts[2];
+      
+      int have_zoltan = 0, have_metis = 0;
 #ifdef _MSTK_HAVE_ZOLTAN
-    have_zoltan = 1;
+      have_zoltan = 1;
 #endif
 #ifdef _MSTK_HAVE_METIS
-    have_metis = 1;
+      have_metis = 1;
 #endif
-
-    int part_method = parallel_opts[3];
-
-    if (part_method == 0) {
-      if (!have_metis) {
-        MSTK_Report(funcname,"Metis not available. Trying Zoltan",MSTK_WARN);
-        part_method = 1;
-        if (!have_zoltan) 
-          MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
-      }
-    }
-    else if (part_method == 1 || part_method == 2) {
-      if (!have_zoltan) {
-        MSTK_Report(funcname,"Zoltan not available. Trying Metis",MSTK_WARN);
-        part_method = 0;
-        if (!have_metis) 
-          MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
-      }
-    }
-
-
-    if (parallel_opts[1] == 0) {
-
-      /* Read on processor 0 and distribute to all other processors */
-
-      Mesh_ptr globalmesh;
-      int topodim;
       
-      if (rank == 0) { /* Read only on processor 0 */
-        
-        globalmesh = MESH_New(MESH_RepType(mesh));
-        int read_status = MESH_ReadExodusII_Serial(globalmesh,filename,rank);
-        
-        if (!read_status) {
-          sprintf(mesg,"Could not read Exodus II file %s successfully\n",
-                  filename);
-          MSTK_Report(funcname,mesg,MSTK_FATAL);
+      int part_method = parallel_opts[3];
+      
+      if (part_method == 0) {
+        if (!have_metis) {
+          MSTK_Report(funcname,"Metis not available. Trying Zoltan",MSTK_WARN);
+          part_method = 1;
+          if (!have_zoltan) 
+            MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
         }
-        
-        topodim = (MESH_Num_Regions(globalmesh) == 0) ? 2 : 3;
       }
-      else
-        globalmesh = NULL;
+      else if (part_method == 1 || part_method == 2) {
+        if (!have_zoltan) {
+          MSTK_Report(funcname,"Zoltan not available. Trying Metis",MSTK_WARN);
+          part_method = 0;
+          if (!have_metis) 
+            MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
+        }
+      }
       
-      int with_attr = 1;      
-      int del_inmesh = 1;
-      int dist_status = MSTK_Mesh_Distribute(globalmesh, &mesh, &topodim, 
-                                             num_ghost_layers,
-                                             with_attr, part_method, 
-                                             del_inmesh, comm);
-      if (!dist_status)
+      
+      if (parallel_opts[1] == 0) {
+        
+        /* Read on processor 0 and distribute to all other processors */
+        
+        Mesh_ptr globalmesh;
+        int topodim;
+        
+        if (rank == 0) { /* Read only on processor 0 */
+          
+          globalmesh = MESH_New(MESH_RepType(mesh));
+          int read_status = MESH_ReadExodusII_Serial(globalmesh,filename,rank);
+          
+          if (!read_status) {
+            sprintf(mesg,"Could not read Exodus II file %s successfully\n",
+                    filename);
+            MSTK_Report(funcname,mesg,MSTK_FATAL);
+          }
+          
+          topodim = (MESH_Num_Regions(globalmesh) == 0) ? 2 : 3;
+        }
+        else
+          globalmesh = NULL;
+        
+        int with_attr = 1;      
+        int del_inmesh = 1;
+        int dist_status = MSTK_Mesh_Distribute(globalmesh, &mesh, &topodim, 
+                                               num_ghost_layers,
+                                               with_attr, part_method, 
+                                               del_inmesh, comm);
+        if (!dist_status)
+          MSTK_Report(funcname,
+                      "Could not distribute meshes to other processors",
+                      MSTK_FATAL);
+        
+      }
+      else if (parallel_opts[1] == 1) {
+        
+      }
+      else if (parallel_opts[1] == 2) {
+        
+      }
+      else if (parallel_opts[1] == 3) {
+        
+      }
+
+      int parallel_check = MESH_Parallel_Check(mesh,comm);        
+      
+      if (!parallel_check)
         MSTK_Report(funcname,
-                    "Could not distribute meshes to other processors",
+                    "Parallel mesh checks failed",
                     MSTK_FATAL);
-      
-    }
-    else if (parallel_opts[1] == 1) {
 
     }
-    else if (parallel_opts[1] == 2) {
-
-    }
-    else if (parallel_opts[1] == 3) {
-
+    else { /* Read the mesh on rank 0 but don't distribute */
+      if (rank == 0)
+        return (MESH_ReadExodusII_Serial(mesh,filename,0));
     }
   
-    int parallel_check = MESH_Parallel_Check(mesh,comm);        
-    
-    if (!parallel_check)
-      MSTK_Report(funcname,
-                  "Parallel mesh checks failed",
-                  MSTK_FATAL);
-
   } /* if numprocs > 1 */
   else {
     if (rank == 0) 
