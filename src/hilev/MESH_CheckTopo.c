@@ -45,7 +45,11 @@ extern "C" {
 
     idx1 = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx1))) {
-      
+
+#ifdef MSTK_HAVE_MPI
+      if (MV_PType(mv) == PGHOST) continue;
+#endif      
+
       vid = MV_ID(mv);
       gvdim = MV_GEntDim(mv);
       gvid  = MV_GEntID(mv);
@@ -199,6 +203,10 @@ extern "C" {
 
     idx1 = 0;
     while ((me = MESH_Next_Edge(mesh,&idx1))) {
+
+#ifdef MSTK_HAVE_MPI
+      if (ME_PType(me) == PGHOST) continue;
+#endif
 
       eid = ME_ID(me);
       gedim = ME_GEntDim(me);
@@ -388,6 +396,10 @@ extern "C" {
     idx1 = 0;
     while ((mf = MESH_Next_Face(mesh,&idx1))) {
 
+#ifdef MSTK_HAVE_MPI
+      if (MF_PType(mf) == PGHOST) continue;
+#endif
+
       fid = MF_ID(mf);
       gfid = MF_GEntID(mf);
       gfdim = MF_GEntDim(mf);
@@ -460,6 +472,10 @@ extern "C" {
     idx1 = 0;
     while ((mr = MESH_Next_Region(mesh,&idx1))) {
       
+#ifdef MSTK_HAVE_MPI
+      if (MR_PType(mr) == PGHOST) continue;
+#endif
+
       rid = MR_ID(mr);
       grid = MR_GEntID(mr);
 
