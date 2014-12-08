@@ -2231,8 +2231,8 @@ extern "C" {
       
 
     int natts_glob;
-    char *att_names_glob; 
-    int *att_dim_glob;
+    char *att_names_glob=NULL; 
+    int *att_dim_glob=NULL;
 
 #ifdef MSTK_HAVE_MPI
 
