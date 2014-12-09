@@ -22,7 +22,11 @@ set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
+# This option may be needed for machines like Edison and Hopper
 
+if (PREFER_STATIC_LIBRARIES)
+   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a; .so")
+endif()
 
 
 ##############################################################################
