@@ -10,9 +10,18 @@ target_link_libraries(chkmesh
 
 # Would be nice to specify it relative to the path of this CMakeLists.txt file
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS chkmesh DESTINATION ${PROJECT_SOURCE_DIR}/utils/chkmesh/bin/${ARCHOS})
+if (INSTALL_DIR) 
+  if (INSTALL_PREFIX_ARCHOS)
+    install(TARGETS chkmesh DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
+  else ()
+    install(TARGETS chkmesh DESTINATION ${INSTALL_DIR}/bin)
+  endif ()
 else ()
-  install(TARGETS chkmesh DESTINATION ${PROJECT_SOURCE_DIR}/utils/chkmesh/bin/)
+  if (INSTALL_PREFIX_ARCHOS)
+    install(TARGETS chkmesh DESTINATION ${PROJECT_SOURCE_DIR}/bin/${ARCHOS})
+  else ()
+    install(TARGETS chkmesh DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+  endif ()
 endif ()
+
 

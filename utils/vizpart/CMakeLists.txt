@@ -8,8 +8,17 @@ target_link_libraries(vizpart
                       ${MSTK_TPL_LIBRARIES} 
                       m)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS vizpart DESTINATION ${PROJECT_SOURCE_DIR}/utils/vizpart/bin/${ARCHOS})
+if (INSTALL_DIR) 
+  if (INSTALL_PREFIX_ARCHOS)
+    install(TARGETS vizpart DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
+  else ()
+    install(TARGETS vizpart DESTINATION ${INSTALL_DIR}/bin)
+  endif ()
 else ()
-  install(TARGETS vizpart DESTINATION ${PROJECT_SOURCE_DIR}/utils/vizpart/bin/)
+  if (INSTALL_PREFIX_ARCHOS)
+    install(TARGETS vizpart DESTINATION ${PROJECT_SOURCE_DIR}/bin/${ARCHOS})
+  else ()
+    install(TARGETS vizpart DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+  endif ()
 endif ()
+

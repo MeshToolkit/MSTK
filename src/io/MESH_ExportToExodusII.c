@@ -181,16 +181,23 @@ extern "C" {
     if (nrall) {
       element_dim = 3; side_dim = 2; boundary_dim = 2;
 
-#ifdef MSTK_HAVE_MPI
 
-      /* Mark only the owned regions */
+      /* Mark the regions and their lower dimensional entities. In the
+         case of, parallel meshes, mark only owned regions - This has
+         the dual purpose of marking owned entities as well as giving
+         the entities a temporary renumbering to ensure contiguous
+         IDs */
         
       ownedmk = MSTK_GetMarker();
         
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx = 0;
       while ((mr = MESH_Next_Region(mesh,&idx))) {
+
+#ifdef MSTK_HAVE_MPI
         if (comm == 0 || comm == MPI_COMM_NULL || MR_PType(mr) != PGHOST) {
+#endif
+
           MEnt_Mark(mr,ownedmk);
           nr++;
             
@@ -223,10 +230,11 @@ extern "C" {
             }
           } /* while (mf...) */
           List_Delete(rfaces);
+
+#ifdef MSTK_HAVE_MPI
         }
-      }
-      
 #endif
+      }      
 
       
       num_element = nr; num_side = nf;
@@ -240,16 +248,22 @@ extern "C" {
 
       element_dim = 2; side_dim = 1; boundary_dim = 1;
 
-#ifdef MSTK_HAVE_MPI
-
-      /* Mark only the owned faces */
+      /* Mark the faces and their lower dimensional entities. In the
+         case of, parallel meshes, mark only owned faces - This has
+         the dual purpose of marking owned entities as well as giving
+         the entities a temporary renumbering to ensure contiguous
+         IDs */
         
       ownedmk = MSTK_GetMarker();
       
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx2 = 0;
       while ((mf = (MFace_ptr) MESH_Next_Face(mesh,&idx2))) {
+
+#ifdef MSTK_HAVE_MPI
         if (comm == 0 || comm == MPI_COMM_NULL || MF_PType(mf) != PGHOST) {
+#endif
+
           MEnt_Mark(mf,ownedmk);
           nf++;
           
@@ -272,15 +286,17 @@ extern "C" {
             }
           } /* while (me...) */
           List_Delete(fedges);
+
+#ifdef MSTK_HAVE_MPI
         }
+#endif
+
       } /* while (mf...) */
         
-#endif
 
 
       /*-------------------------------------------
         Just for testing attach real valued attributes to mesh
-      */
 
       elatt = MAttrib_New(mesh,"elatt",DOUBLE,MFACE);
       idx = 0;
@@ -294,7 +310,6 @@ extern "C" {
         MEnt_Set_AttVal(mv,elatt,0,MV_ID(mv),NULL);
       }
 
-      /*----------
         End Just for testing section
       */
         
@@ -586,16 +601,10 @@ extern "C" {
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
 
 #ifdef MSTK_HAVE_MPI 
-      if (comm) {
-        if (!MEnt_IsMarked(mv,ownedmk)) continue;
-        MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
-      }
-      else
-        vid = MV_ID(mv);
-#else
-      vid = MV_ID(mv);
+      if (!MEnt_IsMarked(mv,ownedmk)) continue;
 #endif
       MV_Coords(mv,vxyz);
+      MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
       xcoord[vid-1] = vxyz[0];
       ycoord[vid-1] = vxyz[1];
       zcoord[vid-1] = vxyz[2];
@@ -638,14 +647,7 @@ extern "C" {
 	MVertex_ptr fv;
 
 	while ((fv = List_Next_Entry(fverts,&idx2))) {
-#ifdef MSTK_HAVE_MPI
-          if (comm)
-            MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
-          else
-            vid = MV_ID(fv);
-#else
-          vid = MV_ID(fv);
-#endif
+          MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
 	  connect[k++] = vid;
         }
 
@@ -751,14 +753,7 @@ extern "C" {
 	  MVertex_ptr fv;
 	  idx2 = 0;
 	  while ((fv = List_Next_Entry(fverts,&idx2))) {
-#ifdef MSTK_HAVE_MPI      
-            if (comm)
-              MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
-            else
-              vid = MV_ID(fv);
-#else
-            vid = MV_ID(fv);
-#endif
+            MEnt_Get_AttVal(fv,vidatt,&vid,&rval,&pval);
 	    connect[j++] = vid;
           }
 	  List_Delete(fverts);
@@ -817,14 +812,7 @@ extern "C" {
 	  while ((mr = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	    rverts = MR_Vertices(mr);
 	    for (j = 0; j < nelnodes; j++) {
-#ifdef MSTK_HAVE_MPI      
-              if (comm)
-                MEnt_Get_AttVal(List_Entry(rverts,j),vidatt,&vid,&rval,&pval);
-              else
-                vid = MV_ID(List_Entry(rverts,j));
-#else
-              vid = MV_ID(List_Entry(rverts,j));
-#endif
+              MEnt_Get_AttVal(List_Entry(rverts,j),vidatt,&vid,&rval,&pval);
 	      connect[nelnodes*k+j] = vid;
             }
 	    List_Delete(rverts);	    
@@ -855,14 +843,7 @@ extern "C" {
 	  while ((mf = List_Next_Entry(element_blocks_glob[i],&idx))) {
 	    fverts = MF_Vertices(mf,1,0);
 	    for (j = 0; j < nelnodes; j++) {
-#ifdef MSTK_HAVE_MPI      
-              if (comm)
-                MEnt_Get_AttVal(List_Entry(fverts,j),vidatt,&vid,&rval,&pval);
-              else
-                vid = MV_ID(List_Entry(fverts,j));                
-#else
-              vid = MV_ID(List_Entry(fverts,j));
-#endif
+              MEnt_Get_AttVal(List_Entry(fverts,j),vidatt,&vid,&rval,&pval);
 	      connect[nelnodes*k+j] = vid;
             }
 	    List_Delete(fverts);
@@ -894,14 +875,7 @@ extern "C" {
 
       idx = 0; j = 0;
       while ((mv = List_Next_Entry(node_sets_glob[i],&idx))) {
-#ifdef MSTK_HAVE_MPI      
-        if (comm)
-          MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
-        else
-          vid = MV_ID(mv);
-#else
-        vid = MV_ID(mv);
-#endif
+        MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
 	node_list[j++] = vid;
       }
 

@@ -9,9 +9,18 @@ target_link_libraries(exoatt
 
 # Would be nice to specify it relative to the path of this CMakeLists.txt file
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS exoatt DESTINATION ${PROJECT_SOURCE_DIR}/utils/exoatt/bin/${ARCHOS})
+if (INSTALL_DIR) 
+  if (INSTALL_PREFIX_ARCHOS)
+    install(TARGETS exoatt DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
+  else ()
+    install(TARGETS exoatt DESTINATION ${INSTALL_DIR}/bin)
+  endif ()
 else ()
-  install(TARGETS exoatt DESTINATION ${PROJECT_SOURCE_DIR}/utils/exoatt/bin)
+  if (INSTALL_PREFIX_ARCHOS)
+    install(TARGETS exoatt DESTINATION ${PROJECT_SOURCE_DIR}/bin/${ARCHOS})
+  else ()
+    install(TARGETS exoatt DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+  endif ()
 endif ()
+
 
