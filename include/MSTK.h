@@ -240,7 +240,7 @@ void MSTK_Init(void);
                                    MSTK_Comm comm);
 
   /* Keep this version of the call around for backward compatibility */
-  int        MESH_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm); 
+  int        MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm); 
 
 
   /* Update vertex coordinates for ghost vertices */

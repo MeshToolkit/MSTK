@@ -37,7 +37,7 @@ extern "C" {
 
   /* Keep this for backward compatibility */
 
-  int MESH_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm) {
+  int MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm) {
      MESH_UpdateAttributes(mesh,comm);     
   }
 
