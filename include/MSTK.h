@@ -234,9 +234,13 @@ void MSTK_Init(void);
 
   /* Parallel update attribute values for ghost entities */
 
+
   int        MESH_UpdateAttributes(Mesh_ptr mesh, MSTK_Comm comm);
   int        MESH_Update1Attribute(Mesh_ptr mesh, MAttrib_ptr attrib,
                                    MSTK_Comm comm);
+
+  /* Keep this version of the call around for backward compatibility */
+  int        MESH_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm); 
 
 
   /* Update vertex coordinates for ghost vertices */
