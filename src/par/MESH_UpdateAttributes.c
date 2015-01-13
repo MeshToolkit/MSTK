@@ -38,6 +38,11 @@ extern "C" {
   /* Keep this for backward compatibility */
 
   int MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm) {
+
+#ifdef DEBUG
+     MSTK_Report("MSTK_UpdateAttr","MSTK_UpdateAttr is deprecated. Use MESH_UpdateAttributes",MSTK_WARN);
+#endif
+
      MESH_UpdateAttributes(mesh,comm);     
   }
 
