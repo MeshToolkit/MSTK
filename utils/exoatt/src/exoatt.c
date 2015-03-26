@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
   if (argc > 4) {
     int i;
-    for (i = 1; i < argc-2; i++) {
+    for (i = 1; i < argc-3; i++) {
       if (strncmp(argv[i],"--partition=",12) == 0) {
         if (strncmp(argv[i]+12,"y",1) == 0 ||
             strncmp(argv[i]+12,"1",1) == 0)
@@ -124,8 +124,10 @@ int main(int argc, char *argv[]) {
   len = strlen(outfname);
   if (len > 4 && strncmp(&(outfname[len-4]),".exo",4) == 0)
     outmeshformat = EXODUSII;
+  else if (len > 4 && strncmp(&(outfname[len-4]),".par",4) == 0)
+    outmeshformat = EXODUSII;
   else
-    MSTK_Report(progname,"Output file must have .exo extension", MSTK_FATAL);
+    MSTK_Report(progname,"Output file must have .exo or .par extension", MSTK_FATAL);
 
 
 
