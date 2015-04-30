@@ -25,7 +25,7 @@ extern "C" {
 			   int ring, int with_attr, int method, 
 			   int del_inmesh, MSTK_Comm comm) {
     int i, a, m, n, recv_dim;
-    int *send_dim, *part;
+    int *send_dim, *part=NULL;
     int rank, numprocs, *toranks;
     int DebugWait=0;
     Mesh_ptr *submeshes=NULL;
@@ -65,6 +65,8 @@ extern "C" {
       MESH_Partition_and_Send(parentmesh, numprocs, part, toranks, ring, 
                               with_attr, del_inmesh, comm, mysubmesh);
     }
+
+    if (part) free(part);
 
     
     /* RECEIVING THE INFORMATION ON OTHER PROCESSORS - THIS IS
