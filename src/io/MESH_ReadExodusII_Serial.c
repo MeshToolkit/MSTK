@@ -29,19 +29,26 @@ extern "C" {
      these entity sets. We are also setting mesh geometric entity IDs
      - Should we pick one of the first two? */
 
-#define DEF_MAXFACES 10
+#define DEF_MAXFACES 20
 
   /* create a hash function from n positive integers. Since these
      integers are the IDs of face vertices, we know that if the same
      set of integers is passed into the function repeatedly they will
      be in the same order or reverse order as the first time,
-     i.e. given numbers a,b,c,d the first time, we will get either
-     a,b,c,d or c,b,a,d or b,c,d,a or b,a,d,c but never a,c,d,b. So to
-     hash we start at the minimum number and then go in the direction
-     of the smaller next number. For example, if we have 10, 22, 24,
-     220, we choose 22, 10, 220, 24 */
+     i.e. given numbers a,b,c,d the first time, we will get a,b,c,d or
+     b,c,d,a or c,d,a,b or d,a,b,c or a,d,c,b or b,a,d,c or c,b,a,d or
+     d,c,b,a but never a,c,d,b. So to hash we start at the minimum
+     number and then go in the direction of the smaller next
+     number. For example, if we are given 22, 10, 24, 220, we order
+     them as 10, 22, 220, 24 - this lets us get away with having just
+     the first two numbers in ascending order instead of having to
+     sort all the numbers. Hash table size should be of medium size
+     according to the size of the mesh to avoid having a very large
+     but sparsely populated or very small but very densely populated
+     structure. It should also preferably be a prime number to avoid
+     too many conflicts. */
 
-  unsigned int hash_ints(int n, unsigned int *nums) {
+  unsigned int hash_ints(int n, unsigned int *nums, unsigned int hash_table_size) {
     int i, k=0;
     unsigned int p1 = 3;
 
@@ -63,7 +70,7 @@ extern "C" {
     
     /* h = (int) ((double)h/(n-1) + 0.5); */
 
-    return h;
+    return h % hash_table_size;
   }
 
 
@@ -530,8 +537,8 @@ extern "C" {
       status = ex_get_side_set_ids(exoid,sideset_ids);
       if (status < 0) {
 	sprintf(mesg,
-		"Error while reading sideset IDs %s in Exodus II file %s\n",
-		elem_blknames[i],filename);
+		"Error while reading sideset IDs in Exodus II file %s\n",
+		filename);
 	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
       
@@ -574,8 +581,10 @@ extern "C" {
 	  
 	  /* Interpret sideset attribute as classification info for the edge */
 	  
-	  ME_Set_GEntDim(me,1);
-	  ME_Set_GEntID(me,sideset_ids[i]);
+          /* TURN OFF SINCE SIDESETS THAT ARE INTERNAL TO DOMAINS TRIGGER
+             SPURIOUS CLASSIFICATION - 05/04/2015 */
+	  /* ME_Set_GEntDim(me,1); */
+	  /* ME_Set_GEntID(me,sideset_ids[i]); */
 	}
 	
 	free(ss_elem_list);
@@ -584,6 +593,55 @@ extern "C" {
       }
 
       free(sideset_ids);
+    }
+
+
+    /* read element sets */
+
+
+    if (nelemsets) {
+
+      int *elemset_ids = (int *) malloc(nelemsets*sizeof(int));
+      status = ex_get_ids(exoid,EX_ELEM_SET,elemset_ids);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading element set IDs in Exodus II file %s\n",
+		filename);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
+      }
+      
+      
+      for (i = 0; i < nelemsets; i++) {
+
+        int num_elems_in_set;
+        char elemsetname[256];
+	sprintf(elemsetname,"elemset_%-d",elemset_ids[i]);
+	
+	MSet_ptr elemset = MSet_New(mesh,elemsetname,MFACE);
+      
+	status = ex_get_set_param(exoid,EX_ELEM_SET,elemset_ids[i],
+                                  &num_elems_in_set,
+                                  &num_df_in_set);
+	
+	int *es_elem_list = (int *) malloc(num_elems_in_set*sizeof(int));
+	
+	status = ex_get_set(exoid,EX_ELEM_SET,elemset_ids[i],es_elem_list,NULL);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading elements in elemset %-d in Exodus II file %s\n",elemset_ids[i],filename);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
+	}
+	
+		  
+        /* Add the faces to the set */
+
+	for (j = 0; j < num_elems_in_set; j++) {
+	  mf = MESH_FaceFromID(mesh,es_elem_list[j]);
+	  MSet_Add(elemset,mf);	  
+	}	
+	free(es_elem_list);
+      }
+      free(elemset_ids);
     }
     
     
@@ -678,23 +736,23 @@ extern "C" {
       elblockatt = MAttrib_New(mesh, "elemblock", INT, MALLTYPE);
     
 
-    MFace_ptr (*face_hash)[DEF_MAXFACES] = NULL;
-    int *face_hash_lens = NULL;
-    int nfalloc=0;
-    int nrealloc;
-    int a_prime = 31;
-    unsigned int nums[4] = {nnodes-3,nnodes-2,nnodes-1,nnodes};
-    unsigned int max_hash_key = hash_ints(4,nums);
-    unsigned int hash_key;
+    /* MFace_ptr (*face_hash)[DEF_MAXFACES] = NULL; */
+    /* int *face_hash_lens = NULL; */
+    /* int nfalloc=0; */
+    /* int nrealloc; */
+    /* int a_prime = 31; */
+    /* unsigned int nums[4] = {nnodes-3,nnodes-2,nnodes-1,nnodes}; */
+    /* unsigned int max_hash_key = hash_ints(4,nums); */
+    /* unsigned int hash_key; */
 
-    if (solid_elems) {
-      /* Initialize the face_hash */
+    /* if (solid_elems) { */
+    /*   /\* Initialize the face_hash *\/ */
       
-      nfalloc = max_hash_key+1;
-      nrealloc = 0;
-      face_hash = (MFace_ptr (*)[DEF_MAXFACES]) malloc(nfalloc*sizeof(MFace_ptr [DEF_MAXFACES]));
-      face_hash_lens = (int *) calloc(nfalloc,sizeof(int));
-    }
+    /*   nfalloc = max_hash_key+1; */
+    /*   nrealloc = 0; */
+    /*   face_hash = (MFace_ptr (*)[DEF_MAXFACES]) malloc(nfalloc*sizeof(MFace_ptr [DEF_MAXFACES])); */
+    /*   face_hash_lens = (int *) calloc(nfalloc,sizeof(int)); */
+    /* } */
 
 
     for (i = 0; i < nelblock; i++) {
@@ -922,30 +980,51 @@ extern "C" {
               int nfv = exo_nrfverts[eltype][k];              
               for (k1 = 0; k1 < nfv; k1++) {
                 fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
-                nums[k1] = MV_ID(fverts[k1]); 
+                /* nums[k1] = MV_ID(fverts[k1]);  */
               }
-              hash_key = hash_ints(nfv,nums);
+              /* hash_key = hash_ints(nfv,nums); */
 
-              if ((hash_key < nfalloc) && (face_hash_lens[hash_key] != 0)) {
+              /* if ((hash_key < nfalloc) && (face_hash_lens[hash_key] != 0)) { */
                 
-                int ii;
-                for (ii = 0; ii < face_hash_lens[hash_key]; ii++) {
-                  MFace_ptr hash_face = face_hash[hash_key][ii];
+              /*   int ii; */
+              /*   for (ii = 0; ii < face_hash_lens[hash_key]; ii++) { */
+              /*     MFace_ptr hash_face = face_hash[hash_key][ii]; */
                   
-                  int jj, has_all_verts = 1;
-                  for (jj = 0; jj < nfv; jj++)
-                    if (!MF_UsesEntity(hash_face,fverts[jj],MVERTEX)) {
-                      has_all_verts = 0;
-                      break;
-                    }
+              /*     int jj, has_all_verts = 1; */
+              /*     for (jj = 0; jj < nfv; jj++) */
+              /*       if (!MF_UsesEntity(hash_face,fverts[jj],MVERTEX)) { */
+              /*         has_all_verts = 0; */
+              /*         break; */
+              /*       } */
 
-                  if (has_all_verts) {
-                    face = hash_face;
+              /*     if (has_all_verts) { */
+              /*       face = hash_face; */
+              /*       break; */
+              /*     } */
+              /*   } */
+
+              /* } */
+
+
+              List_ptr vfaces = MV_Faces(fverts[0]);
+              int nvfaces = vfaces ? List_Num_Entries(vfaces) : 0;
+              int ii;
+              for (ii = 0; ii < nvfaces; ii++) {
+                MFace_ptr vface = List_Entry(vfaces,ii);
+
+                int jj, has_all_verts = 1;
+                for (jj = 0; jj < nfv; jj++)
+                  if (!MF_UsesEntity(vface,fverts[jj],MVERTEX)) {
+                    has_all_verts = 0;
                     break;
                   }
+                
+                if (has_all_verts) {
+                  face = vface;
+                  break;
                 }
-
               }
+              if (nvfaces) List_Delete(vfaces);
                              
               if (face) {
                 List_ptr fregs;
@@ -977,30 +1056,30 @@ extern "C" {
                 rfarr[k] = face;
                 rfdirs[k] = exo_rfdirs[eltype][k];
 
-                if (hash_key >= nfalloc) {
-                  int new_alloc = 2*nfalloc;
-                  if (hash_key > new_alloc)
-                    new_alloc = 2*hash_key;
-                  face_hash = (MFace_ptr (*)[DEF_MAXFACES]) realloc(face_hash,new_alloc*sizeof(MFace_ptr [DEF_MAXFACES]));
-                  face_hash_lens = (int *) realloc(face_hash_lens,new_alloc*sizeof(int));
-                  int ii;
-                  for (ii = nfalloc; ii < new_alloc; ii++)
-                    face_hash_lens[ii] = 0;
-                  nrealloc++;
-                  nfalloc = new_alloc;
-                }
-                if (face_hash_lens[hash_key]+1 > DEF_MAXFACES) {
-                  MSTK_Report(funcname,"Increase size of each array in hash table (DEF_MAXFACES) \n or use hash key with fewer conflicts",MSTK_ERROR);
-                  MSTK_Report(funcname,"Cannot insert face into hash table\n",MSTK_FATAL);
-                }
+              /*   if (hash_key >= nfalloc) { */
+              /*     int new_alloc = 2*nfalloc; */
+              /*     if (hash_key > new_alloc) */
+              /*       new_alloc = 2*hash_key; */
+              /*     face_hash = (MFace_ptr (*)[DEF_MAXFACES]) realloc(face_hash,new_alloc*sizeof(MFace_ptr [DEF_MAXFACES])); */
+              /*     face_hash_lens = (int *) realloc(face_hash_lens,new_alloc*sizeof(int)); */
+              /*     int ii; */
+              /*     for (ii = nfalloc; ii < new_alloc; ii++) */
+              /*       face_hash_lens[ii] = 0; */
+              /*     nrealloc++; */
+              /*     nfalloc = new_alloc; */
+              /*   } */
+              /*   if (face_hash_lens[hash_key]+1 > DEF_MAXFACES) { */
+              /*     MSTK_Report(funcname,"Increase size of each array in hash table (DEF_MAXFACES) \n or use hash key with fewer conflicts",MSTK_ERROR); */
+              /*     MSTK_Report(funcname,"Cannot insert face into hash table\n",MSTK_FATAL); */
+              /*   } */
 
-                face_hash[hash_key][face_hash_lens[hash_key]] = face;
-                face_hash_lens[hash_key]++;
-              }
+              /*   face_hash[hash_key][face_hash_lens[hash_key]] = face; */
+              /*   face_hash_lens[hash_key]++; */
+              } 
             }
 	  
             MR_Set_Faces(mr,nrf,rfarr,rfdirs);
-
+            
           }
           else if (reptype == R1 || reptype == R2) {
 
@@ -1133,31 +1212,31 @@ extern "C" {
     
 
     /* Deallocate the face hash table */
-    if (solid_elems) {
+/*     if (solid_elems) { */
 
-#ifdef DEBUG2
-      fprintf(stderr,"Face hash table for MESH_ImportFromExodusII has %d entries while the mesh has %d faces\n",nfalloc,MESH_Num_Faces(mesh));
-      int maxlen=0, num=0, totlen=0, avelen;
-      for (i = 0; i < nfalloc; i++)
-        if (face_hash_lens[i]) {
-          num++;
-          int len = face_hash_lens[i];
-          if (len > maxlen) maxlen = len;
-          totlen += len;
-        }
-      if (num) {
-        avelen = totlen/num;      
-        fprintf(stderr,"There are %d non-zero entries in the hash_table\n",num);
-        fprintf(stderr,"Maximum list length is %d and average list length is %d\n",maxlen,avelen); 
-        fprintf(stderr,"Number of times face_has array was realloc'ed = %d\n",nrealloc);
-      }
-#endif
+/* #ifdef DEBUG2 */
+/*       fprintf(stderr,"Face hash table for MESH_ImportFromExodusII has %d entries while the mesh has %d faces\n",nfalloc,MESH_Num_Faces(mesh)); */
+/*       int maxlen=0, num=0, totlen=0, avelen; */
+/*       for (i = 0; i < nfalloc; i++) */
+/*         if (face_hash_lens[i]) { */
+/*           num++; */
+/*           int len = face_hash_lens[i]; */
+/*           if (len > maxlen) maxlen = len; */
+/*           totlen += len; */
+/*         } */
+/*       if (num) { */
+/*         avelen = totlen/num;       */
+/*         fprintf(stderr,"There are %d non-zero entries in the hash_table\n",num); */
+/*         fprintf(stderr,"Maximum list length is %d and average list length is %d\n",maxlen,avelen);  */
+/*         fprintf(stderr,"Number of times face_has array was realloc'ed = %d\n",nrealloc); */
+/*       } */
+/* #endif */
 
-      free(face_hash);
-      free(face_hash_lens);
-      nfalloc = 0;
+/*       free(face_hash); */
+/*       free(face_hash_lens); */
+/*       nfalloc = 0; */
 
-    }
+/*     } */
 
 
     /* Fix classifications of interior mesh faces only - if this mesh
@@ -1270,9 +1349,11 @@ extern "C" {
             MSet_Add(sideset,me);
             
             /* Interpret sideset attribute as classification info for the edge */
+            /* TURN OFF BECAUSE SIDESETS THAT ARE INTERNAL TO THE
+               DOMAIN TRIGGER SPURIOUS CLASSIFICATION - 05/04/2015 */
             
-            ME_Set_GEntDim(me,1);
-            ME_Set_GEntID(me,sideset_ids[i]);
+            /* ME_Set_GEntDim(me,1); */
+            /* ME_Set_GEntID(me,sideset_ids[i]); */
           }
         }
         else if (mesh_type == 2) {
@@ -1322,9 +1403,11 @@ extern "C" {
             MSet_Add(sideset,mf);
             
             /* Interpret sideset attribute as classification info for the edge */
-            
-            MF_Set_GEntDim(mf,2);
-            MF_Set_GEntID(mf,sideset_ids[i]);
+            /* TURN OFF BECAUSE SIDESETS THAT ARE INTERNAL TO THE
+               DOMAIN TRIGGER SPURIOUS CLASSIFICATION - 05/04/2015 */
+
+            /* MF_Set_GEntDim(mf,2); */
+            /* MF_Set_GEntID(mf,sideset_ids[i]); */
           }
         }
 	
@@ -1336,7 +1419,64 @@ extern "C" {
       free(sideset_ids);
     }
 
+    /* Read element sets */
 
+    if (nelemsets) {
+
+      int *elemset_ids = (int *) malloc(nelemsets*sizeof(int));
+      status = ex_get_ids(exoid,EX_ELEM_SET,elemset_ids);
+      if (status < 0) {
+	sprintf(mesg,
+		"Error while reading element set IDs in Exodus II file %s\n",
+		filename);
+	MSTK_Report(funcname,mesg,MSTK_FATAL);
+      }
+      
+      
+      for (i = 0; i < nelemsets; i++) {
+
+        int num_elems_in_set;
+        char elemsetname[256];
+	sprintf(elemsetname,"elemset_%-d",elemset_ids[i]);
+	
+	MSet_ptr elemset = MSet_New(mesh,elemsetname,MREGION);
+      
+	status = ex_get_set_param(exoid,EX_ELEM_SET,elemset_ids[i],
+                                  &num_elems_in_set,
+                                  &num_df_in_set);
+	
+	int *es_elem_list = (int *) malloc(num_elems_in_set*sizeof(int));
+	
+	status = ex_get_set(exoid,EX_ELEM_SET,elemset_ids[i],es_elem_list,NULL);
+	if (status < 0) {
+	  sprintf(mesg,
+		  "Error while reading elements in elemset %-d in Exodus II file %s\n",elemset_ids[i],filename);
+	  MSTK_Report(funcname,mesg,MSTK_FATAL);
+	}
+	
+		  
+        /* Add the elements to the set */
+
+        if (mesh_type == 1) {
+          for (j = 0; j < num_elems_in_set; j++) {
+            mf = MESH_FaceFromID(mesh,es_elem_list[j]);
+            MSet_Add(elemset,mf);	  
+          }	
+        }
+        else if (mesh_type == 2) {
+          for (j = 0; j < num_elems_in_set; j++) {
+            mr = MESH_RegionFromID(mesh,es_elem_list[j]);
+            MSet_Add(elemset,mr);	  
+          }	
+        }
+        else {
+          MSTK_Report(funcname,"Cannot read element sets in mixed surface/solid meshes",MSTK_WARN);
+        }
+
+	free(es_elem_list);
+      }
+      free(elemset_ids);
+    }
     
     
     /* read element number map - store it as an attribute to spit out
