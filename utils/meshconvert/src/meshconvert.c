@@ -17,13 +17,14 @@ int main(int argc, char *argv[]) {
   Mesh_ptr mesh;
   int len, ok;
   int build_classfn=1, partition=0, weave=0, use_geometry=0, parallel_check=0;
+  int check_topo=0;
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
 
 
   if (argc < 3) {
     fprintf(stderr,"\n");
-    fprintf(stderr,"usage: meshconvert <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> <--weave=y|1|n|0> <--num-ghost-layers=?> infilename outfilename\n\n");
+    fprintf(stderr,"usage: meshconvert <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> <--weave=y|1|n|0> <--num-ghost-layers=?> <--check-topo=y|1|n|0> infilename outfilename\n\n");
     fprintf(stderr,"partition-method = 0, METIS\n");
     fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
     fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
@@ -37,6 +38,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"         = 1/y, Mesh entity classification derived from material IDs\n");
     fprintf(stderr,"         = 2, As in 1 with additional inference from boundary geometry\n");
     fprintf(stderr,"CLASSIFICATION: Relationship of mesh entities to geometric model/domain\n");
+    fprintf(stderr,"\n");
+    fprintf(stderr,"check-topo = 0/n, No checking of topological coonsistency of classification info\n");
+    fprintf(stderr,"           = 1/y, Check topological consistency of classification info\n");
     fprintf(stderr,"\n");
     exit(-1);
   }
@@ -123,6 +127,11 @@ int main(int argc, char *argv[]) {
       }
       else if (strncmp(argv[i],"--num_ghost_layers",18) == 0) {
         sscanf(argv[i]+19,"%d",&num_ghost_layers);
+      }
+      else if (strncmp(argv[i],"--check-topo",12) == 0) {
+        if (strncmp(argv[i],"--check-topo=y",14) == 0 ||
+            strncmp(argv[i],"--check-topo=1",14) == 0)
+          check_topo=1;
       }
       else
         fprintf(stderr,"Unrecognized option...Ignoring\n");
@@ -295,7 +304,7 @@ int main(int argc, char *argv[]) {
    not pre-partitioned. Pre-partitioned meshes will not conform to the 
    rules that a complete mesh will */
 
-  if (!weave)
+  if (!weave && check_topo)
     ok = MESH_CheckTopo(mesh);
 
 
