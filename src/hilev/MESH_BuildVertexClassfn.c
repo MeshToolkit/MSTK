@@ -18,10 +18,10 @@ extern "C" {
  */
 
 int MESH_BuildVertexClassfn(Mesh_ptr mesh, int use_geometry) {
-  int i, j, k, idx, fnd, fnd2, gvid, gdim;
+  int i, j, k, idx, fnd, fnd2, gvid, gdim, multiple_gfids=0;
   int ngverts, ngvalloc, ngve, max_loc_geids, *loc_geids;
   int max_gvert_id;
-  int nve, *gvids, **gvedgeids, gfid;
+  int nve, *gvids, **gvedgeids, gfid, prev_gfid;
   MVertex_ptr vertex;
   MEdge_ptr vedge;
   List_ptr vedges;
@@ -136,24 +136,42 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh, int use_geometry) {
     
     switch (ngve) {
     case 0:
-      /* Vertex on model face or in the interior - we took care of the
-	 case of the isolated vertex b4 */
+      /* Vertex has no connected edges classified on a model edge - We
+	 took care of case of the isolated vertex earlier. So vertex
+	 could be a vertex on the interior, on a model face or in
+	 degenerate cases, on several model faces that are touching at
+	 a point */
 
-      fnd = 0; gfid = 0;
+      fnd = 0; gfid = 0; 
+      multiple_gfids = 0;
       for (i = 0; i < nve; i++) {
 	vedge = List_Entry(vedges,i);
 	if (ME_GEntDim(vedge) == 2) {
-	  fnd = 1;
+	  fnd = 1;	 
+	  if (gfid != 0 && ME_GEntID(vedge) != gfid)
+	    multiple_gfids = 1;
 	  gfid = ME_GEntID(vedge);
-	  break;
 	}
       }
 
       if (fnd) {
-	/* found at least one edge classified on model face - must be
-	   classified on model face */
-	MV_Set_GEntDim(vertex,2);
-	MV_Set_GEntID(vertex,gfid);
+	/* found at least one edge classified on model face */
+
+	if (multiple_gfids) { 
+	  /* multiple model faces coming together at a point - create
+	     an isolated model vertex at this point */	  
+
+	  MV_Set_GEntDim(vertex,0);
+	  max_gvert_id++;
+	  MV_Set_GEntID(vertex,max_gvert_id);
+	}
+	else {
+	  /* All the connected edges are classified on the same model face */
+	  /* Vertex should also be classified on the same model face */
+
+	  MV_Set_GEntDim(vertex,2);
+	  MV_Set_GEntID(vertex,gfid);
+	}
       }
       else { /* no boundary edges, interior vertex */
 	MV_Set_GEntDim(vertex,3);
