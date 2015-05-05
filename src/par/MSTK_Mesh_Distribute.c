@@ -64,6 +64,8 @@ extern "C" {
 
       MESH_Partition_and_Send(parentmesh, numprocs, part, toranks, ring, 
                               with_attr, del_inmesh, comm, mysubmesh);
+
+      free(toranks);
     }
 
     if (part) free(part);
