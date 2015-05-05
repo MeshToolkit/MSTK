@@ -1384,11 +1384,14 @@ extern "C" {
               List_ptr fregs;
               fregs = MF_Regions(mf);
               if (List_Num_Entries(fregs) != 1) {
+#ifdef DEBUG
                 if (MF_GEntID(List_Entry(fregs,0)) == 
-                    MF_GEntID(List_Entry(fregs,1)))
-                  MSTK_Report(funcname,
-                            "Interior face identified as being on the boundary",
-                            MSTK_ERROR);
+                    MF_GEntID(List_Entry(fregs,1))) {
+                  char mesg[256];
+                  sprintf(mesg,"Sideset %-d contains non-boundary faces",sideset_ids[i]);
+                  MSTK_Report(funcname,mesg,MSTK_WARN);
+                }
+#endif
               }
               if (fregs) List_Delete(fregs);
             }
