@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-  /* this function collects element block inforamtion based on element type       */
+  /* this function collects element block inforamtion based on element type */
   void MESH_Get_Element_Block_Info(Mesh_ptr mesh, 
                                    int *num_element_blocks_glob,
 				   MSet_ptr **element_blocks_glob, 
@@ -20,15 +20,15 @@ extern "C" {
                                    MAttrib_ptr block_type_att,
                                    MSTK_Comm comm);
 
-  /* this function collects side set information                                  */
-  int MESH_Num_Face_Set(List_ptr esides, int *side_set_id, int enable_set);
-  int MESH_Num_Edge_Set(List_ptr esides, int *side_set_id, int enable_set);
+  /* this function collects side set information */
   void MESH_Get_Side_Set_Info(Mesh_ptr mesh, 
+                              int enable_geometry_sets,
                               int *num_side_set_glob, 
 			      MSet_ptr **side_sets_glob, 
                               int **side_set_ids_glob,
                               MSTK_Comm comm);
   void MESH_Get_Node_Set_Info(Mesh_ptr mesh, 
+                              int enable_geometry_sets,
                               int *num_node_set_glob, 
 			      MSet_ptr **node_sets_glob, 
                               int **node_set_ids_glob,
@@ -65,8 +65,9 @@ extern "C" {
      Quality assurance information(optional)                       
      The nodes(vertices) list and elements list  
      For nodes, there is only one attribute associate with them    
-     opts[0] = 1 --- verbose (print stat information)
-     opts[1] = 1 --- enable_set (sidesets, nodesets based on GEntID, GEntDim)
+     opts[0] = 0/1 --- verbose (print stat information - default 0)
+     opts[1] = 0/1 --- enable_geometry_sets (sidesets, nodesets based on 
+                       GEntID, GEntDim - default 0)
   */
 
 #ifdef MSTK_HAVE_MPI
@@ -77,7 +78,7 @@ extern "C" {
 			    const int natt, const char **attnames, 
 			    const int *opts, MSTK_Comm comm) {
 
-    int enable_set, verbose;
+    int enable_geometry_sets, verbose;
     int i, j, k, idx, idx2, ival;
     int nv, ne, nf, nr, nvall, neall, nfall, nrall;
     int num_element_block_glob, num_side_set_glob, num_node_set_glob,
@@ -178,7 +179,7 @@ extern "C" {
 
 
     verbose = opts ? opts[0] : 0;
-    enable_set = opts ? opts[1] : 1;
+    enable_geometry_sets = opts ? opts[1] : 0;
 
     if (verbose)
       fprintf(stdout,"\nMesh representation type is %s\n", 
@@ -364,7 +365,7 @@ extern "C" {
 
     
     if(verbose) {
-      if (enable_set)
+      if (enable_geometry_sets)
 	fprintf(stdout,"\nElement block and side set based on geometric id is enabled.\n");
       else
 	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
@@ -383,7 +384,7 @@ extern "C" {
     */
 
     if(verbose) {
-      if (enable_set)
+      if (enable_geometry_sets)
 	fprintf(stdout,"\nElement block and side set based on geometric id is enabled.\n");
       else
 	fprintf(stdout,"\nElement block and side set based on geometric id is disabled.\n");
@@ -492,14 +493,16 @@ extern "C" {
 
     /* COLLECT SIDE SET INFO */
 
-    MESH_Get_Side_Set_Info(mesh, &num_side_set_glob, &side_sets_glob, 
+    MESH_Get_Side_Set_Info(mesh, enable_geometry_sets,
+                           &num_side_set_glob, &side_sets_glob, 
                            &side_set_ids_glob, comm);
 
 
 
     /* COLLECT NODE SET INFO */
 
-    MESH_Get_Node_Set_Info(mesh, &num_node_set_glob, &node_sets_glob, 
+    MESH_Get_Node_Set_Info(mesh, enable_geometry_sets,
+                           &num_node_set_glob, &node_sets_glob, 
                            &node_set_ids_glob, comm);
 
     
@@ -1017,7 +1020,7 @@ extern "C" {
       MEntity_ptr ment;
       idx = 0; j = 0;
       while ((ment = MSet_Next_Entry(element_sets_glob[i],&idx)))
-        element_list[j++] = elem_id[MEnt_ID(ment)];
+        element_list[j++] = elem_id[MEnt_ID(ment)-1];
 
       ex_put_set(exoid, EX_ELEM_SET, element_set_ids_glob[i], element_list, NULL);
 
@@ -1720,7 +1723,9 @@ extern "C" {
   */
 
  
-  void MESH_Get_Side_Set_Info(Mesh_ptr mesh, int *num_side_set_glob, 
+  void MESH_Get_Side_Set_Info(Mesh_ptr mesh, 
+                              int enable_geometry_sets,
+                              int *num_side_set_glob, 
 			      MSet_ptr **side_sets_glob, 
                               int **side_set_ids_glob,
                               MSTK_Comm comm) {
@@ -1778,8 +1783,10 @@ extern "C" {
         nsideset++;
       }
     
-      if (!nsideset) { /* if we did not find mesh sets that were sidesets then
-                         we look to geometric classification to form sidesets */
+      if (enable_geometry_sets) { 
+
+        /* create sidesets from groups of faces classified on the same
+           geometric model face */
 
         idx = 0;
         while ((mf = MESH_Next_Face(mesh,&idx))) {
@@ -1854,8 +1861,10 @@ extern "C" {
         nsideset++;
       }
 
-      if (!nsideset) { /* if we did not find mesh sets that were sidesets then
-                        we look to geometric classification to form sidesets */
+      if (enable_geometry_sets) {
+
+        /* create sidesets from sets of edges classified on the same
+           geometric model edge */
 
         while ((me = MESH_Next_Edge(mesh,&idx))) {
           if (ME_GEntDim(me) != 1) continue;
@@ -2035,7 +2044,8 @@ extern "C" {
   
 
  
-  void MESH_Get_Node_Set_Info(Mesh_ptr mesh, int *num_node_set_glob, 
+  void MESH_Get_Node_Set_Info(Mesh_ptr mesh, int enable_geometry_sets,
+                              int *num_node_set_glob, 
 			      MSet_ptr **node_sets_glob, 
                               int **node_set_ids_glob,
                               MSTK_Comm comm) {
@@ -2043,6 +2053,7 @@ extern "C" {
     int idx, idx2, i, j, k, found, nalloc;
     int nnodeset, nid, maxnum, maxnum1;
     int rank=0, numprocs=1;
+    MSet_ptr mset;
 
 #ifdef MSTK_HAVE_MPI
     if (comm) {
@@ -2059,50 +2070,75 @@ extern "C" {
 
 
 
-    /* Node sets formed by vertices on geometric model vertices and edges */
-
     idx = 0;
-    while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-      if (MV_GEntDim(mv) >= 2) continue;
-      
+    while ((mset = MESH_Next_MSet(mesh,&idx))) {
+      char mset_name[256];
 
-#ifdef MSTK_HAVE_MPI
-      if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
-#endif
-
-      nid = MV_GEntDim(mv)*10000 + MV_GEntID(mv);
+      MSet_Name(mset,mset_name);
+      int dim = MSet_EntDim(mset);
       
-      found = 0;
-      i = 0;
-      while (!found && i < nnodeset) {
-	if (node_set_ids[i] == nid) {
-	  found = 1;
-	  MSet_Add(node_sets[i],mv);
-	  break;
-	}
-	i++;
+      if (dim != MVERTEX) continue; 
+      if (strncmp(mset_name,"nodeset_",8) != 0) continue;
+      
+      sscanf(mset_name+8,"%d",&nid);
+      
+      if (nnodeset == nalloc) {
+        nalloc *= 2;
+        node_sets = (MSet_ptr *) realloc(node_sets,nalloc*sizeof(MSet_ptr));
+        node_set_ids = (int *) realloc(node_set_ids,nalloc*sizeof(int));
       }
       
-      if (!found) {
-	if (nnodeset == nalloc) {
-	  nalloc *= 2;
-	  node_sets = (MSet_ptr *) realloc(node_sets,nalloc*sizeof(MSet_ptr));
-	  node_set_ids = (int *) realloc(node_set_ids,nalloc*sizeof(int));
-	}
+      node_set_ids[nnodeset] = nid;
+      node_sets[nnodeset] = mset;
+      nnodeset++;
+    }
+    
+    if (enable_geometry_sets) { 
+      /* If requested, create node sets formed by vertices classified
+         on model faces, edges and vertices */
 
-        /* create a nodeset whose name starts with the string
-           TEMPORARY so that we know to delete it when we are finished
-           with it */
-
-        char nodesetname[256];
-        sprintf(nodesetname,"TEMPORARY_nodeset_%-d",nid);
-        node_sets[nnodeset] = MSet_New(mesh,nodesetname,MVERTEX);
- 	MSet_Add(node_sets[nnodeset],mv);
-	node_set_ids[nnodeset] = nid;
-	nnodeset++;
+      idx = 0;
+      while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+        if (MV_GEntDim(mv) >= 2) continue;
+        
+        
+#ifdef MSTK_HAVE_MPI
+        if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
+#endif
+        
+        nid = MV_GEntDim(mv)*10000 + MV_GEntID(mv);
+        
+        found = 0;
+        i = 0;
+        while (!found && i < nnodeset) {
+          if (node_set_ids[i] == nid) {
+            found = 1;
+            MSet_Add(node_sets[i],mv);
+            break;
+          }
+          i++;
+        }
+        
+        if (!found) {
+          if (nnodeset == nalloc) {
+            nalloc *= 2;
+            node_sets = (MSet_ptr *) realloc(node_sets,nalloc*sizeof(MSet_ptr));
+            node_set_ids = (int *) realloc(node_set_ids,nalloc*sizeof(int));
+          }
+          
+          /* create a nodeset whose name starts with the string
+             TEMPORARY so that we know to delete it when we are finished
+             with it */
+          
+          char nodesetname[256];
+          sprintf(nodesetname,"TEMPORARY_nodeset_%-d",nid);
+          node_sets[nnodeset] = MSet_New(mesh,nodesetname,MVERTEX);
+          MSet_Add(node_sets[nnodeset],mv);
+          node_set_ids[nnodeset] = nid;
+          nnodeset++;
+        }
       }
     }
-
 
 #ifdef MSTK_HAVE_MPI
 
@@ -2276,6 +2312,10 @@ extern "C" {
     while ((mset = MESH_Next_MSet(mesh,&idx))) {
       int setdim = MSet_EntDim(mset);
       if (meshdim == setdim) {      
+        char setname[256];
+        MSet_Name(mset,setname);
+        if (strncmp(setname,"TEMPORARY_element_block_",23) == 0)
+          continue;                             
         if (nelemset == nalloc) {
           nalloc *= 2;
           element_set_ids = (int *) realloc(element_set_ids,nalloc*sizeof(int));
