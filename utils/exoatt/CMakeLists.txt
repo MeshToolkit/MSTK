@@ -23,4 +23,8 @@ else ()
   endif ()
 endif ()
 
+# Unittests
 
+if (ENABLE_Tests)
+  add_subdirectory(unittests)
+endif()
