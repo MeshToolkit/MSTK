@@ -1,10 +1,14 @@
 exoatt is a utility to read in a _SERIAL_ Exodus II mesh and augment it
-with real valued attributes read from an auxiliary file and write out
-a new Exodus II mesh containing those attributes.
+with (1) real valued attributes read from an auxiliary file and/or (2)
+entity sets read from an auxiliary file. A new Exodus II mesh file
+(partitioned if requested) is written out containing the attributes
+and the entity sets (element sets, sidesets, nodesets)
 
 Run 'exoatt' as follows:
 
-usage: exoatt <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> infilename attfilename <outfilename>
+usage: mpirun -n Nproc exoatt <--partition=y|1|n|0>
+<--partition-method=0|1|2> <--parallel-check=y|1|n|0>
+<--attfile=attfilename> <--setfile=setfilename> inputfilename outputfilename
 
 partition-method = 0, METIS
                  = 1, ZOLTAN with GRAPH partioning
@@ -12,9 +16,15 @@ partition-method = 0, METIS
 Choose 2 if you want to avoid partitioning models
 with high aspect ratio along the short directions
 
-infilename   = Input Exodus II File
-attfilename  = Auxiliary file with real valued attributes
+attfilename  = optional auxiliary file with real valued attributes
+setfilename = optional auxiliary file with entity set definitions
+infilename   = Input **SERIAL** Exodus II File
 outfilename  = Output Exodus II file name
+
+To write out partitioned files, run the command prefixed with 'mpirun
+-n Nproc' or 'aprun -n Nproc' where Nproc is the number of
+processors the executable is running on and the desired number of partitions
+of the output mesh
 
 
 FORMAT of attfilename
@@ -77,3 +87,50 @@ node_color nodE -1
 1.0 5.0 5.5 3.5 -2.0
 --------------------------------- 
 
+
+FORMAT of setfilename
+++++++++++++++++++++++++++
+
+setfilename can be anything, there is no requirement that it be
+something.els or something.txt etc. The format is as follows:
+
+---------------------------------------------------
+Number of entity sets
+setID1 set_entity_type num_specified
+entity_line_1
+entity_line_2
+.
+.
+.
+setID2 set_entity_type num_specified
+entity_line_1
+entity_line_2
+.
+.
+---------------------------------------------------
+
+setIDn can be any unsigned integer 
+set_entity_type must be CELL, FACE or NODE
+
+num_specified is the number of entities in the set and must be greater
+than 0.
+
+The entity_line for CELLS or NODES is merely the ID of the entity in
+the mesh.
+
+The entity_line for FACES contains a description of the face (edge in
+2D) in terms of its vertices. In 3D, the line starts with the number
+of vertices in the face followed by the IDs of the face vertices - The
+vertices don't have to be in any particular order but debugging any
+problems is likely simpler if they are in cw or ccw order. In 2D,
+"FACES" are really edges; so the entity_line is just vertex_0 and
+vertex_1 of the edge - there is no need to start the line with the
+number of vertices (known to be 2). NOTE: The only situation this
+cannot handle is if there are two faces sharing all the same verttices
+and the face set needs to include a particular one of those
+faces. This is a highly unlikely situation (crack/fault defined by
+exactly one face?).
+
+
+
+NO COMMENT LINES ARE ALLOWED
