@@ -68,6 +68,11 @@ extern "C" {
      opts[0] = 0/1 --- verbose (print stat information - default 0)
      opts[1] = 0/1 --- enable_geometry_sets (sidesets, nodesets based on 
                        GEntID, GEntDim - default 0)
+     opts[2] = 0/1 --- Don't Enforce/Enforce contiguous entity numbering
+                       (Default = 1 ** ENFORCE CONTIGUOUS ORDERING **)
+                       (NOTE: This means that if you read in an Exodus II
+                        file and write it out you will get differences 
+                        in node numbering)
   */
 
 #ifdef MSTK_HAVE_MPI
@@ -78,7 +83,7 @@ extern "C" {
 			    const int natt, const char **attnames, 
 			    const int *opts, MSTK_Comm comm) {
 
-    int enable_geometry_sets, verbose;
+    int enable_geometry_sets, verbose, enforce_contiguous_ids;
     int i, j, k, idx, idx2, ival;
     int nv, ne, nf, nr, nvall, neall, nfall, nrall;
     int num_element_block_glob, num_side_set_glob, num_node_set_glob,
@@ -178,8 +183,9 @@ extern "C" {
 #endif    
 
 
-    verbose = opts ? opts[0] : 0;
-    enable_geometry_sets = opts ? opts[1] : 0;
+    verbose = opts ? opts[0] : 0;  // default is 0
+    enable_geometry_sets = opts ? opts[1] : 0;  // default is 0
+    enforce_contiguous_ids = opts ? opts[1] : 1; // default is 1
 
     if (verbose)
       fprintf(stdout,"\nMesh representation type is %s\n", 
@@ -243,7 +249,10 @@ extern "C" {
                     if (!MEnt_IsMarked(mv,ownedmk)) {
                       MEnt_Mark(mv,ownedmk);
                       nv++;
-                      MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
+                      if (enforce_contiguous_ids)
+                        MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
+                      else
+                        MEnt_Set_AttVal(mv,vidatt,MV_ID(mv),0.0,NULL);
                     }
                   }
                 }
@@ -302,7 +311,10 @@ extern "C" {
                 if (!MEnt_IsMarked(mv,ownedmk)) {
                   MEnt_Mark(mv,ownedmk);
                   nv++;
-                  MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
+                  if (enforce_contiguous_ids)
+                    MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
+                  else
+                    MEnt_Set_AttVal(mv,vidatt,MV_ID(mv),0.0,NULL);
                 }
               }
             }
@@ -1735,7 +1747,7 @@ extern "C" {
     int idx, idx2, i, j, k, found, dim;
     int nsideset, nr, nf, sid, nsalloc, maxnum, maxnum1;
     char mset_name[256];
-    int meshdim;
+    int meshdim=3;
     int rank=0, numprocs=1;
 
 #ifdef MSTK_HAVE_MPI
@@ -2308,6 +2320,7 @@ extern "C" {
     else
       meshdim = 0;
 
+    int setid = 1;
     idx = 0;
     while ((mset = MESH_Next_MSet(mesh,&idx))) {
       int setdim = MSet_EntDim(mset);
@@ -2322,8 +2335,12 @@ extern "C" {
           element_sets = (MSet_ptr *) realloc(element_sets,nalloc*sizeof(MSet_ptr));
         }
 
-        element_set_ids[nelemset] = nelemset+1;
+        if (strncmp(setname,"elemset_",8) == 0)
+          sscanf(setname+8,"%d",&(element_set_ids[nelemset]));
+        else
+          element_set_ids[nelemset] = setid;
         element_sets[nelemset] = mset;
+        setid++;
         nelemset++;
       }
     }
