@@ -16,19 +16,20 @@ typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
 
 char progname[16] = "exoatt";
 void import_attributes(Mesh_ptr mesh, char *attfname);
+void import_sets(Mesh_ptr mesh, char *elsetfname);
 
 
 int main(int argc, char *argv[]) {
-  char infname[256], outfname[256], attfname[256];
+  char infname[256], outfname[256], attfname[256], setfname[256];
   Mesh_ptr mesh;
   int len, ok=0;
   int build_classfn=1, partition=0, weave=0, use_geometry=0, parallel_check=0;
-  int num_ghost_layers=0, partmethod=0;
+  int num_ghost_layers=0, partmethod=0, attfile_given=0, setfile_given=0;
   MshFmt inmeshformat, outmeshformat;
 
   if (argc < 3) {
     fprintf(stderr,"\n");
-    fprintf(stderr,"usage: %s <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> infilename attfilename <outfilename>\n\n",progname);
+    fprintf(stderr,"usage: mpirun -n NP %s <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> <--attfile=attfilename> <--setfile=setfilename> infilename outfilename\n\n",progname);
     fprintf(stderr,"partition-method = 0, METIS\n");
     fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
     fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
@@ -36,8 +37,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"with high aspect ratio along the short directions\n");
     fprintf(stderr,"\n");
     fprintf(stderr,"infilename   = Input Exodus II File\n");
-    fprintf(stderr,"attfilename  = Auxiliary file with real valued attributes\n");
     fprintf(stderr,"outfilename  = Output Exodus II file name\n");
+    fprintf(stderr,"attfilename  = Auxiliary file with real valued attributes\n");
+    fprintf(stderr,"setfilename  = Auxiliary file with entity set specifications\n");
     fprintf(stderr,"\n");
     exit(-1);
   }
@@ -63,9 +65,9 @@ int main(int argc, char *argv[]) {
 #endif
   
 
-  if (argc > 4) {
+  if (argc > 3) {
     int i;
-    for (i = 1; i < argc-3; i++) {
+    for (i = 1; i < argc-2; i++) {
       if (strncmp(argv[i],"--partition=",12) == 0) {
         if (strncmp(argv[i]+12,"y",1) == 0 ||
             strncmp(argv[i]+12,"1",1) == 0)
@@ -92,6 +94,14 @@ int main(int argc, char *argv[]) {
                  strncmp(argv[i]+17,"0",13) == 0) 
           parallel_check = 0;
       }
+      else if (strncmp(argv[i],"--attfile",9) == 0) {
+        sscanf(argv[i]+10,"%s",attfname);
+        attfile_given=1;
+      }
+      else if (strncmp(argv[i],"--setfile",9) == 0) {
+        sscanf(argv[i]+10,"%s",setfname);
+        setfile_given=1;
+      }
       else
         fprintf(stderr,"Unrecognized option...Ignoring\n");
     }
@@ -110,8 +120,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  strcpy(infname,argv[argc-3]);
-  strcpy(attfname,argv[argc-2]);
+  strcpy(infname,argv[argc-2]);
   strcpy(outfname,argv[argc-1]);
 
 
@@ -142,22 +151,27 @@ int main(int argc, char *argv[]) {
     int opts[5]={0,0,0,0,0};
   
     ok = 0;
-    MSTK_Report(progname,"Importing mesh from ExodusII file...",MSTK_MESG);
+    fprintf(stderr,"Importing mesh from ExodusII file...");
     opts[0] = 0; /* don't partition while importing - do it later */
     opts[1] = 0;
     opts[2] = 0; /* no ghost layers */  
     opts[3] = 0;
     ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
     if (ok)
-      MSTK_Report("","Done\n",MSTK_MESG);
+      fprintf(stderr,"done\n\n");
     else {
       MSTK_Report(progname,"Failed\n",MSTK_FATAL);
     }
     
 
     /* Read in the attributes only on rank 0 and attach it to the mesh */
+    if (attfile_given)
+      import_attributes(mesh, attfname);
 
-    import_attributes(mesh, attfname);
+
+    /* Import element set definitions and create in the mesh */
+    if (setfile_given)
+      import_sets(mesh, setfname);
 
 #ifdef MSTK_HAVE_MPI
   }
@@ -237,7 +251,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  fprintf(stderr,"Exporting mesh to ExodusII format...");
+  fprintf(stderr,"\nExporting mesh to ExodusII format...");
   ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL,comm);
 
   if (ok)
@@ -292,6 +306,8 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
   for (i = 0; i < natt; ++i) {
 
     status = fscanf(fp,"%s %s %d\n",attname,typestr,&nent);
+
+    fprintf(stderr,"\nCreating %s attribute %s\n",typestr,attname);
 
     if (strcasecmp(typestr,"NODE") == 0) {
       att = MAttrib_New(mesh,attname,DOUBLE,MVERTEX);
@@ -394,3 +410,180 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
   }
 
 }
+
+
+// Import entity set specifications from auxiliary files and create
+// them in the MSTK mesh so that the output Exodus II mesh file will
+// contain these sets
+
+void import_sets(Mesh_ptr mesh, char *setfname) {
+  FILE *fp;
+  int i, j, k, l, m;
+  int idx, status, setid, entid, nset, nent, celldim;
+  char mesg[256];
+  MRegion_ptr mr;
+  MFace_ptr mf;
+  MEdge_ptr me;
+  MVertex_ptr mv;
+  char setname[256], typestr[256];
+  MSet_ptr mset;
+  
+  fp = fopen(setfname,"r");
+  if (!fp) {
+    sprintf(mesg,"Could not open entity set file %s",setfname);
+    MSTK_Report(progname,mesg,MSTK_FATAL);
+  }
+
+  status = fscanf(fp,"%d",&nset);
+  if (status == EOF)
+    MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
+
+  celldim = MESH_Num_Regions(mesh) ? 3 : 2;
+  
+  for (i = 0; i < nset; ++i) {
+
+    status = fscanf(fp,"%d %s %d\n",&setid,typestr,&nent);
+    
+    if (strcasecmp(typestr,"NODE") == 0) {
+
+      sprintf(setname,"nodeset_%-d",setid);
+      fprintf(stderr,"Creating %s set %s\n",typestr,setname);
+
+      mset = MSet_New(mesh,setname,MVERTEX);
+
+      if (nent <= 0)
+        MSTK_Report(progname,"Number of entities in set must be greater than zero",MSTK_FATAL);
+      for (j = 0; j < nent; ++j) {
+        status = fscanf(fp,"%d",&entid);
+        if (status == EOF)
+          MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
+        
+        mv = MESH_VertexFromID(mesh,entid);
+        if (!mv) {
+          sprintf(mesg,"Cannot find mesh vertex with ID = %-d",entid);
+          MSTK_Report(progname,mesg,MSTK_FATAL);
+        }
+            
+        MSet_Add(mset,mv);
+      }
+    }
+    else if (strcasecmp(typestr,"FACE") == 0) {
+      int lfnum;
+
+      sprintf(setname,"sideset_%-d",setid);
+      fprintf(stderr,"Creating %s set %s\n",typestr,setname);
+
+      if (celldim == 3) {
+        mset = MSet_New(mesh,setname,MFACE);
+        
+        if (nent <= 0)
+          MSTK_Report(progname,"Number of entities in set must be greater than zero",MSTK_FATAL);
+
+        for (j = 0; j < nent; ++j) {
+
+          int num_face_verts;
+          int face_verts[MAXPV2];
+
+          status = fscanf(fp,"%d",&num_face_verts);
+          if (status == EOF)
+            MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
+
+          for (k = 0; k < num_face_verts; k++) 
+            status = fscanf(fp,"%d",&(face_verts[k]));
+          
+          MVertex_ptr fverts[MAXPV2];
+          for (k = 0; k < num_face_verts; k++)
+            fverts[k] = MESH_VertexFromID(mesh,face_verts[0]);
+
+          mf = MVs_CommonFace(num_face_verts,fverts);
+          if (mf)
+            MSet_Add(mset,mf);
+          else {
+            MSTK_Report(progname,"Sideset face not found",MSTK_WARN);
+            fprintf(stderr,"Did not find common face for verts ");
+            for (k = 0; k < num_face_verts; k++)
+              fprintf(stderr,"%-d",face_verts[k]);
+          }
+        }
+      }
+      else { /* assume celldim == 2 */
+        mset = MSet_New(mesh,setname,MEDGE);
+        
+        if (nent <= 0)
+          MSTK_Report(progname,"Number of entities in set must be non-zero",MSTK_FATAL);
+
+        int edge_verts[2];
+        for (j = 0; j < nent; ++j) {
+          status = fscanf(fp,"%d %d",&(edge_verts[0]),&(edge_verts[1]));
+          if (status == EOF)
+            MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
+
+          MVertex_ptr ev[2];
+          ev[0] = MESH_VertexFromID(mesh,edge_verts[0]);
+          ev[1] = MESH_VertexFromID(mesh,edge_verts[1]);          
+          me = MVs_CommonEdge(ev[0],ev[1]);
+          if (me) 
+            MSet_Add(mset,me);
+          else {
+            MSTK_Report(progname,"Sideset edge not found",MSTK_WARN);
+            fprintf(stderr,"Did not find common edge between vertices %-d %-d",
+                    edge_verts[0],edge_verts[1]);
+          }
+        }
+      }
+    }
+    else if (strcasecmp(typestr,"CELL") == 0) {
+
+      sprintf(setname,"elemset_%-d",setid);
+      fprintf(stderr,"Creating %s set %s\n",typestr,setname);
+
+      if (celldim == 3) {
+        mset = MSet_New(mesh,setname,MREGION);
+
+        if (nent <= 0)
+          MSTK_Report(progname,"Number of entities in set must be non-zero",MSTK_FATAL);
+        for (j = 0; j < nent; ++j) {
+          status = fscanf(fp,"%d",&entid);
+          if (status == EOF)
+            MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
+          
+          mr = MESH_RegionFromID(mesh,entid);
+          if (!mr) {
+            sprintf(mesg,"Cannot find mesh region with ID = %-d",entid);
+            MSTK_Report(progname,mesg,MSTK_FATAL);
+          }
+            
+          MSet_Add(mset,mr);
+        }
+      }
+      else { /* assume celldim == 2 */
+        mset = MSet_New(mesh,setname,MFACE);
+
+        if (nent <= 0)
+          MSTK_Report(progname,"Number of entities in set must be non-zero",MSTK_FATAL);
+        for (j = 0; j < nent; ++j) {
+          status = fscanf(fp,"%d",&entid);
+          if (status == EOF)
+            MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
+          
+          mf = MESH_FaceFromID(mesh,entid);
+          if (!mf) {
+            sprintf(mesg,"Cannot find mesh face with ID = %-d",entid);
+            MSTK_Report(progname,mesg,MSTK_FATAL);
+          }
+            
+          MSet_Add(mset,mf);
+        }
+      }
+    }
+    else
+      MSTK_Report(progname,
+                  "Unknown entity type for set: Valid types are NODE, FACE or CELL",
+                  MSTK_FATAL);
+  }
+
+  fclose(fp);
+
+} /* import_sets */
+
+
