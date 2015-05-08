@@ -10,6 +10,7 @@ TEST(Read_Write_ExodusII_Poly2)
   int idx, ok, nfe;
   Mesh_ptr mesh, mesh2;
   MFace_ptr mf;
+  MVertex_ptr mv;
   int one_tri, one_quad, one_penta;
 
   MSTK_Init();
@@ -60,6 +61,9 @@ TEST(Read_Write_ExodusII_Poly2)
 
 
 TEST(Write_Read_ExodusII_HexMesh) {
+  MFace_ptr mf;
+  MVertex_ptr mv;
+  MSet_ptr mset;
 
   MSTK_Init();
 
@@ -82,7 +86,6 @@ TEST(Write_Read_ExodusII_HexMesh) {
   /* Reclassify the faces between region 1 and region 2 as being on an
      internal surface */
 
-  MFace_ptr mf;
   int idx = 0;
   while ((mf = MESH_Next_Face(mesh,&idx))) {
 
@@ -104,7 +107,7 @@ TEST(Write_Read_ExodusII_HexMesh) {
     char elementsetname[256];
     sprintf(elementsetname,"elementset_%-d",i+1);
 
-    MSet_ptr mset = MSet_New(mesh,elementsetname,MREGION);
+    mset = MSet_New(mesh,elementsetname,MREGION);
 
     for (int j = 0; j < 4; j++) {
       MRegion_ptr mr = MESH_Region(mesh,i*4+j);
@@ -113,20 +116,39 @@ TEST(Write_Read_ExodusII_HexMesh) {
     }
   }
 
-  /* Create 7 sidesets - 6 external and one internal */
+  /* Create 2 sidesets - 1 external (top surface) and one internal */
 
-  for (int i = 0; i < 7; i++) {
-    char sidesetname[256];
-    sprintf(sidesetname,"sideset_%-d",i+1);
+  idx = 0;
+  double maxz = -1e8;
+  while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+    double vxyz[3];
+    MV_Coords(mv,vxyz);
+    if (vxyz[2] > maxz)
+      maxz = vxyz[2];
+  }
 
-    MSet_ptr mset = MSet_New(mesh,sidesetname,MFACE);
-    
-    MFace_ptr mf;
-    int idx = 0;
-    while ((mf = MESH_Next_Face(mesh,&idx))) {
-      if (MF_GEntDim(mf) == 2 && MF_GEntID(mf) == i+1) {
-        MSet_Add(mset,mf);
+  mset = MSet_New(mesh,"sideset_1",MFACE);
+  idx = 0;
+  while ((mf = MESH_Next_Face(mesh,&idx))) {
+    double fxyz[MAXPV2][3];
+    int nfv;
+    int zmatch = 1;
+    MF_Coords(mf,&nfv,fxyz);
+    for (int i = 0; i < nfv; i++) {
+      if (fxyz[i][2] != maxz) {
+        zmatch=0;
+        break;
       }
+    }
+    if (zmatch) MSet_Add(mset,mf);
+  }
+
+  mset = MSet_New(mesh,"sideset_2",MFACE);
+    
+  idx = 0;
+  while ((mf = MESH_Next_Face(mesh,&idx))) {
+    if (MF_GEntDim(mf) == 2 && MF_GEntID(mf) == 7) {
+      MSet_Add(mset,mf);
     }
   }
 
@@ -141,10 +163,9 @@ TEST(Write_Read_ExodusII_HexMesh) {
     char nodesetname[256];
     sprintf(nodesetname,"nodeset_%-d",11*(i+1));
     
-    MSet_ptr mset = MSet_New(mesh,nodesetname,MVERTEX);
+    mset = MSet_New(mesh,nodesetname,MVERTEX);
 
-    MVertex_ptr mv;
-    int idx = 0;
+    idx = 0;
     int j = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
       if (MV_GEntDim(mv) == i+1) {
@@ -157,14 +178,14 @@ TEST(Write_Read_ExodusII_HexMesh) {
 
   /* Now export to an Exodus II file */
 
-  ok = MESH_ExportToFile(mesh,"reghex3D.exo","exo",0,NULL,NULL,NULL);
+  ok = MESH_ExportToFile(mesh,"temp.exo","exo",0,NULL,NULL,NULL);
 
 
   /* Now create another mesh and import this file back */
 
   Mesh_ptr mesh2 = MESH_New(F1);
 
-  ok = MESH_ImportFromFile(mesh2,"reghex3D.exo","exo",NULL,NULL);
+  ok = MESH_ImportFromFile(mesh2,"temp.exo","exo",NULL,NULL);
 
 
   /* Now verify that we retrieved all the model regions (element
@@ -188,7 +209,7 @@ TEST(Write_Read_ExodusII_HexMesh) {
     char elementsetname[256];
     sprintf(elementsetname,"elemset_%-d",i+1);
 
-    MSet_ptr mset = MESH_MSetByName(mesh2,elementsetname);
+    mset = MESH_MSetByName(mesh2,elementsetname);
     CHECK(mset);
 
     for (int j = 0; j < 4; j++) {
@@ -207,19 +228,38 @@ TEST(Write_Read_ExodusII_HexMesh) {
 
 
   /* Verify that we retrieved side sets as expected */
-  /* We cannot ensure that face IDs in the original mesh
-     are the same as those in the imported mesh - so we
-     will only match the number of faces in the side set */
 
-  for (int i = 0; i < 7; i++) {
-    char sidesetname[256];
-    sprintf(sidesetname,"sideset_%-d",i+1);
+  // Verify that sideset 1 has faces on the top surface
 
-    MSet_ptr mset = MESH_MSetByName(mesh2,sidesetname);
-    CHECK(mset);
-
-    CHECK_EQUAL(4,MSet_Num_Entries(mset));
+  mset = MESH_MSetByName(mesh2,"sideset_1");
+  CHECK(mset);
+  CHECK_EQUAL(4,MSet_Num_Entries(mset));
+  for (int i = 0; i < 4; i++) {
+    double fxyz[MAXPV2][3];
+    int nfv, zmatch=1;
+ 
+    mf = MSet_Entry(mset,i);
+    MF_Coords(mf,&nfv,fxyz);
+    
+    for (int j = 0; j < nfv; j++) {
+      if (fxyz[i][2] != maxz) {
+        zmatch = 0;
+        break;
+      }
+    }
+    CHECK(zmatch);
   }
+
+  // Verify that sideset 2 has only interior faces
+
+  mset = MESH_MSetByName(mesh2,"sideset_2");
+  CHECK(mset);
+  CHECK_EQUAL(4,MSet_Num_Entries(mset));
+  for (int i = 0; i < 4; i++) {
+    List_ptr fregs = MF_Regions(MSet_Entry(mset,i));
+    CHECK_EQUAL(2,List_Num_Entries(fregs));
+    List_Delete(fregs);
+  }  
 
 
   /* Verify that we retrieved node sets as expected */
@@ -231,11 +271,11 @@ TEST(Write_Read_ExodusII_HexMesh) {
     char nodesetname[256];
     sprintf(nodesetname,"nodeset_%-d",11*(i+1));
 
-    MSet_ptr mset = MESH_MSetByName(mesh2,nodesetname);
+    mset = MESH_MSetByName(mesh2,nodesetname);
     CHECK(mset);
 
     for (int j = 0; j < nodeset_numverts[i]; j++) {
-      MVertex_ptr mv = (MVertex_ptr) MSet_Entry(mset,j);
+      mv = (MVertex_ptr) MSet_Entry(mset,j);
       double xyz[3];
       MV_Coords(mv,xyz);
       int found = 0;
