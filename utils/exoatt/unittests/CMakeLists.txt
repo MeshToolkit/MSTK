@@ -5,7 +5,7 @@ if (BUILD_TESTS)
 
   if (NOT (${MSTK_SOURCE_DIR} EQUAL ${MSTK_BINARY_DIR}))
     execute_process(COMMAND ${CMAKE_COMMAND} -E
-      copy_directory ${MSTK_SOURCE_DIR}/utils/exoatt/test ${MSTK_BINARY_DIR}/utils/exoatt/test)
+      copy_directory ${MSTK_SOURCE_DIR}/utils/exoatt/unittests ${MSTK_BINARY_DIR}/utils/exoatt/unittests)
   endif ()
 
   include_directories(${UnitTest_INCLUDE_DIRS})
