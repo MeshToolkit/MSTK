@@ -69,7 +69,7 @@ extern "C" {
 
     adj = (MRegion_Adj_FN *) r->adj;
     k = 1 + ((int) nf/(8*sizeof(unsigned int)));
-    adj->fdirs = (unsigned int *) MSTK_calloc(k,sizeof(unsigned int));
+    adj->fdirs = (unsigned int *) calloc(k,sizeof(unsigned int));
     adj->rfaces = List_New(nf);
 
     for (i = 0; i < nf; i++) {
@@ -509,8 +509,8 @@ extern "C" {
     j = (int) i/(8*sizeof(unsigned int));
     k = i%(8*sizeof(unsigned int));
 
-    adj->fdirs[j] = adj->fdirs[j] & ~(1<<i); /* Set bit to 0 */
-    adj->fdirs[j] = adj->fdirs[j] | (dir << k); /* Set it to desired dir */
+    adj->fdirs[j] = adj->fdirs[j] & ~(1<<k); /* Set bit to 0 */
+    adj->fdirs[j] = adj->fdirs[j] | (dir<<k); /* Set it to desired dir */
     return 1;
   }
 
@@ -612,15 +612,10 @@ extern "C" {
   }
 
 
-
-
-
-  /* If we allow replacing a face with multiple faces, we have to check if 
-     we need to expand adj->fdirs */
-
   void MR_Replace_Faces_FNR3R4(MRegion_ptr r, int nold, MFace_ptr *oldf, 
                                int nnew, MFace_ptr *nuf, int *nudir) {
     int i, j, k, nf, jf, kf, ii;
+    int nf_final, nint_current, nint_final;
     MRegion_Adj_FN *adj;
     MFace_ptr f;
 
@@ -632,6 +627,22 @@ extern "C" {
 
     adj = (MRegion_Adj_FN *) r->adj;
     nf = List_Num_Entries(adj->rfaces);
+    
+    /* Do we have to expand the rfdirs array - this is an array of
+       integers whose bits store the direction in which the region
+       uses the face? The number of entries needed is determined by
+       the number of faces and the size of integers on a given
+       machine */
+
+    nf_final = nf-nold+nnew;
+    nint_current = 1 + ((int) nf/(8*sizeof(unsigned int)));
+    nint_final = 1 + ((int) nf_final/(8*sizeof(unsigned int)));
+    if (nint_final > nint_current) { /* double the array size */
+      int newsize = (nint_final > 2*nint_current) ? 2*nint_final : 2*nint_current;
+      adj->fdirs = (unsigned int *) realloc(adj->fdirs,newsize*sizeof(int));
+      for (i = nint_current; i < newsize; i++)
+        adj->fdirs[i] = 0;
+    }
 
     kf = 0;
     for (jf = 0; jf < nold; jf++) {
