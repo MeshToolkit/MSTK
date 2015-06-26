@@ -20,31 +20,52 @@ extern "C" {
      MESH_ExportToFile(mymesh,myfile,myformat,0,NULL,NULL,NULL);
   */
 
-int MESH_ExportToFile(Mesh_ptr mesh, const char *filename, const char *format,
+int MESH_ExportToFile(Mesh_ptr mesh, const char *outfilename, const char *outformat,
 		      const int natt, const char **attnames, const int *opts, MSTK_Comm comm) {
 
-  if (strncmp(format,"mstk",4) == 0) {
-    return MESH_WriteToFile(mesh,filename,MESH_RepType(mesh),comm);
+  char format[16];
+
+  if (outformat) 
+    strcpy(format,outformat);
+  else {
+    char *ext = strchr(outfilename,'.');
+    if (ext != NULL) {
+      ++ext;                 /* go past the . */
+      if (strcmp(ext,"mstk") == 0) 
+        strcpy(format,"mstk");
+      else if (strcmp(ext,"gmv") == 0)
+        strcpy(format,"gmv");
+      else if (strcmp(ext,"exo") == 0)
+        strcpy(format,"exodusii");
+      else {
+        fprintf(stderr,"Unknown file format\n");
+        return -1;
+      }
+    }
+    else {
+      fprintf(stderr,"Unknown file format\n");
+      return -1;
+    }
   }
-  else if (strncmp(format,"gmv",3) == 0) {
-    return MESH_ExportToGMV(mesh,filename,natt,attnames,opts,comm);
-  }
-  else if (strncmp(format,"x3d",4) == 0) {
-    return MESH_ExportToFLAGX3D(mesh,filename,natt,attnames,opts,comm);
-  }
+
+
+  if (strncmp(format,"mstk",4) == 0)
+    return MESH_WriteToFile(mesh,outfilename,MESH_RepType(mesh),comm);
+  else if (strncmp(format,"gmv",3) == 0)
+    return MESH_ExportToGMV(mesh,outfilename,natt,attnames,opts,comm);
+  else if (strncmp(format,"x3d",4) == 0)
+    return MESH_ExportToFLAGX3D(mesh,outfilename,natt,attnames,opts,comm);
   else if (strncmp(format,"exo",3) == 0) {
 #ifdef ENABLE_ExodusII
-    return MESH_ExportToExodusII(mesh,filename,natt,attnames,opts,comm);
+    return MESH_ExportToExodusII(mesh,outfilename,natt,attnames,opts,comm);
 #else
     MSTK_Report("MESH_ExportFromFile","Exodus II file support not built in",MSTK_ERROR);
 #endif
   } 
-  else if (strncmp(format, "stl", 3) == 0) {
-    return MESH_ExportToSTL(mesh,filename);
-  }
-  else if (strncmp(format, "dx", 3) == 0) {
-    return MESH_ExportToDX(mesh,filename,1); /* binary export */
-  }
+  else if (strncmp(format, "stl", 3) == 0)
+    return MESH_ExportToSTL(mesh,outfilename);
+  else if (strncmp(format, "dx", 3) == 0)
+    return MESH_ExportToDX(mesh,outfilename,1); /* binary export */
 
 
   MSTK_Report("MESH_ExportFromFile","Unsupported export format",MSTK_ERROR);
