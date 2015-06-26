@@ -968,13 +968,25 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 		found = 1;
 	      }
 	    }
-	    if (!found)
-	      continue;
+	    if (found) {
+              outattribs[noutatt] = attrib;
+              noutatt++;
+            }
+            else
+              continue;
 	  }
-	  
-	  outattribs[noutatt] = attrib;
-	  noutatt++;
-	}
+          else {
+            if (strncmp(attname+1,"idatt",5) == 0) {
+              /* this is a special MSTK attribute created for writing out
+                 contiguous entity IDs - ignore it */
+              continue;
+            }
+            else {
+              outattribs[noutatt] = attrib;
+              noutatt++;
+            }
+          }
+        }
       }
     }
 
