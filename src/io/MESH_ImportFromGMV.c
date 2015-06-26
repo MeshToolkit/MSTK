@@ -42,9 +42,12 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
 
-  int numprocs, rank;
-  MPI_Comm_size(comm,&numprocs);
-  MPI_Comm_rank(comm,&rank);
+  int numprocs=1, rank=0;
+  
+  if (comm) {
+    MPI_Comm_size(comm,&numprocs);
+    MPI_Comm_rank(comm,&rank);
+  }
 
   if (numprocs > 1) {
     distributed = 1;
