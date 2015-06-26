@@ -44,8 +44,13 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
   /*----- Adjacency definitions --------*/
 
   typedef struct MRegion_Adj_FN {
+    /* fdirs is an array of integers whose bits store the direction in
+       which the region uses the face? The number of entries needed is
+       determined by the number of faces and the size of an integer on
+       a given machine */
+
     unsigned int *fdirs;
-    MFace_ptr *rfaces;
+    List_ptr rfaces;
   } MRegion_Adj_FN;
 
   typedef struct MRegion_Adj_R1 {
@@ -61,7 +66,7 @@ extern int mrtype_nv[6], mrtype_ne[6], mrtype_nf[6];
 
   typedef struct MRegion_Adj_R3R4 {
     unsigned int *fdirs;
-    MFace_ptr *rfaces;
+    List_ptr rfaces;
   } MRegion_Adj_R3R4;
 
 #else
