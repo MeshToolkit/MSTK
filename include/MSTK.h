@@ -11,7 +11,7 @@
 */
 
 
-#define MSTK_VERSION "2.20rc1"
+#define MSTK_VERSION "2.24rc1"
 
 #include <stdarg.h>
 
@@ -700,7 +700,21 @@ void MSTK_Init(void);
   /* See MVs_Merge for meaning of topoflag                      */
   MFace_ptr   MFs_Merge(MFace_ptr f1, MFace_ptr f2, int topoflag); 
 
+
+  /* join two faces along a common edge to form a larger face that is
+     bounded by the edges of both faces except the common edge. The
+     common edge and the two faces are deleted and a new face is
+     returned */
+
   MFace_ptr   MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e);
+
+  /* join two regions along a common face to form a larger region that
+     is bounded by the faces of both region except the common
+     face. The common face and the second region are deleted and the
+     first region is returned with the extra faces (NOTE DIFFERENCE
+     FROM MFs_Join) */
+
+  MRegion_ptr   MRs_Join(MRegion_ptr r1, MRegion_ptr r2, MFace_ptr f);
 
   /* Low level face split - split a face along edge connecting vertex vnew0
      and vnew1 and incorporate new faces into connected regions -
