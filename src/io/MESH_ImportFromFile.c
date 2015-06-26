@@ -7,44 +7,67 @@
 extern "C" {
 #endif
 
-  int MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, const char *format, int *opts, MSTK_Comm comm) {
+  int MESH_ImportFromFile(Mesh_ptr mesh, const char *infilename, const char *informat, int *opts, MSTK_Comm comm) {
 
-
-  if (strncmp(format,"mstk",4) == 0) {
-    return MESH_InitFromFile(mesh,filename,comm);
-  }
-  else {
-    if (MESH_RepType(mesh) == UNKNOWN_REP)
-      MESH_SetRepType(mesh,F1);
-
-    if (strncmp(format,"gmv",3) == 0) {
-      return MESH_ImportFromGMV(mesh,filename,comm);
+    char format[16];
+    
+    if (informat)
+      strcpy(format,informat);
+    else {
+      char *ext = strchr(infilename,'.');
+      if (ext != NULL) {
+        ++ext;                 /* go past the . */
+        if (strcmp(ext,"mstk") == 0) 
+          strcpy(format,"mstk");
+        else if (strcmp(ext,"gmv") == 0)
+          strcpy(format,"gmv");
+        else if (strcmp(ext,"exo") == 0)
+          strcpy(format,"exodusii");
+        else {
+          fprintf(stderr,"Unknown file format\n");
+          return -1;
+        }
+      }
+      else {
+        fprintf(stderr,"Unknown file format\n");
+        return -1;
+      }
     }
-    else if (strncmp(format,"exo",3) == 0) {
+
+
+    if (strcmp(format,"mstk") == 0)
+      return MESH_InitFromFile(mesh,infilename,comm);
+    else {
+      if (MESH_RepType(mesh) == UNKNOWN_REP)
+        MESH_SetRepType(mesh,F1);
+      
+      if (strcmp(format,"gmv") == 0)
+        return MESH_ImportFromGMV(mesh,infilename,comm);
+      else if (strcmp(format,"exodusii") == 0) {
 #ifdef ENABLE_ExodusII
-      return MESH_ImportFromExodusII(mesh,filename,opts,comm);
+        return MESH_ImportFromExodusII(mesh,infilename,opts,comm);
 #else
-      MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",MSTK_ERROR);
+        MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",MSTK_ERROR);
 #endif
-    } 
-    else if (strncmp(format,"nem",3) == 0) {
+      } 
+      else if (strcmp(format,"nem") == 0) {
 #ifdef ENABLE_ExodusII
-      return MESH_ImportFromNemesisI(mesh,filename,opts,comm);
+        return MESH_ImportFromNemesisI(mesh,infilename,opts,comm);
 #else
-      MSTK_Report("MESH_ImportFromFile","Exodus II/Nemesis I file support not built in",MSTK_ERROR);
+        MSTK_Report("MESH_ImportFromFile","Exodus II/Nemesis I file support not built in",MSTK_ERROR);
 #endif
-    } 
-    else if (strncmp(format,"x3d",3) == 0) {
-      int rank = 0;
-      int numprocs = 1;
-      return MESH_ImportFromFLAGX3D(mesh,filename,comm);
+      } 
+      else if (strcmp(format,"x3d") == 0) {
+        int rank = 0;
+        int numprocs = 1;
+        return MESH_ImportFromFLAGX3D(mesh,infilename,comm);
+      }
     }
+    
+    MSTK_Report("MESH_ImportFromFile","Unsupported import format",MSTK_ERROR);
+    return 0;
+    
   }
-
-  MSTK_Report("MESH_ImportFromFile","Unsupported import format",MSTK_ERROR);
-  return 0;
-
-}
 
 #ifdef __cplusplus
 }
