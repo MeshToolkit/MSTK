@@ -31,7 +31,7 @@ TEST(Verify_Exoatt)
   // Import an exodus II mesh
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_ImportFromFile(mesh,"reghex3D.exo","exo",NULL,NULL);
+  ok = MESH_ImportFromFile(mesh,"reghex3D.exo","exodusii",NULL,NULL);
   CHECK_EQUAL(ok,1);
 
   int nr = MESH_Num_Regions(mesh);
@@ -124,7 +124,7 @@ TEST(Verify_Exoatt)
   MSTK_Init();
 
   mesh2 = MESH_New(UNKNOWN_REP);
-  ok = MESH_ImportFromFile(mesh2,"output.exo","exo",NULL,NULL);
+  ok = MESH_ImportFromFile(mesh2,"output.exo","exodusii",NULL,NULL);
   CHECK_EQUAL(ok,1);
 
 
