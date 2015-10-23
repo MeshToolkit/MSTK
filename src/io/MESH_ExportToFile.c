@@ -28,7 +28,14 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *outfilename, const char *outfor
   if (outformat) 
     strcpy(format,outformat);
   else {
-    char *ext = strchr(outfilename,'.');
+    char *ext;
+    if (outfilename[0] == '.') {
+      ext = strchr(outfilename,'.');
+      ++ext;
+      ext = strchr(ext,'.');
+    }
+    else
+      ext = strchr(outfilename,'.');
     if (ext != NULL) {
       ++ext;                 /* go past the . */
       if (strcmp(ext,"mstk") == 0) 
