@@ -655,7 +655,7 @@ extern "C" {
       block_id = 9999999;
 
       ex_put_block(exoid, EX_FACE_BLOCK, block_id, "nsided",
-		   MSet_Num_Entries(face_block),nvfblock,
+		   List_Num_Entries(face_block),nvfblock,
 		   0,0,0);
       ex_put_name(exoid, EX_FACE_BLOCK, block_id, block_name);
 
