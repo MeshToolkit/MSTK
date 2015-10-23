@@ -3,35 +3,68 @@
 #include "MSTK.h"
 
 
-MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
-  int i, k1, k2, nfe1, nfe2, *fedir1, *fedir2, *fedir3, gdim, gid;
-  MEdge_ptr *fe1, *fe2, *fe3;
+MFace_ptr MFs_Join(MFace_ptr f0, MFace_ptr f1, MEdge_ptr e) {
+  int i, k0, k1, nfe0, nfe1, *fedir0, *fedir1, *fedir3, gdim, gid;
+  MEdge_ptr *fe0, *fe1, *fe3;
   MFace_ptr  nuface;
+  MRegion_ptr fr00=NULL, fr01=NULL, fr10=NULL, fr11=NULL;
   Mesh_ptr   mesh;
-  List_ptr   fedges;
+  List_ptr   fedges, fregs;
 
-  mesh = MF_Mesh(f1);
-  gid = MF_GEntID(f1);
-  gdim = MF_GEntDim(f1);
+  mesh = MF_Mesh(f0);
+  gid = MF_GEntID(f0);
+  gdim = MF_GEntDim(f0);
 
-  if (mesh != MF_Mesh(f2)) {
+  if (mesh != MF_Mesh(f1)) {
     MSTK_Report("MFs_Join","Faces not from same mesh",MSTK_ERROR);
     return 0;
   }
-  else if (gid != MF_GEntID(f1) || gdim != MF_GEntDim(f1)) {
+  else if (gid != MF_GEntID(f0) || gdim != MF_GEntDim(f0)) {
     MSTK_Report("MFs_Join","Faces not from same geometric entity",MSTK_ERROR);
     return 0;
   }
 
-  nfe1 = MF_Num_Edges(f1);
-  nfe2 = MF_Num_Edges(f2);
+  fregs = MF_Regions(f0);
+  if (fregs) {
+    int nfr = List_Num_Entries(fregs);
+    fr00 = (nfr > 0) ? List_Entry(fregs,0) : NULL;
+    fr01 = (nfr > 1) ? List_Entry(fregs,1) : NULL;
+    List_Delete(fregs);
+  }
 
+  fregs = MF_Regions(f1);
+  if (fregs) {
+    int nfr = List_Num_Entries(fregs);
+    fr10 = (nfr > 0) ? List_Entry(fregs,0) : NULL;
+    fr11 = (nfr > 1) ? List_Entry(fregs,1) : NULL;
+    List_Delete(fregs);
+  }
+
+  if (fr00 != fr10 || fr01 != fr11) {
+    MSTK_Report("MFs_Join","Faces have incompatible regions connected to them",
+                MSTK_ERROR);
+    return 0;
+  }
+
+
+  nfe0 = MF_Num_Edges(f0);
+  nfe1 = MF_Num_Edges(f1);
+
+  fe0 = (MEdge_ptr *) MSTK_malloc(nfe0*sizeof(MEdge_ptr));
+  fedir0 = (int *) MSTK_malloc(nfe0*sizeof(int));
   fe1 = (MEdge_ptr *) MSTK_malloc(nfe1*sizeof(MEdge_ptr));
   fedir1 = (int *) MSTK_malloc(nfe1*sizeof(int));
-  fe2 = (MEdge_ptr *) MSTK_malloc(nfe2*sizeof(MEdge_ptr));
-  fedir2 = (int *) MSTK_malloc(nfe2*sizeof(int));
-  fe3 = (MEdge_ptr *) MSTK_malloc((nfe1+nfe2-2)*sizeof(MEdge_ptr));
-  fedir3 = (int *) MSTK_malloc((nfe1+nfe2-2)*sizeof(int));
+  fe3 = (MEdge_ptr *) MSTK_malloc((nfe0+nfe1-2)*sizeof(MEdge_ptr));
+  fedir3 = (int *) MSTK_malloc((nfe0+nfe1-2)*sizeof(int));
+
+  fedges = MF_Edges(f0,1,0);
+  for (i = 0, k0 = -1; i < nfe0; i++) {
+    fe0[i] = List_Entry(fedges,i);
+    fedir0[i] = MF_EdgeDir_i(f0,i);
+    if (fe0[i] == e)
+      k0 = i;
+  }
+  List_Delete(fedges);
 
   fedges = MF_Edges(f1,1,0);
   for (i = 0, k1 = -1; i < nfe1; i++) {
@@ -42,44 +75,45 @@ MFace_ptr MFs_Join(MFace_ptr f1, MFace_ptr f2, MEdge_ptr e) {
   }
   List_Delete(fedges);
 
-  fedges = MF_Edges(f2,1,0);
-  for (i = 0, k2 = -1; i < nfe2; i++) {
-    fe2[i] = List_Entry(fedges,i);
-    fedir2[i] = MF_EdgeDir_i(f2,i);
-    if (fe2[i] == e)
-      k2 = i;
-  }
-  List_Delete(fedges);
-
-  if (k1 == -1 || k2 == -1) {
+  if (k0 == -1 || k1 == -1) {
     MSTK_Report("MFs_Join","Cannot find edge in face",MSTK_ERROR);
     return 0;
   }
 
-  for (i = 0; i < nfe1-1; i++) {
-    fe3[i] = fe1[(k1+1+i)%nfe1];
-    fedir3[i] = fedir1[(k1+1+i)%nfe1];
+  for (i = 0; i < nfe0-1; i++) {
+    fe3[i] = fe0[(k0+1+i)%nfe0];
+    fedir3[i] = fedir0[(k0+1+i)%nfe0];
   }
 
-  for (i = 0; i < nfe2-1; i++) {
-    fe3[(nfe1-1)+i] = fe2[(k2+1+i)%nfe2];
-    fedir3[(nfe1-1)+i] = fedir2[(k2+1+i)%nfe2];
+  for (i = 0; i < nfe1-1; i++) {
+    fe3[(nfe0-1)+i] = fe1[(k1+1+i)%nfe1];
+    fedir3[(nfe0-1)+i] = fedir1[(k1+1+i)%nfe1];
   }
 
   
-  MF_Delete(f1,0);
-  MF_Delete(f2,0);
-  ME_Delete(e,0);
-
-
   nuface = MF_New(mesh);
-  MF_Set_Edges(nuface,(nfe1+nfe2-2),fe3,fedir3);
+  MF_Set_Edges(nuface,(nfe0+nfe1-2),fe3,fedir3);
 
   MF_Set_GEntDim(nuface,gdim);
   MF_Set_GEntID(nuface,gid);
 
+  MFace_ptr oldf[2];
+  oldf[0] = f0; oldf[1] = f1;
+  if (fr00) {
+    int rfdir = MR_FaceDir(fr00,f0);
+    MR_Replace_Faces(fr00,2,oldf,1,&nuface,&rfdir);
+  }
+  if (fr01) {
+    int rfdir = MR_FaceDir(fr01,f0);
+    MR_Replace_Faces(fr01,2,oldf,1,&nuface,&rfdir);
+  }
+
+  MF_Delete(f0,0);
+  MF_Delete(f1,0);
+  ME_Delete(e,0);
+
+  MSTK_free(fe0); MSTK_free(fedir0);
   MSTK_free(fe1); MSTK_free(fedir1);
-  MSTK_free(fe2); MSTK_free(fedir2);
   MSTK_free(fe3); MSTK_free(fedir3);
 
   return nuface;
