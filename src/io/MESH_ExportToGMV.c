@@ -942,10 +942,10 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   /* Must write out other attributes that exist on mesh entities */ 
   /* If natt is 0, all attributes are to be written out */
   
-  if (natt >= 0 && nmeshatt) {
-    
-    /* Collect the attributes */
+  if (nmeshatt) {
 
+    /* Collect the attributes */
+    
     outattribs = (MAttrib_ptr *) MSTK_malloc(nmeshatt*sizeof(MAttrib_ptr));
     
     for (i = 0, noutatt = 0; i < nmeshatt; i++) {
@@ -953,20 +953,20 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       
       attentdim = MAttrib_Get_EntDim(attrib);
       if ((attentdim == MVERTEX)  || (attentdim == MREGION) || 
-	  (ncells2 && attentdim == MFACE) || 
-	  (ncells1 && attentdim == MEDGE) || (attentdim == MALLTYPE)) {
-	
-	atttype = MAttrib_Get_Type(attrib);
-	if (atttype == INT || atttype == DOUBLE) {
-	  
-	  MAttrib_Get_Name(attrib,attname);
-	  
-	  if (natt) {
-	    found = 0;
-	    for (j = 0; j < natt; j++) {
-	      if (strcmp(attname,attnames[j]) == 0) {
-		found = 1;
-	      }
+          (ncells2 && attentdim == MFACE) || 
+          (ncells1 && attentdim == MEDGE) || (attentdim == MALLTYPE)) {
+        
+        atttype = MAttrib_Get_Type(attrib);
+        if (atttype == INT || atttype == DOUBLE) {
+          
+          MAttrib_Get_Name(attrib,attname);
+          
+          if (natt > 0) {
+            found = 0;
+            for (j = 0; j < natt; j++) {
+              if (strcmp(attname,attnames[j]) == 0) {
+                found = 1;
+              }
 	    }
 	    if (found) {
               outattribs[noutatt] = attrib;
@@ -989,7 +989,6 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
         }
       }
     }
-
 
     /* write them out */
 
