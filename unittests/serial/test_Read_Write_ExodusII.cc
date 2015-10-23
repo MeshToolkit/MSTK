@@ -16,7 +16,7 @@ TEST(Read_Write_ExodusII_Poly2)
   MSTK_Init();
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_ImportFromFile(mesh,"serial/poly2.exo","exo",NULL,NULL);
+  ok = MESH_ImportFromFile(mesh,"serial/poly2.exo",NULL,NULL,NULL);
   CHECK_EQUAL(ok,1);
 
   CHECK(MESH_Num_Vertices(mesh) > 0);
@@ -36,12 +36,12 @@ TEST(Read_Write_ExodusII_Poly2)
   CHECK_EQUAL(one_quad,1);
   CHECK_EQUAL(one_penta,1);
 
-  ok = MESH_ExportToFile(mesh,"./poly2-tmp.exo","exo",0,NULL,NULL,NULL);
+  ok = MESH_ExportToFile(mesh,"./poly2-tmp.exo",NULL,0,NULL,NULL,NULL);
 
   CHECK_EQUAL(ok,1);
 
   mesh2 = MESH_New(UNKNOWN_REP);
-  ok = MESH_ImportFromFile(mesh2,"./poly2-tmp.exo","exo",NULL,NULL);
+  ok = MESH_ImportFromFile(mesh2,"./poly2-tmp.exo",NULL,NULL,NULL);
 
   idx = 0; one_tri = 0; one_quad = 0; one_penta = 0;
   while ((mf = MESH_Next_Face(mesh2,&idx))) {
@@ -178,14 +178,14 @@ TEST(Write_Read_ExodusII_HexMesh) {
 
   /* Now export to an Exodus II file */
 
-  ok = MESH_ExportToFile(mesh,"temp.exo","exo",0,NULL,NULL,NULL);
+  ok = MESH_ExportToFile(mesh,"temp.exo","exodusii",0,NULL,NULL,NULL);
 
 
   /* Now create another mesh and import this file back */
 
   Mesh_ptr mesh2 = MESH_New(F1);
 
-  ok = MESH_ImportFromFile(mesh2,"temp.exo","exo",NULL,NULL);
+  ok = MESH_ImportFromFile(mesh2,"temp.exo","exodusii",NULL,NULL);
 
 
   /* Now verify that we retrieved all the model regions (element
