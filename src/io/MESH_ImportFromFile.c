@@ -14,7 +14,14 @@ extern "C" {
     if (informat)
       strcpy(format,informat);
     else {
-      char *ext = strchr(infilename,'.');
+      char *ext;
+      if (infilename[0] == '.') {
+        ext = strchr(infilename,'.');
+        ++ext;
+        ext = strchr(ext,'.');
+      }
+      else
+        ext = strchr(infilename,'.');
       if (ext != NULL) {
         ++ext;                 /* go past the . */
         if (strcmp(ext,"mstk") == 0) 
