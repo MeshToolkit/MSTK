@@ -22,7 +22,7 @@ TEST(Partition3D_sym_1ring_exo) {
   opts[2] = 1;  // build 1 layer of ghosts
   opts[3] = 1;  // use zoltan as the partitioner if available
 
-  status = MESH_ImportFromFile(mesh,"parallel/8proc/hex_3x3x3_ss.exo","exo",opts,comm);
+  status = MESH_ImportFromFile(mesh,"parallel/8proc/hex_3x3x3_ss.exo",NULL,opts,comm);
 
   CHECK(status);
 
