@@ -450,7 +450,7 @@ extern "C" {
 			"Must not mix vface2d cells with other cells",MSTK_WARN);
 
 	  if (!vface2d_data)
-	    vface2d_data = (int **) MSTK_malloc(ncells*sizeof(int));
+	    vface2d_data = (int **) MSTK_malloc(ncells*sizeof(int *));
 	    
 	  status = fscanf(fp,"%d",&nfe);
 	  if (status == EOF) {
