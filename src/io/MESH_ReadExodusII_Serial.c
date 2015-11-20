@@ -89,7 +89,7 @@ extern "C" {
   int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
   int *elem_blk_ids, *connect, *node_map, *elem_map, *nnpe;
   int nelnodes, neledges, nelfaces;
-  int nelem_i, natts;
+  int *nel_in_blk, max_el_in_blk=0, natts;
   int *sideset_ids, *ss_elem_list, *ss_side_list, *nodeset_ids, *ns_node_list;
   int num_nodes_in_set, num_sides_in_set, num_df_in_set;
   RepType reptype = MESH_RepType(mesh);
@@ -101,22 +101,6 @@ extern "C" {
   int exo_nrfverts[3][6] =
     {{3,3,3,3,0,0},{4,4,4,3,3,0},{4,4,4,4,4,4}};
 
-  /* I am making the following change in order to have consistent face
-     orientations on the boundary. If the import breaks horribly,
-     revert to previous version given in comments below - RVG 10/17/2013 */
-
-  /* Old
-  int exo_rfverts[3][6][4] =
-    {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{0,1,2,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
-     {{0,1,4,3},{1,2,5,4},{2,0,3,5},{0,1,2,-1},{3,4,5,-1},{-1,-1,-1,-1}},
-     {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{0,1,2,3},{4,5,6,7}}};
-  int exo_rfdirs[3][6] =
-    {{1,1,1,0,-99,-99},
-     {1,1,1,0,1,-99},
-     {1,1,1,1,0,1}};
-  */
-
-  /* New */
   int exo_rfverts[3][6][4] =
     {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{0,2,1,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
      {{0,1,4,3},{1,2,5,4},{2,0,3,5},{0,2,1,-1},{3,4,5,-1},{-1,-1,-1,-1}},
@@ -392,6 +376,8 @@ extern "C" {
     sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
+
+  nel_in_blk = (int *) malloc(nelblock*sizeof(int));
   
   
 
@@ -415,7 +401,7 @@ extern "C" {
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
-			    elem_type, &nelem_i, &nelnodes, 
+			    elem_type, &(nel_in_blk[i]), &nelnodes, 
 			    &neledges, &nelfaces, &natts);
       if (status < 0) {
 	sprintf(mesg,
@@ -423,6 +409,9 @@ extern "C" {
 		elem_blknames[i],filename);
 	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
+
+      if (max_el_in_blk < nel_in_blk[i])
+        max_el_in_blk = nel_in_blk[i];
 
       sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
       matset = MSet_New(mesh,matsetname,MFACE);
@@ -446,7 +435,7 @@ extern "C" {
 	}
 
       
-	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
+	nnpe = (int *) MSTK_malloc(nel_in_blk[i]*sizeof(int));
 
 	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
@@ -458,13 +447,13 @@ extern "C" {
 	}
 
 	int max = 0;
-	for (j = 0; j < nelem_i; j++) 
+	for (j = 0; j < nel_in_blk[i]; j++) 
 	  if (nnpe[j] > max) max = nnpe[j];
 
 	fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
 
 	int offset = 0;
-	for (j = 0; j < nelem_i; j++) {
+	for (j = 0; j < nel_in_blk[i]; j++) {
 	  mf = MF_New(mesh);
 
 	  for (k = 0; k < nnpe[j]; k++) 
@@ -490,7 +479,7 @@ extern "C" {
 	
 	/* Get the connectivity of all elements in this block */
 
-	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
+	connect = (int *) calloc(nelnodes*nel_in_blk[i],sizeof(int));
 	
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
@@ -503,7 +492,7 @@ extern "C" {
 	
 	fverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
 	
-	for (j = 0; j < nelem_i; j++) {
+	for (j = 0; j < nel_in_blk[i]; j++) {
 	  
 	  mf = MF_New(mesh);
 	  
@@ -689,7 +678,7 @@ extern "C" {
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
-			    elem_type, &nelem_i, &nelnodes, 
+			    elem_type, &(nel_in_blk[i]), &nelnodes, 
 			    &neledges, &nelfaces, &natts);
       if (status < 0) {
 	sprintf(mesg,
@@ -697,6 +686,9 @@ extern "C" {
 		elem_blknames[i],filename);
 	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
+
+      if (max_el_in_blk < nel_in_blk[i])
+        max_el_in_blk = nel_in_blk[i];
 
       if (strncasecmp(elem_type,"NFACED",6) == 0 ||
 	  strncasecmp(elem_type,"TET",3) == 0 ||
@@ -706,9 +698,9 @@ extern "C" {
 	solid_elems = 1;
 
         if (strncasecmp(elem_type,"NFACED",6) == 0)
-          nface_est += nelem_i*nelfaces;
+          nface_est += nel_in_blk[i]*nelfaces;
         else
-          nface_est += nelem_i*6;
+          nface_est += nel_in_blk[i]*6;
 
       }
       else if (strncasecmp(elem_type,"NSIDED",6) == 0 ||
@@ -758,7 +750,7 @@ extern "C" {
     for (i = 0; i < nelblock; i++) {
       
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], 
-			    elem_type, &nelem_i, &nelnodes, 
+			    elem_type, &(nel_in_blk[i]), &nelnodes, 
 			    &neledges, &nelfaces, &natts);
       if (status < 0) {
 	sprintf(mesg,
@@ -795,7 +787,7 @@ extern "C" {
 	}
 
       
-	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
+	nnpe = (int *) MSTK_malloc(nel_in_blk[i]*sizeof(int));
 	
 	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
@@ -807,14 +799,14 @@ extern "C" {
 	}
 
 	int max = 0;
-	for (j = 0; j < nelem_i; j++) 
+	for (j = 0; j < nel_in_blk[i]; j++) 
 	  if (nnpe[j] > max) max = nnpe[j];
 
 	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(max*sizeof(MFace_ptr));
 	int *rfdirs = (int *) MSTK_malloc(max*sizeof(int *));
 
 	int offset = 0;
-	for (j = 0; j < nelem_i; j++) {
+	for (j = 0; j < nel_in_blk[i]; j++) {
 	  mr = MR_New(mesh);
 
           int nrv = 0;
@@ -910,7 +902,7 @@ extern "C" {
 	
 	/* Get the connectivity of all elements in this block */
 	
-	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
+	connect = (int *) calloc(nelnodes*nel_in_blk[i],sizeof(int));
 	
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
@@ -959,7 +951,7 @@ extern "C" {
 	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(nrf*sizeof(MFace_ptr));
 	int *rfdirs = (int *) MSTK_malloc(nrf*sizeof(int *));
 
-	for (j = 0; j < nelem_i; j++) {
+	for (j = 0; j < nel_in_blk[i]; j++) {
 	  
 	  mr = MR_New(mesh);
 	  
@@ -1120,7 +1112,7 @@ extern "C" {
 	}
 
       
-	nnpe = (int *) MSTK_malloc(nelem_i*sizeof(int));
+	nnpe = (int *) MSTK_malloc(nel_in_blk[i]*sizeof(int));
 
 	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
@@ -1132,13 +1124,13 @@ extern "C" {
 	}
 
 	int max = 0;
-	for (j = 0; j < nelem_i; j++) 
+	for (j = 0; j < nel_in_blk[i]; j++) 
 	  if (nnpe[j] > max) max = nnpe[j];
 
 	fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
 
 	int offset = 0;
-	for (j = 0; j < nelem_i; j++) {
+	for (j = 0; j < nel_in_blk[i]; j++) {
 	  mf = MF_New(mesh);
 
 	  for (k = 0; k < nnpe[j]; k++) 
@@ -1169,7 +1161,7 @@ extern "C" {
 	
 	/* Get the connectivity of all elements in this block */
 	
-	connect = (int *) calloc(nelnodes*nelem_i,sizeof(int));
+	connect = (int *) calloc(nelnodes*nel_in_blk[i],sizeof(int));
 	
 	status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
 	if (status < 0) {
@@ -1182,7 +1174,7 @@ extern "C" {
 	
 	fverts = (MVertex_ptr *) calloc(nelnodes,sizeof(MVertex_ptr));
 	
-	for (j = 0; j < nelem_i; j++) {
+	for (j = 0; j < nel_in_blk[i]; j++) {
 	  
 	  mf = MF_New(mesh);
 	  
@@ -1530,10 +1522,336 @@ extern "C" {
     free(elem_map);
   } /* ndim = 3 */
 
-  free(elem_blk_ids);
-  for (i = 0; i < nelblock; i++) free(elem_blknames[i]);
-  free(elem_blknames);
 
+
+  /* Read in fields on elements and nodes */
+  int nelemvars=0, nnodevars=0;
+  int time_step = 1;
+  char veckey[16] = "_veccomp";
+  int keylen = strlen(veckey);
+
+
+  /* How many variables are there on elements */
+
+  status = ex_get_var_param(exoid, "e", &nelemvars);
+  if (status < 0) {
+    sprintf(mesg, 
+            "Error while reading element variables in Exodus II file %s\n",
+            filename);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
+  }
+
+  if (nelemvars) {
+
+    /* What are their names */
+
+    char **elvarnames = (char **) malloc(nelemvars*sizeof(char *));
+    for (i = 0; i < nelemvars; i++)
+      elvarnames[i] = (char *) malloc(256*sizeof(char));
+
+    status = ex_get_var_names(exoid, "e", nelemvars, elvarnames);
+    if (status < 0) {
+      sprintf(mesg, 
+              "Error while reading element variable names in Exodus II file %s\n",
+              filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+
+    /* Work through all the variables */
+  
+    int varindex;
+    for (varindex = 0; varindex < nelemvars; varindex++) {
+      char varname[256];
+      int namelen;
+
+      strcpy(varname,elvarnames[varindex]);
+      namelen = strlen(varname);
+
+      /* Check if this variable name contains the string "_veccomp".
+         This is a special keyword MSTK uses to understand that this
+         variable is part of a set of vector components and that they
+         should be imported together as a vector or tensor
+         attribute. The components will have "_veccomp0", "_veccomp1",
+         "_veccomp2" etc. */
+
+      char *keystring = strstr(varname,veckey);
+      if (keystring) {
+
+        /* Check if this is the first component of a vector field by
+           checking if the last character is "0"; if so, discover the
+           rest of the components and aggregate them into a vector or
+           tensor attribute.  If the last digit is something other than
+           0, we can ignore it since it would have been taken care of
+           when processing component '0'. THE ASSUMPTION HERE IS THAT
+           THE REMAINING COMPONENTS ARE IN THE IMMEDIATELY SUCCEEDING
+           INDICES. */
+
+        if (keystring[keylen] == '0') {
+          int ncomp = 1;
+          int varindex2;
+
+          /* If all but the last character are the same, this is a
+             component of the same vector */
+          for (varindex2 = varindex+1; varindex2 < nelemvars; varindex2++)
+            if (strncmp(varname,elvarnames[varindex2],namelen-1) == 0) 
+              ncomp++;
+            else
+              break; /* chain is broken */
+
+          char attname[256];
+          strncpy(attname,varname,namelen-(keylen+1)); /* omit _veccompN from attname */
+          MAttrib_ptr mattrib;
+          if (surf_elems) {
+            MAttType atttype = (ncomp == 2) ? VECTOR : TENSOR;
+            mattrib = MAttrib_New(mesh,attname,atttype,MFACE,ncomp);
+          }
+          else if (solid_elems) {
+            MAttType atttype = (ncomp == 3) ? VECTOR : TENSOR;
+            mattrib = MAttrib_New(mesh,attname,atttype,MREGION,ncomp);
+          }
+          else {
+            MSTK_Report("MESH_ReadExodusII_Serial",
+                        "Attribute export on wire meshes and node meshes not implemented",
+                        MSTK_ERROR);
+            continue;
+          }
+
+          int elid = 0;
+          double **elem_var_vals = (double **) malloc(ncomp*sizeof(double *));
+          for (j = 0; j < ncomp; j++)
+            elem_var_vals[j] = malloc(max_el_in_blk*sizeof(double));
+
+          for (i = 0; i < nelblock; i++) {
+
+            for (j = 0; j < ncomp; j++) {
+              varindex2 = varindex + j;
+              status = ex_get_elem_var(exoid, time_step, varindex2+1,
+                                       elem_blk_ids[i], nel_in_blk[i], 
+                                       elem_var_vals[j]);
+              if (status < 0) {
+                sprintf(mesg, 
+                        "Error while reading element variables in Exodus II file %s\n",
+                        filename);
+                MSTK_Report(funcname,mesg,MSTK_FATAL);
+              }
+            }
+
+            for (k = 0; k < nel_in_blk[i]; k++) {
+              double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_Delete
+              for (j = 0; j < ncomp; j++)
+                pval[j] = elem_var_vals[j][k];
+              MEntity_ptr ment = solid_elems ? MESH_Region(mesh,elid) :
+                  MESH_Face(mesh,elid);
+              elid++;
+
+              MEnt_Set_AttVal(ment,mattrib,0,0.0,pval);
+            }
+
+          } // for each element block
+
+          for (j = 0; j < ncomp; j++)
+            free(elem_var_vals[j]);
+          free(elem_var_vals);
+
+        } /* if its component 0 of a vector */
+
+      } /* if its a vector */
+      else { /* scalar variable */
+
+        MAttrib_ptr mattrib;
+        if (surf_elems)
+          mattrib = MAttrib_New(mesh,varname,DOUBLE,MFACE);
+        else if (solid_elems)
+          mattrib = MAttrib_New(mesh,varname,DOUBLE,MREGION);
+        else {
+          MSTK_Report("MESH_ReadExodusII_Serial",
+                      "Attribute export on wire meshes and node meshes not implemented",
+                      MSTK_ERROR);
+          continue;
+        }
+
+        int elid = 0;
+        double *elem_var_vals = (double *) malloc(max_el_in_blk*sizeof(double));
+
+        for (i = 0; i < nelblock; i++) {
+          status = ex_get_elem_var(exoid, time_step, varindex+1, elem_blk_ids[i], 
+                                   nel_in_blk[i], elem_var_vals);
+          if (status < 0) {
+            sprintf(mesg, 
+                    "Error while reading element variables in Exodus II file %s\n",
+                    filename);
+            MSTK_Report(funcname,mesg,MSTK_FATAL);
+          }
+
+          for (k = 0; k < nel_in_blk[i]; k++) {
+            MEntity_ptr ment = solid_elems ? MESH_Region(mesh,elid) :
+                MESH_Face(mesh,elid);
+
+            MEnt_Set_AttVal(ment,mattrib,0,elem_var_vals[k],NULL);
+            elid++;
+          }
+
+        } /* for each element block */
+
+        free(elem_var_vals);
+
+      } /* If its a scalar variable */
+    } /* for each element variable */
+
+    free(elem_blk_ids);
+    for (i = 0; i < nelblock; i++) free(elem_blknames[i]);
+    free(elem_blknames);
+
+    for (i = 0; i < nelemvars; i++)
+      free(elvarnames[i]);
+    free(elvarnames);
+  } /* if (nelemvars) */
+
+
+  /* Read in variables associated with nodes */
+
+  /* How many variables are there on nodes */
+
+  status = ex_get_var_param(exoid, "n", &nnodevars);
+  if (status < 0) {
+    sprintf(mesg, "Error while reading node variables in Exodus II file %s\n",
+            filename);
+    MSTK_Report(funcname,mesg,MSTK_FATAL);
+  }
+
+  if (nnodevars) {
+    /* What are their names */
+
+    char **nodevarnames = (char **) malloc(nnodevars*sizeof(char *));
+    for (i = 0; i < nnodevars; i++)
+      nodevarnames[i] = (char *) malloc(256*sizeof(char));
+
+    status = ex_get_var_names(exoid, "n", nnodevars, nodevarnames);
+    if (status < 0) {
+      sprintf(mesg, "Error while reading node variable names in Exodus II file %s\n",filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
+    }
+
+    /* Work through all the variables */
+
+    int varindex;
+    for (varindex = 0; varindex < nnodevars; varindex++) {
+      char varname[256];
+      int namelen;
+
+      strcpy(varname,nodevarnames[varindex]);
+      namelen = strlen(varname);
+
+      /* Check if this variable name contains the string "_veccomp" at
+         the end.  This is a special keyword MSTK uses to understand
+         that this variable is part of a set of vector components and
+         that they should be imported together as vector or tensor
+         attribute. The components will have "_veccomp0", "_veccomp1",
+         "_veccomp2" etc. */
+
+      char *keystring = strstr(varname,veckey);
+      if (keystring) {
+
+        /* Check if this is the first component of a vector field by
+           checking if the last character is "0"; if so, discover the
+           rest and aggregate them into a vector or tensor attribute.
+           If the last digit is something other than 0, we can ignore it
+           since it would have been taken care of when processing
+           component '0'. THE ASSUMPTION HERE IS THAT THE REMAINING
+           COMPONENTS ARE IN THE IMMEDIATELY SUCCEEDING INDICES. */
+
+        if (keystring[keylen] == '0') {
+          int ncomp = 1;
+          int varindex2;
+
+          /* If all but the last character are the same, this is a
+             component of the same vector */
+          for (varindex2 = varindex+1; varindex2 < nnodevars; varindex2++)
+            if (strncmp(varname,nodevarnames[varindex2],namelen-1) == 0) 
+              ncomp++;
+            else
+              break; /* chain is broken */
+
+          char attname[256];
+          strncpy(attname,varname,namelen-(keylen+1)); /* omit _veccompN from attname */
+          MAttrib_ptr mattrib;        
+          if (surf_elems) {
+            MAttType atttype = (ncomp == 2) ? VECTOR : TENSOR;
+            mattrib = MAttrib_New(mesh,attname,atttype,MVERTEX,ncomp);
+          }
+          else if (solid_elems) {
+            MAttType atttype = (ncomp == 3) ? VECTOR : TENSOR;
+            mattrib = MAttrib_New(mesh,attname,atttype,MVERTEX,ncomp);
+          }
+          else {
+            MSTK_Report("MESH_ReadExodusII_Serial",
+                        "Attribute export on wire meshes and node meshes not implemented",
+                        MSTK_ERROR);
+            continue;
+          }
+
+          int nodeid = 0;
+
+          double **node_var_vals = (double **) malloc(ncomp*sizeof(double *));
+          for (j = 0; j < ncomp; j++)
+            node_var_vals[j] = malloc(nnodes*sizeof(double));
+
+          for (j = 0; j < ncomp; j++) {
+            varindex2 = varindex + j;
+            status = ex_get_nodal_var(exoid, time_step, varindex2+1,
+                                      nnodes, node_var_vals[j]);
+            if (status < 0) {
+              sprintf(mesg, 
+                      "Error while reading node variables in Exodus II file %s\n",
+                      filename);
+              MSTK_Report(funcname,mesg,MSTK_FATAL);
+            }
+          }
+
+          for (k = 0; k < nnodes; k++) {
+            double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_DELETE
+            for (j = 0; j < ncomp; j++)
+              pval[j] = node_var_vals[j][k];
+            MEntity_ptr ment = MESH_Vertex(mesh,k);
+            MEnt_Set_AttVal(ment,mattrib,0,0.0,pval);
+          }
+
+          for (j = 0; j < ncomp; j++)
+            free(node_var_vals[j]);
+          free(node_var_vals);
+
+        } /* if its component 0 of a vector */
+
+      } /* if its a vector */
+      else { /* scalar variable */
+
+        MAttrib_ptr mattrib = MAttrib_New(mesh,varname,DOUBLE,MVERTEX);
+
+        double *node_var_vals = (double *) malloc(nnodes*sizeof(double));
+
+        status = ex_get_nodal_var(exoid, time_step, varindex+1, nnodes, 
+                                  node_var_vals);
+        if (status < 0) {
+          sprintf(mesg, 
+                  "Error while reading node variables in Exodus II file %s\n",
+                  filename);
+          MSTK_Report(funcname,mesg,MSTK_FATAL);
+        }
+
+        for (k = 0; k < nnodes; k++) {
+          MEntity_ptr ment = MESH_Vertex(mesh,k);
+          MEnt_Set_AttVal(ment,mattrib,0,node_var_vals[k],NULL);
+        }
+
+        free(node_var_vals);
+
+      } /* If its a scalar variable */
+    } /* for each element variable */
+  
+    for (i = 0; i < nnodevars; i++)
+      free(nodevarnames[i]);
+    free(nodevarnames);
+  } /* if (nnodevars) */
 
   ex_close(exoid);
 
