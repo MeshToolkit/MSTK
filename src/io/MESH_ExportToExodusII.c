@@ -519,14 +519,6 @@ extern "C" {
 
     
 
-    /* COLLECT REAL VALUED ATTRIBUTE/PROPERTY INFO */
-
-    MESH_Get_Attribute_Info(mesh, &num_element_atts_glob, &element_att_names_glob,
-                            &num_node_atts_glob, &node_att_names_glob,
-                            &num_sideset_atts_glob, &sideset_att_names_glob,
-                            comm);
-
-
     /* INFORMATION GATHERING IS LARGELY DONE - WRITE THE FILE */
 
     /* write global parameters */
@@ -1096,98 +1088,225 @@ extern "C" {
      
     /* Write out "results" variables tied to elements, nodes and sidesets */
     /* Even though they are called "results" they can be any quantity     */
+    /* PS: Do we HAVE to output the time value? */
 
-    /* Do we HAVE to output the time value? */
 
+    /* COLLECT ATTRIBUTE/FIELD INFO */
+
+    MESH_Get_Attribute_Info(mesh, &num_element_atts_glob, 
+                            &element_att_names_glob,
+                            &num_node_atts_glob, &node_att_names_glob,
+                            &num_sideset_atts_glob, &sideset_att_names_glob,
+                            comm);
+
+
+    char veckey[16] = "_veccomp";
+    int keylen = strlen(veckey);
+    
     if (num_node_atts_glob) {
-      status = ex_put_var_param(exoid, "n", num_node_atts_glob);
+
+      /* If there are some vector/tensor attributes, each of their
+         components has to be written out separately by suffixing the
+         attribute name with a keyword and component index */
+
+      int num_node_atts_out = 0;      
+      char **node_att_names_out =  malloc(num_node_atts_glob*6*sizeof(char *));
+
+      for (j = 0; j < num_node_atts_glob; j++) {
+        MAttrib_ptr att = MESH_AttribByName(mesh,node_att_names_glob[j]);
+        if (MAttrib_Get_Type(att) == VECTOR || MAttrib_Get_Type(att) == TENSOR) {
+          int ncomp = MAttrib_Get_NumComps(att);
+          for (k = 0; k < ncomp; k++) {
+            node_att_names_out[num_node_atts_out] = malloc(256*sizeof(char));
+            sprintf(node_att_names_out[num_node_atts_out],
+                    "%s%s%1d",node_att_names_glob[j],veckey,k);
+            num_node_atts_out++;
+          }
+        }
+        else {
+          node_att_names_out[num_node_atts_out] = malloc(256*sizeof(char));
+          strcpy(node_att_names_out[num_node_atts_out],node_att_names_glob[j]);
+          num_node_atts_out++;
+        }
+      }
+
+      status = ex_put_var_param(exoid, "n", num_node_atts_out);
       if (status < 0)
         MSTK_Report(funcname,"Error while writing node variable parameters",
                     MSTK_FATAL);
 
-      status = ex_put_var_names(exoid, "n", num_node_atts_glob,
-                                node_att_names_glob);
+      status = ex_put_var_names(exoid, "n", num_node_atts_out,
+                                node_att_names_out);
       if (status < 0)
         MSTK_Report(funcname,"Error while writing node variable parameters",
                     MSTK_FATAL);
 
       /* Now write out each variable */
 
+      double *node_vars = (double *) malloc(nv*sizeof(double));
+      int attid = 1;
       for (j = 0; j < num_node_atts_glob; ++j) {
         MAttrib_ptr att = MESH_AttribByName(mesh,node_att_names_glob[j]);
         
-        double *node_vars = (double *) malloc(nv*sizeof(double));
+        if (MAttrib_Get_Type(att) == VECTOR || MAttrib_Get_Type(att) == TENSOR) {
+          /* Write out each component separately */
 
-        idx = 0; k = 0;
-        while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-          MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
-          node_vars[k++] = rval;
+          int ncomp = MAttrib_Get_NumComps(att);
+          int n;
+          for (n = 0; n < ncomp; n++) {
+            idx = 0; k = 0;
+            while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+              MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
+              node_vars[k++] = ((double *) pval)[n];
+            }
+             
+            status = ex_put_nodal_var(exoid, 1, attid, nv, node_vars);
+            if (status < 0)
+              MSTK_Report(funcname,"Error while writing node variable",
+                          MSTK_FATAL);
+
+            attid++;
+          }
         }
-
-        status = ex_put_nodal_var(exoid, 1, j+1, nv, node_vars);
-        if (status < 0)
-          MSTK_Report(funcname,"Error while writing node variable",
-                      MSTK_FATAL);
+        else {        
+          idx = 0; k = 0;
+          while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+            MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
+            node_vars[k++] = rval;
+          }
           
-        free(node_vars);
+          status = ex_put_nodal_var(exoid, 1, j+1, nv, node_vars);
+          if (status < 0)
+            MSTK_Report(funcname,"Error while writing node variable",
+                        MSTK_FATAL);
+
+          attid++;
+        }
       }
-      
+      free(node_vars);
+     
+      for (i = 0; i < num_node_atts_out; i++)
+        free(node_att_names_out[i]);
+      free(node_att_names_out);
     }
 
 
 
     if (num_element_atts_glob) {
-      status = ex_put_var_param(exoid, "e", num_element_atts_glob);
+      /* If there are some vector/tensor attributes, each of their
+         components has to be written out separately by suffixing the
+         attribute name with a keyword and component index */
+
+      int num_element_atts_out = 0;      
+      char **element_att_names_out = 
+          malloc(num_element_atts_glob*6*sizeof(char *));
+
+      for (j = 0; j < num_element_atts_glob; j++) {
+        MAttrib_ptr att = MESH_AttribByName(mesh,element_att_names_glob[j]);
+        if (MAttrib_Get_Type(att) == VECTOR || MAttrib_Get_Type(att) == TENSOR) {
+          int ncomp = MAttrib_Get_NumComps(att);
+          for (k = 0; k < ncomp; k++) {
+            element_att_names_out[num_element_atts_out] = malloc(256*sizeof(char));
+            sprintf(element_att_names_out[num_element_atts_out],
+                    "%s%s%1d",element_att_names_glob[j],veckey,k);
+            num_element_atts_out++;
+          }
+        }
+        else {
+          element_att_names_out[num_element_atts_out] = malloc(256*sizeof(char));
+          strcpy(element_att_names_out[num_element_atts_out],
+                 element_att_names_glob[j]);
+          num_element_atts_out++;
+        }
+      }
+
+      status = ex_put_var_param(exoid, "e", num_element_atts_out);
       if (status < 0)
         MSTK_Report(funcname,"Error while writing variable parameters",
                     MSTK_FATAL);
 
-      status = ex_put_var_names(exoid, "e", num_element_atts_glob,
-                                element_att_names_glob);
+      status = ex_put_var_names(exoid, "e", num_element_atts_out,
+                                element_att_names_out);
       if (status < 0)
-        MSTK_Report(funcname,"Error while writing node variable parameters",
+        MSTK_Report(funcname,"Error while writing element variable parameters",
                     MSTK_FATAL);
 
       /* for now we write out a value of a variable for every element
          of every block, so the truth table has all 1s */
 
       int *truth_table = 
-        (int *) malloc(num_element_block_glob*num_element_atts_glob*sizeof(int));
+        (int *) malloc(num_element_block_glob*num_element_atts_out*sizeof(int));
       for (i = 0, k = 0; i < num_element_block_glob; ++i)
-        for (j = 0; j < num_element_atts_glob; ++j)
+        for (j = 0; j < num_element_atts_out; ++j)
           truth_table[k++] = 1;
 
       status = ex_put_elem_var_tab(exoid, num_element_block_glob, 
-                                   num_element_atts_glob, truth_table);
+                                   num_element_atts_out, truth_table);
       if (status < 0)
         MSTK_Report(funcname,"Error while writing element variable truth table",
                     MSTK_FATAL);
+
       
       /* Now write out each variable */
 
+      int attid = 1;
       for (j = 0; j < num_element_atts_glob; ++j) {
         MAttrib_ptr att = MESH_AttribByName(mesh,element_att_names_glob[j]);
 
-        for (i = 0; i < num_element_block_glob; ++i) {
-          int nelem = MSet_Num_Entries(element_blocks_glob[i]);
-          double *elem_vars = (double *) malloc(nelem*sizeof(double));
-
-          MEntity_ptr ment;
-          idx = 0; k = 0;
-          while ((ment = MSet_Next_Entry(element_blocks_glob[i],&idx))) {
-            MEnt_Get_AttVal(ment,att,&ival,&rval,&pval);
-            elem_vars[k++] = rval;
+        if (MAttrib_Get_Type(att) == VECTOR || MAttrib_Get_Type(att) == TENSOR) {
+          int ncomp = MAttrib_Get_NumComps(att);
+          int n;
+          for (n = 0; n < ncomp; n++) {            
+            for (i = 0; i < num_element_block_glob; ++i) {
+              int nelem = MSet_Num_Entries(element_blocks_glob[i]);
+              double *elem_vars = (double *) malloc(nelem*sizeof(double));
+              
+              MEntity_ptr ment;
+              idx = 0; k = 0;
+              while ((ment = MSet_Next_Entry(element_blocks_glob[i],&idx))) {
+                MEnt_Get_AttVal(ment,att,&ival,&rval,&pval);
+                elem_vars[k++] = ((double *) pval)[n];
+              }
+              
+              status = ex_put_elem_var(exoid, 1, attid, 
+                                       element_block_ids_glob[i], nelem, 
+                                       elem_vars);
+              if (status < 0)
+                MSTK_Report(funcname,"Error while writing element variable",
+                            MSTK_FATAL);
+              
+              free(elem_vars);
+            }
+            attid++;
           }
-
-          status = ex_put_elem_var(exoid, 1, j+1, element_block_ids_glob[i],
-                                   nelem, elem_vars);
-          if (status < 0)
-            MSTK_Report(funcname,"Error while writing element variable",
-                        MSTK_FATAL);
-          
-          free(elem_vars);
+        }
+        else {
+          for (i = 0; i < num_element_block_glob; ++i) {
+            int nelem = MSet_Num_Entries(element_blocks_glob[i]);
+            double *elem_vars = (double *) malloc(nelem*sizeof(double));
+            
+            MEntity_ptr ment;
+            idx = 0; k = 0;
+            while ((ment = MSet_Next_Entry(element_blocks_glob[i],&idx))) {
+              MEnt_Get_AttVal(ment,att,&ival,&rval,&pval);
+              elem_vars[k++] = rval;
+            }
+                        
+            status = ex_put_elem_var(exoid, 1, j+1, element_block_ids_glob[i],
+                                     nelem, elem_vars);
+            if (status < 0)
+              MSTK_Report(funcname,"Error while writing element variable",
+                          MSTK_FATAL);
+            
+            free(elem_vars);
+          }
+          attid++;
         }
       }
+
+      for (i = 0; i < num_element_atts_out; i++)
+        free(element_att_names_out[i]);
+      free(element_att_names_out);
     }
 
     if (num_sideset_atts_glob) {
@@ -2532,9 +2651,9 @@ extern "C" {
     idx = 0;
     while ((att = MESH_Next_Attrib(mesh,&idx))) {
       
-      // Can only export scalar real valued attributes for now
+      // Can only export real valued (scalar or vector) attributes
 
-      if (MAttrib_Get_Type(att) != DOUBLE) continue;
+      if (MAttrib_Get_Type(att) == INT || MAttrib_Get_Type(att) == POINTER) continue;
       
       MAttrib_Get_Name(att, &(att_names_loc[natt_loc*MAXLEN]));
       att_dim_loc[natt_loc] = MAttrib_Get_EntDim(att);
@@ -2644,8 +2763,8 @@ extern "C" {
       natts_glob = natt_loc;
 
       if (natt_loc) {
-        att_names_glob = (char *) malloc(natt_loc*MAXLEN*sizeof(int));
-        memcpy(att_names_glob,att_names_loc,natt_loc*MAXLEN*sizeof(int));
+        att_names_glob = (char *) malloc(natt_loc*MAXLEN*sizeof(char));
+        memcpy(att_names_glob,att_names_loc,natt_loc*MAXLEN*sizeof(char));
         
         att_dim_glob = (int *) malloc(natt_loc*sizeof(List_ptr));      
         memcpy(att_dim_glob,att_dim_loc,natt_loc*sizeof(int));
@@ -2657,8 +2776,8 @@ extern "C" {
     natts_glob = natt_loc;
     
     if (natt_loc) {
-      att_names_glob = (char *) malloc(natt_loc*MAXLEN*sizeof(int));
-      memcpy(att_names_glob,att_names,natt_loc*MAXLEN*sizeof(int));
+      att_names_glob = (char *) malloc(natt_loc*MAXLEN*sizeof(char));
+      memcpy(att_names_glob,att_names,natt_loc*MAXLEN*sizeof(char));
       
       att_dim_glob = (int *) malloc(natt_loc*sizeof(List_ptr));      
       memcpy(att_dim_glob,att_dim_loc,natt_loc*sizeof(int));
