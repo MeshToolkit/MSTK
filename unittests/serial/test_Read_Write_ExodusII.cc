@@ -60,7 +60,10 @@ TEST(Read_Write_ExodusII_Poly2)
 }
 
 
+
+
 TEST(Write_Read_ExodusII_HexMesh) {
+
   MFace_ptr mf;
   MVertex_ptr mv;
   MSet_ptr mset;
@@ -296,4 +299,146 @@ TEST(Write_Read_ExodusII_HexMesh) {
   }
 
 }
-      
+
+
+TEST(Write_Read_ExodusII_Variables) {
+  int i, idx;
+  
+  MSTK_Init();
+
+  /* Read a 2x2x2 mesh of hexes with full classification in MSTK format */ 
+
+  Mesh_ptr mesh = MESH_New(UNKNOWN_REP);
+  int ok = MESH_InitFromFile(mesh,"serial/reghex3D.mstk",NULL);
+
+  /* Reclassify one layer of hexes as belonging to a different ID region */
+
+  int elblock_numregs[2] = {6,2};
+  int elblock_regids[2][7] = {{3,4,5,6,7,8},
+                               {1,2,0,0,0,0,0}};
+  
+  MRegion_ptr mr;
+  for (int i = 0; i < 2; i++) {
+    mr = MESH_Region(mesh,i);
+    MR_Set_GEntID(mr,2);
+  }
+
+  int nr = MESH_Num_Regions(mesh);
+  int nv = MESH_Num_Vertices(mesh);
+
+  /* Create a scalar and a vector attribute each on elements and nodes */
+
+  MAttrib_ptr elvalatt_out = MAttrib_New(mesh,"elval",DOUBLE,MREGION);
+  MAttrib_ptr elvecatt_out = MAttrib_New(mesh,"elvec",VECTOR,MREGION,3);
+
+  double *elval_out = (double *) malloc(nr*sizeof(double));
+  double (*elvec_out)[3] = (double (*)[3]) malloc(nr*sizeof(double [3]));
+
+  idx = 0; i = 0;
+  while ((mr = MESH_Next_Region(mesh,&idx))) {
+    elval_out[i] = 2.5*MR_ID(mr);
+    elvec_out[i][0] = elval_out[i];
+    elvec_out[i][1] = elval_out[i]+1;
+    elvec_out[i][2] = elval_out[i]+2;
+
+    MEnt_Set_AttVal(mr,elvalatt_out,0,elval_out[i],NULL);
+    MEnt_Set_AttVal(mr,elvecatt_out,0,0.0,elvec_out[i]);
+    i++;
+  }
+
+
+  double *ndval_out = (double *) malloc(nv*sizeof(double));
+  double (*ndvec_out)[3] = (double (*)[3]) malloc(nv*sizeof(double [3]));
+
+  MAttrib_ptr ndvalatt_out = MAttrib_New(mesh,"ndval",DOUBLE,MVERTEX);
+  MAttrib_ptr ndvecatt_out = MAttrib_New(mesh,"ndvec",VECTOR,MVERTEX,3);
+
+  MVertex_ptr mv;
+  idx = 0; i = 0;
+  while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+    ndval_out[i] = 2.5*MV_ID(mv);
+    ndvec_out[i][0] = ndval_out[i];
+    ndvec_out[i][1] = ndval_out[i]+1;
+    ndvec_out[i][2] = ndval_out[i]+2;
+
+    MEnt_Set_AttVal(mv,ndvalatt_out,0,ndval_out[i],NULL);
+    MEnt_Set_AttVal(mv,ndvecatt_out,0,0.0,ndvec_out[i]);
+    i++;
+  }
+
+  /* Now export to an Exodus II file */
+
+  ok = MESH_ExportToFile(mesh,"temp.exo","exodusii",0,NULL,NULL,NULL);
+
+
+  /* Now create another mesh and import this file back */
+
+  Mesh_ptr mesh2 = MESH_New(F1);
+
+  ok = MESH_ImportFromFile(mesh2,"temp.exo","exodusii",NULL,NULL);
+
+  /* Now verify that we retrieved all the attributes */
+
+  MAttrib_ptr elvalatt_in = MESH_AttribByName(mesh2,"elval");
+  CHECK(elvalatt_in);
+  CHECK_EQUAL(DOUBLE,MAttrib_Get_Type(elvalatt_in));
+  CHECK_EQUAL(MREGION,MAttrib_Get_EntDim(elvalatt_in));
+
+  MAttrib_ptr elvecatt_in = MESH_AttribByName(mesh2,"elvec");
+  CHECK(elvecatt_in);
+  CHECK_EQUAL(VECTOR,MAttrib_Get_Type(elvecatt_in));
+  CHECK_EQUAL(MREGION,MAttrib_Get_EntDim(elvecatt_in));
+  CHECK_EQUAL(3,MAttrib_Get_NumComps(elvecatt_in));
+
+ 
+  idx = 0; i = 0;
+  while ((mr = MESH_Next_Region(mesh2,&idx))) {
+    int ival;
+    double rval;
+    void *pval;
+
+    MEnt_Get_AttVal(mr,elvalatt_in,&ival,&rval,&pval);
+    CHECK_EQUAL(elval_out[i],rval);
+
+    double vec[3];
+    MEnt_Get_AttVal(mr,elvecatt_in,&ival,&rval,&pval);
+    CHECK_ARRAY_EQUAL(elvec_out[i],(double *)pval,3);
+    i++;
+  }
+
+
+  MAttrib_ptr ndvalatt_in = MESH_AttribByName(mesh2,"ndval");
+  CHECK(ndvalatt_in);
+  CHECK_EQUAL(DOUBLE,MAttrib_Get_Type(ndvalatt_in));
+  CHECK_EQUAL(MVERTEX,MAttrib_Get_EntDim(ndvalatt_in));
+
+  MAttrib_ptr ndvecatt_in = MESH_AttribByName(mesh2,"ndvec");
+  CHECK(ndvecatt_in);
+  CHECK_EQUAL(VECTOR,MAttrib_Get_Type(ndvecatt_in));
+  CHECK_EQUAL(MVERTEX,MAttrib_Get_EntDim(ndvecatt_in));
+  CHECK_EQUAL(3,MAttrib_Get_NumComps(ndvecatt_in));
+
+ 
+  idx = 0; i = 0;
+  while ((mv = MESH_Next_Vertex(mesh2,&idx))) {
+    int ival;
+    double rval;
+    void *pval;
+
+    MEnt_Get_AttVal(mv,ndvalatt_in,&ival,&rval,&pval);
+    CHECK_EQUAL(ndval_out[i],rval);
+
+    MEnt_Get_AttVal(mv,ndvecatt_in,&ival,&rval,&pval);
+    CHECK_ARRAY_EQUAL(ndvec_out[i],(double *)pval,3);
+    i++;
+  }
+
+  free(elval_out);
+  free(elvec_out);
+  free(ndval_out);
+  free(ndvec_out);
+
+  MESH_Delete(mesh);
+  MESH_Delete(mesh2);
+}
+
