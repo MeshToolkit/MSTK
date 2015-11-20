@@ -1175,7 +1175,7 @@ extern "C" {
             node_vars[k++] = rval;
           }
           
-          status = ex_put_nodal_var(exoid, 1, j+1, nv, node_vars);
+          status = ex_put_nodal_var(exoid, 1, attid, nv, node_vars);
           if (status < 0)
             MSTK_Report(funcname,"Error while writing node variable",
                         MSTK_FATAL);
@@ -1292,7 +1292,7 @@ extern "C" {
               elem_vars[k++] = rval;
             }
                         
-            status = ex_put_elem_var(exoid, 1, j+1, element_block_ids_glob[i],
+            status = ex_put_elem_var(exoid, 1, attid, element_block_ids_glob[i],
                                      nelem, elem_vars);
             if (status < 0)
               MSTK_Report(funcname,"Error while writing element variable",

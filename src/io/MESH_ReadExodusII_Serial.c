@@ -1599,7 +1599,10 @@ extern "C" {
               break; /* chain is broken */
 
           char attname[256];
-          strncpy(attname,varname,namelen-(keylen+1)); /* omit _veccompN from attname */
+          strcpy(attname,varname);
+          char *tempstr = strstr(attname,veckey);
+          tempstr[0] = '\0';
+
           MAttrib_ptr mattrib;
           if (surf_elems) {
             MAttType atttype = (ncomp == 2) ? VECTOR : TENSOR;
@@ -1773,7 +1776,10 @@ extern "C" {
               break; /* chain is broken */
 
           char attname[256];
-          strncpy(attname,varname,namelen-(keylen+1)); /* omit _veccompN from attname */
+          strcpy(attname,varname);
+          char *tempstr = strstr(attname,veckey);
+          tempstr[0] = '\0';
+
           MAttrib_ptr mattrib;        
           if (surf_elems) {
             MAttType atttype = (ncomp == 2) ? VECTOR : TENSOR;
