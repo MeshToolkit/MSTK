@@ -662,6 +662,7 @@ extern "C" {
     }
 
     free(elem_map);
+    surf_elems = 1;
     
   }
   else if (ndim == 3) {
