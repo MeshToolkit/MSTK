@@ -11,7 +11,7 @@
 */
 
 
-#define MSTK_VERSION "2.24"
+#define MSTK_VERSION "2.25rc1"
 
 #include <stdarg.h>
 
