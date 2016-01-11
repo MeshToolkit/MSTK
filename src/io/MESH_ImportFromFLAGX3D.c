@@ -72,7 +72,7 @@ extern "C" {
   else {
     distributed = 0;
 
-    if (!(fp = fopen(modfilename,"r"))) {
+    if (!(fp = fopen(filename,"r"))) {
       sprintf(mesg,"Cannot open file %s for reading\n",filename);
       MSTK_Report(funcname,mesg,MSTK_FATAL);
     }
@@ -83,7 +83,7 @@ extern "C" {
   numprocs = 1;
   rank = 0;
 
-  if (!(fp = fopen(modfilename,"r"))) {
+  if (!(fp = fopen(filename,"r"))) {
     sprintf(mesg,"Cannot open file %s for reading\n",filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
@@ -449,7 +449,8 @@ extern "C" {
                                           num_ghost_layers, input_type, comm);
   
     if (!status)
-      MSTK_Report(funcname,"Could weave distributed meshes together correctly",
+      MSTK_Report(funcname,
+                  "Could not weave distributed meshes together correctly",
                   MSTK_FATAL);
   }
 
