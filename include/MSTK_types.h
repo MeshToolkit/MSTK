@@ -54,16 +54,19 @@ extern "C" {
   typedef void     *Hash_ptr;
 #endif
 
-  typedef enum RepType {F1=0, F4, R1, R2, R4, UNKNOWN_REP} RepType;
+  typedef enum {F1=0, F4, R1, R2, R4, UNKNOWN_REP} RepType;
 
-typedef enum MFType {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
-typedef enum MRType {RDELETED=-1, RUNKNOWN=0, TET, PYRAMID, PRISM, HEX, POLYHED} MRType;
+typedef enum {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
+typedef enum {RDELETED=-1, RUNKNOWN=0, TET, PYRAMID, PRISM, HEX, POLYHED} MRType;
 
-  typedef enum MType {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOWNTYPE=4, MALLTYPE=5, MANYTYPE=6} MType;
+  typedef enum {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOWNTYPE=4, MALLTYPE=5, MANYTYPE=6} MType;
 
 /* typedefs needed for attributes */
-typedef enum MAttType {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
+typedef enum {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
 
+/* typedefs to indicate how to aggregate attribute values from different processors */
+
+typedef enum {ATTOP_UNDEF, ATTOP_MAX, ATTOP_MIN, ATTOP_SUM, ATTOP_AVG} MAttOpType;
 
 #ifdef MSTK_HAVE_MPI  
 

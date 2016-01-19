@@ -681,77 +681,85 @@ Representation type currently being used by the mesh.
 \item[]
 
 \item[]{\bf {\em int} MESH\_Num\_Vertices({\em Mesh\_ptr} mesh):}
-Number of vertices in the mesh.
+Number of vertices in the mesh. This includes owned and ghost
+vertices.
 
-\item[]{\bf {\em int} MESH\_Num\_Edges({\em Mesh\_ptr} mesh):}
-Number of edges in the mesh. For reduced representations, this routine
-returns 0 since it is impractically expensive to count the number of
-edges when they do not explicitly exist. Applications must find a way
-to avoid using this routine for reduced representations.
+\item[]{\bf {\em int} MESH\_Num\_Edges({\em Mesh\_ptr} mesh):} Number
+  of edges in the mesh (owned and ghost). For reduced representations,
+  this routine returns 0 since it is impractically expensive to count
+  the number of edges when they do not explicitly exist. Applications
+  must find a way to avoid using this routine for reduced
+  representations.
 
-\item[]{\bf {\em int} MESH\_Num\_Faces({\em Mesh\_ptr} mesh):}
-Number of faces in the mesh. For reduced representations R1 or R2,
-this routine counts only the faces that are explicitly represented
-i.e. faces not connected to any mesh region. Therefore, a value of 0
-will be returned for the number of faces of a tetrahedral mesh with
-representation R1 or R2 but the correct number will be reported for a
-tetrahedral mesh in other representations. Also, the correct number
-will be reported for the number of faces in a surface mesh in
-representation R1 or R2.  Therefore, this routine must be used
-carefully.
+\item[]{\bf {\em int} MESH\_Num\_Faces({\em Mesh\_ptr} mesh):} Number
+  of faces in the mesh (owned and ghost). For reduced representations
+  R1 or R2, this routine counts only the faces that are explicitly
+  represented i.e. faces not connected to any mesh region. Therefore,
+  a value of 0 will be returned for the number of faces of a
+  tetrahedral mesh with representation R1 or R2 but the correct number
+  will be reported for a tetrahedral mesh in other
+  representations. Also, the correct number will be reported for the
+  number of faces in a surface mesh in representation R1 or R2.
+  Therefore, this routine must be used carefully.
 
 
 \item[]{\bf {\em int} MESH\_Num\_Regions({\em Mesh\_ptr} mesh):}
-Number of regions in the mesh.
+Number of regions in the mesh (owned and ghost).
 
 \item[]
 
 \item[]{\bf {\em MVertex\_ptr} MESH\_Vertex({\em Mesh\_ptr} mesh,
 {\em int} i):} Return the i'th vertex in the mesh. Returns NULL if i
-$<$ 0 or i $>$ number of mesh vertices.
+$<$ 0 or i $>$ number of mesh vertices. The vertex may be owned or ghost.
 
-\item[]{\bf {\em MEdge\_ptr} MESH\_Edge({\em Mesh\_ptr} mesh,
-{\em int} i):} Return the i'th edge in the mesh. Returns NULL if i $<$
-0 or i $>$ number of mesh edges. Returns NULL for reduced
-representations.
+\item[]{\bf {\em MEdge\_ptr} MESH\_Edge({\em Mesh\_ptr} mesh, {\em
+    int} i):} Return the i'th edge in the mesh. Returns NULL if i $<$
+  0 or i $>$ number of mesh edges. The edge may be owned or
+  ghost. Returns NULL for reduced representations.
 
-\item[]{\bf {\em MFace\_ptr} MESH\_Face({\em Mesh\_ptr} mesh,
-{\em int} i):} Return the i'th face in the mesh. Returns NULL if i $<$
-0 or i $>$ number of mesh faces. Only faces explicitly represented in
-the mesh are returned for reduced representation (See explanation for
-MESH\_Num\_Faces).
+\item[]{\bf {\em MFace\_ptr} MESH\_Face({\em Mesh\_ptr} mesh, {\em
+    int} i):} Return the i'th face in the mesh. Returns NULL if i $<$
+  0 or i $>$ number of mesh faces. The face may be owned or
+  ghost. Only faces explicitly represented in the mesh are returned
+  for reduced representation (See explanation for MESH\_Num\_Faces).
 
 \item[]{\bf {\em MRegion\_ptr} MESH\_Region({\em Mesh\_ptr} mesh, {\em
-      int} i):} Return the i'th region in the mesh. Returns NULL if i
-  $<$ 0 or i $>$ number of mesh region.
+    int} i):} Return the i'th region in the mesh. Returns NULL if i
+  $<$ 0 or i $>$ number of mesh region. The region may be owned or
+  ghost.
 
 \item[]
 
 \item[]{\bf {\em MVertex\_ptr} MESH\_Next\_Vertex({\em Mesh\_ptr}
-    mesh, {\em int} *idx):} Returns the next vertex while iterating
-  through the vertices of the mesh. See the routine {\bf
-    List\_Next\_Entry} above for an explanation of how the iteration
-  works. This routine is in general faster than using the routine {\bf
-    MESH\_Vertex}.
+  mesh, {\em int} *idx):} Returns the next vertex while iterating
+  through the vertices of the mesh. The vertex may be owned or ghost
+  and the type must be checked using {\bf MV\_PType}. See the routine
+  {\bf List\_Next\_Entry} above for an explanation of how the
+  iteration works. This routine is in general faster than using the
+  routine {\bf MESH\_Vertex}.
 
 \item[]{\bf {\em MEdge\_ptr} MESH\_Next\_Edge({\em Mesh\_ptr} mesh,
-{\em int} *idx):} Returns the next edge while iterating through the
-edges of the mesh. See the routine List\_Next\_Entry above for an
-explanation of how the iteration works.  The routine always returns
-NULL for reduced representations.
+  {\em int} *idx):} Returns the next edge while iterating through the
+  edges of the mesh. The edge may be owned or ghost
+  and the type must be checked using {\bf ME\_PType}. See the routine
+  List\_Next\_Entry above for an explanation of how the iteration
+  works.  The routine always returns NULL for reduced representations.
 
 \item[]{\bf {\em MFace\_ptr} MESH\_Next\_Face({\em Mesh\_ptr} mesh,
-{\em int} *idx):} Returns the next face while iterating through the
-faces of the mesh. See the routine {\bf List\_Next\_Entry} above for
-an explanation of how the iteration works.  Only faces explicitly
-represented in the mesh are returned for reduced representation (See
-explanation for {\bf MESH\_Num\_Faces}).
+  {\em int} *idx):} Returns the next face while iterating through the
+  faces of the mesh. The face may be owned or ghost
+  and the type must be checked using {\bf MF\_PType}. See the routine
+  {\bf List\_Next\_Entry} above for an explanation of how the
+  iteration works.  Only faces explicitly represented in the mesh are
+  returned for reduced representation (See explanation for {\bf
+    MESH\_Num\_Faces}).
 
-\item[]{\bf {\em MRegion\_ptr}
-    MESH\_Next\_Region({\em Mesh\_ptr} mesh, {\em int} *idx):}
-  Returns the next region while iterating through the regions of the
-  mesh. See the routine {\bf List\_Next\_Entry} above for an
-  explanation of how the iteration works.
+\item[]{\bf {\em MRegion\_ptr} MESH\_Next\_Region({\em Mesh\_ptr}
+  mesh, {\em int} *idx):} Returns the next region while iterating
+  through the regions of the mesh. The region may be owned or ghost
+  and the type must be checked using {\bf MR\_PType}. See the routine
+  {\bf List\_Next\_Entry} above for an explanation of how the
+  iteration works.
   
 \item[]
 

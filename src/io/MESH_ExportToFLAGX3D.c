@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include "MSTK.h"
-
+#include "MSTK_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,8 +33,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MEdge_ptr             edge;
   MFace_ptr	        face;
   MRegion_ptr           region;
-  MAttrib_ptr           attrib, *nodatts=NULL, *cellatts=NULL, oppatt;
-  MAttrib_ptr           vidatt, eidatt, fidatt, ridatt;
+  MAttrib_ptr           attrib, *nodatts=NULL, *cellatts=NULL;
+  MAttrib_ptr           vidatt, eidatt, fidatt, ridatt, oppatt, opppidatt;
   MAttType              atttype;
   char                  attname[256], matname[256], tmpstr[256];
   int                   jv, je, jr, jf;
@@ -51,33 +51,34 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   FILE		        *fp;
 
 #ifdef MSTK_HAVE_MPI
-  int rank, numprocs;
+  int pid, numprocs;
   MPI_Comm_size(comm,&numprocs);
-  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_rank(comm,&pid);
+  pid += 1;  /* FLAG X3D counts processor IDs from 1 */
 #endif
 
   vidatt = MAttrib_New(mesh,"vidatt",INT,MVERTEX);
   eidatt = MAttrib_New(mesh,"eidatt",INT,MEDGE);
   fidatt = MAttrib_New(mesh,"fidatt",INT,MFACE);
   ridatt = MAttrib_New(mesh,"ridatt",INT,MREGION);
-
+  
   idx = 0; i = 0;
   while ((vertex = MESH_Next_Vertex(mesh,&idx)))
     MEnt_Set_AttVal(vertex,vidatt,++i,0.0,NULL);
-
+  
   idx = 0; i = 0;
   while ((edge = MESH_Next_Edge(mesh,&idx)))
     MEnt_Set_AttVal(edge,eidatt,++i,0.0,NULL);
-
+  
   idx = 0; i = 0;
   while ((face = MESH_Next_Face(mesh,&idx)))
     MEnt_Set_AttVal(face,fidatt,++i,0.0,NULL);
-
+  
   idx = 0; i = 0;
   while ((region = MESH_Next_Region(mesh,&idx)))
     MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
-
-
+  
+  
   if (!(fp = fopen(filename,"w"))) {
     fprintf(stderr,"MESH_ExportToFLAGX3D: Couldn't open output file %s\n",
 	    filename);
@@ -106,13 +107,11 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /***********************************************************************/
   /* Header information */
   /***********************************************************************/
-
+  
   fprintf(fp,"header\n");
-
-  /* Processor number - For now we will not bother with distributed I/O */
-
-  fprintf(fp,"   %-22s %10d\n","process",1);
-
+  
+  fprintf(fp,"   %-22s %10d\n","process",pid);
+  
   /* Problem dimension - 2 if we only have faces, 3 if we have regions */
   
   if (nr)
@@ -173,7 +172,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   }
   
   if (!ngent) {
-    /* No materMake all cells of material type 1 */
+    /* No materials. Make all cells of material type 1 */
     gentities[ngent] = 1;
     ngent++;
   }
@@ -184,89 +183,288 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   
   fprintf(fp,"   %-22s %10d\n","nodes",nv);
   
-  /* Number of "faces"; "faces" is the unfortunate term used in the
-     FLAG X3D file to mean boundaries of elements/cells/zones in FLAG
-     X3D, i.e., in MSTK parlance, 'faces' are edges in a surface mesh,
-     faces in a volume mesh */
+  /* Number of "faces"; "faces" is the term used in the FLAG X3D file
+     to mean boundaries of elements/cells/zones in FLAG X3D, i.e., in
+     MSTK parlance, 'faces' are edges in a surface mesh, faces in a
+     volume mesh */
+  
+  /* Each 'face' in FLAG X3D must be referenced by only one cell. A
+     'face' description in FLAG X3D is supposed to be such that normal
+     of 'face' points out of its referring cell. Therefore, if a
+     'face' is connected to two cells, then we need to write out the
+     face and its duplicate, pointing in the opposite direction. If
+     'face' is on a processor boundary, this duplicate ID has to be
+     the local ID of the corresponding 'face' from the other
+     processor. If a 'face' is connected to only one region, we need
+     to write out the 'face' in its natural direction if its normal
+     points out of the owning region; we need to write out the 'face'
+     in the reverse direction if its normal points into the owning
+     region */
+  
   
   if (nr) {
     
     oppatt = MAttrib_New(mesh,"oppfaceID",INT,MFACE); 
+    opppidatt = MAttrib_New(mesh,"oppfacePID",INT,MFACE); 
     
-    ndup = 0;
+    /* First count the number of faces that are not on a partition boundary */
+    
+    int nfbdry = 0;
+    int nfint = 0;
+    int nfparbdry = 0;
     idx = 0;
     while ((face = MESH_Next_Face(mesh,&idx))) {      
       
-      /* Each face in FLAG X3D must be referenced by only one
-	 cell. A face description in FLAG X3D is supposed to be such
-	 that normal of 'face' points out of its referring
-	 cell. Therefore, if a face is connected to two regions,
-	 then we need to write out the face and its duplicate,
-	 pointing in the opposite direction. If a face is connected
-	 to only one region, we need to write out the face in its
-	 natural direction if its normal points out of the owning
-	 region; we need to write out the face in the reverse
-	 direction if its normal points into the owning region */
+      fregs = MF_Regions(face);
+      if (!fregs) 
+	MSTK_Report("MESH_ExportToFLAGX3D","FLAGX3D cannot handle this type of non-manifold mesh",MSTK_FATAL);
+      
+      if (List_Num_Entries(fregs) == 2) { /* face not on domain boundary */
+	
+	MRegion_ptr freg0 = List_Entry(fregs,0);
+	MRegion_ptr freg1 = List_Entry(fregs,1);
+        
+	/* count interior faces that are completely in the partition
+	 * (nfint) and on partition boundaries (nfparbdry) but avoid
+	 * counting interior to the ghost layer */
+	
+	if (MR_PType(freg0) != PGHOST && MR_PType(freg1) != PGHOST) 
+	  nfint++;
+	else
+	  nfparbdry++;
+      }
+      else {
+	/* count boundary faces but avoid counting faces that are on
+	 * the outer boundary of the ghost layer */
+	
+	MRegion_ptr freg0 = List_Entry(fregs,0);
+	if (MR_PType(freg0) != PGHOST) 
+	  nfbdry++;
+      }
+      
+      if (fregs)
+	List_Delete(fregs);
+    }
+    
+    
+    int ndup_local = 0; /* Number of duplicate faces from this partition */
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx))) {      
       
       fregs = MF_Regions(face);
       if (fregs && List_Num_Entries(fregs) == 2) {
 	
-	ndup++;
-	MEnt_Set_AttVal(face,oppatt,nf+ndup,0,NULL);
+	int nghostreg = 0;
+	MRegion_ptr freg0 = List_Entry(fregs,0);
+	if (MR_PType(freg0) == PGHOST) nghostreg++;
+	MRegion_ptr freg1 = List_Entry(fregs,1);
+	if (MR_PType(freg1) == PGHOST) nghostreg++;
+	
+	if (nghostreg == 0) {
+	  
+	  /* face is interior to this partition - we will pretend
+	     there are duplicate faces at the end of the regular face list */
+          
+	  ndup_local++;
+	  int dupfaceid = nfint+nfbdry+ndup_local;
+	  MEnt_Set_AttVal(face,oppatt,dupfaceid,0,NULL);
+          
+	}
+	else if (nghostreg == 1) {
+	  
+	  /* face is on partition boundary - the duplicate face ID has
+	     to be the local ID of the face from the adjacent
+	     partition. Set the oppatt value to the local face ID for
+	     now.  After all faces are processed, do communicate the
+	     local ID to the opposite processor */
+          
+	  MEnt_Set_AttVal(face,oppatt,fid,0,NULL);
+	  MEnt_Set_AttVal(face,opppidatt,pid,0,NULL);
+	}
       }
       if (fregs)
 	List_Delete(fregs);
     }
     
-    nf2 = nf + ndup;
+    int nftot = nfbdry + 2*nfint + nfparbdry;
+    fprintf(fp,"   %-22s %10d\n","faces",nftot);
     
-    fprintf(fp,"   %-22s %10d\n","faces",nf2);
-    fprintf(fp,"   %-22s %10d\n","elements",nr);
+    int nrtot = 0;
+    idx = 0;
+    while ((region = MESH_Next_Region(mesh,&idx))) 
+      if (MR_PType(region) != PGHOST)
+	nrtot++;
+    
+    fprintf(fp,"   %-22s %10d\n","elements",nrtot);
+    
   }
   else {
     oppatt = MAttrib_New(mesh,"oppedgeID",INT,MEDGE); 
+    opppidatt = MAttrib_New(mesh,"oppedgePID",INT,MEDGE); 
     
-    ndup = 0;
+    /* First count the number of faces that are not on a partition boundary */
+    
+    int nebdry = 0;
+    int neint = 0;
+    int neparbdry = 0;
     idx = 0;
     while ((edge = MESH_Next_Edge(mesh,&idx))) {      
       
-      /* Each edge in FLAG X3D must be referenced by only one cell. An
-	 edge description in FLAG X3D is supposed to be such that the
-	 cell uses the edge in the +ve direction. Therefore, if an
-	 edge is connected to two cells, then we need to write out the
-	 edge and its duplicate, pointing in the opposite
-	 direction. If an edge is connected to only one cell, we need
-	 to write out the edge in its natural direction if the cell
-	 uses the edge in the +ve sense; we need to write out the edge
-	 in the reverse direction if the cell uses it in the -ve
-	 sense */
-      
       efaces = ME_Faces(edge);
-      if (efaces && List_Num_Entries(efaces) == 2) {	  
-	ndup++;
-	MEnt_Set_AttVal(edge,oppatt,ne+ndup,0,NULL);
-      }
+      if (!efaces || List_Num_Entries(efaces) > 2) 
+	MSTK_Report("MESH_ExportToFLAGX3D","FLAGX3D cannot handle this type of non-manifold mesh",MSTK_FATAL);
       
-#ifdef DEBUG
-      if (efaces && List_Num_Entries(efaces) > 2) {
-	fprintf(stderr,"Non-manifold model - more than two faces connected to edge in surface mesh.\n");
+      if (List_Num_Entries(efaces) == 2) { /* edge not on domain boundary */
+	
+	MFace_ptr eface0 = List_Entry(efaces,0);
+	MRegion_ptr eface1 = List_Entry(efaces,1);
+        
+	/* Count interior edges that are completely in the partition
+	 * (neint) and on partition boundaries (neparbdry) but avoid
+	 * counting edges interior to the ghost layer */
+	
+	if (MF_PType(eface0) != PGHOST && MF_PType(eface1) != PGHOST) 
+	  neint++;
+	else
+	  neparbdry++;
       }
-#endif
+      else {
+	/* Count boundary edges but avoid counting edges that are on
+	 * the outer boundary of the ghost layer */
+	
+	MFace_ptr eface0 = List_Entry(efaces,0);
+	if (MF_PType(eface0) != PGHOST) 
+	  nebdry++;
+      }
       
       if (efaces)
 	List_Delete(efaces);
     }
     
-    ne2 = ne + ndup;
+    int ndup_local = 0; /* Number of duplicate faces from this partition */
+    idx = 0;
+    while ((edge = MESH_Next_Edge(mesh,&idx))) {      
+      
+      efaces = ME_Faces(edge);
+      if (efaces && List_Num_Entries(efaces) == 2) {	  
+	
+	int nghostface = 0;
+	MFace_ptr eface0 = List_Entry(efaces,0);
+	if (MR_PType(eface0) == PGHOST) nghostface++;
+	MRegion_ptr eface1 = List_Entry(efaces,1);
+	if (MR_PType(eface1) == PGHOST) nghostface++;
+	
+	if (nghostface == 0) {
+	  
+	  /* edge is interior to this partition - we will pretend
+	     there is a duplicate edge at the end of the regular edge list */
+	  
+	  ndup_local++;
+	  int dupedgeid = neint+nebdry+ndup_local;
+	  MEnt_Set_AttVal(edge,oppatt,dupedgeid,0,NULL);
+	  
+	}
+	else if (nghostface == 1) {
+	  
+	  /* edge is on partition boundary - the duplicate edge ID has
+	     to be the local ID of the edge from the adjacent
+	     partition. Attach the edge ID as an attribute to the edge
+	     and exchange to transmit the info */
+	  
+	  MEnt_Set_AttVal(edge,oppatt,eid,0,NULL);
+	  MEnt_Set_AttVal(edge,opppidatt,pid,0,NULL);
+	}
+      }
+      
+      if (efaces)
+	List_Delete(efaces);
+    }
     
-    fprintf(fp,"   %-22s %10d\n","faces",ne2);
-    fprintf(fp,"   %-22s %10d\n","elements",nf);
+    int netot = nebdry + 2*neint + neparbdry;
+    fprintf(fp,"   %-22s %10d\n","faces",netot);
+    
+    int nftot = 0;
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx)))
+      if (MF_PType(face) != PGHOST)
+	nftot++;
+    
+    fprintf(fp,"   %-22s %10d\n","elements",nftot);
   }
   
-  /* We are not yet supporting distributed meshes - so number of ghost
-     nodes is 0 */
+  /* Exchange the local edge/face IDs between master and slave edges/faces */
   
-  fprintf(fp,"   %-22s %10d\n","ghost_nodes",0);
+  MESH_XchngEdgeFaceAttrib(mesh,oppatt,comm);
+  MESH_XchngEdgeFaceAttrib(mesh,opppidatt,comm);
+  
+
+  
+  /* Make a list of vertices on partition boundaries - in doing so we
+   * have to account for the fact that some vertices may be entirely
+   * in the ghost layer and we have to exclude those */
+
+  MAttrib_ptr vmasteratt = MAttrib_New(mesh,"vmasteratt",INT,MVERTEX);
+
+  List_ptr prtn_bndry_verts = List_New(10);
+  if (nr) {
+    idx = 0;
+    while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+      if (MV_PType(vertex) == PINTERIOR) continue;
+
+      List_ptr vregions = MV_Regions(vertex);
+      int foundghost = 0, foundowned = 0;
+      int idx2 = 0;
+      MRegion_ptr vr;
+      while ((vr = List_Next_Entry(vregions,&idx))) {
+	if (MR_PType(vr) != PGHOST)
+	  foundowned = 1;
+	else 
+	  foundghost = 1;
+	if (foundowned && foundghost)
+	  break;
+      }
+      List_Delete(vregions);
+      
+      if (foundowned && foundghost) { /* Here is a vertex on a partition boundary */
+	List_Add(prtn_bndry_verts,vertex);
+	if (MV_PType(vertex) == POVERLAP)  /* vertex is master on prtn bndry */
+	  MEnt_Set_AttVal(vertex,vmasteratt,MV_ID(vertex),0.0,NULL);
+      }
+    }
+  }
+  else {
+    idx = 0;
+    while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+      if (MV_PType(vertex) == PINTERIOR) continue;
+
+      List_ptr vfaces = MV_Faces(vertex);
+      int foundghost = 0, foundowned = 0;
+      int idx2 = 0;
+      MFace_ptr vf;
+      while ((vf = List_Next_Entry(vfaces,&idx))) {
+	if (MF_PType(vf) != PGHOST)
+	  foundowned = 1;
+	else 
+	  foundghost = 1;
+	if (foundowned && foundghost)
+	  break;
+      }
+      List_Delete(vfaces);
+      
+      if (foundowned && foundghost) { /* Here is a vertex on a partition boundary */	
+	List_Add(prtn_bndry_verts,vertex);
+	if (MV_PType(vertex) == POVERLAP) /* vertex is master on prtn bndry */
+	  MEnt_Set_AttVal(vertex,vmasteratt,MV_ID(vertex),0.0,NULL);
+      }
+    }
+  }
+
+  /* Transmit master vertex IDs to slave IDs */
+
+  MESH_Update1Attribute(mesh,vmasteratt,comm);
+  
+  
+  fprintf(fp,"   %-22s %10d\n","ghost_nodes",List_Num_Entries(prtn_bndry_verts));
   
   /* No slave (constrained) node info - there are no mechanisms in
      place to do this in MSTK and therefore, this info cannot be
@@ -339,7 +537,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
       /* No need to write out the temporary array we created in this routine */
       if (attrib == oppatt)
-        continue;
+	continue;
       
       /* If the attribute is not a INT or a DOUBLE we cannot write it out */
       atttype = MAttrib_Get_Type(attrib);      
@@ -385,14 +583,14 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /* Apparently writing out non-standard node data is causing problems - so skip */
   /*
-  fprintf(fp,"   %-22s %10d\n","node_data_fields",nnodatt);
+    fprintf(fp,"   %-22s %10d\n","node_data_fields",nnodatt);
   */
   fprintf(fp,"   %-22s %10d\n","node_data_fields",0);
   
   /* must write out matid and partelm and then add additional cell data */
   /* Apparently writing out non-standard node data is causing problems - so write out only matid and partelm data */
   /*
-  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
+    fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
   */
   fprintf(fp,"   %-22s %10d\n","cell_data_fields",2);
   
@@ -447,7 +645,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /***********************************************************************/
   /* Faces Data Block                                                    */
-  /* Faces is the unfortunate term that the FLAG X3D file uses to refer  */
+  /* Faces is the term that the FLAG X3D file uses to refer              */
   /* to the boundaries of elements/cells, i.e., "faces" are mesh faces   */
   /* in a volume mesh, and are mesh edges in a surface mesh              */
   /* Contrary to what the FLAG X3D documentation says, the format that   */
@@ -476,6 +674,19 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	   natural orientation here, write out the duplicate face in
 	   the opposite orientation later */
 
+	MRegion_ptr freg0 = List_Entry(fregs,0);
+	MRegion_ptr freg1 = List_Entry(fregs,1);
+	List_Delete(fregs);
+
+	if (MR_PType(freg0) == PGHOST && MR_PType(freg1) == PGHOST) {
+	  /* This face is not in the partition interior or on the
+	   * partition boundary - rather it is a face in the ghost
+	   * layer - IGNORE */
+
+	  continue;
+	}
+
+
 	fverts = MF_Vertices(face,1,0);
 	nfv = List_Num_Entries(fverts);
 	
@@ -491,31 +702,32 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	}
 
 	List_Delete(fverts);
-	List_Delete(fregs);
-
 
 	/* ID of the processor owning this face */
-	/* We are not yet handling distributed meshes */
 
-	fprintf(fp,"% 10d",1);
+	fprintf(fp,"% 10d",pid+1);   
 	if ((++k)%13 == 0)
 	  fprintf(fp,"\n");
 	
-	MEnt_Get_AttVal(face,oppatt,&oppfid,&rval,&pval);
-#ifdef DEBUG
-	if (!oppfid)
-	  fprintf(stderr,"Internal face has no duplicate face info?\n");
-#endif
-
 	/* ID of the processor owning the duplicate face */
-	/* We are not yet handling distributed meshes */
-      
-	fprintf(fp,"% 10d",1);
+
+	int oppfpid;
+	MEnt_Get_AttVal(face,opppidatt,&oppfpid,&rval,&pval);
+	if (oppfpid)
+	  fprintf(fp,"% 10d",oppfpid); 
+	else
+	  fprintf(fp,"% 10d",pid+1);
 	if ((++k)%13 == 0)
 	  fprintf(fp,"\n");
 	
 	/* ID of the duplicate face */
 	
+	MEnt_Get_AttVal(face,oppatt,&oppfid,&rval,&pval);
+#ifdef DEBUG
+	if (!oppfid)
+	  fprintf(stderr,"Non-boundary face has no duplicate face info?\n");
+#endif
+
 	fprintf(fp,"% 10d",oppfid);
 	if ((++k)%13 == 0)
 	  fprintf(fp,"\n");
@@ -535,7 +747,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	   natural orientation; if not, write it out in the opposite
 	   orientation */
 
-	if (MR_FaceDir(List_Entry(fregs,0),face) == 1)
+	MRegion_ptr freg0 = List_Entry(fregs,0);
+	List_Delete(fregs);
+
+	if (MR_PType(freg0) == PGHOST) {
+	  /* face is on the outer boundary of the ghost layer - ignore */
+	  continue;
+	}
+
+	if (MR_FaceDir(freg0,face) == 1)
 	  fverts = MF_Vertices(face,1,0);
 	else
 	  fverts = MF_Vertices(face,0,0);
@@ -554,12 +774,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	}	
 
 	List_Delete(fverts);
-	List_Delete(fregs);
 
 	/* ID of the processor owning this face */
-	/* We are not yet handling distributed meshes */
 	
-	fprintf(fp,"% 10d",1);
+	fprintf(fp,"% 10d",pid+1); 
 	if ((++k)%13 == 0)
 	  fprintf(fp,"\n");
 	
@@ -600,6 +818,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       MEnt_Get_AttVal(face,oppatt,&oppfid,&rval,&pval);
       if (!oppfid) continue;
 
+      int oppfpid;
+      MEnt_Get_AttVal(face,opppidatt,&oppfpid,&rval,&pval);
+      if (oppfpid != pid) continue;  /* duplicate face from another processor */
+
       /* Write out the duplicate of this internal face */
 
       fprintf(fp,"% 10d",oppfid);
@@ -623,22 +845,19 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       }
       
       /* ID of the processor owning this face */
-      /* We are not yet handling distributed meshes */
-      
-      fprintf(fp,"% 10d",1);
+      fprintf(fp,"% 10d",oppfpid);
       if ((++k)%13 == 0)
 	fprintf(fp,"\n");
       
-      /* ID of the processor owning the duplicate face */
-      /* We are not yet handling distributed meshes */
+      /* ID of the processor owning the duplicate (in this case, original) face */
       
-      fprintf(fp,"% 10d",1);
+      fprintf(fp,"% 10d",pid+1);
       if ((++k)%13 == 0)
 	fprintf(fp,"\n");
       
       /* ID of the duplicate (in this case, original) face */
       
-      MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
+      MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval); 
       fprintf(fp,"% 10d",fid);
       if ((++k)%13 == 0)
 	fprintf(fp,"\n");
@@ -670,11 +889,24 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
       MEnt_Get_AttVal(edge,eidatt,&eid,&rval,&pval);
       fprintf(fp,"% 10d",eid);
+      k = 1;
 
       if (nef == 2) {
 	/* Two faces connected to edge - write edge out in its
 	   natural orientation here, write out the duplicate edge in
 	   the opposite orientation later */
+
+	MFace_ptr ef0 = List_Entry(efaces,0);
+	MFace_ptr ef1 = List_Entry(efaces,1);
+	List_Delete(efaces);
+
+	if (MF_PType(ef0) == PGHOST && MF_PType(ef1) == PGHOST) {
+	  /* This edge is not in the partition interior or on the
+	   * partition boundary - rather it is a edge in the ghost
+	   * layer - IGNORE */
+
+	  continue;
+	}
 
 	fprintf(fp,"% 10d",2);
 	
@@ -684,27 +916,28 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	  fprintf(fp,"% 10d",vid);
 	}
 
-	List_Delete(efaces);
-
 
 	/* ID of the processor owning this edge */
-	/* We are not yet handling distributed meshes */
 	
-	fprintf(fp,"% 10d",1);
+	fprintf(fp,"% 10d",pid+1);
+	
+	/* ID of the processor owning the duplicate edge */
+
+	int oppepid;
+	MEnt_Get_AttVal(edge,opppidatt,&oppepid,&rval,&pval);
+	if (oppepid) 
+	  fprintf(fp,"% 10d",oppepid);
+	else
+	  fprintf(fp,"% 10d",pid+1);
+
+	/* ID of the duplicate edge */
 	
 	MEnt_Get_AttVal(edge,oppatt,&oppeid,&rval,&pval);
 #ifdef DEBUG
 	if (!oppeid)
-	  fprintf(stderr,"Internal edge has no duplicate edge info?\n");
+	  fprintf(stderr,"Non-boundary edge has no duplicate edge info?\n");
 #endif
 
-	/* ID of the processor owning the duplicate edge */
-	/* We are not yet handling distributed meshes */
-      
-	fprintf(fp,"% 10d",1);
-	
-	/* ID of the duplicate edge */
-	
 	fprintf(fp,"% 10d",oppeid);
 
 	/* Five dummy arguments required by FLAG X3D format specification */
@@ -717,6 +950,14 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	   the +ve sense by the face, then write the edge out in its
 	   natural orientation; if not, write it out in the opposite
 	   orientation */
+
+	MFace_ptr ef0 = List_Entry(efaces,0);
+	List_Delete(efaces);
+
+	if (MF_PType(ef0) == PGHOST) {
+	  /* This edge is on the outer boundary of the ghost layer */
+	  continue;
+	}
 
 	fprintf(fp,"% 10d",2);
 
@@ -735,12 +976,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	  }
 	}
 
-	List_Delete(efaces);
-
 	/* ID of the processor owning this edge */
-	/* We are not yet handling distributed meshes */
 	
-	fprintf(fp,"% 10d",1);
+	fprintf(fp,"% 10d",pid+1);
 	
 	/* Boundary face - no duplicate edge info */
 	
@@ -770,6 +1008,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       MEnt_Get_AttVal(edge,oppatt,&oppeid,&rval,&pval);
       if (!oppeid) continue;
 
+      int oppepid;
+      MEnt_Get_AttVal(edge,opppidatt,&oppepid,&rval,&pval);
+      if (oppepid != pid) continue; /* duplicate edge from another processor */
+
       fprintf(fp,"% 10d",oppeid);
       
       fprintf(fp,"% 10d",2);
@@ -781,14 +1023,11 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       }
       
       /* ID of the processor owning this edge */
-      /* We are not yet handling distributed meshes */
-      
-      fprintf(fp,"% 10d",1);
+      fprintf(fp,"% 10d",oppepid);
       
       /* ID of the processor owning the duplicate edge */
-      /* We are not yet handling distributed meshes */
       
-      fprintf(fp,"% 10d",1);
+      fprintf(fp,"% 10d",pid+1);
       
       /* ID of the duplicate (in this case, original) face */
       
@@ -814,6 +1053,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
     idx = 0;    
     while ((region = MESH_Next_Region(mesh,&idx))) {
+      if (MR_PType(region) == PGHOST) continue;
+
       MEnt_Get_AttVal(region,ridatt,&rid,&rval,&pval);
       fprintf(fp,"% 10d",rid);
       k = 1;
@@ -870,6 +1111,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
     idx = 0;
     while ((face = MESH_Next_Face(mesh,&idx))) {
+      if (MF_PType(face) == PGHOST) continue;
+
       MEnt_Get_AttVal(face,fidatt,&fid,&rval,&pval);
       fprintf(fp,"% 10d",fid);
       k = 1;
@@ -909,7 +1152,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 	if (k%14 == 0 && je != nfe-1)
 	  fprintf(fp,"\n");
       }
-
+      
       List_Delete(fedges);
 
       fprintf(fp,"\n");
@@ -936,7 +1179,18 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /* Ghost Nodes Data Block - not written out                            */
   /***********************************************************************/
 
-  fprintf(fp,"ghost_nodes        0\n");
+  fprintf(fp,"ghost_nodes        %10d\n",List_Num_Entries(prtn_bndry_verts));
+  idx = 0;
+  while ((vertex = List_Next_Entry(prtn_bndry_verts,&idx))) {
+    int masterpid = MV_MasterParID(vertex);
+    if (masterpid == pid) /* This is the master node */
+      fprintf(fp,"% 10d % 10d % 10d % 10d\n",MV_ID(vertex),pid+1,MV_ID(vertex),1);
+    else {
+      int mastervid;
+      MEnt_Get_AttVal(vertex,vmasteratt,&mastervid,&rval,&pval);
+      fprintf(fp,"% 10d % 10d % 10d % 10d\n",MV_ID(vertex),masterpid,mastervid,1);
+    }
+  }
   fprintf(fp,"end_ghost_nodes\n");
 
 
@@ -984,19 +1238,27 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /***********************************************************************/
 
   fprintf(fp,"partelm\n");
+  k = 0;
   if (nr) {
-    for (jr = 0; jr < nr; jr++) {
-      fprintf(fp,"% 10d",1);
-      if ((jr+1)%10 == 0 || jr == nr-1)
-	fprintf(fp,"\n");
-    }
+    idx = 0; 
+    while ((region = MESH_Next_Region(mesh,&idx))) 
+      if (MR_PType(region) != PGHOST) {
+	fprintf(fp,"% 10d",pid);
+	if ((k+1)%10 == 0 || k == nr-1)
+	  fprintf(fp,"\n");
+        k++;
+      }
   }
   else {
-    for (jf = 0; jf < nf; jf++) {
-      fprintf(fp,"% 10d",1);
-      if ((jf+1)%10 == 0 || jf == nf-1)
-	fprintf(fp,"\n");
-    }
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx)))
+      if (MF_PType(face) != PGHOST) {
+	fprintf(fp,"% 10d",pid);
+	if ((k+1)%10 == 0 || k == nf-1)
+	  fprintf(fp,"\n");
+        k++;
+      }
+
   }
   fprintf(fp,"end_partelm\n");
 
@@ -1006,7 +1268,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /* Apparently these are causing problems so we will comment it out */
 
   /*
-  for (i = 0; i < ncellatt; i++) {
+    for (i = 0; i < ncellatt; i++) {
     attrib = cellatts[i];
     atttype = MAttrib_Get_Type(attrib);
     
@@ -1014,37 +1276,39 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     fprintf(fp,"%s ",attname);
     
     if (nr) {
-      idx = 0;
-      while ((region = MESH_Next_Region(mesh,&idx))) {
+    idx = 0;
+    while ((region = MESH_Next_Region(mesh,&idx))) {
+    if (MR_PType(region) == PGHOST) continue;
+
+    MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
 	
-	MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
-	
-	if (atttype == INT)
-	  fprintf(fp,"% 20.12E\n",(double)ival);
-	else if (atttype == DOUBLE)
-	  fprintf(fp,"% 20.12E\n", rval);
-      }
+    if (atttype == INT)
+    fprintf(fp,"% 20.12E\n",(double)ival);
+    else if (atttype == DOUBLE)
+    fprintf(fp,"% 20.12E\n", rval);
+    }
     }
     else {
-      idx = 0;
-      while ((face = MESH_Next_Face(mesh,&idx))) {
+    idx = 0;
+    while ((face = MESH_Next_Face(mesh,&idx))) {
+    if (MF_PType(face) == PGHOST) continue;
+
+    MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
 	
-	MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
-	
-	if (atttype == INT)
-	  fprintf(fp,"% 20.12E\n",(double)ival);
-	else if (atttype == DOUBLE)
-	  fprintf(fp,"% 20.12E\n", rval);
-      }
+    if (atttype == INT)
+    fprintf(fp,"% 20.12E\n",(double)ival);
+    else if (atttype == DOUBLE)
+    fprintf(fp,"% 20.12E\n", rval);
+    }
     }
 
     strcpy(tmpstr,"end_");
     strcat(tmpstr,attname);
     fprintf(fp,"%s\n",tmpstr);
-  }
+    }
   */
 
-  if (cellatts) MSTK_free(cellatts);
+  if (cellatts) free(cellatts);
   
   fprintf(fp,"end_cell_data\n");
   
@@ -1056,71 +1320,70 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   fprintf(fp,"node_data\n");
 
   /*
-  for (i = 0; i < ncellatt; i++) {
-    attrib = nodatts[i];
-    atttype = MAttrib_Get_Type(attrib);
+    for (i = 0; i < ncellatt; i++) {
+      attrib = nodatts[i];
+      atttype = MAttrib_Get_Type(attrib);
 
-    MAttrib_Get_Name(attrib,attname);
-    fprintf(fp,"%s ",attname);
+      MAttrib_Get_Name(attrib,attname);
+      fprintf(fp,"%s ",attname);
     
-    idx = 0;
-    while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+      idx = 0;
+      while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
+        \/\* have to check that this is not a pure ghost node surrounded by only ghost elements \*\/
+        MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
       
-      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
-      
-      if (atttype == INT)
-	fprintf(fp,"% 20.12E\n",(double)ival);
-      else if (atttype == DOUBLE)
-	fprintf(fp,"% 20.12E\n", rval);
-    }
+        if (atttype == INT)
+          fprintf(fp,"% 20.12E\n",(double)ival);
+        else if (atttype == DOUBLE)
+          fprintf(fp,"% 20.12E\n", rval);
+       }  
 
-    strcpy(tmpstr,"end_");
-    strcat(tmpstr,attname);
-    fprintf(fp,"%s\n",tmpstr);
-  }
+       strcpy(tmpstr,"end_");
+       strcat(tmpstr,attname);
+       fprintf(fp,"%s\n",tmpstr);
+     }
 
-  if (nodatts) MSTK_free(nodatts);
-  */
+     if (nodatts) MSTK_free(nodatts);
+    */
   
   fprintf(fp,"end_node_data\n");
 
   /* Finish Export */
-
+  
   fprintf(fp,"end_dump\n");
 
   fclose(fp);
 
-
-
+  
+  
   /* Clean up */
-
-  MSTK_free(gentities);
-
+  
+  free(gentities);
+  
   idx = 0;
   while ((vertex = MESH_Next_Vertex(mesh,&idx)))
     MEnt_Rem_AttVal(vertex,vidatt);
-
+  
   idx = 0;
   while ((edge = MESH_Next_Edge(mesh,&idx)))
     MEnt_Rem_AttVal(edge,eidatt);
-
+  
   idx = 0;
   while ((face = MESH_Next_Face(mesh,&idx)))
     MEnt_Rem_AttVal(face,fidatt);
-
+  
   idx = 0;
   while ((region = MESH_Next_Region(mesh,&idx)))
     MEnt_Rem_AttVal(region,ridatt);
-
-
+  
+  
   MAttrib_Delete(vidatt);
   MAttrib_Delete(eidatt);
   MAttrib_Delete(fidatt);
   MAttrib_Delete(ridatt);
-
+  
   return 1;
 }
-
 
 
 #ifdef __cplusplus
