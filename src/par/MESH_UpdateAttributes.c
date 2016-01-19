@@ -43,7 +43,7 @@ extern "C" {
      MSTK_Report("MSTK_UpdateAttr","MSTK_UpdateAttr is deprecated. Use MESH_UpdateAttributes",MSTK_WARN);
 #endif
 
-     MESH_UpdateAttributes(mesh,comm);     
+     return MESH_UpdateAttributes(mesh,comm);     
   }
 
 
