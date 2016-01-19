@@ -448,6 +448,12 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int        MESH_CopySet(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, 
                           MSet_ptr mset);
 
+  /* Routine to exchange attributes between ghost and master entities 
+     when a 1-to-1 mapping exists (edges in 2D and faces in 3D) */
+
+  int        MESH_XchngEdgeFaceAttrib(Mesh_ptr mesh, MAttrib_ptr attrib,
+                                      MSTK_Comm comm);
+
   /* Functions for improving searching for entities by global ID */
 
   void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);

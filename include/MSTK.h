@@ -239,6 +239,10 @@ void MSTK_Init(void);
   int        MESH_Update1Attribute(Mesh_ptr mesh, MAttrib_ptr attrib,
                                    MSTK_Comm comm);
 
+  /* Parallel gather-scatter of attributes */
+  int        MESH_GathScat1Attribute(Mesh_ptr mesh, MAttrib_ptr attrib,
+	                             MAttOpType optype, MSTK_Comm comm);
+
   /* Keep this version of the call around for backward compatibility */
   int        MSTK_UpdateAttr(Mesh_ptr mesh, MSTK_Comm comm); 
 
@@ -747,6 +751,13 @@ void MSTK_Init(void);
   /* ROUTINES FOR MORE FINE-GRAINED CONTROL OF PARALLEL APPLICATION  */
   /* IF YOU CALL THESE ROUTINES WITHOUT KNOWING YOUR WAY AROUND      */
   /* YOU WILL GET WHAT YOU DESERVE                                   */
+
+  /* The MESH_Ghost_Vertex routine will return all vertices of ghost
+     faces (2D) or ghost regions (3D) that are not owned by the
+     current processors. This means that if the mesh has 1 layer of
+     ghost elements, the ghost vertex list will include vertices that
+     not on necessarily only on the partition boundaries. The same
+     applies to edges (in 2D and 3D) and faces (in 3D) */
 
   int         MESH_Num_GhostVertices(Mesh_ptr mesh);
   int         MESH_Num_GhostEdges(Mesh_ptr mesh);
