@@ -46,7 +46,7 @@ extern "C" {
       MAttrib_Get_Name(attrib,attname);
 #ifdef DEBUG2
       sprintf(mesg,"Meaningless to update pointer attributes across processors (attribute: %s", attname);
-      MSTK_Report("MESH_UpdateAttr()",mesg,MSTK_WARN);
+      MSTK_Report("MESH_Update1Attribute",mesg,MSTK_WARN);
 #endif
       return 0;
     }
@@ -92,10 +92,10 @@ extern "C" {
 
     /* start collecting attribute info to send */
 
-    list_info_send = (int *)MSTK_malloc(num_ov*sizeof(int));
+    list_info_send = (int *) malloc(num_ov*sizeof(int));
   
-      int *list_value_int_send = (int *)MSTK_malloc(num_ov*ncomp*sizeof(int));
-    double *list_value_double_send = (double *)MSTK_malloc(num_ov*ncomp*sizeof(double));
+      int *list_value_int_send = (int *) malloc(num_ov*sizeof(int));
+    double *list_value_double_send = (double *) malloc(num_ov*ncomp*sizeof(double));
   
     /* collect attribute info from overlap entities */
     for (j = 0; j < num_ov; j++) {
@@ -138,10 +138,10 @@ extern "C" {
 
     num_recv_procs = MESH_Num_GhostPrtns(mesh);
     /* this stores the global to local processor id map */
-    int *rank_g2l = (int*) MSTK_malloc((numprocs+1)*sizeof(int));
+    int *rank_g2l = (int*) malloc((numprocs+1)*sizeof(int));
 
-    unsigned int *recv_procs = (unsigned int *) MSTK_malloc(num_recv_procs*sizeof(unsigned int));
-    int *recv_pos = (int*) MSTK_malloc((num_recv_procs+1)*sizeof(int));
+    unsigned int *recv_procs = (unsigned int *) malloc(num_recv_procs*sizeof(unsigned int));
+    int *recv_pos = (int*) malloc((num_recv_procs+1)*sizeof(int));
 
 
     MESH_GhostPrtns(mesh,recv_procs);
@@ -154,9 +154,9 @@ extern "C" {
 
     /* Allocate storage for receiving attribute info */
 
-    list_info_recv = (int *)MSTK_malloc(recv_pos[num_recv_procs]*sizeof(int));
-    int *list_value_int_recv = (int *)MSTK_malloc(recv_pos[num_recv_procs]*ncomp*sizeof(int));
-    double *list_value_double_recv = (double *)MSTK_malloc(recv_pos[num_recv_procs]*ncomp*sizeof(double));
+    list_info_recv = (int *) malloc(recv_pos[num_recv_procs]*sizeof(int));
+    int *list_value_int_recv = (int *) malloc(recv_pos[num_recv_procs]*sizeof(int));
+    double *list_value_double_recv = (double *) malloc(recv_pos[num_recv_procs]*ncomp*sizeof(double));
   
 
 
@@ -196,7 +196,7 @@ extern "C" {
 #endif
 
 	  if (att_type == INT)
-	    MPI_Send(list_value_int_send,send_size*ncomp,MPI_INT,i,i,comm);
+	    MPI_Send(list_value_int_send,send_size,MPI_INT,i,i,comm);
 	  else
 	    MPI_Send(list_value_double_send,send_size*ncomp,MPI_DOUBLE,i,i,comm);
 	}
@@ -216,7 +216,7 @@ extern "C" {
 	    fprintf(stderr,"receive %d attr from processor %d on rank %d\n",count,i,myrank);
 #endif
 	    if (att_type == INT) 
-	      MPI_Recv(&list_value_int_recv[recv_pos[recv_index]*ncomp],
+	      MPI_Recv(&list_value_int_recv[recv_pos[recv_index]],
 		       count*ncomp,MPI_INT,i,myrank,comm,&status);
 	    else
 	      MPI_Recv(&list_value_double_recv[recv_pos[recv_index]*ncomp],
@@ -236,7 +236,7 @@ extern "C" {
 	    fprintf(stderr,"receive %d attr from processor %d on rank %d\n",count,i,myrank);
 #endif
 	    if (att_type == INT) 
-	      MPI_Recv(&list_value_int_recv[recv_pos[recv_index]*ncomp],
+	      MPI_Recv(&list_value_int_recv[recv_pos[recv_index]],
 		       count*ncomp,MPI_INT,i,myrank,comm,&status);
 	    else
 	      MPI_Recv(&list_value_double_recv[recv_pos[recv_index]*ncomp],
@@ -249,7 +249,7 @@ extern "C" {
 	  fprintf(stderr,"send %d attr to processor %d on rank %d\n",send_size,i,myrank);
 #endif
 	  if (att_type == INT)
-	    MPI_Send(list_value_int_send,send_size*ncomp,MPI_INT,i,i,comm);
+	    MPI_Send(list_value_int_send,send_size,MPI_INT,i,i,comm);
 	  else
 	    MPI_Send(list_value_double_send,send_size*ncomp,MPI_DOUBLE,i,i,comm);
 	}
@@ -310,7 +310,7 @@ extern "C" {
                 break;
               }
             if (!allzero) {
-              rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
+              rval_arr = (double *) malloc(ncomp*sizeof(double));
               for(k = 0; k < ncomp; k++)
                 rval_arr[k] = list_value_double_recv[i*ncomp+k];
             }	
@@ -325,15 +325,15 @@ extern "C" {
     }
 
     /* release the send buffer */
-    MSTK_free(list_info_send);
-    MSTK_free(list_value_int_send);
-    MSTK_free(list_value_double_send);
-    MSTK_free(list_info_recv);
-    MSTK_free(list_value_int_recv);
-    MSTK_free(list_value_double_recv);
-    MSTK_free(recv_procs);
-    MSTK_free(recv_pos);    
-    MSTK_free(rank_g2l);  
+    free(list_info_send);
+    free(list_value_int_send);
+    free(list_value_double_send);
+    free(list_info_recv);
+    free(list_value_int_recv);
+    free(list_value_double_recv);
+    free(recv_procs);
+    free(recv_pos);    
+    free(rank_g2l);  
     return 1;
 }
   
