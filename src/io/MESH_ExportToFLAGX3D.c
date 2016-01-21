@@ -37,6 +37,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MAttrib_ptr           vidatt, eidatt, fidatt, ridatt, oppatt, opppidatt;
   MAttType              atttype;
   char                  attname[256], matname[256], tmpstr[256];
+  char                  modfilename[256];
   int                   jv, je, jr, jf;
   int                   nv, ne, nf, nr, nrf, nfv, nef, nfe, nfr;
   int			i, found, k, nmeshatt, ival;
@@ -79,9 +80,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     MEnt_Set_AttVal(region,ridatt,++i,0.0,NULL);
   
   
-  if (!(fp = fopen(filename,"w"))) {
+  strcpy(modfilename,filename);
+#ifdef MSTK_HAVE_MPI
+  if (numprocs > 1)
+    sprintf(modfilename,"%s.%05d",filename,pid);
+#endif
+
+  if (!(fp = fopen(modfilename,"w"))) {
     fprintf(stderr,"MESH_ExportToFLAGX3D: Couldn't open output file %s\n",
-	    filename);
+	    modfilename);
     exit(2);
   }
   
