@@ -423,7 +423,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       int foundghost = 0, foundowned = 0;
       int idx2 = 0;
       MRegion_ptr vr;
-      while ((vr = List_Next_Entry(vregions,&idx))) {
+      while ((vr = List_Next_Entry(vregions,&idx2))) {
 	if (MR_PType(vr) != PGHOST)
 	  foundowned = 1;
 	else 
@@ -449,7 +449,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       int foundghost = 0, foundowned = 0;
       int idx2 = 0;
       MFace_ptr vf;
-      while ((vf = List_Next_Entry(vfaces,&idx))) {
+      while ((vf = List_Next_Entry(vfaces,&idx2))) {
 	if (MF_PType(vf) != PGHOST)
 	  foundowned = 1;
 	else 
