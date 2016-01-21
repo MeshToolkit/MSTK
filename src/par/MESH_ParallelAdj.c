@@ -31,6 +31,8 @@ extern "C" {
   int myprtn, numprtns;
   MPI_Comm_rank(comm,&myprtn);
   MPI_Comm_size(comm,&numprtns);
+
+  if (numprtns == 1) return 1;
   
   /* set ghost adjacencies */
   idx = 0;

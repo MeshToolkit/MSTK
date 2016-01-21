@@ -394,9 +394,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   
   /* Exchange the local edge/face IDs between master and slave edges/faces */
   
+#ifdef MSTK_HAVE_MPI
   MESH_XchngEdgeFaceAttrib(mesh,oppatt,comm);
   MESH_XchngEdgeFaceAttrib(mesh,opppidatt,comm);
-  
+#endif
 
   
   /* Make a list of vertices on partition boundaries - in doing so we
@@ -461,7 +462,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /* Transmit master vertex IDs to slave IDs */
 
+#ifdef MSTK_HAVE_MPI
   MESH_Update1Attribute(mesh,vmasteratt,comm);
+#endif
   
   
   fprintf(fp,"   %-22s %10d\n","ghost_nodes",List_Num_Entries(prtn_bndry_verts));
@@ -961,7 +964,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
 	fprintf(fp,"% 10d",2);
 
-	if (MF_EdgeDir(List_Entry(efaces,0),edge) == 1) {
+	if (MF_EdgeDir(ef0,edge) == 1) {
 	  for (jv = 0; jv < 2; jv++) {
 	    vertex = ME_Vertex(edge,jv);
 	    MEnt_Get_AttVal(vertex,vidatt,&vid,&rval,&pval);

@@ -1091,6 +1091,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
 
   void MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+#ifdef MSTK_HAVE_MPI
 
     if (prtn == mesh->mypartn) return;
 
@@ -1104,10 +1105,12 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
     }
     else
       mesh->par_adj_flags[prtn] |= 1<<(2*mtype);
+#endif
   }
   
   unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
-    if (mtype == MUNKNOWNTYPE)
+#ifdef MSTK_HAVE_MPI
+    if (mtype == MUNKNOWNTYPE || mesh->par_adj_flags == NULL)
       return 0;
     else if (mtype == MANYTYPE)
       return ((mesh->par_adj_flags[prtn] & 1) |
@@ -1122,9 +1125,13 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
               (mesh->par_adj_flags[prtn]>>6 & 1));
     else      
       return ((mesh->par_adj_flags[prtn])>>(2*mtype) & 1);
+#else
+   return 0;
+#endif
   }
   
   void MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+#ifdef MSTK_HAVE_MPI
     if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
       return;
     else if (mtype == MALLTYPE) {
@@ -1135,10 +1142,12 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
     }
     else
       mesh->par_adj_flags[prtn] |= 1<<(2*mtype+1);
+#endif
   }
   
   unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
-    if (mtype == MUNKNOWNTYPE) 
+#ifdef MSTK_HAVE_MPI
+    if (mtype == MUNKNOWNTYPE || mesh->par_adj_flags == NULL) 
       return 0;
     else if (mtype == MANYTYPE)
       return ((mesh->par_adj_flags[prtn]>>1 & 1) |
@@ -1153,6 +1162,9 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
               (mesh->par_adj_flags[prtn]>>7 & 1));
     else      
       return ((mesh->par_adj_flags[prtn])>>(2*mtype+1) & 1);
+#else
+    return 0;
+#endif
   }
 
 
