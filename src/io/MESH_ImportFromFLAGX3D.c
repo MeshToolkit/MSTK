@@ -11,7 +11,12 @@
 extern "C" {
 #endif
 
-  /* Import a single or distributed mesh from a FLAG X3D format file */
+  /* Import a single or distributed mesh from a FLAG X3D format file 
+
+   NOTE: For parallel import, code does not guarantee that of a group of
+   coincident vertices on processor boundaries, the vertex tagged as
+   master in the FLAG X3D file will remain the master. Rather, the
+   vertex on the lowest rank processor will be tagged as the master */
 
   int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
 
@@ -48,7 +53,7 @@ extern "C" {
   if (numprocs > 1) {
 
     distributed = 1;
-    sprintf(modfilename,"%s.%05d",filename,rank);
+    sprintf(modfilename,"%s.%05d",filename,rank+1);
 
     if (!(fp = fopen(modfilename,"r"))) {      
 
@@ -67,6 +72,9 @@ extern "C" {
         return 1;
 
     }
+
+    MESH_Set_Prtn(mesh,rank,numprocs); /* necessary for allocation of 
+                                          parallel adjacency arrays */
 
   }
   else {
