@@ -37,8 +37,9 @@ extern "C" {
     unsigned int marker;
 
 #ifdef MSTK_HAVE_MPI
-    unsigned int ptype:2;
-    unsigned int masterparid:30;
+    unsigned int ptype:2;    /* parallel entity type */
+    unsigned int parbdry:1;   /* is or is not on partition boundary */
+    unsigned int masterparid:29; /* This is 2^29-1 partitions - enough, no? */
     unsigned int globalid;  
 #endif
 
@@ -55,6 +56,13 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
   PType MEnt_PType(MEntity_ptr ent);
   void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
+
+  /* Is the entity on the partition boundary? */
+  int MEnt_OnParBoundary(MEntity_ptr ent);
+
+  /* Mark/Unmark the entity as being on the partition boundary */
+  void MEnt_Flag_OnParBoundary(MEntity_ptr ent);
+  void MEnt_Unflag_OnParBoundary(MEntity_ptr ent);
 
   int   MEnt_MasterParID(MEntity_ptr ent);
   void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid);
