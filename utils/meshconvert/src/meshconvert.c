@@ -374,9 +374,10 @@ int main(int argc, char *argv[]) {
 
     ok = ok && MESH_Parallel_Check(mesh,comm);
 
-    MPI_Reduce(&ok,&ok,1,MPI_INT,MPI_MIN,0,comm);
+    int allok = 0;
+    MPI_Reduce(&ok,&allok,1,MPI_INT,MPI_MIN,0,comm);
 
-    if (rank == 0 && ok)
+    if (rank == 0 && allok)
       fprintf(stderr,"Parallel checks passed...\n");
   }
 #endif
@@ -453,5 +454,5 @@ int main(int argc, char *argv[]) {
   MPI_Finalize();
 #endif
 
-  return 1;
+  return 0;
 }

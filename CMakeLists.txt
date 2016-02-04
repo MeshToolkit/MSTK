@@ -80,7 +80,7 @@ message(STATUS "Building library " ${MSTKLIB})
 # Default INSTALL Directory
 
 if (NOT INSTALL_DIR)
-  set (INSTALL_DIR ${PROJECT_SOURCE_DIR})
+  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 endif ()
 
 # where to install library
