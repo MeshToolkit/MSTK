@@ -144,10 +144,19 @@ extern "C" {
       nevs = 0;
       for (i = 0; i < ne; i++) {
         me = edges[i];
-        ME_Set_GEntDim(me,(list_edge[nevs+2] & 7));
-        ME_Set_GEntID(me,(list_edge[nevs+2] >> 3));
-        ME_Set_PType(me,(list_edge[nevs+3] & 3));
-        ME_Set_MasterParID(me,(list_edge[nevs+3] >> 2));
+        int gentdim = list_edge[nevs+2] & 7; /* first 3 bits; 7 is 0...00111 */
+        int gentid = list_edge[nevs+2] >> 3; /* All but the first 3 bits */
+        ME_Set_GEntDim(me,gentdim);
+        ME_Set_GEntID(me,gentid);
+
+        int ptype = list_edge[nevs+3] & 3; /* first 2 bits; 3 is 0...00011 */
+        int on_par_bdry = list_edge[nevs+3] & 4; /* 3rd bit; 4 is 0...00100 */
+        int masterparid = list_edge[nevs+3] >> 3; /* All but the first 3 bits */
+        ME_Set_PType(me,ptype);
+        if (on_par_bdry)
+          ME_Flag_OnParBoundary(me);
+        ME_Set_MasterParID(me,masterparid);
+
         ME_Set_GlobalID(me,list_edge[nevs+4]);
         
         int vid0 = list_edge[nevs]-1;
@@ -178,10 +187,20 @@ extern "C" {
           fedges[j] = edges[abs(list_face[nfes+j+1])-1];
           fedirs[j] = list_face[nfes+j+1] > 0 ? 1 : 0;
         }
-        MF_Set_GEntDim(mf,(list_face[nfes+nfe+1] & 7));
-        MF_Set_GEntID(mf,(list_face[nfes+nfe+1] >> 3));
-        MF_Set_PType(mf,(list_face[nfes+nfe+2] & 3));
-        MF_Set_MasterParID(mf,(list_face[nfes+nfe+2] >> 2));
+
+        int gentdim = list_face[nfes+nfe+1] & 7; /* first 3 bits; 7 is 0...00111 */
+        int gentid = list_face[nfes+nfe+1] >> 3; /* All but the first 3 bits */        
+        MF_Set_GEntDim(mf,gentdim);
+        MF_Set_GEntID(mf,gentid);
+
+        int ptype = list_face[nfes+nfe+2] & 3; /* first 2 bits; 3 is 0...00011 */
+        int on_par_bdry = list_face[nfes+nfe+2] & 4; /* 3rd bit; 4 is 0...00100 */
+        int masterparid = list_face[nfes+nfe+2] >> 3; /* All but the first 3 bits */
+        MF_Set_PType(mf,ptype);
+        if (on_par_bdry)
+          MF_Flag_OnParBoundary(mf);
+        MF_Set_MasterParID(mf,masterparid);
+
         MF_Set_GlobalID(mf,list_face[nfes+nfe+3]);
         
         MF_Set_Edges(mf,nfe,fedges,fedirs);
@@ -208,10 +227,19 @@ extern "C" {
           rfaces[j] = faces[abs(list_region[nrfs+j+1])-1];
           rfdirs[j] = list_region[nrfs+j+1] > 0 ? 1 : 0;
         }
-        MR_Set_GEntDim(mr,(list_region[nrfs+nrf+1] & 7));
-        MR_Set_GEntID(mr,(list_region[nrfs+nrf+1] >> 3));
-        MR_Set_PType(mr,(list_region[nrfs+nrf+2] & 3));
-        MR_Set_MasterParID(mr,(list_region[nrfs+nrf+2] >> 2));
+
+
+        int gentdim = list_region[nrfs+nrf+1] & 7; /* first 3 bits; 7 is 0...00111 */
+        int gentid = list_region[nrfs+nrf+1] >> 3; /* All but the first 3 bits */        
+        MR_Set_GEntDim(mr,gentdim);
+        MR_Set_GEntID(mr,gentid);
+
+        int ptype = list_region[nrfs+nrf+2] & 3; /* first 2 bits; 3 is 0...00011 */
+        /* int on_par_bdry = list_region[nrfs+nrf+2] & 4; */ /* 3rd bit should always be 0 for regions */
+        int masterparid = list_region[nrfs+nrf+2] >> 3; /* All but the first 3 bits */
+        MR_Set_PType(mr,ptype);
+        MR_Set_MasterParID(mr,masterparid);
+
         MR_Set_GlobalID(mr,list_region[nrfs+nrf+3]);
         
         MR_Set_Faces(mr,nrf,rfaces,rfdirs); 

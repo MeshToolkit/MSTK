@@ -146,7 +146,7 @@ extern "C" {
       list_edge[nevs]   = MV_ID(ME_Vertex(me,0));
       list_edge[nevs+1] = MV_ID(ME_Vertex(me,1));
       list_edge[nevs+2] = (ME_GEntID(me)<<3) | (ME_GEntDim(me));
-      list_edge[nevs+3] = (ME_MasterParID(me) <<2) | (ME_PType(me));
+      list_edge[nevs+3] = (ME_MasterParID(me) <<3) | (ME_OnParBoundary(me)<<2) | (ME_PType(me));
       list_edge[nevs+4] = ME_GlobalID(me);
       nevs += 5;
     }
@@ -176,7 +176,7 @@ extern "C" {
         list_face[nfes+j+1] = dir*ME_ID(List_Entry(mfedges,j));
       }
       list_face[nfes+nfe+1] = (MF_GEntID(mf)<<3) | (MF_GEntDim(mf));
-      list_face[nfes+nfe+2] = (MF_MasterParID(mf) <<2) | (MF_PType(mf));
+      list_face[nfes+nfe+2] = (MF_MasterParID(mf)<<3) | (MF_OnParBoundary(mf)<<2) | (MF_PType(mf));
       list_face[nfes+nfe+3] = MF_GlobalID(mf);
       nfes += (nfe + 4);
       List_Delete(mfedges);
@@ -208,7 +208,7 @@ extern "C" {
           list_region[nrfs+j+1] = dir*MF_ID(List_Entry(mrfaces,j));
         }
         list_region[nrfs+nrf+1] = (MR_GEntID(mr)<<3) | (MR_GEntDim(mr));
-        list_region[nrfs+nrf+2] = (MR_MasterParID(mr) <<2) | (MR_PType(mr));
+        list_region[nrfs+nrf+2] = (MR_MasterParID(mr)<<3) | (MR_PType(mr)); /* MR_PType is 2 bits; 3 bit is 0 */
         list_region[nrfs+nrf+3] = MR_GlobalID(mr);
         nrfs += (nrf + 4);
         List_Delete(mrfaces);

@@ -50,11 +50,15 @@ extern "C" {
     nv = MESH_Num_Vertices(mesh);
     int *list_vertex = (int *) malloc(3*nv*sizeof(int));
 
-    /* Store the 3 auxilliary data fields */
+    /* Store the 3 auxilliary data fields - would be nice if we didn't
+     * have to send the data in such an error prone way (with bit
+     * shifting) that requires knowledge of the internal structure of
+     * MEntity */
+    
     for(i = 0; i < nv; i++) {
       mv = MESH_Vertex(mesh,i);
       list_vertex[3*i] = (MV_GEntID(mv)<<3) | (MV_GEntDim(mv));
-      list_vertex[3*i+1] = (MV_MasterParID(mv) <<2) | (MV_PType(mv));
+      list_vertex[3*i+1] = (MV_MasterParID(mv) <<3) | MV_OnParBoundary(mv)<<2 | (MV_PType(mv));
       list_vertex[3*i+2] = MV_GlobalID(mv);
     }
 

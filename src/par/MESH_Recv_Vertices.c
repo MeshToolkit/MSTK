@@ -52,10 +52,19 @@ extern "C" {
 
     for(i = 0; i < nvertices; i++) {
       v = MESH_Vertex(mesh,i);
-      MV_Set_GEntDim(v,(list_vertex[3*i] & 7));
-      MV_Set_GEntID(v,(list_vertex[3*i] >> 3));
-      MV_Set_PType(v,(list_vertex[3*i+1] & 3));
-      MV_Set_MasterParID(v,(list_vertex[3*i+1] >> 2));
+      int gentdim = list_vertex[3*i] & 7; /* first 3 bits; 7 is 0...00111 */
+      int gentid = list_vertex[3*i] >> 3; /* All but the first 3 bits */   
+      MV_Set_GEntDim(v,gentdim);
+      MV_Set_GEntID(v,gentid);
+
+      int ptype = list_vertex[3*i+1] & 3; /* first 2 bits; 3 is 0...00011 */  
+      int on_par_bdry = list_vertex[3*i+1] & 4; /* 3rd bit; 4 is 0...00100 */ 
+      int masterparid = list_vertex[3*i+1] >> 3; /* All but the first 3 bits */ 
+      MV_Set_PType(v,ptype);
+      if (on_par_bdry)
+        MV_Flag_OnParBoundary(v);
+      MV_Set_MasterParID(v,masterparid);
+
       MV_Set_GlobalID(v,list_vertex[3*i+2]);
     }
 
