@@ -226,7 +226,21 @@ void MSTK_Init(void);
 
 
 
-  /* 'Weave' a set of distributed meshes by building ghost layers */
+  /* 'Weave' a set of distributed mesh partitions together to build
+   parallel connections and ghost info
+   
+   input_type indicates what info is already present on the mesh
+
+   0 -- we are give NO information about how these meshes are
+   connected other than the knowledge that they come from partitioning
+   of a single mesh
+
+   1 -- we are given partitioned meshes with a unique global ID on
+   each mesh vertex
+
+   2 -- we are given parallel neighbor information, but no global ID
+   on each mesh vertex
+  */
 
   int         MSTK_Weave_DistributedMeshes(Mesh_ptr mesh, int topodim,
                                            int num_ghost_layers,
