@@ -121,56 +121,24 @@ extern "C" {
 
       /* How many entries will we send to processor 'i' ? */
       for (j = 0; j < num_ghost; j++) {
-        int foundowned = 0, foundghost = 0;
 
-	switch (mtype) {
-          case MEDGE: {
+        switch (mtype) {
+          case MEDGE:
             ment = MESH_GhostEdge(mesh,j);
-            if (MEnt_MasterParID(ment) != i) continue;
-            
-            List_ptr efaces = ME_Faces(ment);
-            if (List_Num_Entries(efaces) == 2) {
-              MFace_ptr ef0 = List_Entry(efaces,0);
-              MFace_ptr ef1 = List_Entry(efaces,1);
-              PType ptype0 = MF_PType(ef0);
-              PType ptype1 = MF_PType(ef1);
-              if (ptype0 == PGHOST || ptype1 == PGHOST)
-                foundghost = 1;
-              if (ptype0 != PGHOST || ptype1 != PGHOST)
-                foundowned = 1;
-            }
-            List_Delete(efaces);
-
             break;
-          }
-          case MFACE: {
+          case MFACE:
             ment = MESH_GhostFace(mesh,j);
-            if (MEnt_MasterParID(ment) != i) continue;
-
-            List_ptr fregs = MF_Regions(ment);
-            if (List_Num_Entries(fregs) == 2) {
-              MRegion_ptr fr0 = List_Entry(fregs,0);
-              MRegion_ptr fr1 = List_Entry(fregs,1);
-              PType ptype0 = MF_PType(fr0);
-              PType ptype1 = MF_PType(fr1);
-              if (ptype0 == PGHOST || ptype1 == PGHOST)
-                foundghost = 1;
-              if (ptype0 != PGHOST || ptype1 != PGHOST)
-                foundowned = 1;
-            }
-            List_Delete(fregs);
-
             break;
-          }
           default: /* Won't come here - filtered at the outset */
             MSTK_Report("MESH_XchngEdgeFaceAttrib",
                         "Invalid entity type for this operation",MSTK_FATAL);
         }
-	
-        if (foundowned && foundghost) {
+
+        if (MEnt_MasterParID(ment) == i && MEnt_OnParBoundary(ment)) {
           MEnt_Mark(ment,sendmark); 
           send_size[i]++;
         }
+            
       }
 
       /* Finished counting; send/receive counts */
@@ -396,49 +364,20 @@ extern "C" {
 
     for (j = 0; j < num_overlap; j++) {
       int nent;
-      int foundowned = 0, foundghost = 0;
 
       switch (mtype) {
-        case MEDGE: {
+        case MEDGE:
           ment = MESH_OverlapEdge(mesh,j);
-
-          List_ptr efaces = ME_Faces(ment);
-          if (List_Num_Entries(efaces) == 2) {
-            MFace_ptr ef0 = List_Entry(efaces,0);
-            MFace_ptr ef1 = List_Entry(efaces,1);
-            PType ptype0 = MF_PType(ef0);
-            PType ptype1 = MF_PType(ef1);
-            if (ptype0 == PGHOST || ptype1 == PGHOST)
-              foundghost = 1;
-            if (ptype0 != PGHOST || ptype1 != PGHOST)
-              foundowned = 1;
-          }
-          List_Delete(efaces);          
           break;
-        }
-        case MFACE: {
+        case MFACE:
           ment = MESH_OverlapFace(mesh,j);
-
-          List_ptr fregs = MF_Regions(ment);
-          if (List_Num_Entries(fregs) == 2) {
-            MRegion_ptr fr0 = List_Entry(fregs,0);
-            MRegion_ptr fr1 = List_Entry(fregs,1);
-            PType ptype0 = MF_PType(fr0);
-            PType ptype1 = MF_PType(fr1);
-            if (ptype0 == PGHOST || ptype1 == PGHOST)
-              foundghost = 1;
-            if (ptype0 != PGHOST || ptype1 != PGHOST)
-              foundowned = 1;
-          }
-          List_Delete(fregs);
           break;
-        }
         default: /* Won't come here - filtered at the outset */
           MSTK_Report("MESH_XchngEdgeFaceAttrib",
                       "Invalid entity type for this operation",MSTK_FATAL);
       }
-    
-      if (!foundowned || !foundghost) continue; /* not on partition boundary */
+      
+      if (!MEnt_OnParBoundary(ment)) continue;
 
       global_id = MEnt_GlobalID(ment);
    
