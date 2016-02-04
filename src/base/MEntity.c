@@ -45,6 +45,7 @@ extern "C" {
  
 #ifdef MSTK_HAVE_MPI
      ent->entdat.ptype = 0;
+     ent->entdat.parbdry = 0;
      ent->entdat.masterparid = 0;
      ent->entdat.globalid = 0;
 #endif
@@ -547,6 +548,18 @@ extern "C" {
 
   void  MEnt_Set_PType(MEntity_ptr ent, PType ptype) {
     ent->entdat.ptype = ptype;
+  }
+
+  int MEnt_OnParBoundary(MEntity_ptr ent) {
+    return ent->entdat.parbdry;
+  }
+
+  void MEnt_Flag_OnParBoundary(MEntity_ptr ent) {
+    ent->entdat.parbdry = 1;
+  }
+
+  void MEnt_Unflag_OnParBoundary(MEntity_ptr ent) {
+    ent->entdat.parbdry = 0;
   }
 
   int   MEnt_MasterParID(MEntity_ptr ent) {

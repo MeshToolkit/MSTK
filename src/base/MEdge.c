@@ -466,8 +466,20 @@ extern "C" {
     MEnt_Set_PType((MEntity_ptr) e, ptype);
   }
 
+  int ME_OnParBoundary(MEdge_ptr e) {
+    return MEnt_OnParBoundary((MEntity_ptr) e); 
+  }
+
+  void ME_Flag_OnParBoundary(MEdge_ptr e) {
+    return MEnt_Flag_OnParBoundary((MEntity_ptr) e);
+  }
+
+  void ME_Unflag_OnParBoundary(MEdge_ptr e) {
+    return MEnt_Unflag_OnParBoundary((MEntity_ptr) e);
+  }
+
   int   ME_MasterParID(MEdge_ptr e) {
-    return MEnt_MasterParID((MEntity_ptr) e ); 
+    return MEnt_MasterParID((MEntity_ptr) e); 
   }
 
   /* Rename to ME_Set_MasterPartID? */

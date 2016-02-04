@@ -257,6 +257,18 @@ extern "C" {
     MEnt_Set_PType((MEntity_ptr) v ,ptype);
   }
 
+  int MV_OnParBoundary(MVertex_ptr v) {
+    return MEnt_OnParBoundary((MEntity_ptr) v); 
+  }
+
+  void MV_Flag_OnParBoundary(MVertex_ptr v) {
+    MEnt_Flag_OnParBoundary((MEntity_ptr) v);
+  }
+
+  void MV_Unflag_OnParBoundary(MVertex_ptr v) {
+    MEnt_Unflag_OnParBoundary((MEntity_ptr) v);
+  }
+
   int   MV_MasterParID(MVertex_ptr v) {
     return MEnt_MasterParID((MEntity_ptr) v ); 
   }
