@@ -97,6 +97,14 @@ extern "C" {
 
   PType ME_PType(MEdge_ptr e);
   void  ME_Set_PType(MEdge_ptr e, PType ptype);
+
+  /* Is the entity on the partition boundary? */
+  int ME_OnParBoundary(MEdge_ptr e);
+
+  /* Mark/Unmark the entity as being on the partition boundary */
+  void ME_Flag_OnParBoundary(MEdge_ptr e);
+  void ME_Unflag_OnParBoundary(MEdge_ptr e);
+
   int   ME_MasterParID(MEdge_ptr e);
   void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
   int   ME_GlobalID(MEdge_ptr e);

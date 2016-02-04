@@ -117,12 +117,20 @@ extern "C" {
   void MV_Rem_Region(MVertex_ptr mvertex, MRegion_ptr mregion);
 
 #ifdef MSTK_HAVE_MPI
-  PType MV_PType(MVertex_ptr r);  
-  void  MV_Set_PType(MVertex_ptr r, PType ptype);
-  int   MV_MasterParID(MVertex_ptr r);
-  void  MV_Set_MasterParID(MVertex_ptr r, int masterparid);
-  int   MV_GlobalID(MVertex_ptr r);
-  void  MV_Set_GlobalID(MVertex_ptr r, int globalid);
+  PType MV_PType(MVertex_ptr mvertex);  
+  void  MV_Set_PType(MVertex_ptr mvertex, PType ptype);
+
+  /* Is the entity on the partition boundary? */
+  int MV_OnParBoundary(MVertex_ptr mvertex);
+
+  /* Mark/Unmark the entity as being on the partition boundary */
+  void MV_Flag_OnParBoundary(MVertex_ptr mvertex);
+  void MV_Unflag_OnParBoundary(MVertex_ptr mvertex);
+
+  int   MV_MasterParID(MVertex_ptr mvertex);
+  void  MV_Set_MasterParID(MVertex_ptr mvertex, int masterparid);
+  int   MV_GlobalID(MVertex_ptr mvertex);
+  void  MV_Set_GlobalID(MVertex_ptr mvertex, int globalid);
   MVertex_ptr MV_GhostNew(Mesh_ptr mesh);
 #endif
 
