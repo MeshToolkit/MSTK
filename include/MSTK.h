@@ -322,7 +322,8 @@ void MSTK_Init(void);
 
 #ifdef MSTK_HAVE_MPI
 
-  PType       MV_PType(MVertex_ptr v);
+  PType       MV_PType(MVertex_ptr v);    /* PINTERIOR, PGHOST, POVERLAP */
+  int         MV_OnParBoundary(MVertex_ptr v); 
   int         MV_MasterParID(MVertex_ptr v);
 
 #endif
@@ -378,6 +379,7 @@ void MSTK_Init(void);
 #ifdef MSTK_HAVE_MPI
 
   PType       ME_PType(MEdge_ptr e);
+  int         ME_OnParBoundary(MEdge_ptr e);
   int         ME_MasterParID(MEdge_ptr e);
 
 #endif
@@ -403,7 +405,7 @@ void MSTK_Init(void);
   void        MF_Replace_Edges(MFace_ptr mface, int nold, MEdge_ptr *oldedges, int nnu, MEdge_ptr *nuedges);
   void        MF_Replace_Vertex(MFace_ptr mface, MVertex_ptr mvertex, MVertex_ptr nuvertex);
   void        MF_Replace_Edges_i(MFace_ptr mface, int nold, int i, int nnu, MEdge_ptr *nuedge);
-  void MF_Rem_Edge(MFace_ptr mface, MEdge_ptr medge);
+  void        MF_Rem_Edge(MFace_ptr mface, MEdge_ptr medge);
   void        MF_Replace_Vertex_i(MFace_ptr mface, int i, MVertex_ptr nuvertex);
   void        MF_Insert_Vertex(MFace_ptr mface, MVertex_ptr nuv, MVertex_ptr b4v);
   void        MF_Insert_Vertex_i(MFace_ptr mface, MVertex_ptr nuv, int i);
@@ -454,6 +456,7 @@ void MSTK_Init(void);
 #ifdef MSTK_HAVE_MPI
 
   PType       MF_PType(MFace_ptr f);  
+  int         MF_OnParBoundary(MFace_ptr f);
   int         MF_MasterParID(MFace_ptr f);
 
 #endif
@@ -567,6 +570,7 @@ void MSTK_Init(void);
 #ifdef MSTK_HAVE_MPI
 
   PType       MEnt_PType(MEntity_ptr ent);
+  int         MEnt_OnParBoundary(MEntity_ptr ent);
   int         MEnt_MasterParID(MEntity_ptr ent);
 
 #endif
