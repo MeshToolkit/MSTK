@@ -129,7 +129,7 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (func(mv)) {
-      MV_Set_PType(mv,PBOUNDARY);
+      MV_Flag_OnParBoundary(mv);
       List_Add(boundary_verts,mv);
       nbv++;
     }
@@ -306,11 +306,11 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
     me = MESH_Edge(submesh,i);
     for( k = 0; k < 2; k++) {
       mv = ME_Vertex(me,k);
-      if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP)
-	is_boundary = 0;
+      if (!MV_OnParBoundary(mv))
+        is_boundary = 0;
     }
     if(is_boundary) {
-      ME_Set_PType(me,PBOUNDARY);
+      ME_Flag_OnParBoundary(me);
       List_Add(boundary_edges,me);
       nbe++;
     }
@@ -534,11 +534,11 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
     nfv = List_Num_Entries(mfverts);
     for(j = 0; j < nfv; j++) {
       mv = List_Entry(mfverts,j);
-      if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP)
-	is_boundary = 0;
+      if (!MV_OnParBoundary(mv))
+        is_boundary = 0;
     }
     if(is_boundary) {
-      MF_Set_PType(mf,PBOUNDARY);
+      MF_Flag_OnParBoundary(mf);
       List_Add(boundary_faces,mf);
       nbf++;
     }
