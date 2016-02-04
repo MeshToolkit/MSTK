@@ -249,14 +249,20 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
      against calling the Set_MasterParID and Set_GlobalID routines */  
 
   void  MV_Set_PType(MVertex_ptr v, PType ptype);
+  void  MV_Flag_OnParBoundary(MVertex_ptr v);
+  void  MV_Unflag_OnParBoundary(MVertex_ptr v);
   void  MV_Set_MasterParID(MVertex_ptr v, int masterpartid);
   void  MV_Set_GlobalID(MVertex_ptr v, int globalid);
 
   void  ME_Set_PType(MEdge_ptr e, PType ptype);
+  void  ME_Flag_OnParBoundary(MEdge_ptr v);
+  void  ME_Unflag_OnParBoundary(MEdge_ptr v);
   void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
   void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
 
   void  MF_Set_PType(MFace_ptr f, PType ptype);
+  void  MF_Flag_OnParBoundary(MFace_ptr v);
+  void  MF_Unflag_OnParBoundary(MFace_ptr v);
   void  MF_Set_MasterParID(MFace_ptr f, int masterpartid);
   void  MF_Set_GlobalID(MFace_ptr f, int globalid);
 
