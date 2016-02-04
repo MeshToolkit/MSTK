@@ -54,7 +54,7 @@ static int vertex_on_boundary2D(MVertex_ptr mv) {
   MEdge_ptr me;
   List_ptr vedges = MV_Edges(mv);
   nve = List_Num_Entries(vedges);
-  for(i = 0; i < nve && !ok; i++) {
+  for(i = 0; (i < nve) && !ok; i++) {
     List_ptr efaces;
     me = List_Entry(vedges,i);
     efaces = ME_Faces(me);
@@ -75,7 +75,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   MFace_ptr mf;
   List_ptr vfaces = MV_Faces(mv);
   nrf = List_Num_Entries(vfaces);
-  for(i = 0; i < nrf && !ok; i++) {
+  for(i = 0; (i < nrf) && !ok; i++) {
     List_ptr fregs;
     mf = List_Entry(vfaces,i);
     fregs = MF_Regions(mf);
@@ -104,7 +104,6 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   int max_nbv, index_nbv, iloc, global_id, mesh_info[10];
   int *global_mesh_info, *list_vertex, *recv_list_vertex, *mv_remote_info, *mv_ov_label;
   double *list_coor, *recv_list_coor;
-  int (*func)(MVertex_ptr mv);                /* function pointer to check boundary vertex */
 
   int rank, num;
   MPI_Comm_rank(comm,&rank);
@@ -121,8 +120,6 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   mesh_info[1] = nv;
   mesh_info[4] = nr;
 
-  if(nr) func = vertex_on_boundary;
-  else   func = vertex_on_face_boundary;
 
   /* calculate number of boundary vertices */ 
   nbv = 0;  boundary_verts = List_New(10);
