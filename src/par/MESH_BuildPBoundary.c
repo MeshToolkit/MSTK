@@ -75,14 +75,14 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
 
     /* if the number of neighbor faces is different, it is a boundary edge */
     if(List_Num_Entries(lmefaces) != List_Num_Entries(gmefaces)) {
-      ME_Set_PType(lme,PBOUNDARY);
+      ME_Flag_OnParBoundary(lme);
 
       /* By definition, its vertices must also be on the partition boundary */
 
       int i;
       for (i = 0; i < 2; i++) {
         lmv = ME_Vertex(lme,i);
-        MV_Set_PType(lmv,PBOUNDARY);
+        MV_Flag_OnParBoundary(lmv);
       }
     }
     else
@@ -105,7 +105,7 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     MVertex_ptr gmv;
     List_ptr lmvedges, gmvedges;
 
-    if (MV_PType(lmv) == PBOUNDARY) continue; /* It has already been labeled */
+    if (MV_OnParBoundary(lmv)) continue;
 
     MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
     if (!gmv)
@@ -117,7 +117,7 @@ int MESH_Surf_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     /* If the number of neighbor faces is different, it is boundary vertex */
 
     if (List_Num_Entries(lmvedges) != List_Num_Entries(gmvedges))
-      MV_Set_PType(lmv,PBOUNDARY);
+      MV_Flag_OnParBoundary(lmv);
     else
       MV_Set_PType(lmv,PINTERIOR);
 
@@ -166,18 +166,18 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
 
     /* if the number of neighbor regions is different, it is a boundary face */
     if(List_Num_Entries(lmfregs) != List_Num_Entries(gmfregs)) {
-      MF_Set_PType(lmf,PBOUNDARY);
+      MF_Flag_OnParBoundary(lmf);
 
       /* By definition all edges of this face are on the boundary */
       List_ptr fedges = MF_Edges(lmf,1,0);
       int idx2 = 0;
       while ((lme = List_Next_Entry(fedges,&idx2))) {
-        ME_Set_PType(lme,PBOUNDARY);
+        ME_Flag_OnParBoundary(lme);
         
         int i;
         for (i = 0; i < 2; i++) {
           lmv = ME_Vertex(lme,i);
-          MV_Set_PType(lmv,PBOUNDARY);
+          MV_Flag_OnParBoundary(lmv);
         }
       }
       List_Delete(fedges);
@@ -197,7 +197,9 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     MEdge_ptr gme;
     List_ptr lmefaces, gmefaces;
 
-    if (ME_PType(lme) == PBOUNDARY) continue;
+    /* if (ME_PType(lme) == PBOUNDARY) continue; */
+
+    if (ME_OnParBoundary(lme)) continue;
 
     MEnt_Get_AttVal(lme,l2gatt,0,0,&gme);
 
@@ -205,13 +207,13 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     gmefaces = ME_Faces(gme);
     
     if (List_Num_Entries(lmefaces) != List_Num_Entries(gmefaces)) {
-      ME_Set_PType(lme,PBOUNDARY);
+      ME_Flag_OnParBoundary(lme);
 
       /* By definition a PBOUNDARY edge's vertices are also PBOUNDARY */
       int i;
       for (i = 0; i < 2; i++) {
         lmv = ME_Vertex(lme,i);
-        ME_Set_PType(lmv,PBOUNDARY);
+        MV_Flag_OnParBoundary(lmv);
       }
     }
     else
@@ -231,7 +233,7 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     MVertex_ptr gmv;
     List_ptr lmvedges, gmvedges;
 
-    if (MV_PType(lmv) == PBOUNDARY) continue; /* It has already been labeled */
+    if (MV_OnParBoundary(lmv)) continue;
 
     MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
     if (!gmv)
@@ -243,7 +245,7 @@ int MESH_Vol_BuildPBoundary(Mesh_ptr mesh, Mesh_ptr submesh) {
     /* If the number of neighbor faces is different, it is boundary vertex */
 
     if (List_Num_Entries(lmvedges) != List_Num_Entries(gmvedges))
-      MV_Set_PType(lmv,PBOUNDARY);
+      MV_Flag_OnParBoundary(lmv);
     else
       MV_Set_PType(lmv,PINTERIOR);
 
