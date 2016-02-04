@@ -134,7 +134,7 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
   for(i = 0; i < nv; i++) {
     mv = MESH_Vertex(submesh,i);
     if (func(mv)) {
-      MV_Set_PType(mv,PBOUNDARY);
+      MV_Flag_OnParBoundary(mv);
       List_Add(boundary_verts,mv);
       nbv++;
     }
@@ -386,7 +386,7 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
 	is_boundary = 0;
     }
     if(is_boundary) {
-      ME_Set_PType(me,PBOUNDARY);
+      ME_Flag_OnParBoundary(me);
       List_Add(boundary_edges,me);
       nbe++;
     }
@@ -584,7 +584,7 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
 	is_boundary = 0;
     }
     if(is_boundary) {
-      MF_Set_PType(mf,PBOUNDARY);
+      MF_Flag_OnParBoundary(mf);
       List_Add(boundary_faces,mf);
       nbf++;
     }
