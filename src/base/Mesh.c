@@ -1059,6 +1059,13 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   /* Even though some of these routine names are uncharacteristically
      long, they describe exactly what they do, so use them */
 
+  /*
+  void MESH_Set_Num_Partitions(Mesh_ptr mesh, unsigned int numpartitions) {
+    mesh->numpartns = numpartitions;
+    if (!mesh->par_adj_flags)
+      mesh->par_adj_flags = (unsigned int *) calloc(numpartitions,sizeof(unsigned int));
+  }
+  */
 
   /* Also, for an explanation of the fields of par_adj_flags and
      par_adj_info see the note at the in Mesh.h file */
@@ -1091,6 +1098,12 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
 
   void MESH_Flag_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+#ifdef DEBUG
+    if (!mesh->par_adj_flags)
+      MSTK_Report("MESH_Flag_Has_Overlaps_On_Prtn",
+                  "Call MESH_Set_Prtn before calling this routine for the first time",
+                  MSTK_FATAL);
+#endif
 #ifdef MSTK_HAVE_MPI
 
     if (prtn == mesh->mypartn) return;
@@ -1109,6 +1122,12 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   }
   
   unsigned int MESH_Has_Ghosts_From_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+#ifdef DEBUG
+    if (!mesh->par_adj_flags)
+      MSTK_Report("MESH_Flag_Has_Overlaps_On_Prtn",
+                  "Call MESH_Set_Prtn before calling this routine for the first time",
+                  MSTK_FATAL);
+#endif
 #ifdef MSTK_HAVE_MPI
     if (mtype == MUNKNOWNTYPE || mesh->par_adj_flags == NULL)
       return 0;
@@ -1131,6 +1150,13 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   }
   
   void MESH_Flag_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+#ifdef DEBUG
+    if (!mesh->par_adj_flags)
+      MSTK_Report("MESH_Flag_Has_Overlaps_On_Prtn",
+                  "Call MESH_Set_Prtn before calling this routine for the first time",
+                  MSTK_FATAL);
+#endif
+
 #ifdef MSTK_HAVE_MPI
     if (mtype == MUNKNOWNTYPE || mtype == MANYTYPE) 
       return;
@@ -1146,6 +1172,12 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   }
   
   unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, MType mtype) {
+#ifdef DEBUG
+    if (!mesh->par_adj_flags)
+      MSTK_Report("MESH_Flag_Has_Overlaps_On_Prtn",
+                  "Call MESH_Set_Prtn before calling this routine for the first time",
+                  MSTK_FATAL);
+#endif
 #ifdef MSTK_HAVE_MPI
     if (mtype == MUNKNOWNTYPE || mesh->par_adj_flags == NULL) 
       return 0;
