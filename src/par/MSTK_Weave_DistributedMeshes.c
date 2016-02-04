@@ -45,7 +45,7 @@ extern "C" {
     if (num_ghost_layers > 1)
       MSTK_Report("MSTK_Weave_DistributedMeshes", "Only 1 ghost layer supported currently", MSTK_FATAL);
 
-    if (input_type > 1) 
+    if (input_type > 2) 
       MSTK_Report("MSTK_Weave_DistributedMeshes","Unrecognized input type for meshes", MSTK_WARN);
 
     // This partition does not have a mesh or has an empty mesh which is ok
