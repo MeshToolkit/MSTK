@@ -75,7 +75,7 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   MVertex_ptr lmv;
   idx = 0;
   while((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    if(MV_PType(lmv) == PBOUNDARY) {
+    if (MV_OnParBoundary(lmv)) {
       if(MV_MasterParID(lmv) == part_no)
         MV_Set_PType(lmv,POVERLAP);
       else
@@ -86,7 +86,7 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   MEdge_ptr lme;
   idx = 0;
   while((lme = MESH_Next_Edge(submesh,&idx))) {
-    if(ME_PType(lme) == PBOUNDARY) {
+    if (ME_OnParBoundary(lme)) {
       if(MV_MasterParID(lme) == part_no)
         ME_Set_PType(lme,POVERLAP);
       else
@@ -97,8 +97,8 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
   if (nr) {
     MFace_ptr lmf;
     idx = 0;
-    while((lmf = MESH_Next_Face(submesh,&idx))) {
-      if(MF_PType(lmf) == PBOUNDARY) {
+    while((lmf = MESH_Next_Face(submesh,&idx))) {      
+      if (MF_OnParBoundary(lmf)) {
         if(MF_MasterParID(lmf) == part_no)
           MF_Set_PType(lmf,POVERLAP);
         else
@@ -144,7 +144,7 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
   gbverts = List_New(10);
   idx = 0;
   while ((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    if (MV_PType(lmv) == PBOUNDARY) {      
+    if (MV_OnParBoundary(lmv)) {
       List_Add(bverts,lmv);
       MEnt_Mark(lmv,mkvid);
 
@@ -182,13 +182,13 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
           for (k = 0; k < nfe; k++) {
             lme = List_Entry(fedges,k);
-            if (ME_PType(lme) != PBOUNDARY) 
+            if (!ME_OnParBoundary(lme))
               ME_Set_PType(lme,POVERLAP);
 
             for (l = 0; l < 2; l++) {
               lmv2 = ME_Vertex(lme,l);
               if (!MEnt_IsMarked(lmv2,mkvid)) {
-                if (MV_PType(lmv2) != PBOUNDARY)
+                if (!ME_OnParBoundary(lmv2))
                   MV_Set_PType(lmv2,POVERLAP);
                 List_Add(bverts2,lmv2);
                 MEnt_Mark(lmv2,mkvid);
@@ -401,7 +401,7 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   gbverts = List_New(10);
   idx = 0;
   while ((lmv = MESH_Next_Vertex(submesh,&idx))) {
-    if (MV_PType(lmv) == PBOUNDARY) {      
+    if (MV_OnParBoundary(lmv)) {
       List_Add(bverts,lmv);
       MEnt_Mark(lmv,mkvid);
 
@@ -437,21 +437,21 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
           nrf = List_Num_Entries(rfaces);
           for (j = 0; j < nrf; j++) {
             lmf = List_Entry(rfaces,j);
-            if (MF_PType(lmf) != PBOUNDARY) 
+            if (!MF_OnParBoundary(lmf))
               MF_Set_PType(lmf,POVERLAP);
 
             fedges = MF_Edges(lmf,1,0);
             nfe = List_Num_Entries(fedges);
             for (k = 0; k < nfe; k++) {
               lme = List_Entry(fedges,k);
-              if (ME_PType(lme) != PBOUNDARY) 
+              if (!ME_OnParBoundary(lme))
                 ME_Set_PType(lme,POVERLAP);
 
               int l;
               for (l = 0; l < 2; l++) {
                 lmv2 = ME_Vertex(lme,l);
                 if (!MEnt_IsMarked(lmv2,mkvid)) {
-                  if (MV_PType(lmv2) != PBOUNDARY)
+                  if (!MV_OnParBoundary(lmv2))
                     MV_Set_PType(lmv2,POVERLAP);
                   List_Add(bverts2,lmv2);
                   MEnt_Mark(lmv2,mkvid);
