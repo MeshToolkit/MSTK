@@ -49,12 +49,12 @@ extern "C" {
      test if a vertex is on partition boundary, for surface mesh
      a vertex is on boundary if one of its incident edges has less than 2 neighboring faces
    */
-static int vertex_on_face_boundary(MVertex_ptr mv) {
+static int vertex_on_boundary2D(MVertex_ptr mv) {
   int i, nve, ok = 0;
   MEdge_ptr me;
   List_ptr vedges = MV_Edges(mv);
   nve = List_Num_Entries(vedges);
-  for(i = 0; i < nve; i++) {
+  for(i = 0; i < nve && !ok; i++) {
     List_ptr efaces;
     me = List_Entry(vedges,i);
     efaces = ME_Faces(me);
@@ -70,12 +70,12 @@ static int vertex_on_face_boundary(MVertex_ptr mv) {
      test if a vertex is on partition boundary, for volume mesh
      a vertex is on boundary if one of its incident faces has less than 2 neighboring regions
  */
-static int vertex_on_region_boundary(MVertex_ptr mv) {
+static int vertex_on_boundary3D(MVertex_ptr mv) {
   int i, nrf, ok = 0;
   MFace_ptr mf;
   List_ptr vfaces = MV_Faces(mv);
   nrf = List_Num_Entries(vfaces);
-  for(i = 0; i < nrf; i++) {
+  for(i = 0; i < nrf && !ok; i++) {
     List_ptr fregs;
     mf = List_Entry(vfaces,i);
     fregs = MF_Regions(mf);
@@ -121,20 +121,34 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
   mesh_info[1] = nv;
   mesh_info[4] = nr;
 
-  if(nr) func = vertex_on_region_boundary;
+  if(nr) func = vertex_on_boundary;
   else   func = vertex_on_face_boundary;
 
   /* calculate number of boundary vertices */ 
   nbv = 0;  boundary_verts = List_New(10);
-  for(i = 0; i < nv; i++) {
-    mv = MESH_Vertex(submesh,i);
-    if (func(mv)) {
-      MV_Flag_OnParBoundary(mv);
-      List_Add(boundary_verts,mv);
-      nbv++;
+  if (nr) {
+    for(i = 0; i < nv; i++) {
+      mv = MESH_Vertex(submesh,i);
+      if (vertex_on_boundary3D(mv)) {
+        MV_Flag_OnParBoundary(mv); /* potentially on parallel boundary */
+        List_Add(boundary_verts,mv);
+        nbv++;
+      }
     }
   }
+  else {
+    for(i = 0; i < nv; i++) {
+      mv = MESH_Vertex(submesh,i);
+      if (vertex_on_boundary2D(mv)) {
+        MV_Flag_OnParBoundary(mv); /* potentially on parallel boundary */
+        List_Add(boundary_verts,mv);
+        nbv++;
+      }
+    }
+  }
+
   mesh_info[5] = nbv;
+
   /* sort boundary vertices based on coordinate value, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
 
@@ -259,6 +273,17 @@ static int vertex_on_region_boundary(MVertex_ptr mv) {
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) )
 	MPI_Send(list_vertex,nbv,MPI_INT,i,i,comm);
     }
+  }
+
+  /* We marked all boundary vertices as potentially being on a
+     parallel boundary.  Now, unflag/unmark the vertices that DID NOT
+     get marked as PGHOST or POVERLAP */
+     
+  for(i = 0; i < nbv; i++) {
+    mv = List_Entry(boundary_verts,i);
+    int ptype = MV_PType(mv);
+    if (ptype != PGHOST || ptype != POVERLAP)
+      MV_Unflag_OnParBoundary(mv);
   }
 
   List_Delete(boundary_verts);
