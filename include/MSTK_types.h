@@ -79,9 +79,11 @@ typedef enum {ATTOP_UNDEF, ATTOP_MAX, ATTOP_MIN, ATTOP_SUM, ATTOP_AVG} MAttOpTyp
    the original of a copy on another partition
 
    PBOUNDARY indicates that an entity is on the processor boundary
-   (THIS IS A TEMPORARY FLAG THAT IS USED INTERNALLY DURING
-   CONSTRUCTION OF PARTITIONS AND HALOS. NO ENTITY WILL RETURN
-   PBOUNDARY OUTSIDE OF THE INITIAL CONSTRUCTION AND SHOULD NOT BE USED)
+   (THIS IS A TEMPORARY FLAG THAT IS USED INTERNALLY AND NO ENTITY
+   WILL RETURN PBOUNDARY OUTSIDE OF THE INITIAL CONSTRUCTION AND
+   SHOULD NOT BE USED) However, one can ask if an entity is on a
+   partition boundary and entities can be marked/unmarked as being on
+   partition boundaries.
 
    PGHOST indicates ghost entity on the boundary of a partition or
    outside the partition in the halo. These types of entities must be
