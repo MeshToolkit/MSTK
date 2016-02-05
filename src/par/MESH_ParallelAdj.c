@@ -125,6 +125,74 @@ extern "C" {
 }
 
 
+  /* Given information about the partitions from with each partition
+   * will receive info from, derive information about partitions to
+   * which each partition has to send info to */
+
+int MESH_Get_OverlapAdj_From_GhostAdj(Mesh_ptr mesh, MSTK_Comm comm) {
+  int i, idx, nv, ne, nf, nr, local_ov_num[4];
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+  MType mtype;
+
+  int myprtn, numprtns;
+  MPI_Comm_rank(comm,&myprtn);
+  MPI_Comm_size(comm,&numprtns);
+
+  if (numprtns == 1) return 1;
+  
+  /* derive which processors this processor has overlaps with */
+
+  int *local_par_adj = (int *) malloc(numprtns*sizeof(int));
+  int *global_par_adj = (int *) malloc(numprtns*numprtns*sizeof(int));
+
+  for (i = 0; i < numprtns; i++) {
+    local_par_adj[i] = 0;
+
+    for (mtype = MVERTEX; mtype <= MREGION; mtype++) {
+      int j = MESH_Has_Ghosts_From_Prtn(mesh,i,mtype);
+      local_par_adj[i] |= j<<(2*mtype);
+    }
+  }
+     
+  /* At this point, it is assumed that this processor ('prtn') has
+     knowledge of all the processors that it has ghost entities from
+     and what type of entities they are. We do an MPI_Allgather so
+     that the processor can find out the reverse info, i.e., which
+     processors are expecting ghost entities from this processor and
+     what type of entities. This info then goes in as the overlap
+     entity info for this processor */
+  for (i = 0; i < numprtns*numprtns; i++) global_par_adj[i] = 0;
+  MPI_Allgather(local_par_adj,numprtns,MPI_INT,global_par_adj,numprtns,MPI_INT,comm);
+
+  /* Now set overlap adjacency flags */
+
+  unsigned int ovnum = 0;
+  unsigned int *prtnums = (unsigned int *) malloc(numprtns*sizeof(unsigned int));
+  for (i = 0; i < numprtns; i++) {
+    for (mtype = MVERTEX; mtype <= MREGION; mtype++) {
+
+      int j = global_par_adj[i*numprtns + myprtn] & 1<<(2*mtype);
+      if (j)
+        MESH_Flag_Has_Overlaps_On_Prtn(mesh,i,mtype);
+    }
+  }
+
+
+  free(local_par_adj);
+  free(global_par_adj);
+  free(prtnums);
+
+  /* DON'T MARK PARALLEL ADJACENCY INFO AS CURRENT AS YET BECAUSE THE ACTUAL
+     NUMBER OF ENTITIES TO BE SENT AND RECEIVED IS NOT FINALIZED */
+  /* MESH_Mark_ParallelAdj_Current(mesh); */
+
+ return 1;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
