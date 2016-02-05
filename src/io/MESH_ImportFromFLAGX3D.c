@@ -416,6 +416,13 @@ extern "C" {
 #endif
 
       }
+
+#ifdef MSTK_HAVE_MPI
+      /* Compute which processors must receive overlap info from this
+       * processor from the reverse info */
+      MESH_Get_OverlapAdj_From_GhostAdj(mesh,comm);
+#endif
+
     }
     else if (strncmp(keyword,"cell_data",9) == 0) {
 
