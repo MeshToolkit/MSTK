@@ -1,5 +1,6 @@
 #define _H_MAttrib_Private
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include "MAttrib.h"
@@ -30,8 +31,8 @@ extern "C" {
     }
 #endif
 
-    attrib = (MAttrib_ptr) MSTK_malloc(sizeof(MAttrib));
-    attrib->name = (char *) MSTK_malloc((strlen(att_name)+1)*sizeof(char));
+    attrib = (MAttrib_ptr) malloc(sizeof(MAttrib));
+    attrib->name = (char *) malloc((strlen(att_name)+1)*sizeof(char));
     strcpy(attrib->name,att_name);
 
     attrib->type = att_type;
@@ -91,8 +92,8 @@ extern "C" {
 
   void MAttrib_Delete(MAttrib_ptr attrib) {
     MESH_Rem_Attrib(attrib->mesh,attrib);
-    MSTK_free(attrib->name);
-    MSTK_free(attrib);
+    free(attrib->name);
+    free(attrib);
   }
 
   void MAttrib_Destroy_For_MESH_Delete(MAttrib_ptr attrib) {
@@ -104,8 +105,8 @@ extern "C" {
 	  MESH_Rem_Attrib(attrib->mesh,attrib); 
     */
 
-    MSTK_free(attrib->name);
-    MSTK_free(attrib);
+    free(attrib->name);
+    free(attrib);
   }
 
 
@@ -118,7 +119,7 @@ extern "C" {
   MAttIns_ptr MAttIns_New(MAttrib_ptr attrib) {
     MAttIns_ptr attins;
 
-    attins = (MAttIns_ptr) MSTK_malloc(sizeof(MAttIns));
+    attins = (MAttIns_ptr) malloc(sizeof(MAttIns));
     
     attins->attrib = attrib;
     attins->att_val.pval = NULL;
@@ -174,7 +175,7 @@ extern "C" {
     attins->attrib = NULL;
     attins->att_val.pval = NULL;
     
-    MSTK_free(attins);
+    free(attins);
   }
 
 

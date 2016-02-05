@@ -1,10 +1,11 @@
 #define _H_MVertex_Private
 
+#include <stdlib.h>
 #include <string.h>
+
 #include "MVertex.h"
 #include "MVertex_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +15,7 @@ extern "C" {
     MVertex_ptr v;
     RepType RTYPE;
     
-    v = (MVertex_ptr) MSTK_malloc(sizeof(MVertex));
+    v = (MVertex_ptr) malloc(sizeof(MVertex));
 
     MEnt_Init_CmnData((MEntity_ptr) v);
     MEnt_Set_Mesh((MEntity_ptr) v,mesh);
@@ -56,7 +57,7 @@ extern "C" {
 
     if (!keep) {
       MEnt_Free_CmnData((MEntity_ptr) v);
-      MSTK_free(v);
+      free(v);
     }
   }
 
@@ -91,7 +92,7 @@ extern "C" {
 
     MEnt_Free_CmnData((MEntity_ptr) v);
 
-    MSTK_free(v);
+    free(v);
   }
 
   void MV_Set_RepType(MVertex_ptr v, RepType RTYPE) {
@@ -284,7 +285,7 @@ extern "C" {
   MVertex_ptr MV_GhostNew(Mesh_ptr mesh) {
     MVertex_ptr v;
     RepType RTYPE;
-    v = (MVertex_ptr) MSTK_malloc(sizeof(MVertex));
+    v = (MVertex_ptr) malloc(sizeof(MVertex));
 
     MEnt_Init_CmnData((MEntity_ptr) v);
     MEnt_Set_Mesh((MEntity_ptr) v,mesh);

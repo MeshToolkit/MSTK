@@ -44,7 +44,7 @@ TEST(ME_Split)
       
       efaces = ME_Faces(me);
       nef = List_Num_Entries(efaces);
-      fedir = (int *) malloc(nef*sizeof(efaces));
+      fedir = (int *) new int[nef];
       for (int j = 0; j < nef; j++) {
         ef = List_Entry(efaces,j);
         fedir[j] = MF_EdgeDir(ef,me);
@@ -92,7 +92,7 @@ TEST(ME_Split)
         List_Delete(fverts);
       }
 
-      free(fedir);
+      delete [] fedir;
       List_Delete(efaces);
 
       ne++;
@@ -140,7 +140,7 @@ TEST(ME_MultiSplit)
       
       efaces = ME_Faces(me);
       nef = List_Num_Entries(efaces);
-      fedir = (int *) malloc(nef*sizeof(efaces));
+      fedir = (int *) new int[nef];
       for (int j = 0; j < nef; j++) {
         ef = List_Entry(efaces,j);
         fedir[j] = MF_EdgeDir(ef,me);
@@ -193,7 +193,7 @@ TEST(ME_MultiSplit)
         List_Delete(fedges);
       }
 
-      free(fedir);
+      delete [] fedir;
       List_Delete(efaces);
 
       if (ne == 1) { /* check the vertex coordinates */

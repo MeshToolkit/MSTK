@@ -3,7 +3,6 @@
 #include "MFace.h"
 #include "MFace_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {

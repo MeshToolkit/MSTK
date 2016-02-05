@@ -1,9 +1,9 @@
 #define _H_MRegion_Private
 
+#include <stdlib.h>
 #include "MRegion.h"
 #include "MRegion_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,12 +79,12 @@ extern "C" {
        has been specified store this information for later
        retrieval */
     if (nf && rfvtemplate) {
-      adj->fvtemplate = (int **) MSTK_malloc((nf+1)*sizeof(int *));
-      adj->fvtemplate[0] = (int *) MSTK_malloc(1*sizeof(int));
+      adj->fvtemplate = (int **) malloc((nf+1)*sizeof(int *));
+      adj->fvtemplate[0] = (int *) malloc(1*sizeof(int));
       for (i = 0; i < nf; i++) {
 	int j, nfv;
 	nfv = rfvtemplate[i][0];
-	adj->fvtemplate[i] = (int *) MSTK_malloc((nfv+1)*sizeof(int));
+	adj->fvtemplate[i] = (int *) malloc((nfv+1)*sizeof(int));
 	adj->fvtemplate[i][0] = nfv;
 	for (j = 0; j < nfv; j++)
 	  adj->fvtemplate[i][j+1] = rfvtemplate[i][j+1];

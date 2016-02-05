@@ -1,9 +1,9 @@
 #define _H_MEdge_Private
 
+#include <stdlib.h>
 #include "MEdge.h"
 #include "MEdge_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
     MEdge_ptr e;
     RepType RTYPE;
 
-    e = (MEdge_ptr) MSTK_malloc(sizeof(MEdge));
+    e = (MEdge_ptr) malloc(sizeof(MEdge));
 
     MEnt_Init_CmnData((MEntity_ptr) e);
     MEnt_Set_Mesh((MEntity_ptr) e,mesh);
@@ -56,7 +56,7 @@ extern "C" {
 
     if (!keep) {
       MEnt_Free_CmnData((MEntity_ptr) e);
-      MSTK_free((MEntity_ptr) e);
+      free((MEntity_ptr) e);
     }
   }
 
@@ -91,7 +91,7 @@ extern "C" {
 
     MEnt_Free_CmnData((MEntity_ptr) e);
 
-    MSTK_free(e);
+    free(e);
   }
 
   void ME_Set_RepType(MEdge_ptr e, RepType RTYPE) {
@@ -496,7 +496,7 @@ extern "C" {
   MEdge_ptr ME_GhostNew(Mesh_ptr mesh) {
     MEdge_ptr e;
     RepType RTYPE;
-    e = (MEdge_ptr) MSTK_malloc(sizeof(MEdge));
+    e = (MEdge_ptr) malloc(sizeof(MEdge));
 
     MEnt_Init_CmnData((MEntity_ptr) e);
     MEnt_Set_Mesh((MEntity_ptr) e,mesh);

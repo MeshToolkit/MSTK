@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "MSTK.h"
 #include "MSTK_private.h"
 

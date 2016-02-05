@@ -1,8 +1,8 @@
 #define _H_MFace_Private
 
+#include <stdlib.h>
 #include "MFace.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -202,8 +202,8 @@ extern "C" {
       MSTK_Report("MF_Replace_Edge_i","No initial set of edges for face",
 		  MSTK_ERROR);
 
-    oldedges = (MEdge_ptr *) MSTK_malloc(nold*sizeof(MEdge_ptr));
-    olddirs  = (int *) MSTK_malloc(nold*sizeof(int));
+    oldedges = (MEdge_ptr *) malloc(nold*sizeof(MEdge_ptr));
+    olddirs  = (int *) malloc(nold*sizeof(int));
     for (j = 0; j < nold; j++) {
       k = (i+j)%ne;
       oldedges[j] = List_Entry(adj->fedges,k);
@@ -225,8 +225,8 @@ extern "C" {
       MSTK_Report("MF_Replace_Edge_i","Mismatched set of edges",MSTK_ERROR);
 
 
-    newedges = (MEdge_ptr *) MSTK_malloc(nnu*sizeof(MEdge_ptr));
-    newdirs  = (int *) MSTK_malloc(nnu*sizeof(MEdge_ptr));
+    newedges = (MEdge_ptr *) malloc(nnu*sizeof(MEdge_ptr));
+    newdirs  = (int *) malloc(nnu*sizeof(MEdge_ptr));
     lastv = vold_0;
     for (j = 0; j < nnu; j++) {
       k = rev ? nnu-1-j : j;
@@ -322,10 +322,10 @@ extern "C" {
       ME_Add_Face(newedges[j],f);
     }
 
-    MSTK_free(oldedges);
-    MSTK_free(olddirs);
-    MSTK_free(newedges);
-    MSTK_free(newdirs);
+    free(oldedges);
+    free(olddirs);
+    free(newedges);
+    free(newdirs);
   }
 
 
@@ -347,7 +347,7 @@ extern "C" {
 
     /* Order the old edges in the direction of the face */
 
-    eindex = (int *) MSTK_malloc(nold*sizeof(int));
+    eindex = (int *) malloc(nold*sizeof(int));
 
     for (i = 0; i < nold; i++) {           
       for (j = 0, found = 0; j < ne; j++)
@@ -358,7 +358,7 @@ extern "C" {
 	}
       if (!found) {
 	MSTK_Report("MF_Replace_Edge","Edge not found in face",MSTK_ERROR);
-	MSTK_free(eindex);
+	free(eindex);
 	return;
       }
     }
@@ -398,7 +398,7 @@ extern "C" {
 	  
     MF_Replace_Edges_i_F2F4(f, nold, istart, nnu, nuedges);
 
-    MSTK_free(eindex);
+    free(eindex);
   }
 
 

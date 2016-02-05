@@ -6,7 +6,6 @@
 #include "Mesh.h"
 #include "MSTK.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 
 #ifdef __cplusplus
@@ -353,12 +352,12 @@ extern "C" {
 	  if (fverts) {
 	    if (nfv > max_nfv) {
 	      max_nfv = nfv;
-	      fverts = MSTK_realloc(fverts,max_nfv*sizeof(MVertex_ptr));
+	      fverts = realloc(fverts,max_nfv*sizeof(MVertex_ptr));
 	    }
 	  }
 	  else {
 	    max_nfv = nfv;
-	    fverts = MSTK_malloc(nfv*sizeof(MVertex_ptr));
+	    fverts = malloc(nfv*sizeof(MVertex_ptr));
 	  }
 	  
 	  for (j = 0; j < nfv; j++) {
@@ -393,7 +392,7 @@ extern "C" {
 	  MF_Set_ID(mf,i+1);
 	}
 	if (fverts)
-	  MSTK_free(fverts);
+	  free(fverts);
 
 	processed_faces = 1;
       }
@@ -425,14 +424,14 @@ extern "C" {
 	  if (fedges) {
 	    if (nfe > max_nfe) {
 	      max_nfe = nfe;
-	      fedges = MSTK_realloc(fedges,max_nfe*sizeof(MVertex_ptr));
-	      fedirs = MSTK_realloc(fedirs,max_nfe*sizeof(int));
+	      fedges = realloc(fedges,max_nfe*sizeof(MVertex_ptr));
+	      fedirs = realloc(fedirs,max_nfe*sizeof(int));
 	    }
 	  }
 	  else {
 	    max_nfe = nfe;
-	    fedges = MSTK_malloc(max_nfe*sizeof(MVertex_ptr));
-	    fedirs = MSTK_malloc(max_nfe*sizeof(MVertex_ptr));
+	    fedges = malloc(max_nfe*sizeof(MVertex_ptr));
+	    fedirs = malloc(max_nfe*sizeof(MVertex_ptr));
 	  }
 	  
 	  for (j = 0; j < nfe; j++) {
@@ -480,8 +479,8 @@ extern "C" {
 	  MF_Set_ID(mf,i+1);
 	}
 	if (fedges) {
-	  MSTK_free(fedges);
-	  MSTK_free(fedirs);
+	  free(fedges);
+	  free(fedirs);
 	}
 	
 	processed_faces = 1;
@@ -554,12 +553,12 @@ extern "C" {
 	  if (rverts) {
 	    if (nrv > max_nrv) {
 	      max_nrv = nrv;
-	      rverts = MSTK_realloc(rverts,max_nrv*sizeof(MVertex_ptr));
+	      rverts = realloc(rverts,max_nrv*sizeof(MVertex_ptr));
 	    }
 	  }
 	  else {
 	    max_nrv = nrv;
-	    rverts = MSTK_malloc(nrv*sizeof(MVertex_ptr));
+	    rverts = malloc(nrv*sizeof(MVertex_ptr));
 	  }
 	  
 	  for (j = 0; j < nrv; j++) {
@@ -595,7 +594,7 @@ extern "C" {
 	  MR_Set_ID(mr,i+1);
 	}
 	if (rverts)
-	  MSTK_free(rverts);
+	  free(rverts);
 
 	processed_regions = 1;
       }
@@ -625,14 +624,14 @@ extern "C" {
 	  if (rfaces) {
 	    if (nrf > max_nrf) {
 	      max_nrf = nrf;
-	      rfaces = MSTK_realloc(rfaces,max_nrf*sizeof(MFace_ptr));
-	      rfdirs = MSTK_realloc(rfdirs,max_nrf*sizeof(int));
+	      rfaces = realloc(rfaces,max_nrf*sizeof(MFace_ptr));
+	      rfdirs = realloc(rfdirs,max_nrf*sizeof(int));
 	    }
 	  }
 	  else {
 	    max_nrf = nrf;
-	    rfaces = MSTK_malloc(nrf*sizeof(MFace_ptr));
-	    rfdirs = MSTK_malloc(nrf*sizeof(int));
+	    rfaces = malloc(nrf*sizeof(MFace_ptr));
+	    rfdirs = malloc(nrf*sizeof(int));
 	  }
 	  
 	  for (j = 0; j < nrf; j++) {
@@ -681,8 +680,8 @@ extern "C" {
 	  MR_Set_ID(mr,i+1);
 	}
 	if (rfaces) {
-	  MSTK_free(rfaces);
-	  MSTK_free(rfdirs);
+	  free(rfaces);
+	  free(rfdirs);
 	}
 	
 	processed_regions = 1;
@@ -913,7 +912,7 @@ extern "C" {
 	    status = fscanf(fp,"%lf",&rval);
 	  else if (atttype == VECTOR || atttype == TENSOR) {
 	    ival = ncomp;
-	    rval_arr = (double *) MSTK_malloc(ncomp*sizeof(double));
+	    rval_arr = (double *) malloc(ncomp*sizeof(double));
 	    for (j = 0; j < ncomp; j++) {
 	      status = fscanf(fp,"%lf",&(rval_arr[j]));
 	    }

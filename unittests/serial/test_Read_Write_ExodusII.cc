@@ -331,8 +331,10 @@ TEST(Write_Read_ExodusII_Variables) {
   MAttrib_ptr elvalatt_out = MAttrib_New(mesh,"elval",DOUBLE,MREGION);
   MAttrib_ptr elvecatt_out = MAttrib_New(mesh,"elvec",VECTOR,MREGION,3);
 
-  double *elval_out = (double *) malloc(nr*sizeof(double));
-  double (*elvec_out)[3] = (double (*)[3]) malloc(nr*sizeof(double [3]));
+  double *elval_out = (double *) new double[nr];
+  double **elvec_out = (double **) new double *[nr];
+  for (int k = 0; k < nr; k++)
+    elvec_out[k] = new double[3];
 
   idx = 0; i = 0;
   while ((mr = MESH_Next_Region(mesh,&idx))) {
@@ -347,8 +349,10 @@ TEST(Write_Read_ExodusII_Variables) {
   }
 
 
-  double *ndval_out = (double *) malloc(nv*sizeof(double));
-  double (*ndvec_out)[3] = (double (*)[3]) malloc(nv*sizeof(double [3]));
+  double *ndval_out = (double *) new double[nv];
+  double **ndvec_out = (double **) new double *[nv];
+  for (int k = 0; k < nv; k++) 
+    ndvec_out[k] = (double *) new double[3];
 
   MAttrib_ptr ndvalatt_out = MAttrib_New(mesh,"ndval",DOUBLE,MVERTEX);
   MAttrib_ptr ndvecatt_out = MAttrib_New(mesh,"ndvec",VECTOR,MVERTEX,3);
@@ -433,10 +437,14 @@ TEST(Write_Read_ExodusII_Variables) {
     i++;
   }
 
-  free(elval_out);
-  free(elvec_out);
-  free(ndval_out);
-  free(ndvec_out);
+  delete [] elval_out;
+  for (int k = 0; k < nr; k++)
+    delete [] elvec_out[k];
+  delete [] elvec_out;
+  delete [] ndval_out;
+  for (int k = 0; k < nv; k++)
+    delete ndvec_out[k];
+  delete [] ndvec_out;
 
   MESH_Delete(mesh);
   MESH_Delete(mesh2);

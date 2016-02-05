@@ -1,9 +1,9 @@
 #define _H_MRegion_Private
 
+#include <stdlib.h>
 #include "MRegion.h"
 #include "MRegion_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
   void MR_Set_RepType_FNR3R4(MRegion_ptr r) {
     MRegion_Adj_FN *adj;
 
-    r->adj = (MRegion_Adj_FN *) MSTK_malloc(sizeof(MRegion_Adj_FN));
+    r->adj = (MRegion_Adj_FN *) malloc(sizeof(MRegion_Adj_FN));
     adj = (MRegion_Adj_FN *) r->adj;
 
     adj->fdirs = NULL;
@@ -39,10 +39,10 @@ extern "C" {
     if (!keep) {
       if (adj) {	
 	if (adj->rfaces) {
-	  MSTK_free(adj->fdirs);
+	  free(adj->fdirs);
 	  List_Delete(adj->rfaces);
 	}
-	MSTK_free(adj);
+	free(adj);
       }
     }
   }
@@ -72,10 +72,10 @@ extern "C" {
     adj = (MRegion_Adj_FN *) r->adj;
     if (adj) {
       if (adj->rfaces) {
-	MSTK_free(adj->fdirs);
+	free(adj->fdirs);
 	List_Delete(adj->rfaces);
       }
-      MSTK_free(adj);
+      free(adj);
     }
   }
 

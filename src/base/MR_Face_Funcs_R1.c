@@ -1,9 +1,9 @@
 #define _H_MRegion_Private
 
+#include <stdlib.h>
 #include "MRegion.h"
 #include "MRegion_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -181,7 +181,7 @@ extern "C" {
     List_Delete(fverts);
 
     nrv = List_Num_Entries(adj->rvertices);
-    rvids = (int *) MSTK_malloc(nrv*sizeof(int));
+    rvids = (int *) malloc(nrv*sizeof(int));
     idx = 0; i = 0;
     while ((v = List_Next_Entry(adj->rvertices, &idx)))
       rvids[i++] = MV_ID(v);
@@ -301,7 +301,7 @@ extern "C" {
       }      
 
     }
-    MSTK_free(rvids);
+    free(rvids);
     if (!same) dir = -1;
     if (!fnd) dir = -1;
     return dir; 

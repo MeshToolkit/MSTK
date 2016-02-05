@@ -84,7 +84,7 @@ extern "C" {
 
     /* allocate meshes to receive from other processors */
     num_recv_procs = MESH_Num_GhostPrtns(submesh);
-    recv_meshes = (Mesh_ptr*)MSTK_malloc(num_recv_procs*sizeof(Mesh_ptr));
+    recv_meshes = (Mesh_ptr*)malloc(num_recv_procs*sizeof(Mesh_ptr));
     for(i = 0; i < num_recv_procs; i++)
       recv_meshes[i] = MESH_New(MESH_RepType(submesh));
 
@@ -176,7 +176,7 @@ extern "C" {
 
     /* allocate meshes to receive from other processors */
     num_recv_procs = MESH_Num_GhostPrtns(submesh);
-    recv_meshes = (Mesh_ptr*)MSTK_malloc(num_recv_procs*sizeof(Mesh_ptr));
+    recv_meshes = (Mesh_ptr*)malloc(num_recv_procs*sizeof(Mesh_ptr));
     for(i = 0; i < num_recv_procs; i++)
       recv_meshes[i] = MESH_New(MESH_RepType(submesh));
 

@@ -85,8 +85,8 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   boundary_verts = List_New(10);
   boundary_edges = List_New(10);
 
-  MV_to_list_id = (int *)MSTK_malloc(num*max_nv*sizeof(int));
-  ME_to_list_id = (int *)MSTK_malloc(num*max_ne*sizeof(int));
+  MV_to_list_id = (int *)malloc(num*max_nv*sizeof(int));
+  ME_to_list_id = (int *)malloc(num*max_ne*sizeof(int));
 
   
   fedges = (MEdge_ptr *) malloc(MAXPV2*sizeof(MEdge_ptr));
@@ -109,8 +109,8 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_Sort(boundary_edges,nbe,sizeof(MEdge_ptr),compareGlobalID);
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
 
-  MV_global_id = (int *)MSTK_malloc(nbv*sizeof(int));
-  ME_global_id = (int *)MSTK_malloc(nbe*sizeof(int));
+  MV_global_id = (int *)malloc(nbv*sizeof(int));
+  ME_global_id = (int *)malloc(nbe*sizeof(int));
 
   /* store them in array for binary search */
   idx = 0;
@@ -277,12 +277,12 @@ int MESH_ConcatSubMesh_Face(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
 
   List_Delete(edges);
   List_Delete(verts);
-  MSTK_free(MV_to_list_id);
-  MSTK_free(ME_to_list_id);
-  MSTK_free(MV_global_id);
-  MSTK_free(ME_global_id);
-  MSTK_free(fedges);
-  MSTK_free(fedirs);
+  free(MV_to_list_id);
+  free(ME_to_list_id);
+  free(MV_global_id);
+  free(ME_global_id);
+  free(fedges);
+  free(fedirs);
   return 1;
 }
 
@@ -328,9 +328,9 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   edges = List_New(10);   added_edges = List_New(10);  boundary_edges = List_New(10);
   verts = List_New(10);   added_verts = List_New(10);  boundary_faces = List_New(10);
 
-  MV_to_list_id = (int *)MSTK_malloc(num*max_nv*sizeof(int));
-  ME_to_list_id = (int *)MSTK_malloc(num*max_ne*sizeof(int));
-  MF_to_list_id = (int *)MSTK_malloc(num*max_nf*sizeof(int));
+  MV_to_list_id = (int *)malloc(num*max_nv*sizeof(int));
+  ME_to_list_id = (int *)malloc(num*max_ne*sizeof(int));
+  MF_to_list_id = (int *)malloc(num*max_nf*sizeof(int));
 
   rfaces = (MFace_ptr *) malloc(MAXPF3*sizeof(MFace_ptr));
   rfdirs = (int *) malloc(MAXPF3*sizeof(int));
@@ -361,9 +361,9 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_Sort(boundary_edges,nbe,sizeof(MEdge_ptr),compareGlobalID);
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
 
-  MV_global_id = (int *)MSTK_malloc(nbv*sizeof(int));
-  ME_global_id = (int *)MSTK_malloc(nbe*sizeof(int));
-  MF_global_id = (int *)MSTK_malloc(nbf*sizeof(int));
+  MV_global_id = (int *)malloc(nbv*sizeof(int));
+  ME_global_id = (int *)malloc(nbe*sizeof(int));
+  MF_global_id = (int *)malloc(nbf*sizeof(int));
 
   /* store them in array for binary search */
   idx = 0;
@@ -626,16 +626,16 @@ int MESH_ConcatSubMesh_Region(Mesh_ptr mesh, int num, Mesh_ptr *submeshes) {
   List_Delete(faces);
   List_Delete(edges);
   List_Delete(verts);
-  MSTK_free(MV_to_list_id);
-  MSTK_free(ME_to_list_id);
-  MSTK_free(MF_to_list_id);
-  MSTK_free(MV_global_id);
-  MSTK_free(ME_global_id);
-  MSTK_free(MF_global_id);
-  MSTK_free(fedges);
-  MSTK_free(fedirs);
-  MSTK_free(rfaces);
-  MSTK_free(rfdirs);
+  free(MV_to_list_id);
+  free(ME_to_list_id);
+  free(MF_to_list_id);
+  free(MV_global_id);
+  free(ME_global_id);
+  free(MF_global_id);
+  free(fedges);
+  free(fedirs);
+  free(rfaces);
+  free(rfdirs);
 
   return 1;
 }

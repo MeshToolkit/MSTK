@@ -143,7 +143,7 @@ TEST(Partition2D_0ring) {
 
   CHECK_EQUAL(expnf[rank],nf);
 
-  faceids = (int *) malloc(nf*sizeof(int));
+  faceids = (int *) new int[nf];
 
   idx = 0; i = 0;
   while ((mf = MESH_Next_Face(mymesh,&idx))) {
@@ -153,14 +153,14 @@ TEST(Partition2D_0ring) {
 
   CHECK_ARRAY_EQUAL(expfaceids[rank],faceids,nf);
 
-  free(faceids);
+  delete [] faceids;
 
 
   nv = MESH_Num_Vertices(mymesh)-MESH_Num_GhostVertices(mymesh);
 
   CHECK_EQUAL(expnv[rank],nv);
 
-  vertexids = (int *) malloc(nv*sizeof(int));
+  vertexids = (int *) new int [nv];
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_Vertex(mymesh,&idx)))
@@ -169,7 +169,7 @@ TEST(Partition2D_0ring) {
 
   CHECK_ARRAY_EQUAL(expvertexids[rank],vertexids,nv);
 
-  free(vertexids);
+  delete [] vertexids;
 
 
 
@@ -362,7 +362,7 @@ TEST(Partition2D_1ring) {
 
   CHECK_EQUAL(expnf[rank],nf);
 
-  faceids = (int *) malloc(nf*sizeof(int));
+  faceids = (int *) new int[nf];
 
   idx = 0; i = 0;
   while ((mf = MESH_Next_Face(mymesh,&idx))) {
@@ -372,14 +372,14 @@ TEST(Partition2D_1ring) {
 
   CHECK_ARRAY_EQUAL(expfaceids[rank],faceids,nf);
 
-  free(faceids);
+  delete [] faceids;
 
 
   nv = MESH_Num_Vertices(mymesh)-MESH_Num_GhostVertices(mymesh);
 
   CHECK_EQUAL(expnv[rank],nv);
 
-  vertexids = (int *) malloc(nv*sizeof(int));
+  vertexids = (int *) new int[nv];
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_Vertex(mymesh,&idx)))
@@ -388,14 +388,14 @@ TEST(Partition2D_1ring) {
 
   CHECK_ARRAY_EQUAL(expvertexids[rank],vertexids,nv);
 
-  free(vertexids);
+  delete [] vertexids;
 
 
 
   ngf = MESH_Num_GhostFaces(mymesh);
   CHECK_EQUAL(expngf[rank],ngf);
 
-  gfaceids = (int *) malloc(ngf*sizeof(int));
+  gfaceids = (int *) new int[ngf];
 
   idx = 0; i = 0;
   while ((mf = MESH_Next_GhostFace(mymesh,&idx)))
@@ -403,13 +403,13 @@ TEST(Partition2D_1ring) {
 
   CHECK_ARRAY_EQUAL(expgfaceids[rank],gfaceids,ngf);
 
-  free(gfaceids);
+  delete [] gfaceids;
 
   nof = MESH_Num_OverlapFaces(mymesh);
   CHECK_EQUAL(expnof[rank],nof);
 
 
-  ofaceids = (int *) malloc(nof*sizeof(int));
+  ofaceids = (int *) new int[nof];
 
   idx = 0; i = 0;
   while ((mf = MESH_Next_OverlapFace(mymesh,&idx)))
@@ -417,7 +417,7 @@ TEST(Partition2D_1ring) {
 
   CHECK_ARRAY_EQUAL(expofaceids[rank],ofaceids,nof);
 
-  free(ofaceids);
+  delete [] ofaceids;
 
   return;
 }

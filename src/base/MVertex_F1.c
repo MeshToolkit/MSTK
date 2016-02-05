@@ -1,9 +1,9 @@
 #define _H_MVertex_Private
 
+#include <stdlib.h>
 #include "MVertex.h"
 #include "MVertex_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
   void MV_Set_RepType_F1(MVertex_ptr v) {
     MVertex_Adj_F1F4 *adj;
 
-    adj = v->adj = (MVertex_Adj_F1F4 *) MSTK_malloc(sizeof(MVertex_Adj_F1F4));
+    adj = v->adj = (MVertex_Adj_F1F4 *) malloc(sizeof(MVertex_Adj_F1F4));
     adj->vedges = List_New(5);
   }
 
@@ -25,7 +25,7 @@ extern "C" {
       if (adj) {
 	if (adj->vedges)
 	  List_Delete(adj->vedges);
-	MSTK_free(adj);
+	free(adj);
       }
     }
   }
@@ -41,7 +41,7 @@ extern "C" {
     if (adj) {
       if (adj->vedges)
 	List_Delete(adj->vedges);
-      MSTK_free(adj);
+      free(adj);
     }
   }
 

@@ -283,7 +283,7 @@ extern "C" {
   if (nface_blk) {
     int nfblock, ntotnodes, *face_blk_ids;    
 
-    face_blk_ids = (int *) MSTK_malloc(nface_blk*sizeof(int));
+    face_blk_ids = (int *) malloc(nface_blk*sizeof(int));
 
     status = ex_get_ids(exoid, EX_FACE_BLOCK, face_blk_ids);
     if (status < 0) {
@@ -302,7 +302,7 @@ extern "C" {
 	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
-      connect = (int *) MSTK_malloc(ntotnodes*sizeof(int));
+      connect = (int *) malloc(ntotnodes*sizeof(int));
 
       status = ex_get_conn(exoid, EX_FACE_BLOCK, face_blk_ids[i], connect,
 			   NULL, NULL);
@@ -315,7 +315,7 @@ extern "C" {
       }
 
       
-      nnpe = (int *) MSTK_malloc(nfblock*sizeof(int));
+      nnpe = (int *) malloc(nfblock*sizeof(int));
 
       status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
 						 face_blk_ids[i], nnpe);
@@ -331,7 +331,7 @@ extern "C" {
 	if (nnpe[j] > max) max = nnpe[j];
 
 
-      fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
+      fverts = (MVertex_ptr *) malloc(max*sizeof(MVertex_ptr));
 
       faceset = MSet_New(mesh,"faceset",MFACE);
 
@@ -348,9 +348,9 @@ extern "C" {
 	MSet_Add(faceset,mf);
       }
 
-      MSTK_free(fverts);
-      MSTK_free(connect);
-      MSTK_free(nnpe);
+      free(fverts);
+      free(connect);
+      free(nnpe);
     }
 
   }
@@ -422,7 +422,7 @@ extern "C" {
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polygons (counting duplicates) */
 
-	connect = (int *) MSTK_malloc(nelnodes*sizeof(int));
+	connect = (int *) malloc(nelnodes*sizeof(int));
 
 	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
 			   NULL, NULL);
@@ -435,7 +435,7 @@ extern "C" {
 	}
 
       
-	nnpe = (int *) MSTK_malloc(nel_in_blk[i]*sizeof(int));
+	nnpe = (int *) malloc(nel_in_blk[i]*sizeof(int));
 
 	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
@@ -450,7 +450,7 @@ extern "C" {
 	for (j = 0; j < nel_in_blk[i]; j++) 
 	  if (nnpe[j] > max) max = nnpe[j];
 
-	fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
+	fverts = (MVertex_ptr *) malloc(max*sizeof(MVertex_ptr));
 
 	int offset = 0;
 	for (j = 0; j < nel_in_blk[i]; j++) {
@@ -775,7 +775,7 @@ extern "C" {
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polyhedra (counting duplicates) */
 
-	connect = (int *) MSTK_malloc(nelfaces*sizeof(int));
+	connect = (int *) malloc(nelfaces*sizeof(int));
 
 	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], NULL, NULL,
 			     connect);
@@ -788,7 +788,7 @@ extern "C" {
 	}
 
       
-	nnpe = (int *) MSTK_malloc(nel_in_blk[i]*sizeof(int));
+	nnpe = (int *) malloc(nel_in_blk[i]*sizeof(int));
 	
 	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
@@ -803,8 +803,8 @@ extern "C" {
 	for (j = 0; j < nel_in_blk[i]; j++) 
 	  if (nnpe[j] > max) max = nnpe[j];
 
-	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(max*sizeof(MFace_ptr));
-	int *rfdirs = (int *) MSTK_malloc(max*sizeof(int *));
+	MFace_ptr *rfarr = (MFace_ptr *) malloc(max*sizeof(MFace_ptr));
+	int *rfdirs = (int *) malloc(max*sizeof(int *));
 
 	int offset = 0;
 	for (j = 0; j < nel_in_blk[i]; j++) {
@@ -947,10 +947,10 @@ extern "C" {
 	  continue;
 	}
 	
-	fverts = (MVertex_ptr *) MSTK_malloc(4*sizeof(MVertex_ptr));
+	fverts = (MVertex_ptr *) malloc(4*sizeof(MVertex_ptr));
 
-	MFace_ptr *rfarr = (MFace_ptr *) MSTK_malloc(nrf*sizeof(MFace_ptr));
-	int *rfdirs = (int *) MSTK_malloc(nrf*sizeof(int *));
+	MFace_ptr *rfarr = (MFace_ptr *) malloc(nrf*sizeof(MFace_ptr));
+	int *rfdirs = (int *) malloc(nrf*sizeof(int *));
 
 	for (j = 0; j < nel_in_blk[i]; j++) {
 	  
@@ -1100,7 +1100,7 @@ extern "C" {
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polygons (counting duplicates) */
 
-	connect = (int *) MSTK_malloc(nelnodes*sizeof(int));
+	connect = (int *) malloc(nelnodes*sizeof(int));
 
 	status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
 			   NULL, NULL);
@@ -1113,7 +1113,7 @@ extern "C" {
 	}
 
       
-	nnpe = (int *) MSTK_malloc(nel_in_blk[i]*sizeof(int));
+	nnpe = (int *) malloc(nel_in_blk[i]*sizeof(int));
 
 	status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						   elem_blk_ids[i], nnpe);
@@ -1128,7 +1128,7 @@ extern "C" {
 	for (j = 0; j < nel_in_blk[i]; j++) 
 	  if (nnpe[j] > max) max = nnpe[j];
 
-	fverts = (MVertex_ptr *) MSTK_malloc(max*sizeof(MVertex_ptr));
+	fverts = (MVertex_ptr *) malloc(max*sizeof(MVertex_ptr));
 
 	int offset = 0;
 	for (j = 0; j < nel_in_blk[i]; j++) {

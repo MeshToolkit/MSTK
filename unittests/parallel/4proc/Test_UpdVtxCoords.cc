@@ -68,7 +68,7 @@ TEST(VertexUpdate2D) {
 
   MAttrib_ptr xyzatt;
   xyzatt = MAttrib_New(mesh,"xyzatt",VECTOR,MVERTEX,3);
-  double *oxyz = (double *)malloc(3*MESH_Num_Vertices(mesh)*sizeof(double));
+  double *oxyz = (double *) new double[3*MESH_Num_Vertices(mesh)];
 
   idx = 0; i = 0;
   while (mv = MESH_Next_OverlapVertex(mesh,&idx)) {
@@ -111,7 +111,7 @@ TEST(VertexUpdate2D) {
     }
   }
 
-  free(oxyz);
+  delete [] oxyz;
   return;
 }
 }

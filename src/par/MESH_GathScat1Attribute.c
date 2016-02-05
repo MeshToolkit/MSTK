@@ -167,7 +167,7 @@ extern "C" {
     }
 
     /* this stores the global to local processor id map */
-    int *localrank = (int*) MSTK_malloc((numprocs+1)*sizeof(int));
+    int *localrank = (int*) malloc((numprocs+1)*sizeof(int));
     for (i = 0; i < num_recv_procs; i++)
       localrank[recv_procs[i]] = i;
 
@@ -176,7 +176,7 @@ extern "C" {
        processor starts */
 
     int tot_recv_size = 0;
-    int *recv_pos = (int*) MSTK_malloc((num_recv_procs+1)*sizeof(int));
+    int *recv_pos = (int*) malloc((num_recv_procs+1)*sizeof(int));
     recv_pos[0] = 0;
     for (i = 0; i < num_recv_procs; i++) {
       recv_pos[i+1] = recv_pos[i] + recv_size[recv_procs[i]];
@@ -480,7 +480,7 @@ extern "C" {
                 break;
               }
             if (!allzero) {
-              rval_arr = (double *)MSTK_malloc(ncomp*sizeof(double));
+              rval_arr = (double *)malloc(ncomp*sizeof(double));
               for(k = 0; k < ncomp; k++)
                 rval_arr[k] = list_value_double_recv[ind*ncomp+k];
               double final_norm = 0.0, norm = 0.0;

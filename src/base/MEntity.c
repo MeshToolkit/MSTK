@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MEntity.h"
-#include "MSTK_malloc.h"
 #include "MAttrib.h"
 #include "MSTK.h"
 #include "MSTK_private.h"

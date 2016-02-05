@@ -1,9 +1,9 @@
 #define _H_MRegion_Private
 
+#include <stdlib.h>
 #include "MRegion.h"
 #include "MRegion_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
   void MR_Set_RepType_R2(MRegion_ptr r) {
     MRegion_Adj_R2 *adj;
 
-    r->adj = (MRegion_Adj_R2 *) MSTK_malloc(sizeof(MRegion_Adj_R2));
+    r->adj = (MRegion_Adj_R2 *) malloc(sizeof(MRegion_Adj_R2));
     adj = (MRegion_Adj_R2 *) r->adj;
     adj->rvertices = NULL;
     adj->fvtemplate = NULL;
@@ -48,12 +48,12 @@ extern "C" {
 	if (adj->fvtemplate) {
 	  int nf = adj->fvtemplate[0][0], i;
 	  for (i = 0; i < nf; i++)
-	    MSTK_free(adj->fvtemplate[i]);
-	  MSTK_free(adj->fvtemplate);
+	    free(adj->fvtemplate[i]);
+	  free(adj->fvtemplate);
 	}
 	if (adj->aregions)
 	  List_Delete(adj->aregions);
-	MSTK_free(adj);
+	free(adj);
       }
       
     }
@@ -88,12 +88,12 @@ extern "C" {
       if (adj->fvtemplate) {
 	int nf = adj->fvtemplate[0][0], i;
 	for (i = 0; i < nf; i++)
-	  MSTK_free(adj->fvtemplate[i]);
-	MSTK_free(adj->fvtemplate);
+	  free(adj->fvtemplate[i]);
+	free(adj->fvtemplate);
       }
       if (adj->aregions)
 	List_Delete(adj->aregions);
-      MSTK_free(adj);
+      free(adj);
     }
     
   }

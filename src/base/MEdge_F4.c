@@ -1,9 +1,9 @@
 #define _H_MEdge_Private
 
+#include <stdlib.h>
 #include "MEdge.h"
 #include "MEdge_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
   void ME_Set_RepType_F4(MEdge_ptr e) {
     MEdge_Adj_F4 *adj;
 
-    adj = e->adj = (MEdge_Adj_F4 *) MSTK_malloc(sizeof(MEdge_Adj_F4));
+    adj = e->adj = (MEdge_Adj_F4 *) malloc(sizeof(MEdge_Adj_F4));
     adj->elements = List_New(5);
   }
 
@@ -29,7 +29,7 @@ extern "C" {
       if (adj) {
 	if (adj->elements)
 	  List_Delete(adj->elements);
-	MSTK_free(adj);
+	free(adj);
       }
     }
   }
@@ -49,7 +49,7 @@ extern "C" {
     if (adj) {
       if (adj->elements)
 	List_Delete(adj->elements);
-      MSTK_free(adj);
+      free(adj);
     }
   }
 

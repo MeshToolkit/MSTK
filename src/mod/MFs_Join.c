@@ -50,12 +50,12 @@ MFace_ptr MFs_Join(MFace_ptr f0, MFace_ptr f1, MEdge_ptr e) {
   nfe0 = MF_Num_Edges(f0);
   nfe1 = MF_Num_Edges(f1);
 
-  fe0 = (MEdge_ptr *) MSTK_malloc(nfe0*sizeof(MEdge_ptr));
-  fedir0 = (int *) MSTK_malloc(nfe0*sizeof(int));
-  fe1 = (MEdge_ptr *) MSTK_malloc(nfe1*sizeof(MEdge_ptr));
-  fedir1 = (int *) MSTK_malloc(nfe1*sizeof(int));
-  fe3 = (MEdge_ptr *) MSTK_malloc((nfe0+nfe1-2)*sizeof(MEdge_ptr));
-  fedir3 = (int *) MSTK_malloc((nfe0+nfe1-2)*sizeof(int));
+  fe0 = (MEdge_ptr *) malloc(nfe0*sizeof(MEdge_ptr));
+  fedir0 = (int *) malloc(nfe0*sizeof(int));
+  fe1 = (MEdge_ptr *) malloc(nfe1*sizeof(MEdge_ptr));
+  fedir1 = (int *) malloc(nfe1*sizeof(int));
+  fe3 = (MEdge_ptr *) malloc((nfe0+nfe1-2)*sizeof(MEdge_ptr));
+  fedir3 = (int *) malloc((nfe0+nfe1-2)*sizeof(int));
 
   fedges = MF_Edges(f0,1,0);
   for (i = 0, k0 = -1; i < nfe0; i++) {
@@ -112,9 +112,9 @@ MFace_ptr MFs_Join(MFace_ptr f0, MFace_ptr f1, MEdge_ptr e) {
   MF_Delete(f1,0);
   ME_Delete(e,0);
 
-  MSTK_free(fe0); MSTK_free(fedir0);
-  MSTK_free(fe1); MSTK_free(fedir1);
-  MSTK_free(fe3); MSTK_free(fedir3);
+  free(fe0); free(fedir0);
+  free(fe1); free(fedir1);
+  free(fe3); free(fedir3);
 
   return nuface;
 }

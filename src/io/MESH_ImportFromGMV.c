@@ -163,7 +163,7 @@ extern "C" {
 	return 0;
       }
       
-      xyzarr = (double (*)[3]) MSTK_malloc(nnodes*sizeof(double [3]));
+      xyzarr = (double (*)[3]) malloc(nnodes*sizeof(double [3]));
       
       for (j = 0; j < 3; j++) 
 	for (i = 0; i < nnodes; i++) {
@@ -182,7 +182,7 @@ extern "C" {
 	MV_Set_ID(mv,i+1);
       }
       
-      MSTK_free(xyzarr);
+      free(xyzarr);
 
       nodes_read = 1;
     }
@@ -369,9 +369,9 @@ extern "C" {
 	else if (strcmp(cell_str,"general") == 0) {
 
 	  if (!rfv_template) {
-	    rfv_template = (int **) MSTK_malloc(MAXPF3*sizeof(int *));
+	    rfv_template = (int **) malloc(MAXPF3*sizeof(int *));
 	    for (j = 0; j < MAXPF3; j++) 
-	      rfv_template[j] = (int *) MSTK_malloc(MAXPV2*sizeof(int));
+	      rfv_template[j] = (int *) malloc(MAXPV2*sizeof(int));
 	  }
 
 	  /* GENERAL POLYHEDRA */
@@ -450,7 +450,7 @@ extern "C" {
 			"Must not mix vface2d cells with other cells",MSTK_WARN);
 
 	  if (!vface2d_data)
-	    vface2d_data = (int **) MSTK_malloc(ncells*sizeof(int *));
+	    vface2d_data = (int **) malloc(ncells*sizeof(int *));
 	    
 	  status = fscanf(fp,"%d",&nfe);
 	  if (status == EOF) {
@@ -459,7 +459,7 @@ extern "C" {
 	    return 0;
 	  }
 	  
-	  vface2d_data[ic] = (int *) MSTK_malloc((nfe+1)*sizeof(int));
+	  vface2d_data[ic] = (int *) malloc((nfe+1)*sizeof(int));
 	  vface2d_data[ic][0] = nfe;
 
 	  for (j = 0; j < nfe; j++) {
@@ -484,7 +484,7 @@ extern "C" {
 			"Must not mix vface3d cells with other cells",MSTK_WARN);
 
 	  if (!vface3d_data)
-	    vface3d_data = (int **) MSTK_malloc(ncells*sizeof(int *));
+	    vface3d_data = (int **) malloc(ncells*sizeof(int *));
 	  
 	  status = fscanf(fp,"%d",&nrf);
 	  if (status == EOF) {
@@ -493,7 +493,7 @@ extern "C" {
 	    return 0;
 	  }
 
-	  vface3d_data[ic] = (int *) MSTK_malloc((nrf+1)*sizeof(int));
+	  vface3d_data[ic] = (int *) malloc((nrf+1)*sizeof(int));
 	  vface3d_data[ic][0] = nrf;
 
 	  for (j = 0; j < nrf; j++) {
@@ -520,8 +520,8 @@ extern "C" {
 
       if (rfv_template) {
 	for (i = 0; i < MAXPF3; i++)
-	  MSTK_free(rfv_template[i]);
-	MSTK_free(rfv_template);
+	  free(rfv_template[i]);
+	free(rfv_template);
       }
 
       /* END READING CELLS (EXCEPT VFACES FOR VFACE2D and VFACE3D) */
@@ -543,12 +543,12 @@ extern "C" {
       }
 
       if (vface2d) {
-	vedge = (MEdge_ptr *) MSTK_malloc(num_faces*sizeof(MEdge_ptr));
-	vedir = (int *) MSTK_malloc(num_faces*sizeof(int));
+	vedge = (MEdge_ptr *) malloc(num_faces*sizeof(MEdge_ptr));
+	vedir = (int *) malloc(num_faces*sizeof(int));
       }
       else {
-	vface = (MFace_ptr *) MSTK_malloc(num_faces*sizeof(MFace_ptr));
-	vfdir = (int *) MSTK_malloc(num_faces*sizeof(int));
+	vface = (MFace_ptr *) malloc(num_faces*sizeof(MFace_ptr));
+	vfdir = (int *) malloc(num_faces*sizeof(int));
       }
 
       for (j = 0; j < num_faces; j++) {
@@ -644,10 +644,10 @@ extern "C" {
 	  mf = MF_New(mesh);
 	  MF_Set_Edges(mf,nfe,fedges,fedirs);
 
-	  MSTK_free(vface2d_data[ic]);
+	  free(vface2d_data[ic]);
 	}
 
-	MSTK_free(vface2d_data);
+	free(vface2d_data);
       }
       else if (vface3d) {
 	for (ic = 0; ic < ncells; ic++) {
@@ -662,10 +662,10 @@ extern "C" {
 	  mr = MR_New(mesh);
 	  MR_Set_Faces(mr,nrf,rfaces,rfdirs);
 
-	  MSTK_free(vface3d_data[ic]);
+	  free(vface3d_data[ic]);
 	}
 
-	MSTK_free(vface3d_data);
+	free(vface3d_data);
       }
     }
     else if (strcmp(temp_str,"faces") == 0) {
@@ -689,16 +689,16 @@ extern "C" {
       status = fscanf(fp,"%d %d",&num_faces,&ncells);
 
       if (ncells) {
-	vface3d_data = (int **) MSTK_malloc(ncells*sizeof(int *));
+	vface3d_data = (int **) malloc(ncells*sizeof(int *));
 	for (ic = 0; ic < ncells; ic++) {
-	  vface3d_data[ic] = (int *) MSTK_malloc((MAXPF3+1)*sizeof(int));
+	  vface3d_data[ic] = (int *) malloc((MAXPF3+1)*sizeof(int));
 	  vface3d_data[ic][0] = 0;
 	}
       }
       else
 	vface3d_data = NULL;
 
-      vface = (MFace_ptr *) MSTK_malloc(num_faces*sizeof(MFace_ptr));
+      vface = (MFace_ptr *) malloc(num_faces*sizeof(MFace_ptr));
 
       for (i = 0; i < num_faces; i++) {	
 	status = fscanf(fp,"%d",&nvtx);
@@ -761,11 +761,11 @@ extern "C" {
 	MR_Set_Faces(mr,nrf,rfaces,rfdirs);
       }
       
-      MSTK_free(vface);
+      free(vface);
       if (vface3d_data) {
 	for (ic = 0; ic < ncells; ic++) 
-	  MSTK_free(vface3d_data[ic]);
-	MSTK_free(vface3d_data);
+	  free(vface3d_data[ic]);
+	free(vface3d_data);
       }
 
     }

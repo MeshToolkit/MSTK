@@ -131,7 +131,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   
   ngent = 0;
   nalloc = 10;
-  gentities = (int *) MSTK_malloc(nalloc*sizeof(int));
+  gentities = (int *) malloc(nalloc*sizeof(int));
   
   if (nr) {
     idx = 0;
@@ -148,7 +148,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       if (!found) {
 	if (ngent+1 >= nalloc) {
 	  nalloc *= 2;
-	  gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+	  gentities = (int *) realloc(gentities,nalloc*sizeof(int));
 	}
 	gentities[ngent] = gentid;
 	ngent++;
@@ -170,7 +170,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       if (!found) {
 	if (ngent+1 >= nalloc) {
 	  nalloc *= 2;
-	  gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+	  gentities = (int *) realloc(gentities,nalloc*sizeof(int));
 	}
 	gentities[ngent] = gentid;
 	ngent++;
@@ -467,8 +467,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     
     /* Collect the attributes */
     
-    cellatts = (MAttrib_ptr *) MSTK_malloc(nmeshatt*sizeof(int));
-    nodatts = (MAttrib_ptr *) MSTK_malloc(nmeshatt*sizeof(int));
+    cellatts = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
+    nodatts = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
     
     for (i = 0; i < nmeshatt; i++) {
       attrib = MESH_Attrib(mesh,i);
@@ -1309,7 +1309,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     fprintf(fp,"%s\n",tmpstr);
     }
 
-    if (nodatts) MSTK_free(nodatts);
+    if (nodatts) free(nodatts);
   */
   
   fprintf(fp,"end_node_data\n");

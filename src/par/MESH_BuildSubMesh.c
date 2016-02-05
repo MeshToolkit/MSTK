@@ -62,8 +62,8 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
   edges = List_New(10);
   verts = List_New(10);
 
-  MV_to_list_id = (int *)MSTK_malloc((nv)*sizeof(int));
-  ME_to_list_id = (int *)MSTK_malloc((ne)*sizeof(int));
+  MV_to_list_id = (int *)malloc((nv)*sizeof(int));
+  ME_to_list_id = (int *)malloc((ne)*sizeof(int));
   /* build the 1-ring outside layer send mesh */
   idx = 0;
 
@@ -135,10 +135,10 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
   List_Delete(faces);
   List_Delete(edges);
   List_Delete(verts);
-  MSTK_free(MV_to_list_id);
-  MSTK_free(ME_to_list_id);
-  MSTK_free(fedges);
-  MSTK_free(fedirs);
+  free(MV_to_list_id);
+  free(ME_to_list_id);
+  free(fedges);
+  free(fedirs);
   return 1;
 }
 
@@ -166,9 +166,9 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
   edges = List_New(10);
   verts = List_New(10);
 
-  MV_to_list_id = (int *)MSTK_malloc((nv)*sizeof(int));
-  ME_to_list_id = (int *)MSTK_malloc((ne)*sizeof(int));
-  MF_to_list_id = (int *)MSTK_malloc((nf)*sizeof(int));
+  MV_to_list_id = (int *)malloc((nv)*sizeof(int));
+  ME_to_list_id = (int *)malloc((ne)*sizeof(int));
+  MF_to_list_id = (int *)malloc((nf)*sizeof(int));
   /* build the 1-ring outside layer send mesh */
   rfaces = (MFace_ptr *) malloc(MAXPF3*sizeof(MFace_ptr));
   rfdirs = (int *) malloc(MAXPF3*sizeof(int));
@@ -261,13 +261,13 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
   List_Delete(faces);
   List_Delete(edges);
   List_Delete(verts);
-  MSTK_free(MV_to_list_id);
-  MSTK_free(ME_to_list_id);
-  MSTK_free(MF_to_list_id);
-  MSTK_free(fedges);
-  MSTK_free(fedirs);
-  MSTK_free(rfaces);
-  MSTK_free(rfdirs);
+  free(MV_to_list_id);
+  free(ME_to_list_id);
+  free(MF_to_list_id);
+  free(fedges);
+  free(fedirs);
+  free(rfaces);
+  free(rfdirs);
   return 1;
 }
 

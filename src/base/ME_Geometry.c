@@ -4,7 +4,6 @@
 #include "MEdge.h"
 #include "MEdge_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 
 #ifdef __cplusplus

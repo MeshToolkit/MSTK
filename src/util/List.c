@@ -77,13 +77,13 @@ extern "C" {
     l->nentdat = ((nent<<5) | p);
     if (nrem) {
       if (!l->remdat)
-	l->remdat = (unsigned int *) MSTK_malloc(2*sizeof(unsigned int));
+	l->remdat = (unsigned int *) malloc(2*sizeof(unsigned int));
       l->remdat[0] = nrem;
       l->remdat[1] = rem1;
     }
     else {
       if (l->remdat)
-	MSTK_free(l->remdat);
+	free(l->remdat);
       l->remdat = NULL;
     }
   }
@@ -104,8 +104,8 @@ extern "C" {
 
     nalloc = (1<<p)-1; /* This is equivalent to 2^np-1 */
 
-    newl = (List_ptr) MSTK_malloc(sizeof(List));
-    newl->entry = (void **) MSTK_malloc(nalloc*sizeof(void *));
+    newl = (List_ptr) malloc(sizeof(List));
+    newl->entry = (void **) malloc(nalloc*sizeof(void *));
     newl->nentdat = 0;
     newl->remdat = NULL;
 
@@ -129,10 +129,10 @@ extern "C" {
     nalloc = (1<<p)-1;
     ntot = nent+nrem;
 
-    newl = (List_ptr) MSTK_malloc(sizeof(List));
+    newl = (List_ptr) malloc(sizeof(List));
     newl->nentdat = 0;
     newl->remdat = NULL;
-    newl->entry = (void **) MSTK_malloc(nalloc*sizeof(void *));
+    newl->entry = (void **) malloc(nalloc*sizeof(void *));
 
     memcpy(newl->entry,oldl->entry,ntot*sizeof(void *));
     pvtList_Set_Pars(newl,nent,p,nrem,rem1);
@@ -338,7 +338,7 @@ extern "C" {
     if (ntot == nalloc) {
       p++;
       nalloc = (1<<p)-1;
-      l->entry = (void **) MSTK_realloc(l->entry,nalloc*sizeof(void *));
+      l->entry = (void **) realloc(l->entry,nalloc*sizeof(void *));
     }
 
     l->entry[ntot] = entry;
@@ -374,7 +374,7 @@ extern "C" {
     if (ntot == nalloc) {
       p++;
       nalloc = (1<<p)-1;
-      l->entry = (void **) MSTK_realloc(l->entry,nalloc*sizeof(void *));
+      l->entry = (void **) realloc(l->entry,nalloc*sizeof(void *));
     }
 
     l->entry[ntot] = entry;
@@ -405,7 +405,7 @@ extern "C" {
     if (ntot == nalloc) {
       p++;
       nalloc = (1<<p)-1;
-      l->entry = (void **) MSTK_realloc(l->entry,nalloc*sizeof(void *));
+      l->entry = (void **) realloc(l->entry,nalloc*sizeof(void *));
     }
 
     if (i == nent) { /* Just append */
@@ -476,7 +476,7 @@ extern "C" {
     if (ntot == nalloc) {
       p++;
       nalloc = (1<<p)-1;
-      l->entry = (void **) MSTK_realloc(l->entry,nalloc*sizeof(void *));
+      l->entry = (void **) realloc(l->entry,nalloc*sizeof(void *));
     }
 
     if (!b4entry) { /* add to the end of the list */
@@ -942,7 +942,7 @@ extern "C" {
     if (p > p_d) {
       p_d = p;
       nalloc = (1<<p)-1;    
-      dest->entry = (void **) MSTK_realloc(dest->entry,nalloc*sizeof(void *));
+      dest->entry = (void **) realloc(dest->entry,nalloc*sizeof(void *));
     }
 
     memcpy(dest->entry+ntot_d,src->entry,ntot_s*sizeof(void *));

@@ -252,7 +252,7 @@ TEST(Weave3D_from_MSTK) {
 
   CHECK_EQUAL(expnr[rank],nr);
 
-  regids = (int *) malloc(nr*sizeof(int));
+  regids = (int *) new int[nr];
 
   idx = 0; i = 0;
   while ((mr = MESH_Next_Region(mesh,&idx)))
@@ -260,14 +260,14 @@ TEST(Weave3D_from_MSTK) {
 
   CHECK_ARRAY_EQUAL(expregids[rank],regids,nr);
 
-  free(regids);
+  delete [] regids;
 
 
   nv = MESH_Num_Vertices(mesh); /* includes ghost vertices */
 
   CHECK_EQUAL(expnv[rank],nv);
 
-  vertexids = (int *) malloc(nv*sizeof(int));
+  vertexids = (int *) new int[nv];
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_Vertex(mesh,&idx))) {
@@ -279,14 +279,14 @@ TEST(Weave3D_from_MSTK) {
   std::sort(vertexids,vertexids+nv);
   CHECK_ARRAY_EQUAL(expvertexids[rank],vertexids,nv);
 
-  free(vertexids);
+  delete [] vertexids;
 
 
 
   ngr = MESH_Num_GhostRegions(mesh);
   CHECK_EQUAL(expngr[rank],ngr);
 
-  gregids = (int *) malloc(ngr*sizeof(int));
+  gregids = (int *) new int[ngr];
 
   idx = 0; i = 0;
   while ((mr = MESH_Next_GhostRegion(mesh,&idx)))
@@ -294,13 +294,13 @@ TEST(Weave3D_from_MSTK) {
 
   CHECK_ARRAY_EQUAL(expgregids[rank],gregids,ngr);
 
-  free(gregids);
+  delete [] gregids;
 
   nor = MESH_Num_OverlapRegions(mesh);
   CHECK_EQUAL(expnor[rank],nor);
 
 
-  oregids = (int *) malloc(nor*sizeof(int));
+  oregids = (int *) new int[nor];
 
   idx = 0; i = 0;
   while ((mr = MESH_Next_OverlapRegion(mesh,&idx)))
@@ -308,13 +308,13 @@ TEST(Weave3D_from_MSTK) {
 
   CHECK_ARRAY_EQUAL(exporegids[rank],oregids,nor);
 
-  free(oregids);
+  delete [] oregids;
 
 
   ngv = MESH_Num_GhostVertices(mesh);
   CHECK_EQUAL(expngv[rank],ngv);
 
-  gvertexids = (int *) malloc(nv*sizeof(int));
+  gvertexids = (int *) new int[nv];
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_GhostVertex(mesh,&idx)))
@@ -323,13 +323,13 @@ TEST(Weave3D_from_MSTK) {
   std::sort(gvertexids,gvertexids+ngv);
   CHECK_ARRAY_EQUAL(expgvertexids[rank],gvertexids,ngv);
 
-  free(gvertexids);
+  delete [] gvertexids;
 
 
   nov = MESH_Num_OverlapVertices(mesh);
   CHECK_EQUAL(expnov[rank],nov);
 
-  overtexids = (int *) malloc(nov*sizeof(int));
+  overtexids = (int *) new int [nov];
 
   idx = 0; i = 0;
   while ((mv = MESH_Next_OverlapVertex(mesh,&idx)))
@@ -338,7 +338,7 @@ TEST(Weave3D_from_MSTK) {
   std::sort(overtexids,overtexids+nov);
   CHECK_ARRAY_EQUAL(expovertexids[rank],overtexids,nov);
 
-  free(overtexids);
+  delete [] overtexids;
 
   CHECK_EQUAL(1,MESH_Parallel_Check(mesh,comm));
 

@@ -1,9 +1,9 @@
 #define _H_MRegion_Private
 
+#include <stdlib.h>
 #include "MRegion.h"
 #include "MRegion_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
   void MR_Set_RepType_R1(MRegion_ptr r) {
     MRegion_Adj_R1 *adj;
 
-    r->adj = (MRegion_Adj_R1 *) MSTK_malloc(sizeof(MRegion_Adj_R1));
+    r->adj = (MRegion_Adj_R1 *) malloc(sizeof(MRegion_Adj_R1));
     adj = r->adj;
     adj->rvertices = NULL;
     adj->fvtemplate = NULL;
@@ -42,13 +42,13 @@ extern "C" {
 	if (adj->fvtemplate) {
 	  int nf = adj->fvtemplate[0][0], i;
 	  for (i = 0; i < nf; i++)
-	    MSTK_free(adj->fvtemplate[i]);
-	  MSTK_free(adj->fvtemplate);
+	    free(adj->fvtemplate[i]);
+	  free(adj->fvtemplate);
 	}
-	MSTK_free(adj);
+	free(adj);
       }
 
-      MSTK_free(r);
+      free(r);
     }
   }
 
@@ -73,10 +73,10 @@ extern "C" {
       if (adj->fvtemplate) {
 	int nf = adj->fvtemplate[0][0], i;
 	for (i = 0; i < nf; i++)
-	  MSTK_free(adj->fvtemplate[i]);
-	MSTK_free(adj->fvtemplate);
+	  free(adj->fvtemplate[i]);
+	free(adj->fvtemplate);
       }
-      MSTK_free(adj);
+      free(adj);
     }
   }
 

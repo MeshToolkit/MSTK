@@ -1,7 +1,6 @@
 #define _H_MFace_Private
 
 #include "MFace.h"
-#include "MSTK_malloc.h"
 #include "MSTK_private.h"
 
 #ifdef __cplusplus

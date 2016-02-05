@@ -20,7 +20,7 @@ extern "C" {
      MasterParID is assigned for both global and submeshes.
      
      Caller should allocate memory for submeshes: 
-     Mesh_ptr *submeshes = (Mesh_ptr*) MSTK_malloc(num*sizeof(Mesh_ptr);
+     Mesh_ptr *submeshes = (Mesh_ptr*) malloc(num*sizeof(Mesh_ptr);
 
      Author(s): Duo Wang, Rao Garimella
 

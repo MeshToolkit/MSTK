@@ -1,4 +1,5 @@
 
+#include <stdlib.h>
 #include "string.h"
 #include "MSTK.h"
 #include "MSTK_private.h"
@@ -261,7 +262,7 @@ extern "C" {
             else if (atttype == DOUBLE && rval)
               MEnt_Set_AttVal(mv_copy,att_copy,ival,rval,pval);
             else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
-              double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
+              double *vec = (double *) malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(mv_copy,att_copy,ival,rval,vec);
             }
@@ -285,7 +286,7 @@ extern "C" {
             else if (atttype == DOUBLE && rval)
               MEnt_Set_AttVal(me_copy,att_copy,ival,rval,pval);
             else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
-              double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
+              double *vec = (double *) malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(me_copy,att_copy,ival,rval,vec);
             }
@@ -309,7 +310,7 @@ extern "C" {
             else if (atttype == DOUBLE && rval)
               MEnt_Set_AttVal(mf_copy,att_copy,ival,rval,pval);
             else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
-              double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
+              double *vec = (double *) malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(mf_copy,att_copy,ival,rval,vec);
             }
@@ -333,7 +334,7 @@ extern "C" {
             else if (atttype == DOUBLE && rval)
               MEnt_Set_AttVal(mr_copy,att_copy,ival,rval,pval);
             else if ((atttype == VECTOR || atttype == TENSOR) && pval) {
-              double *vec = (double *) MSTK_malloc(numcomps*sizeof(double));
+              double *vec = (double *) malloc(numcomps*sizeof(double));
               memcpy(vec,pval,numcomps*sizeof(double));
               MEnt_Set_AttVal(mr_copy,att_copy,ival,rval,vec);
             }

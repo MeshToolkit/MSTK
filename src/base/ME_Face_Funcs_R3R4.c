@@ -1,6 +1,5 @@
 #define _H_MEdge_Private
 
-#include "MSTK_malloc.h"
 #include "MEdge.h"
 #include "MEdge_jmp.h"
 #include "MSTK_private.h"

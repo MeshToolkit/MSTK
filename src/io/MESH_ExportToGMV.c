@@ -203,9 +203,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   }
   else {
     fprintf(fp,"nodes %d\n",nv);
-    xcoord = (double *) MSTK_malloc(nv*sizeof(double));
-    ycoord = (double *) MSTK_malloc(nv*sizeof(double));
-    zcoord = (double *) MSTK_malloc(nv*sizeof(double));
+    xcoord = (double *) malloc(nv*sizeof(double));
+    ycoord = (double *) malloc(nv*sizeof(double));
+    zcoord = (double *) malloc(nv*sizeof(double));
     idx = 0; jv = 0;
     while ((vertex = List_Next_Entry(vlist,&idx))) {
       MV_Coords(vertex,vxyz);
@@ -230,9 +230,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       if (jv%5 == 0 || jv == nv-1)
 	fprintf(fp,"\n");
     }
-    MSTK_free(xcoord);
-    MSTK_free(ycoord);
-    MSTK_free(zcoord);
+    free(xcoord);
+    free(ycoord);
+    free(zcoord);
   }
 
 
@@ -354,7 +354,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   ngent = 0;
   nalloc = 10;
-  gentities = (int *) MSTK_malloc(nalloc*sizeof(int));
+  gentities = (int *) malloc(nalloc*sizeof(int));
   
   fprintf(fp,"cells %d\n",ncells);
     
@@ -464,7 +464,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
         if (!found) {
           if (ngent+1 >= nalloc) {
             nalloc *= 2;
-            gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+            gentities = (int *) realloc(gentities,nalloc*sizeof(int));
           }
           gentities[ngent] = gentid;
           ngent++;
@@ -537,7 +537,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
         if (!found) {
           if (ngent+1 >= nalloc) {
             nalloc *= 2;
-            gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+            gentities = (int *) realloc(gentities,nalloc*sizeof(int));
           }
           gentities[ngent] = gentid;
           ngent++;
@@ -764,7 +764,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       if (!found) {
 	if (ngent+1 >= nalloc) {
 	  nalloc *= 2;
-	  gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+	  gentities = (int *) realloc(gentities,nalloc*sizeof(int));
 	}
 	gentities[ngent] = gentid;
 	ngent++;
@@ -803,7 +803,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       if (!found) {
 	if (ngent+1 >= nalloc) {
 	  nalloc *= 2;
-	  gentities = (int *) MSTK_realloc(gentities,nalloc*sizeof(int));
+	  gentities = (int *) realloc(gentities,nalloc*sizeof(int));
 	}
 	gentities[ngent] = gentid;
 	ngent++;
@@ -946,7 +946,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
     /* Collect the attributes */
     
-    outattribs = (MAttrib_ptr *) MSTK_malloc(nmeshatt*sizeof(MAttrib_ptr));
+    outattribs = (MAttrib_ptr *) malloc(nmeshatt*sizeof(MAttrib_ptr));
     
     for (i = 0, noutatt = 0; i < nmeshatt; i++) {
       attrib = MESH_Attrib(mesh,i);
@@ -1099,7 +1099,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     if (noutatt)
       fprintf(fp,"\n");
 	  
-    MSTK_free(outattribs);
+    free(outattribs);
   }
 
 
@@ -1221,7 +1221,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   /* Clean up */
 
-  MSTK_free(gentities);
+  free(gentities);
 
   if (ncells2) {
     idx = 0;

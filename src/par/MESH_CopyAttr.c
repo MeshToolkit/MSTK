@@ -92,7 +92,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, const char *attr_
       int idx2 = 0;
       while ((lmv = List_Next_Entry(lmvlist,&idx2))) {
         if (ncomp > 1) {
-          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          pval_arr = (void *)malloc(ncomp*sizeof(double));
           memcpy(pval_arr,pval,ncomp*sizeof(double));
         }
         else
@@ -132,7 +132,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, const char *attr_
       int idx2 = 0;
       while ((lme = List_Next_Entry(lmelist,&idx2))) {
         if (ncomp > 1) {
-          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          pval_arr = (void *)malloc(ncomp*sizeof(double));
           memcpy(pval_arr,pval,ncomp*sizeof(double));
         }
         else
@@ -172,7 +172,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, const char *attr_
       int idx2 = 0;
       while ((lmf = List_Next_Entry(lmflist,&idx2))) {
         if (ncomp > 1) {
-          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          pval_arr = (void *)malloc(ncomp*sizeof(double));
           memcpy(pval_arr,pval,ncomp*sizeof(double));
         }
         else
@@ -213,7 +213,7 @@ int MESH_CopyAttr(Mesh_ptr mesh, int num, Mesh_ptr *submeshes, const char *attr_
       int idx2 = 0;
       while ((lmr = List_Next_Entry(lmrlist,&idx2))) {
         if (ncomp > 1) {
-          pval_arr = (void *)MSTK_malloc(ncomp*sizeof(double));
+          pval_arr = (void *)malloc(ncomp*sizeof(double));
           memcpy(pval_arr,pval,ncomp*sizeof(double));
         }
         else

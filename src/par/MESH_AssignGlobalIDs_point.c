@@ -149,7 +149,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   /* sort boundary vertices based on coordinate value, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareVertexCoor);
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   /* get largest number of boundary vertices of all the processors */
@@ -158,10 +158,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     if(max_nbv < global_mesh_info[10*i+5])
       max_nbv = global_mesh_info[10*i+5];
 
-  list_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
-  list_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
-  recv_list_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
-  recv_list_coor = (double *)MSTK_malloc(3*max_nbv*sizeof(double));
+  list_vertex = (int *)malloc(max_nbv*sizeof(int));
+  list_coor = (double *)malloc(3*max_nbv*sizeof(double));
+  recv_list_vertex = (int *)malloc(max_nbv*sizeof(int));
+  recv_list_coor = (double *)malloc(3*max_nbv*sizeof(double));
 
   /* only coordinate values are sent */
   index_nbv = 0;
@@ -178,9 +178,9 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
      used to store list id on incoming buffer of ghost vertex 
      No need to store processor id, already stored in master partition id
   */
-  mv_remote_info = (int *)MSTK_malloc(nbv*sizeof(int));
+  mv_remote_info = (int *)malloc(nbv*sizeof(int));
   /* lable if a vertex is overlap */
-  mv_ov_label = (int *)MSTK_malloc(max_nbv*sizeof(int));
+  mv_ov_label = (int *)malloc(max_nbv*sizeof(int));
 
   ngv = 0; nov = 0;
   /* label ghost and overlap vertex */
@@ -230,7 +230,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   }
   /* printf("num of ghost vertices %d, overlap vertices %d on rank %d\n", ngv, nov, rank); */
   mesh_info[9] = ngv;
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   
   /* Assign global ID for non ghost vertex */
@@ -284,13 +284,13 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   }
 
   List_Delete(boundary_verts);
-  MSTK_free(global_mesh_info);
-  MSTK_free(mv_remote_info);
-  MSTK_free(mv_ov_label);
-  MSTK_free(list_vertex);
-  MSTK_free(list_coor);
-  MSTK_free(recv_list_vertex);
-  MSTK_free(recv_list_coor);
+  free(global_mesh_info);
+  free(mv_remote_info);
+  free(mv_ov_label);
+  free(list_vertex);
+  free(list_coor);
+  free(recv_list_vertex);
+  free(recv_list_coor);
   return 1;
 }
 
@@ -342,7 +342,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
   List_Sort(boundary_edges,nbe,sizeof(MEdge_ptr),compareEdgeID);
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   /* get largest number of boundary vertices of all the processors */
@@ -351,8 +351,8 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     if(max_nbe < global_mesh_info[10*i+5])
       max_nbe = global_mesh_info[10*i+5];
 
-  list_edge = (int *)MSTK_malloc(4*max_nbe*sizeof(int));
-  recv_list_edge = (int *)MSTK_malloc(4*max_nbe*sizeof(int));
+  list_edge = (int *)malloc(4*max_nbe*sizeof(int));
+  recv_list_edge = (int *)malloc(4*max_nbe*sizeof(int));
 
   index_nbe = 0;
   for(i = 0; i < nbe; i++) {
@@ -368,9 +368,9 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
      used to store list id on incoming buffer of ghost edge 
      No need to store processor id, already stored in master partition id
   */
-  me_remote_info = (int *)MSTK_malloc(max_nbe*sizeof(int));
+  me_remote_info = (int *)malloc(max_nbe*sizeof(int));
   /* lable if a edge is overlap */
-  me_ov_label = (int *)MSTK_malloc(max_nbe*sizeof(int));
+  me_ov_label = (int *)malloc(max_nbe*sizeof(int));
   nge = 0; noe = 0;
   /* label ghost and overlap edge */
   for (i = 0; i < num; i++) {
@@ -421,7 +421,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   
   /* printf("num of ghost edges %d, overlap edges %d on rank %d\n", nge, noe, rank);  */
   mesh_info[9] = nge;
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   
   /* Assign global ID for non ghost edge */
@@ -464,11 +464,11 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
 
   List_Delete(boundary_edges);
-  MSTK_free(global_mesh_info);
-  MSTK_free(me_remote_info);
-  MSTK_free(me_ov_label);
-  MSTK_free(list_edge);
-  MSTK_free(recv_list_edge);
+  free(global_mesh_info);
+  free(me_remote_info);
+  free(me_ov_label);
+  free(list_edge);
+  free(recv_list_edge);
   return 1;
 }
 
@@ -491,7 +491,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   nf = MESH_Num_Faces(submesh);
   mesh_info[3] = nf;
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   /* calculate starting global id number for faces*/
@@ -505,7 +505,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     MF_Set_MasterParID(mf,rank);
   }
 
-  MSTK_free(global_mesh_info);
+  free(global_mesh_info);
   return 1;
 }
 
@@ -570,7 +570,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
   List_Sort(boundary_faces,nbf,sizeof(MFace_ptr),compareFaceID);
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   /* get largest number of boundary faces of all the processors */
@@ -579,8 +579,8 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     if(max_nbf < global_mesh_info[10*i+5])
       max_nbf = global_mesh_info[10*i+5];
 
-  list_face = (int *)MSTK_malloc((MAXPV2+3)*max_nbf*sizeof(int));
-  recv_list_face = (int *)MSTK_malloc((MAXPV2+3)*max_nbf*sizeof(int));
+  list_face = (int *)malloc((MAXPV2+3)*max_nbf*sizeof(int));
+  recv_list_face = (int *)malloc((MAXPV2+3)*max_nbf*sizeof(int));
 
   index_nbf = 0;
   for(i = 0; i < nbf; i++) {
@@ -600,9 +600,9 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
      used to store list id on incoming buffer of ghost edge 
      No need to store processor id, already stored in master partition id
   */
-  mf_remote_info = (int *)MSTK_malloc(max_nbf*sizeof(int));
+  mf_remote_info = (int *)malloc(max_nbf*sizeof(int));
   /* lable if a edge is overlap */
-  mf_ov_label = (int *)MSTK_malloc(max_nbf*sizeof(int));
+  mf_ov_label = (int *)malloc(max_nbf*sizeof(int));
   ngf = 0; nof = 0;
   /* label ghost and overlap edge */
   for (i = 0; i < num; i++) {
@@ -657,7 +657,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   
   /* printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank); */
   mesh_info[9] = ngf;
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   
   /* Assign global ID for non ghost vertex */
@@ -711,11 +711,11 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   }
 
   List_Delete(boundary_faces);
-  MSTK_free(global_mesh_info);
-  MSTK_free(mf_remote_info);
-  MSTK_free(mf_ov_label);
-  MSTK_free(list_face);
-  MSTK_free(recv_list_face);
+  free(global_mesh_info);
+  free(mf_remote_info);
+  free(mf_ov_label);
+  free(list_face);
+  free(recv_list_face);
 
   return 1;
 }

@@ -98,14 +98,14 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
   List_Sort(ov_verts,nov,sizeof(MVertex_ptr),compareGlobalID);
 
   /* first half stores the global id, second half are the local ids */
-  ov_list = (int *) MSTK_malloc(2*nov*sizeof(int));
+  ov_list = (int *) malloc(2*nov*sizeof(int));
   for(i = 0; i < nov; i++) {
     mv = List_Entry(ov_verts,i);
     ov_list[i] = MV_GlobalID(mv);
     ov_list[nov+i] = MV_ID(mv);
   }
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
   max_nv = nv;
   for(i = 0; i < num; i++)
@@ -113,11 +113,11 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
       max_nv = global_mesh_info[10*i];
   
   /* collect data */
-  int *list_vertex = (int *)MSTK_malloc(3*max_nv*sizeof(int));
-  double *list_coor = (double *)MSTK_malloc(3*max_nv*sizeof(double));
+  int *list_vertex = (int *)malloc(3*max_nv*sizeof(int));
+  double *list_coor = (double *)malloc(3*max_nv*sizeof(double));
 
-  int *recv_list_vertex = (int *)MSTK_malloc(3*max_nv*sizeof(int));
-  double *recv_list_coor = (double *)MSTK_malloc(3*max_nv*sizeof(double));
+  int *recv_list_vertex = (int *)malloc(3*max_nv*sizeof(int));
+  double *recv_list_coor = (double *)malloc(3*max_nv*sizeof(double));
 
   /* similar as updateattr() and parallel_addghost(), order the send and recv process based on rank */
   for(i = 0; i < num; i++) {
@@ -287,12 +287,12 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
       }
     }
   }
-  MSTK_free(list_vertex);
-  MSTK_free(list_coor);
-  MSTK_free(recv_list_vertex);
-  MSTK_free(recv_list_coor);
-  MSTK_free(ov_list);
-  MSTK_free(global_mesh_info);
+  free(list_vertex);
+  free(list_coor);
+  free(recv_list_vertex);
+  free(recv_list_coor);
+  free(ov_list);
+  free(global_mesh_info);
   List_Delete(ov_verts);
   return valid;
 }
@@ -337,14 +337,14 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
   List_Sort(ov_edges,noe,sizeof(MEdge_ptr),compareGlobalID);
 
   /* first half stores the global id, second half are the local ids */
-  ov_list = (int *) MSTK_malloc(2*noe*sizeof(int));
+  ov_list = (int *) malloc(2*noe*sizeof(int));
   for(i = 0; i < noe; i++) {
     me = List_Entry(ov_edges,i);
     ov_list[i] = ME_GlobalID(me);
     ov_list[noe+i] = ME_ID(me);
   }
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   max_ne = ne;
@@ -353,8 +353,8 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
       max_ne = global_mesh_info[10*i];
   
   /* collect data */
-  int *list_edge = (int *)MSTK_malloc(5*max_ne*sizeof(int));
-  int *recv_list_edge = (int *)MSTK_malloc(5*max_ne*sizeof(int));
+  int *list_edge = (int *)malloc(5*max_ne*sizeof(int));
+  int *recv_list_edge = (int *)malloc(5*max_ne*sizeof(int));
 
   for(i = 0; i < num; i++) {
     if(i == rank) continue;
@@ -513,10 +513,10 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
       }
     }
   }
-  MSTK_free(list_edge);
-  MSTK_free(recv_list_edge);
-  MSTK_free(ov_list);
-  MSTK_free(global_mesh_info);
+  free(list_edge);
+  free(recv_list_edge);
+  free(ov_list);
+  free(global_mesh_info);
   List_Delete(ov_edges);
   return valid;
 }
@@ -562,14 +562,14 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
   List_Sort(ov_faces,nof,sizeof(MFace_ptr),compareGlobalID);
 
   /* first half stores the global id, second half are the local ids */
-  ov_list = (int *) MSTK_malloc(2*nof*sizeof(int));
+  ov_list = (int *) malloc(2*nof*sizeof(int));
   for(i = 0; i < nof; i++) {
     mf = List_Entry(ov_faces,i);
     ov_list[i] = MF_GlobalID(mf);
     ov_list[nof+i] = MF_ID(mf);
   }
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   max_nf = nf;
@@ -578,8 +578,8 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
       max_nf = global_mesh_info[10*i];
   
   /* collect data */
-  int *list_face = (int *)MSTK_malloc((MAXPV3+4)*max_nf*sizeof(int));
-  int *recv_list_face = (int *)MSTK_malloc((MAXPV3+4)*max_nf*sizeof(int));
+  int *list_face = (int *)malloc((MAXPV3+4)*max_nf*sizeof(int));
+  int *recv_list_face = (int *)malloc((MAXPV3+4)*max_nf*sizeof(int));
   for(i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
@@ -730,10 +730,10 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
       }
     }
   }
-  MSTK_free(list_face);
-  MSTK_free(recv_list_face);
-  MSTK_free(ov_list);
-  MSTK_free(global_mesh_info);
+  free(list_face);
+  free(recv_list_face);
+  free(ov_list);
+  free(global_mesh_info);
   List_Delete(ov_faces);
   return valid;
 }
@@ -778,14 +778,14 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
   List_Sort(ov_regions,nor,sizeof(MRegion_ptr),compareGlobalID);
 
   /* first half stores the global id, second half are the local ids */
-  ov_list = (int *) MSTK_malloc(2*nor*sizeof(int));
+  ov_list = (int *) malloc(2*nor*sizeof(int));
   for(i = 0; i < nor; i++) {
     mr = List_Entry(ov_regions,i);
     ov_list[i] = MR_GlobalID(mr);
     ov_list[nor+i] = MR_ID(mr);
   }
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   max_nr = nr;
@@ -794,8 +794,8 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
       max_nr = global_mesh_info[10*i];
   
   /* collect data */
-  int *list_region = (int *)MSTK_malloc((MAXPF3+4)*max_nr*sizeof(int));
-  int *recv_list_region = (int *)MSTK_malloc((MAXPF3+4)*max_nr*sizeof(int));
+  int *list_region = (int *)malloc((MAXPF3+4)*max_nr*sizeof(int));
+  int *recv_list_region = (int *)malloc((MAXPF3+4)*max_nr*sizeof(int));
   for(i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
@@ -945,10 +945,10 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
       }
     }
   }
-  MSTK_free(list_region);
-  MSTK_free(recv_list_region);
-  MSTK_free(ov_list);
-  MSTK_free(global_mesh_info);
+  free(list_region);
+  free(recv_list_region);
+  free(ov_list);
+  free(global_mesh_info);
   List_Delete(ov_regions);
   return valid;
 }

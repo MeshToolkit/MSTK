@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "MSTK_types.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {

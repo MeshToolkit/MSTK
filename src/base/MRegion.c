@@ -1,9 +1,9 @@
 #define _H_MRegion_Private
 
+#include <stdlib.h>
 #include "MRegion.h"
 #include "MRegion_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +17,7 @@ extern "C" {
     MRegion_ptr r;
     RepType RTYPE;
 
-    r = (MRegion_ptr) MSTK_malloc(sizeof(MRegion));
+    r = (MRegion_ptr) malloc(sizeof(MRegion));
 
     MEnt_Init_CmnData((MEntity_ptr) r);
     MEnt_Set_Mesh((MEntity_ptr) r,mesh);
@@ -59,7 +59,7 @@ extern "C" {
 
     if (!keep) {
       MEnt_Free_CmnData((MEntity_ptr) r);
-      MSTK_free(r);
+      free(r);
     }
   }
 
@@ -100,7 +100,7 @@ extern "C" {
 
     MEnt_Free_CmnData((MEntity_ptr) r);
 
-    MSTK_free(r);
+    free(r);
   }
 
   void MR_Set_RepType(MRegion_ptr r, RepType RTYPE) {
@@ -379,7 +379,7 @@ extern "C" {
   MRegion_ptr MR_GhostNew(Mesh_ptr mesh) {
     MRegion_ptr r;
     RepType RTYPE;
-    r = (MRegion_ptr) MSTK_malloc(sizeof(MRegion));
+    r = (MRegion_ptr) malloc(sizeof(MRegion));
 
     MEnt_Init_CmnData((MEntity_ptr) r);
     MEnt_Set_Mesh((MEntity_ptr) r,mesh);

@@ -4,7 +4,6 @@
 #include <math.h>
 #include "MSTK_private.h"
 #include "MSTK_globals.h"
-#include "MSTK_malloc.h"
 
 #ifdef MSTK_HAVE_MPI
 #include "mpi.h"

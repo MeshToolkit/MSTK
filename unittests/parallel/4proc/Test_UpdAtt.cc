@@ -37,7 +37,8 @@ TEST(UpdAtt2D_Dist) {
       dim = 2;
     else {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
-      exit(-1);
+      status = 0;
+      CHECK(status);
     }
 
     status = MESH_CheckTopo(mesh0);
@@ -227,7 +228,8 @@ TEST(GathScatAttrib_2D) {
       dim = 2;
     else {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
-      exit(-1);
+      status = 0;
+      CHECK(status);
     }
 
     status = MESH_CheckTopo(mesh0);
@@ -280,17 +282,25 @@ TEST(GathScatAttrib_2D) {
     /* Now use plain old MPI to determine the right answer */
 
     int nv = MESH_Num_Vertices(mesh);
-    int *allnv = (int *) malloc(nproc*sizeof(int));
+    int *allnv = (int *) new int[nproc];
     MPI_Allgather(&nv,1,MPI_INT,allnv,1,MPI_INT,MPI_COMM_WORLD);
 
     int maxnv = 0;
     for (int j = 0; j < nproc; j++)
       if (allnv[j] > maxnv)
         maxnv = allnv[j];
-    int *locgidlist = (int *) calloc(maxnv,sizeof(int));
-    double *locvallist = (double *) calloc(maxnv,sizeof(double));
-    int *globgidlist = (int *) calloc(maxnv,nproc*sizeof(int));
-    double *globvallist = (double *) calloc(maxnv,nproc*sizeof(double));
+    int *locgidlist = (int *) new int[maxnv];
+    double *locvallist = (double *) new double[maxnv];
+    int *globgidlist = (int *) new int[maxnv*nproc];
+    double *globvallist = (double *) new double[maxnv*nproc];
+    for (int i = 0; i < maxnv; i++) {
+      locgidlist[i] = 0;
+      locvallist[i] = 0.0;
+    }
+    for (int i = 0; i < maxnv*nproc; i++) {
+      globgidlist[i] = 0;
+      globvallist[i] = 0.0;
+    }
 
     int j = 0;
     idx = 0; 
@@ -353,10 +363,10 @@ TEST(GathScatAttrib_2D) {
           break;
       }
     } /* for each vertex */
-    free(locgidlist);
-    free(locvallist);
-    free(globgidlist);
-    free(globvallist);
+    delete [] locgidlist;
+    delete [] locvallist;
+    delete [] globgidlist;
+    delete [] globvallist;
 
 
 
@@ -373,17 +383,25 @@ TEST(GathScatAttrib_2D) {
     /* Now use plain old MPI to determine the right answer */
 
     int ne = MESH_Num_Edges(mesh);
-    int *allne = (int *) malloc(nproc*sizeof(int));
+    int *allne = (int *) new int [nproc];
     MPI_Allgather(&ne,1,MPI_INT,allne,1,MPI_INT,MPI_COMM_WORLD);
 
     int maxne = 0;
     for (int j = 0; j < nproc; j++)
       if (allne[j] > maxne)
         maxne = allne[j];
-    locgidlist = (int *) calloc(maxne,sizeof(int));
-    locvallist = (double *) calloc(maxne,sizeof(double));
-    globgidlist = (int *) calloc(maxne,nproc*sizeof(int));
-    globvallist = (double *) calloc(maxne,nproc*sizeof(double));
+    locgidlist = new int[maxne];
+    locvallist = new double [maxne];
+    globgidlist = new int [maxne*nproc];
+    globvallist = new double [maxne*nproc];
+    for (int i = 0; i < maxne; i++) {
+      locgidlist[i] = 0;
+      locvallist[i] = 0.0;
+    }
+    for (int i = 0; i < maxne*nproc; i++) {
+      globgidlist[i] = 0;
+      globvallist[i] = 0.0;
+    }
 
     j = 0;
     idx = 0; 
@@ -446,10 +464,10 @@ TEST(GathScatAttrib_2D) {
           break;
       }
     } /* for each edge */
-    free(locgidlist);
-    free(locvallist);
-    free(globgidlist);
-    free(globvallist);
+    delete [] locgidlist;
+    delete [] locvallist;
+    delete [] globgidlist;
+    delete [] globvallist;
 
 
   } /* For each GathScat operation type */
@@ -490,7 +508,8 @@ TEST(XchngEdgeAttrib_2D) {
       dim = 2;
     else {
       fprintf(stderr,"Mesh is neither solid nor surface mesh. Exiting...\n");
-      exit(-1);
+      status = 0;
+      CHECK(status);
     }
 
     status = MESH_CheckTopo(mesh0);
@@ -554,18 +573,26 @@ TEST(XchngEdgeAttrib_2D) {
 
   /* Now use plain old MPI to determine the right answer */
   
-  int *allne = (int *) malloc(nproc*sizeof(int));
+  int *allne = (int *) new int[nproc];
   MPI_Allgather(&ne,1,MPI_INT,allne,1,MPI_INT,MPI_COMM_WORLD);
   
   int maxne = 0;
   for (int j = 0; j < nproc; j++)
     if (allne[j] > maxne)
       maxne = allne[j];
-  int *locgidlist = (int *) calloc(maxne,sizeof(int));
-  double *locvallist = (double *) calloc(maxne,sizeof(double));
-  int *globgidlist = (int *) calloc(maxne,nproc*sizeof(int));
-  double *globvallist = (double *) calloc(maxne,nproc*sizeof(double));  
-
+  int *locgidlist = new int[maxne];
+  double *locvallist = new double[maxne];
+  int *globgidlist = new int[maxne*nproc];
+  double *globvallist = new double[maxne*nproc];
+  for (int i = 0; i < maxne; i++) {
+    locgidlist[i] = 0;
+    locvallist[i] = 0.0;
+  }
+  for (int i = 0; i < maxne*nproc; i++) {
+    globgidlist[i] = 0;
+    globvallist[i] = 0.0;
+  }
+  
   int j = 0;
   idx = 0; 
   while ((me = MESH_Next_Edge(mesh,&idx))) {
@@ -605,10 +632,10 @@ TEST(XchngEdgeAttrib_2D) {
     CHECK_EQUAL(rval_mpi,rval);
   } /* for each edge */
 
-  free(locgidlist);
-  free(locvallist);
-  free(globgidlist);
-  free(globvallist);
+  delete [] locgidlist;
+  delete [] locvallist;
+  delete [] globgidlist;
+  delete [] globvallist;
 
   idx = 0;
   while ((me = MESH_Next_Edge(mesh,&idx)))

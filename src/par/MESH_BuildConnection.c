@@ -50,7 +50,7 @@ extern "C" {
   /* sort boundary vertices based on global ID, for binary search */
   List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
 
-  global_mesh_info = (int *)MSTK_malloc(10*num*sizeof(int));
+  global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
 
   max_nbv = 0;
@@ -58,8 +58,8 @@ extern "C" {
     if(max_nbv < global_mesh_info[10*i+4])
       max_nbv = global_mesh_info[10*i+4];
 
-  list_boundary_vertex = (int *)MSTK_malloc(max_nbv*sizeof(int));
-  recv_list_vertex = (int *)MSTK_malloc(num*max_nbv*sizeof(int));
+  list_boundary_vertex = (int *)malloc(max_nbv*sizeof(int));
+  recv_list_vertex = (int *)malloc(num*max_nbv*sizeof(int));
 
   /* only global ID are sent */
   index_nbv = 0;
@@ -102,9 +102,9 @@ extern "C" {
   }
 
   List_Delete(boundary_verts);
-  MSTK_free(global_mesh_info);
-  MSTK_free(list_boundary_vertex);
-  MSTK_free(recv_list_vertex);
+  free(global_mesh_info);
+  free(list_boundary_vertex);
+  free(recv_list_vertex);
   return 1;
 }
   

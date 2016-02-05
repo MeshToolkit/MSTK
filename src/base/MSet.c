@@ -1,5 +1,6 @@
 #define _H_MSet_Private
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include "MSet.h"
@@ -26,8 +27,8 @@ extern "C" {
     }
 #endif
 
-    set = (MSet_ptr) MSTK_malloc(sizeof(MSet));
-    set->name = (char *) MSTK_malloc((strlen(set_name)+1)*sizeof(char));
+    set = (MSet_ptr) malloc(sizeof(MSet));
+    set->name = (char *) malloc((strlen(set_name)+1)*sizeof(char));
     strcpy(set->name,set_name);
     set->entdim = entdim; /* what type of entity can this be attached to? */
 
@@ -59,9 +60,9 @@ extern "C" {
 
   void MSet_Delete(MSet_ptr set) {
     MESH_Rem_MSet(set->mesh,set);
-    MSTK_free(set->name);
+    free(set->name);
     List_Delete(set->entlist);
-    MSTK_free(set);
+    free(set);
   }
 
   MSet_ptr    MSet_Add(MSet_ptr set, void *entry) {
@@ -163,7 +164,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
+    newname = (char *) malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_or_");
@@ -223,7 +224,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
+    newname = (char *) malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_and_");
@@ -298,7 +299,7 @@ extern "C" {
     MSet_Name(s1,s1name);
     MSet_Name(s2,s2name);
 
-    newname = (char *) MSTK_malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
+    newname = (char *) malloc((strlen(s1name)+strlen(s2name)+11)*sizeof(char));
     strcpy(newname,"in_");
     strcat(newname,s1name);
     strcat(newname,"_minus_");
@@ -331,7 +332,7 @@ extern "C" {
       newset = NULL;
     }
 
-    MSTK_free(newname);
+    free(newname);
     return newset;
 
   }

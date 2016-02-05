@@ -1,9 +1,9 @@
 #define _H_MFace_Private
 
+#include <stdlib.h>
 #include "MFace.h"
 #include "MFace_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +14,7 @@ extern "C" {
   void MF_Set_RepType_F1(MFace_ptr f) {
     MFace_Adj_F1F3 *adj;
 
-    adj = f->adj = (MFace_Adj_F1F3 *) MSTK_malloc(sizeof(MFace_Adj_F1F3));
+    adj = f->adj = (MFace_Adj_F1F3 *) malloc(sizeof(MFace_Adj_F1F3));
     adj->fregions[0] = (MRegion_ptr) NULL;
     adj->fregions[1] = (MRegion_ptr) NULL;
     adj->edirs = 0;
@@ -44,7 +44,7 @@ extern "C" {
       if (adj) {
         if (adj->fedges)
 	  List_Delete(adj->fedges);
-	MSTK_free(adj);
+	free(adj);
       }
     }
   }
@@ -72,7 +72,7 @@ extern "C" {
     if (adj) {
       if (adj->fedges)
 	List_Delete(adj->fedges);
-      MSTK_free(adj);
+      free(adj);
     }
   }
 

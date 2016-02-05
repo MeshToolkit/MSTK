@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "Hash.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,8 +99,8 @@ extern "C" {
 
     nalloc = 1<<p;
 
-    newh = (Hash_ptr) MSTK_malloc(sizeof(Hash));
-    newh->entry = (void **) MSTK_malloc(nalloc*sizeof(void *));
+    newh = (Hash_ptr) malloc(sizeof(Hash));
+    newh->entry = (void **) malloc(nalloc*sizeof(void *));
     pvtHash_Set_Pars(newh, 0, p, type);
     for (i=0; i<nalloc; i++) {
       newh->entry[i] = NULL;
@@ -131,8 +130,8 @@ extern "C" {
     }
     if (nent!=0) MSTK_Report("Hash_Delete", "Number of entities in hash was incorrect", MSTK_WARN);
 
-    MSTK_free(h->entry);
-    MSTK_free(h);
+    free(h->entry);
+    free(h);
   }
 
   int Hash_Num_Entries(Hash_ptr h) {
@@ -201,7 +200,7 @@ extern "C" {
     pwr++;
     nalloc = 1 << pwr;
     mask = nalloc - 1;
-    h->entry = (void **) MSTK_realloc(h->entry,nalloc*sizeof(void *));
+    h->entry = (void **) realloc(h->entry,nalloc*sizeof(void *));
 
     /*		printf("New hash size = %d (%d)\n", nalloc, pwr); */
 

@@ -46,9 +46,9 @@ extern "C" {
 
     /* start collecting attribute info to send */
 
-    gid_list_send = (int *)MSTK_malloc(num_ov*sizeof(int));
+    gid_list_send = (int *)malloc(num_ov*sizeof(int));
   
-    double *coords_send = (double *)MSTK_malloc(num_ov*3*sizeof(double));
+    double *coords_send = (double *)malloc(num_ov*3*sizeof(double));
   
     /* collect vertex global ids and coordinates from overlap vertices */
     for (j = 0; j < num_ov; j++) {
@@ -66,10 +66,10 @@ extern "C" {
     num_recv_procs = MESH_Num_GhostPrtns(mesh);
 
     /* this stores the global to local processor id map */
-    int *rank_g2l = (int*) MSTK_malloc((numprocs+1)*sizeof(int));
+    int *rank_g2l = (int*) malloc((numprocs+1)*sizeof(int));
 
-    unsigned int *recv_procs = (unsigned int *) MSTK_malloc(num_recv_procs*sizeof(unsigned int));
-    int *recv_pos = (int*) MSTK_malloc((num_recv_procs+1)*sizeof(int));
+    unsigned int *recv_procs = (unsigned int *) malloc(num_recv_procs*sizeof(unsigned int));
+    int *recv_pos = (int*) malloc((num_recv_procs+1)*sizeof(int));
 
 
     MESH_GhostPrtns(mesh,recv_procs);
@@ -82,8 +82,8 @@ extern "C" {
 
     /* Allocate storage for receiving attribute info */
 
-    gid_list_recv = (int *)MSTK_malloc(recv_pos[num_recv_procs]*sizeof(int));
-    double *coords_recv = (double *)MSTK_malloc(recv_pos[num_recv_procs]*3*sizeof(double));
+    gid_list_recv = (int *)malloc(recv_pos[num_recv_procs]*sizeof(int));
+    double *coords_recv = (double *)malloc(recv_pos[num_recv_procs]*3*sizeof(double));
   
 
 
@@ -195,12 +195,12 @@ extern "C" {
     }
 
     /* release the send buffer */
-    MSTK_free(gid_list_send);
-    MSTK_free(coords_send);
-    MSTK_free(gid_list_recv);
-    MSTK_free(coords_recv);
-    MSTK_free(recv_pos);    
-    MSTK_free(rank_g2l);    
+    free(gid_list_send);
+    free(coords_send);
+    free(gid_list_recv);
+    free(coords_recv);
+    free(recv_pos);    
+    free(rank_g2l);    
     return 1;
 }
   

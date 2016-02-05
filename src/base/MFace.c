@@ -1,9 +1,9 @@
 #define _H_MFace_Private
 
+#include <stdlib.h>
 #include "MFace.h"
 #include "MFace_jmp.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 
 #ifdef __cplusplus
@@ -14,7 +14,7 @@ extern "C" {
     MFace_ptr f;
     RepType RTYPE;
 
-    f = (MFace_ptr) MSTK_malloc(sizeof(MFace));
+    f = (MFace_ptr) malloc(sizeof(MFace));
 
     MEnt_Init_CmnData((MEntity_ptr) f);
     MEnt_Set_Mesh((MEntity_ptr) f,mesh);
@@ -55,7 +55,7 @@ extern "C" {
 
     if (!keep) {
       MEnt_Free_CmnData((MEntity_ptr) f);
-      MSTK_free(f);
+      free(f);
     }
   }
 
@@ -90,7 +90,7 @@ extern "C" {
 
     MEnt_Free_CmnData((MEntity_ptr) f);
 
-    MSTK_free(f);
+    free(f);
   }
 
   void MF_Set_RepType(MFace_ptr f, RepType RTYPE) {
@@ -526,7 +526,7 @@ extern "C" {
   MFace_ptr MF_GhostNew(Mesh_ptr mesh) {
     MFace_ptr f;
     RepType RTYPE;
-    f = (MFace_ptr) MSTK_malloc(sizeof(MFace));
+    f = (MFace_ptr) malloc(sizeof(MFace));
 
     MEnt_Init_CmnData((MEntity_ptr) f);
     MEnt_Set_Mesh((MEntity_ptr) f,mesh);

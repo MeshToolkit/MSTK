@@ -19,7 +19,6 @@
 #include "MSTK_types.h"
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
-#include "MSTK_malloc.h"
 
 #ifdef MSTK_HAVE_MPI
 #include <mpi.h>

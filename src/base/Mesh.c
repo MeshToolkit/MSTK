@@ -6,7 +6,6 @@
 #include "Mesh.h"
 #include "MSTK.h"
 #include "MSTK_private.h"
-#include "MSTK_malloc.h"
 
 
 #ifdef __cplusplus
@@ -19,7 +18,7 @@ extern "C" {
 Mesh_ptr MESH_New(RepType type) {
   Mesh_ptr newmesh;
 
-  newmesh = (Mesh_ptr) MSTK_malloc(sizeof(Mesh));
+  newmesh = (Mesh_ptr) malloc(sizeof(Mesh));
 
   newmesh->reptype = type;
   newmesh->nv = newmesh->ne = newmesh->nf = newmesh->nr = 0;
@@ -94,9 +93,9 @@ void MESH_Delete(Mesh_ptr mesh) {
   if(mesh->ovregion)
     List_Delete(mesh->ovregion);
   if (mesh->par_adj_flags)
-    MSTK_free(mesh->par_adj_flags);
+    free(mesh->par_adj_flags);
   if (mesh->par_recv_info)
-    MSTK_free(mesh->par_recv_info);
+    free(mesh->par_recv_info);
   if (mesh->gid_sorted_mvlist)
     List_Delete(mesh->gid_sorted_mvlist);
   if (mesh->gid_sorted_melist)
@@ -215,7 +214,7 @@ void MESH_Delete(Mesh_ptr mesh) {
   }
 #endif
   
-  MSTK_free(mesh);
+  free(mesh);
 }
 
 int MESH_SetRepType(Mesh_ptr mesh, RepType type) {
@@ -256,7 +255,7 @@ RepType MESH_RepType(Mesh_ptr mesh) {
 }
 
 char *MESH_RepType_Str(Mesh_ptr mesh) {
-  char *rstr = (char *) MSTK_malloc(3*sizeof(char));
+  char *rstr = (char *) malloc(3*sizeof(char));
 
   strcpy(rstr,MESH_rtype_str[mesh->reptype]);
   return rstr;
@@ -1076,7 +1075,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
     if (!mesh->par_adj_flags)
       mesh->par_adj_flags = (unsigned int *)
-        MSTK_calloc(numpartitions,sizeof(unsigned int));
+        calloc(numpartitions,sizeof(unsigned int));
   }
 
   unsigned int MESH_Prtn(Mesh_ptr mesh) {
@@ -1226,7 +1225,7 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
       if (MESH_Has_Ghosts_From_Prtn(mesh, i, MANYTYPE))
 	ngp++;
     
-    mesh->par_recv_info = (unsigned int *) MSTK_calloc((1+5*ngp),sizeof(unsigned int));
+    mesh->par_recv_info = (unsigned int *) calloc((1+5*ngp),sizeof(unsigned int));
     
     mesh->par_recv_info[0] = ngp;
     
