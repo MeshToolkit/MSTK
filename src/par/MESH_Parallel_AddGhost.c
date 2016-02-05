@@ -171,6 +171,9 @@ extern "C" {
         MESH_Flag_Has_Ghosts_From_Prtn(submesh,i,MALLTYPE);
       }
     }
+
+    MESH_Update_ParallelAdj(submesh, comm);
+
     /* allocate meshes to receive from other processors */
     num_recv_procs = MESH_Num_GhostPrtns(submesh);
     recv_meshes = (Mesh_ptr*)MSTK_malloc(num_recv_procs*sizeof(Mesh_ptr));
