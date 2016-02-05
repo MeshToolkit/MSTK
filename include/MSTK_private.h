@@ -288,6 +288,12 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   unsigned int MESH_Has_Overlaps_On_Prtn(Mesh_ptr mesh, unsigned int prtn, 
                                          MType mtype);
 
+  /* Given information about the partitions from with each partition
+   * will receive info from, derive information about partitions to
+   * which each partition has to send info to */
+
+  int          MESH_Get_OverlapAdj_From_GhostAdj(Mesh_ptr mesh, MSTK_Comm comm);
+
   unsigned int MESH_Num_GhostPrtns(Mesh_ptr mesh);
   void         MESH_GhostPrtns(Mesh_ptr mesh, unsigned int *pnums);
 
