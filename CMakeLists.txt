@@ -110,7 +110,6 @@ INSTALL(FILES
 	${PROJECT_SOURCE_DIR}/include/MSTK_types.h
 	${PROJECT_SOURCE_DIR}/include/MSTK_externs.h
 	${PROJECT_SOURCE_DIR}/include/MSTK_util.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_malloc.h
         DESTINATION ${INSTALL_DIR}/include)
 endif ()
 
