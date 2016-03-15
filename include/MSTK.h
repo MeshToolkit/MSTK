@@ -11,9 +11,10 @@
 */
 
 
-#define MSTK_VERSION "2.25"
+#define MSTK_VERSION "2.25rc2"
 
 #include <stdarg.h>
+#include <stddef.h>
 
 #include "MSTK_defines.h"
 #include "MSTK_types.h"
