@@ -36,6 +36,8 @@ extern "C" {
     MPI_Comm_rank(comm,&myrank);
     MPI_Comm_size(comm,&numprocs);
 
+    if (numprocs == 1) return 1;
+
     /* get attribute properties */
     att_type = MAttrib_Get_Type(attrib);
     ncomp = MAttrib_Get_NumComps(attrib);
