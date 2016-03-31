@@ -40,21 +40,10 @@ int main(int argc, char **argv) {
     strcpy(infname,argv[1]);
     break;
   default:
-    fprintf(stderr,"Usage: %s infname<.mstk>\n",argv[0]);
+    fprintf(stderr,"Usage: %s infname\n",argv[0]);
     exit(-1);
   }
 
-
-  len = strlen(infname);
-  if (len > 5 && (strncmp(&(infname[len-5]),".mstk",5) == 0)) {
-    strcpy(mname,infname);
-    mname[len-5] = '\0';
-  }
-  else
-    strcpy(mname,infname);
-
-  strcpy(gmvfname,mname);
-  strcat(gmvfname,"-chk.gmv");
 
 #ifdef MSTK_HAVE_MPI
   MPI_Init(&argc,&argv);
@@ -75,15 +64,19 @@ int main(int argc, char **argv) {
   MSTK_Comm comm = NULL; /* Dummy communicator */
 #endif
 
-  fprintf(stderr,"\n\nChecking mesh %s\n\n",infname);
+  fprintf(stderr,"\n\nReading mesh %s...",infname);
 
   mesh = MESH_New(UNKNOWN_REP);
-  ok = MESH_InitFromFile(mesh,infname,comm);
+  ok = MESH_ImportFromFile(mesh,infname,NULL,NULL,comm);
   if (!ok) {
     fprintf(stderr,"Cannot open input file %s\n",infname);
     exit(-1);
   }
+  fprintf(stderr,"Done\n");
 
+  fprintf(stderr,"\nBuilding classification...");
+  ok = MESH_BuildClassfn(mesh, 0);
+  fprintf(stderr,"Done\n");
 
   fprintf(stderr,"Checking topological validity of mesh.....");
   status = MESH_CheckTopo(mesh);
@@ -244,6 +237,7 @@ int main(int argc, char **argv) {
       free(rfverts[i]);
     free(rfverts);
   }  
+  fprintf(stderr,"Done\n");
 
 
 #ifdef MSTK_HAVE_MPI
@@ -261,6 +255,7 @@ int main(int argc, char **argv) {
     if (nbad) {
       fprintf(stderr,"Total number of bad elements %-d\n\n",nbad);
 
+      strcpy(gmvfname,"badelems.gmv");
       fprintf(stderr,"Tagging bad elements in GMV file %s\n\n",gmvfname);
       MESH_ExportToGMV(mesh,gmvfname,0,NULL,NULL,comm);
     }
