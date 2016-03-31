@@ -544,7 +544,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /* Material names */
   fprintf(fp,"matnames\n");
   for (i = 0; i < ngent; i++) {
-    sprintf(matname,"mat%-d",i+1);
+    /* From the X3D manual - "The matid/end_matid block was meant to
+     * specify material ids for each element as given in the matnames
+     * entry of the header data block. However, due to a
+     * long-established (and hence essentially uncorrectable) error
+     * this block actually contains the material names. This error is
+     * why the names must be integers even though the data header
+     * block identifies them as character strings" */
+
+    sprintf(matname,"%-d",i+1);
     fprintf(fp,"   %10d   %s\n",i+1,matname);
   }
   fprintf(fp,"end_matnames\n");
@@ -1170,6 +1178,14 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /***********************************************************************/
   /* Material ID data block                                              */
+  /*                                                                     */
+  /* From the X3D manual - "The matid/end_matid block was meant to
+    specify material ids for each element as given in the matnames
+    entry of the header data block. However, due to a long-established
+    (and hence essentially uncorrectable) error this block actually
+    contains the material names. This error is why the names must be
+    integers even though the data header block identifies them as
+    character strings"                                                   */
   /***********************************************************************/
 
   fprintf(fp,"matid\n");
