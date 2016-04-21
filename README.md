@@ -108,13 +108,11 @@ Feel free to contact me if you need any assistance at rao@lanl.gov. If
 you are successfully using MSTK in your work, drop me a note.
 
 --------------------------------------------------------------------
-Rao V Garimella  			Tel: (505) 665-2928
-
-T-5, MS B284 	 	   '\   '\ 	FAX: (505) 665-5757
-
-Los Alamos National Lab	     ( )-( )   	Email: rao@lanl.gov
-
-Los Alamos, NM 87545	                http://math.lanl.gov/~rao		
+Rao V Garimella, T-5, MS B284, Los Alamos National Laboratory
+Los Alamos, NM 87544 USA
+Tel: (505) 665-2928
+Email: rao@lanl.gov
+http://math.lanl.gov/~rao		
 
 --------------------------------------------------------------------
 
