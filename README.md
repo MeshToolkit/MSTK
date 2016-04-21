@@ -41,7 +41,7 @@ Starting from MSTK v1.8, we are including CMakeLists.txt files to allow
 users to build and install MSTK on a wide variety of platforms with various 
 options enable/disabled easily. If you are unfamiliar with CMake, it is an 
 open-source project configuration system developed by Kitware, Inc. (See 
-[http://www.cmake.org](http://www.cmake.org). 
+[http://www.cmake.org](http://www.cmake.org)). 
 
 The following are the steps for build and installing MSTK using cmake
 
@@ -109,9 +109,13 @@ you are successfully using MSTK in your work, drop me a note.
 
 --------------------------------------------------------------------
 Rao V Garimella  			Tel: (505) 665-2928
+
 T-5, MS B284 	 	   '\   '\ 	FAX: (505) 665-5757
+
 Los Alamos National Lab	     ( )-( )   	Email: rao@lanl.gov
+
 Los Alamos, NM 87545	                http://math.lanl.gov/~rao		
+
 --------------------------------------------------------------------
 
 	
