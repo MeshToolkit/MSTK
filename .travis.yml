@@ -21,6 +21,7 @@ script:
   - >
      mkdir build &&
      cd build &&
+     ls /usr/bin/mpi* &&
      cmake 
      -DCMAKE_C_COMPILER:FILEPATH=`which mpicc`
      -DCMAKE_CXX_COMPILER:FILEPATH=`which mpiCC`
