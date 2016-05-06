@@ -15,7 +15,7 @@ env:
   global:
     - CCACHE_CPP2=yes
   matrix:
-    - PARALLEL=ON
+    - PARALLEL=yes
 
 script:
   - mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
