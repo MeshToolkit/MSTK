@@ -213,6 +213,8 @@ if (ENABLE_PARALLEL)
 
     if (METIS_MAJOR_VER)
       add_definitions(-DMETIS_${METIS_MAJOR_VER})
+    else (METIS_MAJOR_VER)
+      add_definitions(-DMETIS_5)
     endif (METIS_MAJOR_VER)
 
   endif (ENABLE_METIS)
