@@ -1,0 +1,28 @@
+language: c
+
+sudo: false
+
+addons:
+  apt:
+    sources:
+      - debian-sid
+    packages:
+      - libopenmpi-dev
+      - libmetis-dev
+
+env:
+  global:
+    - CCACHE_CPP2=yes
+  matrix:
+    - PARALLEL=ON
+
+script:
+  - mkdir build && cd build &&
+    CC=mpicc cmake -DENABLE_ExodusII=no -DENABLE_METIS=yes -DINSTALL_ADD_VERSION=no -DENABLE_PARALLEL=${PARALLEL} -DMETIS_INCLUDE_DIR=/usr/include .. && 
+    make -j2 && make test && make install DESTDIR="${HOME}"
+
+cache:
+  - ccache
+
+compiler:
+  - gcc
