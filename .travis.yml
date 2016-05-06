@@ -8,18 +8,35 @@ addons:
       - debian-sid
     packages:
       - libopenmpi-dev
+      - openmpi-bin
       - libmetis-dev
+      - libunittest++-dev
 
 env:
   global:
     - CCACHE_CPP2=yes
   matrix:
-    - PARALLEL=ON
+    - PARALLEL=yes
 
 script:
-  - mkdir build && cd build &&
-    CC=mpicc cmake -DENABLE_ExodusII=no -DENABLE_METIS=yes -DINSTALL_ADD_VERSION=no -DENABLE_PARALLEL=${PARALLEL} -DMETIS_INCLUDE_DIR=/usr/include .. && 
-    make -j2 && make test && make install DESTDIR="${HOME}"
+  - >
+     mkdir build &&
+     cd build &&
+     cmake 
+     -DCMAKE_C_COMPILER:FILEPATH=`which mpicc`
+     -DCMAKE_CXX_COMPILER:FILEPATH=`which mpiCC`
+     -DCMAKE_BUILD_TYPE=Release
+     -DINSTALL_ADD_VERSION=no
+     -DENABLE_PARALLEL=$PARALLEL
+     -DENABLE_METIS=yes
+     -DMETIS_INCLUDE_DIR=/usr/include
+     -DENABLE_ExodusII=no
+     -DENABLE_Tests=yes
+     -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
+     ..    && 
+     make -j2 &&
+     make test &&
+     make install DESTDIR=$HOME
 
 cache:
   - ccache

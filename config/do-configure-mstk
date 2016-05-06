@@ -22,6 +22,10 @@
 # -D INSTALL_PREFIX_ARCHOS=yes|no (default=no)
 #
 # Use Metis or Zoltan as a partitioner (specify at least one)
+# If Metis is enabled, it will assume that the metis version is 5 or greater
+# If you want to link to an older version of Metis, you must also specify
+# -D METIS_MAJOR_VERSION=4 or whatever the major version is of the Metis
+# library you are linking to
 #
 # -D ENABLE_METIS=yes|no  (default=no)
 # -D ENABLE_ZOLTAN=yes|no (default=no)

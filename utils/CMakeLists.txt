@@ -25,16 +25,14 @@ add_subdirectory(chkmesh)
 # Utility to attach auxilliary attributes to exodus mesh
 ###############################################################################
 
-add_subdirectory(exoatt)
-
+if (ENABLE_EXODUSII)
+  add_subdirectory(exoatt)
+endif (ENABLE_EXODUSII)
 
 #############################################################################
 # Partition visualization
 ###############################################################################
 
 if (ENABLE_PARALLEL)
-
-
   add_subdirectory(vizpart)
-
-endif ()
+endif (ENABLE_PARALLEL)

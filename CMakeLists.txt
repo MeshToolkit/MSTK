@@ -15,9 +15,6 @@ cmake_minimum_required(VERSION 2.8)
 
 cmake_policy(SET CMP0017 NEW)
 
-set(MSTK_VERSION_MAJOR 2)
-set(MSTK_VERSION_MINOR 12rc2)
-
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
@@ -36,7 +33,13 @@ endif()
 # Flags for parallel build
 
 if (ENABLE_PARALLEL)
-  add_definitions(-DMSTK_HAVE_MPI)
+  find_package(MPI)
+  if (MPI_FOUND)
+    message("PARALLELISM ON")
+    add_definitions(-DMSTK_HAVE_MPI)
+  else (MPI_FOUND)
+    message("PARALLELISM OFF")
+  endif (MPI_FOUND)
 endif (ENABLE_PARALLEL)
 
 
@@ -213,6 +216,8 @@ if (ENABLE_PARALLEL)
 
     if (METIS_MAJOR_VER)
       add_definitions(-DMETIS_${METIS_MAJOR_VER})
+    else (METIS_MAJOR_VER)
+      add_definitions(-DMETIS_5)
     endif (METIS_MAJOR_VER)
 
   endif (ENABLE_METIS)
