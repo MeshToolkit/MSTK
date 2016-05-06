@@ -1,4 +1,8 @@
-What is MSTK
+			MeSh ToolKit (MSTK)
+	Copyright (c) 2016, Los Alamos National Security, LLC
+	All rights reserved. LA-CC-04-010
+
+What is MSTK?
 ============
 
 MSTK is a mesh framework that allows users to represent, manipulate
@@ -33,6 +37,13 @@ I have tested MSTK only on Linux systems, on HPC Unix systems and on
 MacOS with GNU, PGI and Intel compilers. If it doesn't work on a
 particular system, please let me know. If you have a patch, feel free
 to submit a pull request.
+
+Copyright
+=========
+
+MSTK is distributed as open-source software under a BSD 3-clause
+copyright agreement. Please see the full copyright statement in the
+COPYRIGHT file in this distribution 
 
 Install MSTK
 ============
