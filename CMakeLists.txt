@@ -33,7 +33,10 @@ endif()
 # Flags for parallel build
 
 if (ENABLE_PARALLEL)
+  message(status "PARALLELISM ON")
   add_definitions(-DMSTK_HAVE_MPI)
+else (ENABLE_PARALLEL)
+  message(status "PARALLELISM OFF")
 endif (ENABLE_PARALLEL)
 
 
