@@ -19,7 +19,7 @@ env:
 
 script:
   - >
-     ls /usr/include/UnitTest++.* &&
+     ls /usr/include/ &&
      mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
      CC=mpicc cmake -DENABLE_ExodusII=no
      -DINSTALL_ADD_VERSION=no
