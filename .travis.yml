@@ -19,16 +19,16 @@ env:
 
 script:
   - >
-      mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
-      CC=mpicc cmake -DENABLE_ExodusII=no
-      -DINSTALL_ADD_VERSION=no
-      -DENABLE_PARALLEL=$PARALLEL
-      -DENABLE_METIS=yes
-      -DMETIS_INCLUDE_DIR=/usr/include
-      -DENABLE_Tests=yes
-      -DUnitTest_DIR:FILEPATH=/usr/include 
-      .. && 
-      make VERBOSE=1 -j2 && make test && make install DESTDIR=$HOME
+     mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
+     CC=mpicc cmake -DENABLE_ExodusII=no
+     -DINSTALL_ADD_VERSION=no
+     -DENABLE_PARALLEL=$PARALLEL
+     -DENABLE_METIS=yes
+     -DMETIS_INCLUDE_DIR=/usr/include
+     -DENABLE_Tests=yes
+     -DUnitTest_DIR:FILEPATH=/usr/include 
+     .. && 
+     make VERBOSE=1 -j2 && make test && make install DESTDIR=$HOME
 
 cache:
   - ccache
