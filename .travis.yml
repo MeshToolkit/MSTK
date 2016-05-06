@@ -17,8 +17,8 @@ env:
   matrix:
     - PARALLEL=yes
 
-script:
-  -> mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
+script: >+
+  - mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
     CC=mpicc cmake -DENABLE_ExodusII=no
     -DINSTALL_ADD_VERSION=no
     -DENABLE_PARALLEL=$PARALLEL
