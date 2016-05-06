@@ -25,10 +25,10 @@ script:
      -DENABLE_PARALLEL=$PARALLEL
      -DENABLE_METIS=yes
      -DMETIS_INCLUDE_DIR=/usr/include
-     -DENABLE_Tests=yes
+     -DENABLE_Tests=no
      -DUnitTest_DIR:FILEPATH=/usr/include 
      .. && 
-     make VERBOSE=1 -j2 && make test && make install DESTDIR=$HOME
+     make VERBOSE=1 -j2 && make install DESTDIR=$HOME
 
 cache:
   - ccache
