@@ -91,7 +91,7 @@ if (BUILD_TESTS)
       ${UNITTEST_LIBRARY})
 
     add_test(NAME parallel_unittests_8proc 
-      COMMAND mpirun -n 8 mstk_parallel_8proc_unit_tests)
+      COMMAND mpiexec -n 8 mstk_parallel_8proc_unit_tests)
 
     endif ()
 
