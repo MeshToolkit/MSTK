@@ -18,7 +18,7 @@ env:
 
 script:
   - mkdir build && cd build &&
-    CC=mpicc cmake -DENABLE_ExodusII=no -DENABLE_METIS=yes -DINSTALL_ADD_VERSION=no -DENABLE_PARALLEL=${PARALLEL} -DMETIS_INCLUDE_DIR=/usr/include .. && 
+    CC=mpicc cmake VERBOSE=1 -DENABLE_ExodusII=no -DENABLE_METIS=yes -DINSTALL_ADD_VERSION=no -DENABLE_PARALLEL=${PARALLEL} -DMETIS_INCLUDE_DIR=/usr/include .. && 
     make -j2 && make test && make install DESTDIR="${HOME}"
 
 cache:
