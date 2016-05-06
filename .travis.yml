@@ -25,8 +25,7 @@ script:
     -DENABLE_METIS=yes \
     -DMETIS_INCLUDE_DIR=/usr/include \
     -DENABLE_Tests=yes \
-    -DUnitTest_DIR:FILEPATH=/usr/include \
-   .. && 
+    -DUnitTest_DIR:FILEPATH=/usr/include  .. && 
     make -j2 && make test && make install DESTDIR="${HOME}"
 
 cache:
