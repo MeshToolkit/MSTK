@@ -19,6 +19,7 @@ env:
 
 script:
   - >
+     ls /usr/include/UnitTest++.* &&
      mkdir build && cd build && echo "PARALLEL = $PARALLEL" &&
      CC=mpicc cmake -DENABLE_ExodusII=no
      -DINSTALL_ADD_VERSION=no
@@ -28,7 +29,7 @@ script:
      -DENABLE_Tests=no
      -DUnitTest_DIR:FILEPATH=/usr/include 
      .. && 
-     make VERBOSE=1 -j2 && make install DESTDIR=$HOME
+     make -j2 && make install DESTDIR=$HOME
 
 cache:
   - ccache
