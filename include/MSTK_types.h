@@ -68,12 +68,10 @@ typedef enum {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
 
 typedef enum {ATTOP_UNDEF, ATTOP_MAX, ATTOP_MIN, ATTOP_SUM, ATTOP_AVG} MAttOpType;
 
-#ifdef MSTK_HAVE_MPI  
-
 /* Parallel status of entity 
 
    PINTERIOR entity is in the interior in a submesh and is independent of any
-   other partition
+   other partition. This will be status for serial runs
 
    POVERLAP entity may be in the partition interior or boundary and is
    the original of a copy on another partition
@@ -91,8 +89,6 @@ typedef enum {ATTOP_UNDEF, ATTOP_MAX, ATTOP_MIN, ATTOP_SUM, ATTOP_AVG} MAttOpTyp
 
  */
 typedef enum PType {PINTERIOR=0, POVERLAP=1, PBOUNDARY=2, PGHOST=3} PType;
-
-#endif
 
 #ifdef __cplusplus
 	   }
