@@ -45,11 +45,11 @@ extern "C" {
 
       if (mesh) {
 #ifdef MSTK_HAVE_MPI
-      if (MV_PType(v) == PGHOST)
-	MESH_Rem_GhostVertex(mesh,v);
-      else
+        if (MV_PType(v) == PGHOST)
+          MESH_Rem_GhostVertex(mesh,v);
+        else
 #endif
-	MESH_Rem_Vertex(mesh,v);
+          MESH_Rem_Vertex(mesh,v);
       }
 
       MEnt_Set_DelFlag((MEntity_ptr) v);
@@ -240,26 +240,25 @@ extern "C" {
 
 
   int   MV_GlobalID(MVertex_ptr v) {
-#ifdef MSTK_HAVE_MPI
-    return   MEnt_GlobalID((MEntity_ptr) v);
-#else
-    return MEnt_ID((MEntity_ptr) v);
-#endif
+    return MEnt_GlobalID((MEntity_ptr) v);
   }
-
-#ifdef MSTK_HAVE_MPI
-
 
   PType MV_PType(MVertex_ptr v) {
     return MEnt_PType((MEntity_ptr) v);
   }
 
-  void  MV_Set_PType(MVertex_ptr v, PType ptype) {
-    MEnt_Set_PType((MEntity_ptr) v ,ptype);
-  }
-
   int MV_OnParBoundary(MVertex_ptr v) {
     return MEnt_OnParBoundary((MEntity_ptr) v); 
+  }
+
+  int   MV_MasterParID(MVertex_ptr v) {
+    return MEnt_MasterParID((MEntity_ptr) v ); 
+  }
+
+#ifdef MSTK_HAVE_MPI
+
+  void  MV_Set_PType(MVertex_ptr v, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) v ,ptype);
   }
 
   void MV_Flag_OnParBoundary(MVertex_ptr v) {
@@ -268,10 +267,6 @@ extern "C" {
 
   void MV_Unflag_OnParBoundary(MVertex_ptr v) {
     MEnt_Unflag_OnParBoundary((MEntity_ptr) v);
-  }
-
-  int   MV_MasterParID(MVertex_ptr v) {
-    return MEnt_MasterParID((MEntity_ptr) v ); 
   }
 
   void  MV_Set_MasterParID(MVertex_ptr v, int masterparid) {

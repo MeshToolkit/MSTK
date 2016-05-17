@@ -44,11 +44,11 @@ extern "C" {
 
       if (mesh) {
 #ifdef MSTK_HAVE_MPI
-      if (ME_PType(e) == PGHOST)
-	MESH_Rem_GhostEdge(mesh,e);
-      else
+        if (ME_PType(e) == PGHOST)
+          MESH_Rem_GhostEdge(mesh,e);
+        else
 #endif
-	MESH_Rem_Edge(mesh,e);
+          MESH_Rem_Edge(mesh,e);
       }
 
       MEnt_Set_DelFlag((MEntity_ptr) e);
@@ -449,25 +449,25 @@ extern "C" {
   }
 
   int   ME_GlobalID(MEdge_ptr e) {
-#ifdef MSTK_HAVE_MPI
     return   MEnt_GlobalID((MEntity_ptr) e);
-#else
-    return MEnt_ID((MEntity_ptr) e);
-#endif
   }
-
-#ifdef MSTK_HAVE_MPI
 
   PType ME_PType(MEdge_ptr e) {
     return MEnt_PType((MEntity_ptr) e);
   }
 
-  void  ME_Set_PType(MEdge_ptr e, PType ptype) {
-    MEnt_Set_PType((MEntity_ptr) e, ptype);
-  }
-
   int ME_OnParBoundary(MEdge_ptr e) {
     return MEnt_OnParBoundary((MEntity_ptr) e); 
+  }
+
+  int   ME_MasterParID(MEdge_ptr e) {
+    return MEnt_MasterParID((MEntity_ptr) e); 
+  }
+
+#ifdef MSTK_HAVE_MPI
+
+  void  ME_Set_PType(MEdge_ptr e, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) e, ptype);
   }
 
   void ME_Flag_OnParBoundary(MEdge_ptr e) {
@@ -476,10 +476,6 @@ extern "C" {
 
   void ME_Unflag_OnParBoundary(MEdge_ptr e) {
     return MEnt_Unflag_OnParBoundary((MEntity_ptr) e);
-  }
-
-  int   ME_MasterParID(MEdge_ptr e) {
-    return MEnt_MasterParID((MEntity_ptr) e); 
   }
 
   /* Rename to ME_Set_MasterPartID? */

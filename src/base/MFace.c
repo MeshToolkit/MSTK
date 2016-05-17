@@ -43,11 +43,11 @@ extern "C" {
 
       if (mesh) {
 #ifdef MSTK_HAVE_MPI
-      if (MF_PType(f) == PGHOST) 
-	MESH_Rem_GhostFace(mesh,f);
-      else
+        if (MF_PType(f) == PGHOST) 
+          MESH_Rem_GhostFace(mesh,f);
+        else
 #endif
-	MESH_Rem_Face(mesh,f);
+          MESH_Rem_Face(mesh,f);
       }
 
       MEnt_Set_DelFlag((MEntity_ptr) f);
@@ -482,25 +482,25 @@ extern "C" {
 
 
   int   MF_GlobalID(MFace_ptr f) {
-#ifdef MSTK_HAVE_MPI
     return   MEnt_GlobalID((MEntity_ptr) f);
-#else
-    return MEnt_ID((MEntity_ptr) f);
-#endif
   }
-
-#ifdef MSTK_HAVE_MPI
 
   PType MF_PType(MFace_ptr f) {
     return MEnt_PType((MEntity_ptr) f);
   }
 
-  void  MF_Set_PType(MFace_ptr f, PType ptype) {
-    MEnt_Set_PType((MEntity_ptr) f, ptype);
-  }
-
   int MF_OnParBoundary(MFace_ptr f) {
     return MEnt_OnParBoundary((MEntity_ptr) f); 
+  }
+
+  int   MF_MasterParID(MFace_ptr f) {
+    return MEnt_MasterParID((MEntity_ptr) f ); 
+  }
+
+#ifdef MSTK_HAVE_MPI
+
+  void  MF_Set_PType(MFace_ptr f, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) f, ptype);
   }
 
   void MF_Flag_OnParBoundary(MFace_ptr f) {
@@ -509,10 +509,6 @@ extern "C" {
 
   void MF_Unflag_OnParBoundary(MFace_ptr f) {
     return MEnt_Unflag_OnParBoundary((MEntity_ptr) f);
-  }
-
-  int   MF_MasterParID(MFace_ptr f) {
-    return MEnt_MasterParID((MEntity_ptr) f ); 
   }
 
   void  MF_Set_MasterParID(MFace_ptr f, int masterparid) {
