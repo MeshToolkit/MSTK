@@ -144,20 +144,22 @@ extern "C" {
   void MF_UnLock(MFace_ptr f);
   int MF_IsLocked(MFace_ptr f);
 
-#ifdef MSTK_HAVE_MPI
   PType MF_PType(MFace_ptr f);  
-  void  MF_Set_PType(MFace_ptr f, PType ptype);
 
   /* Is the entity on the partition boundary? */
   int MF_OnParBoundary(MFace_ptr ent);
 
+  int   MF_MasterParID(MFace_ptr f);
+
+  int   MF_GlobalID(MFace_ptr f);
+
+#ifdef MSTK_HAVE_MPI
+  void  MF_Set_PType(MFace_ptr f, PType ptype);
+
   /* Mark/Unmark the entity as being on the partition boundary */
   void MF_Flag_OnParBoundary(MFace_ptr ent);
   void MF_Unflag_OnParBoundary(MFace_ptr ent);
-
-  int   MF_MasterParID(MFace_ptr f);
   void  MF_Set_MasterParID(MFace_ptr f, int masterparid);
-  int   MF_GlobalID(MFace_ptr f);
   void  MF_Set_GlobalID(MFace_ptr f, int globalid);
   MFace_ptr MF_GhostNew(Mesh_ptr mesh);
 #endif
