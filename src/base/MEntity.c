@@ -539,18 +539,34 @@ extern "C" {
 
 
 
-#ifdef MSTK_HAVE_MPI
-
   PType MEnt_PType(MEntity_ptr ent) {
+#ifdef MSTK_HAVE_MPI
     return ent->entdat.ptype;
-  }
-
-  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype) {
-    ent->entdat.ptype = ptype;
+#else
+    return PINTERIOR;
+#endif
   }
 
   int MEnt_OnParBoundary(MEntity_ptr ent) {
+#ifdef MSTK_HAVE_MPI    
     return ent->entdat.parbdry;
+#else
+    return 0;
+#endif
+  }
+
+  int   MEnt_MasterParID(MEntity_ptr ent) {
+#ifdef MSTK_HAVE_MPI
+    return ent->entdat.masterparid;
+#else
+    return 0;
+#endif
+  }
+
+#ifdef MSTK_HAVE_MPI
+
+  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype) {
+    ent->entdat.ptype = ptype;
   }
 
   void MEnt_Flag_OnParBoundary(MEntity_ptr ent) {
@@ -559,10 +575,6 @@ extern "C" {
 
   void MEnt_Unflag_OnParBoundary(MEntity_ptr ent) {
     ent->entdat.parbdry = 0;
-  }
-
-  int   MEnt_MasterParID(MEntity_ptr ent) {
-    return ent->entdat.masterparid;
   }
 
   void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid) {

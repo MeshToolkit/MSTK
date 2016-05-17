@@ -51,8 +51,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   void                 *pval;
   FILE		        *fp;
 
+  int                   pid = 0, numprocs = 1;
 #ifdef MSTK_HAVE_MPI
-  int pid, numprocs;
   MPI_Comm_size(comm,&numprocs);
   MPI_Comm_rank(comm,&pid);
   pid += 1;  /* FLAG X3D counts processor IDs from 1 */
@@ -81,10 +81,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   
   
   strcpy(modfilename,filename);
-#ifdef MSTK_HAVE_MPI
   if (numprocs > 1)
     sprintf(modfilename,"%s.%05d",filename,pid);
-#endif
 
   if (!(fp = fopen(modfilename,"w"))) {
     fprintf(stderr,"MESH_ExportToFLAGX3D: Couldn't open output file %s\n",

@@ -75,9 +75,7 @@ extern "C" {
                         in node numbering)
   */
 
-#ifdef MSTK_HAVE_MPI
-  int ownedmk;
-#endif
+  int ownedmk=0;
 
   int MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
 			    const int natt, const char **attnames, 
@@ -1839,7 +1837,7 @@ extern "C" {
     *element_block_types_glob = (char **) malloc(nb*sizeof(char *));
     for (i = 0; i < nb; ++i) {
       (*element_block_types_glob)[i] = (char *) malloc(16*sizeof(char));
-      strcpy((*element_blocks_glob)[i],element_block_types[i],16);
+      strncpy((*element_blocks_glob)[i],element_block_types[i],16);
     }
 #endif
 
@@ -2777,7 +2775,7 @@ extern "C" {
     
     if (natt_loc) {
       att_names_glob = (char *) malloc(natt_loc*MAXLEN*sizeof(char));
-      memcpy(att_names_glob,att_names,natt_loc*MAXLEN*sizeof(char));
+      memcpy(att_names_glob,att_names_loc,natt_loc*MAXLEN*sizeof(char));
       
       att_dim_glob = (int *) malloc(natt_loc*sizeof(List_ptr));      
       memcpy(att_dim_glob,att_dim_loc,natt_loc*sizeof(int));

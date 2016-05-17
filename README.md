@@ -1,9 +1,11 @@
-			MeSh ToolKit (MSTK)
-	Copyright (c) 2016, Los Alamos National Security, LLC
-	All rights reserved. LA-CC-04-010
+MeSh ToolKit (MSTK)
+===================
+Copyright (c) 2016, Los Alamos National Security, LLC
+All rights reserved. LA-CC-04-010
+
 
 What is MSTK?
-============
+-------------
 
 MSTK is a mesh framework that allows users to represent, manipulate
 and query unstructured 3D arbitrary topology meshes in a general
@@ -39,14 +41,14 @@ particular system, please let me know. If you have a patch, feel free
 to submit a pull request.
 
 Copyright
-=========
+---------
 
 MSTK is distributed as open-source software under a BSD 3-clause
 copyright agreement. Please see the full copyright statement in the
 COPYRIGHT file in this distribution 
 
 Install MSTK
-============
+------------
 
 Starting from MSTK v1.8, we are including CMakeLists.txt files to allow
 users to build and install MSTK on a wide variety of platforms with various 
@@ -90,14 +92,15 @@ The following are the steps for build and installing MSTK using cmake
 
 
 Learn MSTK
-==========
+----------
 
 1. Read the manual ! It is included with the distribution. While it
 may not be the most up-to-date, it has the essentials
+2. Browse MSTK.h
 
 
 Use MSTK for developing applications
-====================================
+------------------------------------
 
 1. Include "MSTK.h" in any code that uses MSTK
 
@@ -113,19 +116,19 @@ Use MSTK for developing applications
    developing a CMake based build system for an application using MSTK
 
 Contact:
-========
+-------
 
 Feel free to contact me if you need any assistance at rao@lanl.gov. If
 you are successfully using MSTK in your work, drop me a note.
 
---------------------------------------------------------------------
+
 Rao V Garimella, T-5, MS B284, Los Alamos National Laboratory  
 Los Alamos, NM 87544 USA  
 Tel: (505) 665-2928  
 Email: rao@lanl.gov  
 http://math.lanl.gov/~rao  	
 
---------------------------------------------------------------------
+
 
 	
 

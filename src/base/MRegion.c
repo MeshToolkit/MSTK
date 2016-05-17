@@ -47,11 +47,11 @@ extern "C" {
 
       if (mesh) {
 #ifdef MSTK_HAVE_MPI
-      if (MR_PType(r) == PGHOST)
-	MESH_Rem_GhostRegion(mesh,r);
-      else
+        if (MR_PType(r) == PGHOST)
+          MESH_Rem_GhostRegion(mesh,r);
+        else
 #endif
-	MESH_Rem_Region(mesh,r);
+          MESH_Rem_Region(mesh,r);
       }
 
       MEnt_Set_DelFlag((MEntity_ptr) r);
@@ -347,25 +347,21 @@ extern "C" {
   }
 
   int   MR_GlobalID(MRegion_ptr r) {
-#ifdef MSTK_HAVE_MPI
-    return   MEnt_GlobalID((MEntity_ptr) r);
-#else
-    return MEnt_ID((MEntity_ptr) r);
-#endif
+    return MEnt_GlobalID((MEntity_ptr) r);
   }
-
-#ifdef MSTK_HAVE_MPI
 
   PType MR_PType(MRegion_ptr r) {
     return MEnt_PType((MEntity_ptr) r);
   }
 
-  void  MR_Set_PType(MRegion_ptr r, PType ptype) {
-    MEnt_Set_PType((MEntity_ptr) r, ptype);
-  }
-
   int   MR_MasterParID(MRegion_ptr r) {
     return MEnt_MasterParID((MEntity_ptr) r ); 
+  }
+
+#ifdef MSTK_HAVE_MPI
+
+  void  MR_Set_PType(MRegion_ptr r, PType ptype) {
+    MEnt_Set_PType((MEntity_ptr) r, ptype);
   }
 
   void  MR_Set_MasterParID(MRegion_ptr r, int masterparid) {

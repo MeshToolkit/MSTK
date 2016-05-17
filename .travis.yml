@@ -16,7 +16,8 @@ env:
   global:
     - CCACHE_CPP2=yes
   matrix:
-    - PARALLEL=yes
+    - PARALLEL=ON
+    - PARALLEL=OFF
 
 script:
   - >

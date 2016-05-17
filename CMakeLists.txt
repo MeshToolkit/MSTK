@@ -240,6 +240,20 @@ if (ENABLE_PARALLEL)
 
      add_definitions(-D_MSTK_HAVE_ZOLTAN)
 
+     if (ZOLTAN_NEEDS_ParMETIS)
+       find_package(ParMETIS REQUIRED)
+       if (NOT ParMETIS_FOUND)
+         message(FATAL_ERROR  "Error: could not find ParMETIS library \
+	    needed by ZOLTAN\n \
+	   Try defining ParMETIS_DIR: \
+	   (-D ParMETIS_DIR:FILEPATH=<ParMETIS_install_prefix>)\n")
+       endif (NOT ParMETIS_FOUND)
+
+       list(APPEND ZOLTAN_LIBRARIES ${ParMETIS_LIBRARIES})
+       message("ParMETIS_LIBRARIES --- " ${ParMETIS_LIBRARIES})
+       message("ZOLTAN_LIBRARIES --- " ${ZOLTAN_LIBRARIES})
+     endif (ZOLTAN_NEEDS_ParMETIS)
+
   endif (ENABLE_ZOLTAN)
 
 endif (ENABLE_PARALLEL) 

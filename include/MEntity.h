@@ -53,21 +53,22 @@ extern "C" {
   typedef void *MEntity_ptr;
 #endif
 
-#ifdef MSTK_HAVE_MPI
   PType MEnt_PType(MEntity_ptr ent);
-  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
 
   /* Is the entity on the partition boundary? */
   int MEnt_OnParBoundary(MEntity_ptr ent);
 
+  int   MEnt_MasterParID(MEntity_ptr ent);
+
+  int   MEnt_GlobalID(MEntity_ptr ent);
+
+#ifdef MSTK_HAVE_MPI
+  void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
+
   /* Mark/Unmark the entity as being on the partition boundary */
   void MEnt_Flag_OnParBoundary(MEntity_ptr ent);
   void MEnt_Unflag_OnParBoundary(MEntity_ptr ent);
-
-  int   MEnt_MasterParID(MEntity_ptr ent);
   void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterparid);
-
-  int   MEnt_GlobalID(MEntity_ptr ent);
   void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
 
   /* local id of owning entity on master processor */
