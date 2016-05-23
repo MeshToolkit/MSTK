@@ -254,6 +254,20 @@ if (ENABLE_PARALLEL)
        message("ZOLTAN_LIBRARIES --- " ${ZOLTAN_LIBRARIES})
      endif (ZOLTAN_NEEDS_ParMETIS)
 
+     if (ZOLTAN_NEEDS_PTScotch)
+       find_package(PTScotch REQUIRED)
+       if (NOT PTScotch_FOUND)
+         message(FATAL_ERROR  "Error: could not find PTScotch library \
+	    needed by ZOLTAN\n \
+	   Try defining PTScotch_DIR: \
+	   (-D PTScotch_DIR:FILEPATH=<PTScotch_install_prefix>)\n")
+       endif (NOT PTScotch_FOUND)
+
+       list(APPEND ZOLTAN_LIBRARIES ${PTScotch_LIBRARIES})
+       message("PTScotch_LIBRARIES --- " ${PTScotch_LIBRARIES})
+       message("ZOLTAN_LIBRARIES --- " ${ZOLTAN_LIBRARIES})
+     endif (ZOLTAN_NEEDS_PTScotch)
+
   endif (ENABLE_ZOLTAN)
 
 endif (ENABLE_PARALLEL) 
