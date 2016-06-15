@@ -224,6 +224,11 @@ extern "C" {
         if (comm == 0 || comm == MPI_COMM_NULL || MR_PType(mr) != PGHOST) {
 #endif
 
+          // If we created some degenerate elements (like boundary ghosts)
+          // ignore them
+
+          if (MR_ElementType(mr) == RUNKNOWN) continue;
+
           MEnt_Mark(mr,ownedmk);
           nr++;
             
@@ -292,6 +297,11 @@ extern "C" {
 #ifdef MSTK_HAVE_MPI
         if (comm == 0 || comm == MPI_COMM_NULL || MF_PType(mf) != PGHOST) {
 #endif
+
+          // If we created some degenerate elements (like boundary ghosts)
+          // ignore them
+
+          if (MF_ElementType(mf) == FUNKNOWN) continue; 
 
           MEnt_Mark(mf,ownedmk);
           nf++;
@@ -2444,18 +2454,16 @@ extern "C" {
       if (meshdim == setdim) {      
         char setname[256];
         MSet_Name(mset,setname);
-        if (strncmp(setname,"TEMPORARY_element_block_",23) == 0)
-          continue;                             
+
+        if (strncmp(setname,"elemset_",8) != 0) continue;
+
         if (nelemset == nalloc) {
           nalloc *= 2;
           element_set_ids = (int *) realloc(element_set_ids,nalloc*sizeof(int));
           element_sets = (MSet_ptr *) realloc(element_sets,nalloc*sizeof(MSet_ptr));
         }
 
-        if (strncmp(setname,"elemset_",8) == 0)
-          sscanf(setname+8,"%d",&(element_set_ids[nelemset]));
-        else
-          element_set_ids[nelemset] = setid;
+        sscanf(setname+8,"%d",&(element_set_ids[nelemset]));
         element_sets[nelemset] = mset;
         setid++;
         nelemset++;
