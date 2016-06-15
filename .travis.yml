@@ -11,16 +11,12 @@ addons:
       - openmpi-bin
       - libmetis-dev
       - libunittest++-dev
-      - libnetcdf-dev
-      - libexodusii-dev
 env:
   global:
     - CCACHE_CPP2=yes
   matrix:
     - PARALLEL=ON
     - PARALLEL=OFF
-    - EXODUS=ON
-    - EXODUS=OFF
 script:
   - >
      mkdir build &&
@@ -33,7 +29,7 @@ script:
      -DENABLE_PARALLEL=$PARALLEL
      -DENABLE_METIS=yes
      -DMETIS_INCLUDE_DIR=/usr/include
-     -DENABLE_ExodusII=$EXODUS
+     -DENABLE_ExodusII=OFF
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
