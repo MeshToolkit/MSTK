@@ -30,7 +30,7 @@ extern "C" {
   MRegion_ptr freg0, freg1;
   List_ptr fregs, fedges, efaces, ebfaces, gffaces, subfaces;
 
-  COSSHARPANG = cos(9*PI/12);  /* 135 degrees */
+  COSSHARPANG = cos(5*PI/6);  /* 150 degrees */
 
 
   /* Verify that mesh faces on the boundary have classification
