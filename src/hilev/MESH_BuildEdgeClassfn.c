@@ -31,7 +31,7 @@ extern "C" {
   MFace_ptr eface;
   List_ptr efaces, vedges, vbedges, geedges, subedges;
 
-  COSSHARPANG = cos(9*PI/12);  /* 135 degrees */
+  COSSHARPANG = cos(5*PI/6);  /* 165 degrees */
 
 
   /* Verify that mesh edges on the boundary have classification
