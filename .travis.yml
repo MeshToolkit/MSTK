@@ -11,6 +11,7 @@ addons:
       - openmpi-bin
       - libmetis-dev
       - libunittest++-dev
+      - libnetcdf-dev
       - libexodusii-dev
 env:
   global:
