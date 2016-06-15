@@ -244,7 +244,7 @@ extern "C" {
       return POLYGON;
     }
 
-    return RUNKNOWN;
+    return FUNKNOWN;
   }
 
   int MF_Num_Vertices(MFace_ptr f) {
