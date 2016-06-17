@@ -731,59 +731,61 @@ extern "C" {
     nf = List_Num_Entries(adj->rfaces);
 
     switch (nf) {
-    case 4: {
-      int alltri = 1;
-      for (i = 0; i < nf; i++) {
-        if (MF_Num_Vertices(List_Entry(adj->rfaces,i)) != 3) {
-          alltri = 0;
-          break;
+      case 0: case 1: case 2: case 3: 
+        r->mrtype = RUNKNOWN;
+        break;
+      case 4: {
+        int alltri = 1;
+        for (i = 0; i < nf; i++) {
+          if (MF_Num_Vertices(List_Entry(adj->rfaces,i)) != 3) {
+            alltri = 0;
+            break;
+          }
         }
-      }
         
-      if (alltri) 
-        r->mrtype = TET;
-      else
-        r->mrtype = POLYHED;        
-      break;
-    }
-    case 5: {
-      int nquads = 0; 
-      int ntris = 0;
-      
-      for (i = 0; i < nf; i++) {
-        int nv = MF_Num_Vertices(List_Entry(adj->rfaces,i));
-        if (nv == 3)
-          ntris++;
-        else if (nv == 4)
-          nquads++;
+        if (alltri) 
+          r->mrtype = TET;
+        else
+          r->mrtype = POLYHED;        
+        break;
       }
-      
-      if (nquads == 3 && ntris == 2)
-        r->mrtype = PRISM;
-      else if (nquads == 1 && ntris == 4)
-        r->mrtype = PYRAMID;
-      else
-        r->mrtype = POLYHED;        
-      break;
-    }
-    case 6: {
-      int allquad = 1;
-      for (i = 0; i < nf; i++) {
-        if (MF_Num_Vertices(List_Entry(adj->rfaces,i)) != 4) {
-          allquad = 0;
-          break;
+      case 5: {
+        int nquads = 0; 
+        int ntris = 0;
+        
+        for (i = 0; i < nf; i++) {
+          int nv = MF_Num_Vertices(List_Entry(adj->rfaces,i));
+          if (nv == 3)
+            ntris++;
+          else if (nv == 4)
+            nquads++;
         }
+        
+        if (nquads == 3 && ntris == 2)
+          r->mrtype = PRISM;
+        else if (nquads == 1 && ntris == 4)
+          r->mrtype = PYRAMID;
+        else
+          r->mrtype = POLYHED;        
+        break;
       }
-      
-      if (allquad)
-        r->mrtype = HEX;
-      else
-        r->mrtype = POLYHED;        
-      break;
-    }
-    default: 
-      r->mrtype = POLYHED;
-      break;
+      case 6: {
+        int allquad = 1;
+        for (i = 0; i < nf; i++) {
+          if (MF_Num_Vertices(List_Entry(adj->rfaces,i)) != 4) {
+            allquad = 0;
+            break;
+          }
+        }
+        
+        if (allquad)
+          r->mrtype = HEX;
+        else
+          r->mrtype = POLYHED;        
+        break;
+      }
+      default: 
+        r->mrtype = POLYHED;
     }
 
   }
