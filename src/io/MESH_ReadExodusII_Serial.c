@@ -747,6 +747,7 @@ extern "C" {
     /*   face_hash_lens = (int *) calloc(nfalloc,sizeof(int)); */
     /* } */
 
+      int mkfid = MSTK_GetMarker();
 
     for (i = 0; i < nelblock; i++) {
       
@@ -847,6 +848,7 @@ extern "C" {
                 nrv++;
               }
             }
+              List_Delete(rfverts);
 
             /* geometric center of face */
             for (k2 = 0; k2 < 3; k2++) fcen[k][k2] /= nrfv;
@@ -873,11 +875,29 @@ extern "C" {
              have to figure it out ourselves using geometric checks */
 
           for (k = 0; k < nnpe[j]; k++) {
+              if (MSTK_VLen3(fnormal[k]) < 1.0e-15) {
+                if(!MEnt_IsMarked(rfarr[k], mkfid)) {
+                  MEnt_Mark(rfarr[k], mkfid);
+                }
+                else {
+                  List_ptr fregs = MF_Regions(rfarr[k]);
+                  if (List_Num_Entries(fregs) > 1)
+                    MSTK_Report(funcname,"Face already connected to two regions",MSTK_FATAL);
+                  
+                  List_Delete(fregs);
+                }
+              }
+              else {
+                List_ptr rfverts = MF_Vertices(rfarr[k],1,0);
+                int nrfv = List_Num_Entries(rfverts);
+                
             double outvec[3], dp;
             MSTK_VDiff3(fcen[k],rcen,outvec);
+                
             dp = MSTK_VDot3(outvec,fnormal[k]);
             rfdirs[k] = (dp > 0) ? 1 : 0;
           }
+            }
 
 	  MR_Set_Faces(mr, nnpe[j], rfarr, rfdirs);
 
@@ -886,6 +906,44 @@ extern "C" {
 
 	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
 	  MSet_Add(matset,mr);
+
+            for (k = 0; k < nnpe[j]; k++) {
+              if (MEnt_IsMarked(rfarr[k], mkfid)){
+                List_ptr fedges0 = MF_Edges(rfarr[k],1,0);
+                List_ptr fvrts0 = MF_Vertices(rfarr[k],1,0);
+                MEdge_ptr fedge0nd = List_Entry(fedges0,0);
+                MVertex_ptr fvrt0 = List_Entry(fvrts0,0);
+                int fedge0nd_dir = (fvrt0 == ME_Vertex(fedge0nd,0));
+                if (ME_Len(fedge0nd) < 1.0e-15) {
+                  int nedges = List_Num_Entries(fedges0);
+                  fedge0nd = List_Entry(fedges0, nedges - 1);
+                  fedge0nd_dir = (fvrt0 == ME_Vertex(fedge0nd,1));
+                  if (ME_Len(fedge0nd) < 1.0e-15)
+                    MSTK_Report(funcname,"Two adjacent edges of a face are degenerate",MSTK_FATAL);
+                }
+                List_Delete(fedges0);
+                List_Delete(fvrts0);
+                int fdir;
+                int found = 0;
+                int k2;
+                for (k2 = 0; k2 < nnpe[j]; k2++) {
+                  if (k2 == k) continue;
+                  
+                  MFace_ptr cur_face = MSet_Entry(faceset,connect[offset+k2]-1);
+                  if (MF_UsesEntity(cur_face,fedge0nd,MEDGE)) {
+                    int dir_fr_adj0 = MR_FaceDir_i(mr,k2);
+                    int dir_ef_adj0 = MF_EdgeDir(cur_face,fedge0nd);
+                    fdir = (fedge0nd_dir == dir_ef_adj0) ? !dir_fr_adj0 : dir_fr_adj0;
+                    found = 1;
+                    break;
+                  }
+                }
+                if (!found)
+                  MSTK_Report(funcname,"No other face with the same edge",MSTK_FATAL);
+                
+                MR_Set_FaceDir_i(mr, k, fdir);
+              }
+            }
 
 	  offset += nnpe[j];
 	}
@@ -1202,7 +1260,11 @@ extern "C" {
       
     } /* for (i = 0; i < nelblock; i++) */
 
-    
+      int idx = 0;
+      while ((mf = MESH_Next_Face(mesh,&idx)))
+        if(MEnt_IsMarked(mf, mkfid))
+          MEnt_Unmark(mf, mkfid);
+      MSTK_FreeMarker(mkfid);
 
     /* Deallocate the face hash table */
 /*     if (solid_elems) { */
@@ -1235,7 +1297,7 @@ extern "C" {
     /* Fix classifications of interior mesh faces only - if this mesh
      is part of a distributed mesh we will get boundary info wrong */
 
-    int idx = 0;
+      idx = 0;
     while ((mf = MESH_Next_Face(mesh,&idx))) {
       List_ptr fregs = MF_Regions(mf);
       if (fregs) {

@@ -6,10 +6,11 @@
 /* Replace f2 with f1 in all the regions using f2 and delete f2 */
 
 MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2, int topoflag) {
-  int i, idx, gdim, gid, dir;
+  int i, idx, gdim, gid, dir, nsets;
   MRegion_ptr reg;
   Mesh_ptr    mesh;
   List_ptr    fregs2, fverts1, fverts2;
+  MSet_ptr    mset;
 
 
   /* Check that we are not violating topological conformity with geometric model */
@@ -77,8 +78,20 @@ MFace_ptr MFs_Merge_R3R4(MFace_ptr f1, MFace_ptr f2, int topoflag) {
     List_Delete(fregs2);
   }
 
+  nsets = MESH_Num_MSets(mesh);
+  if(nsets) {
+    idx = 0;
+    while ((mset = (MSet_ptr) MESH_Next_MSet(mesh,&idx))) {
+      if (MSet_Contains(mset, f2)) {
+        if(MSet_Contains(mset, f1))
+          MSet_Rem(mset, f2);
+        else
+          MSet_Replace(mset, f2, f1);
+      }
+    }
+  }
 
-  MF_Delete(f2,0);
+  MF_Delete(f2,1);
 
   return f1;
 }

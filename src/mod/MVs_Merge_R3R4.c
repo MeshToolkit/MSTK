@@ -5,10 +5,11 @@
 
 
 MVertex_ptr MVs_Merge_R3R4(MVertex_ptr v1, MVertex_ptr v2, int topoflag) {
-  int idx, gdim, gid;
+  int idx, gdim, gid, nsets;
   MFace_ptr   face;
   Mesh_ptr    mesh;
   List_ptr    vfaces2;
+  MSet_ptr    mset;
 
   mesh = MV_Mesh(v1);
   gid = MV_GEntID(v1);
@@ -36,7 +37,20 @@ MVertex_ptr MVs_Merge_R3R4(MVertex_ptr v1, MVertex_ptr v2, int topoflag) {
     List_Delete(vfaces2);
   }
 
-  MV_Delete(v2,0);
+  nsets = MESH_Num_MSets(mesh);
+  if(nsets) {
+    idx = 0;
+    while ((mset = (MSet_ptr) MESH_Next_MSet(mesh,&idx))) {
+      if (MSet_Contains(mset, v2)) {
+        if(MSet_Contains(mset, v1))
+          MSet_Rem(mset, v2);
+        else
+          MSet_Replace(mset, v2, v1);
+      }
+    }
+  }
+  
+  MV_Delete(v2,1);
 
   return v1;
 }
