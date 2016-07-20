@@ -6,11 +6,12 @@
 /* Replace e2 with e1 in all the faces using e2 and delete e2 */
 
 MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2, int topoflag) {
-  int i, idx, gdim1, gid1, gdim2, gid2;
+  int i, idx, gdim1, gid1, gdim2, gid2, nsets;
   MVertex_ptr v11, v12, v21, v22;
   MFace_ptr   face;
   Mesh_ptr    mesh;
   List_ptr    efaces2;
+  MSet_ptr    mset;
 
   mesh = ME_Mesh(e1);
   gid1 = ME_GEntID(e1);
@@ -55,7 +56,20 @@ MEdge_ptr MEs_Merge_FN(MEdge_ptr e1, MEdge_ptr e2, int topoflag) {
     List_Delete(efaces2);
   }
 
-  ME_Delete(e2,0);
+  nsets = MESH_Num_MSets(mesh);
+  if(nsets) {
+    idx = 0;
+    while ((mset = (MSet_ptr) MESH_Next_MSet(mesh,&idx))) {
+      if (MSet_Contains(mset, e2)) {
+        if(MSet_Contains(mset, e1))
+          MSet_Rem(mset, e2);
+        else
+          MSet_Replace(mset, e2, e1);
+      }
+    }
+  }
+  
+  ME_Delete(e2,1);
 
   return e1;
 }
