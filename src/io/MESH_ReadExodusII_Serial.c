@@ -878,6 +878,7 @@ extern "C" {
               if (MSTK_VLen3(fnormal[k]) < 1.0e-15) {
                 if(!MEnt_IsMarked(rfarr[k], mkfid)) {
                   MEnt_Mark(rfarr[k], mkfid);
+                  rfdirs[k] = 1;
                 }
                 else {
                   List_ptr fregs = MF_Regions(rfarr[k]);
@@ -885,6 +886,7 @@ extern "C" {
                     MSTK_Report(funcname,"Face already connected to two regions",MSTK_FATAL);
                   
                   List_Delete(fregs);
+                  rfdirs[k] = 0;
                 }
               }
               else {
