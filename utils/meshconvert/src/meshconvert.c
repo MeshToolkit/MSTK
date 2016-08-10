@@ -280,7 +280,27 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  /* If this is a multi-process run and there is a mesh only on
+   * partition 0, assume that the caller wants to partition the mesh,
+   * otherwise the caller probably wants to weave the mesh */
 
+#ifdef MSTK_HAVE_MPI
+  if (numprocs > 1) {
+    int mesh_present = (MESH_Num_Vertices(mesh) > 0) ? 1 : 0;
+    int num_mesh_present = 0;
+    MPI_Allreduce(&mesh_present, &num_mesh_present, 1, MPI_INT, MPI_SUM,
+                  MPI_COMM_WORLD);
+
+    if (num_mesh_present == 1)  /* mesh only on one processor */
+      partition = 1;
+    else if (num_mesh_present == numprocs)  /* mesh on all processors */
+      weave = 1;
+    else {
+      fprintf(stderr, "Cannot handle meshes present on subset of processors\n");
+      exit(-1);
+    }
+  }
+#endif
 
 
   if (build_classfn) {
