@@ -272,6 +272,8 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 	for (i = 0; i < nrf; i++) {
 
 	  rface1 = List_Entry(rfaces,i);
+    if (MEnt_Dim(rface1) == MDELETED)
+      continue;
 	
 	  fverts1 = MF_Vertices(rface1,1,0);
 	  nfv1 = List_Num_Entries(fverts1);
@@ -279,6 +281,8 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 	  for (j = i+1; j < nrf; j++) {
 	  
 	    rface2 = List_Entry(rfaces,j);
+      if (MEnt_Dim(rface2) == MDELETED)
+        continue;
 
 	    fverts2 = MF_Vertices(rface2,1,0);
 	    nfv2 = List_Num_Entries(fverts2);
