@@ -109,7 +109,7 @@ TEST(Write_Read_ExodusII_HexMesh) {
 
   for (int i = 0; i < 2; i++) {
     char elementsetname[256];
-    sprintf(elementsetname,"elementset_%-d",i+1);
+    sprintf(elementsetname,"elemset_%-d",i+1);
 
     mset = MSet_New(mesh,elementsetname,MREGION);
 
