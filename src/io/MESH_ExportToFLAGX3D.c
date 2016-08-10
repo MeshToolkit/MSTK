@@ -1334,6 +1334,91 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   fclose(fp);
 
+
+  /* Write out elements of each material (derived from each element
+   * block) as a .reg file */
+
+  int g;
+  for (g = 0; g < ngent; ++g) {
+    char bdyfilename[256];
+    sprintf(bdyfilename, "mat%03d.reg", g);
+    fp = fopen(bdyfilename, "w");
+    if (nr) {
+      idx = 0;
+      while ((region = MESH_Next_Region(mesh, &idx))) {
+        if (MR_GEntID(region) == g)
+          fprintf(fp, "% 10d\n", MR_GEntID(region));
+      }
+    } else {
+      idx = 0;
+      while ((face = MESH_Next_Face(mesh, &idx))) {
+        if (MF_GEntID(face) == g)
+          fprintf(fp, "% 10d\n", MF_GEntID(face));
+      }
+    }
+    fclose(fp);
+  }
+  
+  /* Write out each element set as a .reg file */
+
+  MSet_ptr mset;
+  idx = 0;
+  while ((mset = MESH_Next_MSet(mesh, &idx))) {
+    if ((nr > 0 && MSet_EntDim(mset) != MREGION) ||
+        (nr == 0 && nf > 0 && MSet_EntDim(mset) != MFACE)) continue;
+
+    char setname[256];
+    MSet_Name(mset, setname);
+
+    char bdyfilename[256];
+    strcpy(bdyfilename, setname);
+    strcat(bdyfilename, ".reg");
+    if (numprocs > 1) {
+      char ext[256];
+      sprintf(ext, ".%05d",pid);
+      strcat(bdyfilename, ext);
+    }
+
+    fp = fopen(bdyfilename, "w");
+    
+    int idx2 = 0;
+    MEntity_ptr ment;
+    while ((ment = MSet_Next_Entry(mset, &idx2)))
+      fprintf(fp, "% 10d\n", MEnt_ID(ment));
+
+    fclose(fp);
+  }
+
+
+  /* Write out each nodeset as a .bdy file */
+
+  idx = 0;
+  while ((mset = MESH_Next_MSet(mesh, &idx))) {
+    if (MSet_EntDim(mset) != MVERTEX) continue;
+
+    char setname[256];
+    MSet_Name(mset, setname);
+
+    char bdyfilename[256];
+    strcpy(bdyfilename, setname);
+    strcat(bdyfilename, ".bdy");
+    if (numprocs > 1) {
+      char ext[256];
+      sprintf(ext, ".%05d",pid);
+      strcat(bdyfilename, ext);
+    }
+
+    fp = fopen(bdyfilename, "w");
+    
+    int idx2 = 0;
+    MEntity_ptr ment;
+    while ((ment = MSet_Next_Entry(mset, &idx2)))
+      fprintf(fp, "% 10d\n", MEnt_ID(ment));
+
+    fclose(fp);
+  }
+
+
   
   
   /* Clean up */
