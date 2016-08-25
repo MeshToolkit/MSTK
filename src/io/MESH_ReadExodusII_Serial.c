@@ -895,9 +895,25 @@ extern "C" {
                 
             double outvec[3], dp;
             MSTK_VDiff3(fcen[k],rcen,outvec);
-                
-            dp = MSTK_VDot3(outvec,fnormal[k]);
-            rfdirs[k] = (dp > 0) ? 1 : 0;
+
+            List_ptr fregs = MF_Regions(rfarr[k]);
+            if (MSTK_VLen3(outvec) < 1.0e-15) {
+              if (!fregs)
+                rfdirs[k] = 1;
+              else {
+                MRegion_ptr adjreg = List_Entry(fregs, 0);
+                rfdirs[k] = !MR_FaceDir(adjreg, rfarr[k]);
+              }
+            }
+            else {                
+              dp = MSTK_VDot3(outvec,fnormal[k]);
+              rfdirs[k] = (dp > 0) ? 1 : 0;
+              if (fregs) {
+                MRegion_ptr adjreg = List_Entry(fregs, 0);
+                if (rfdirs[k] == MR_FaceDir(adjreg, rfarr[k]))
+                  MF_Add_Region(rfarr[k], adjreg, rfdirs[k]);
+              }
+            }
           }
             }
 
