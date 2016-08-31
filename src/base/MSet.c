@@ -21,7 +21,9 @@ extern "C" {
     for (i = 0; i < nset; i++) {
       set = MESH_MSet(mesh,i);
       if (strcmp(set_name,set->name) == 0) {
-	MSTK_Report("MSet_New","Set with given name exists",MSTK_WARN);
+        char mesg[256];
+        sprintf(mesg, "Set with given name (%s) exists", set_name);
+	MSTK_Report("MSet_New",mesg,MSTK_WARN);
 	return set;
       }
     }
