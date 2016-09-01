@@ -2143,7 +2143,7 @@ extern "C" {
              delete it when we are finished with it */
 
           char sidesetname[256];
-          sprintf(sidesetname,"TEMPORARY_sideset_%-d",sid);
+          sprintf(sidesetname,"TEMPORARY_sideset_%-d",(*side_set_ids_glob)[i]);
           if (meshdim == 2)
             (*side_sets_glob)[i] = MSet_New(mesh,sidesetname,MEDGE);
           else if (meshdim == 3)
