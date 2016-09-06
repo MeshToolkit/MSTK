@@ -460,7 +460,7 @@ extern "C" {
 	adj->fdirs[j] ^= (1UL << k);
 
         int dir = (adj->fdirs[j])>>k & 1;
-        MF_Add_Region(r, f, !dir);
+        MF_Add_Region(f, r, !dir);
 
 	return 1;
       }
@@ -484,7 +484,9 @@ extern "C" {
     adj->fdirs[j] ^= (1UL << k);
 
     int dir = (adj->fdirs[j])>>k & 1;
-    MF_Add_Region(r, f, !dir);
+    MFace_ptr f = List_Entry(adj->rfaces, i);
+    MF_Rem_Region(f, r);
+    MF_Add_Region(f, r, !dir);
 
     return 1;
   }
@@ -526,6 +528,12 @@ extern "C" {
     adj->fdirs[j] = adj->fdirs[j] | (dir<<k); /* Set it to desired dir */
 
     MFace_ptr f = List_Entry(adj->rfaces, i);
+    List_ptr fregs = MF_Regions(f);
+    if (fregs) {
+      if (List_Contains(fregs, r))
+        MF_Rem_Region(f, r);
+      List_Delete(fregs);
+    }
     MF_Add_Region(f, r, !dir);
     return 1;
   }
