@@ -72,7 +72,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh, int use_geometry) {
       }
       gvedgeids[ngverts][0] = ngve;
 
-      List_Delete(vedges);
+      if (vedges) List_Delete(vedges);
       ngverts++;
     }
   }
