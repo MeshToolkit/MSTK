@@ -1,5 +1,6 @@
 #include <UnitTest++.h>
 #include <cstdio>
+#include <vector>
 
 #include "../../include/MSTK.h"
 
@@ -12,7 +13,7 @@ TEST(Read_Write_ExodusII_Poly2)
   Mesh_ptr mesh, mesh2;
   MFace_ptr mf;
   MVertex_ptr mv;
-  int one_tri, one_quad, one_penta;
+  int num_tri, num_quad, num_penta;
 
   MSTK_Init();
 
@@ -22,20 +23,20 @@ TEST(Read_Write_ExodusII_Poly2)
 
   CHECK(MESH_Num_Vertices(mesh) > 0);
   
-  idx = 0; one_tri = 0; one_quad = 0; one_penta = 0;
+  idx = 0; num_tri = 0; num_quad = 0; num_penta = 0;
   while ((mf = MESH_Next_Face(mesh,&idx))) {
     int ne = MF_Num_Edges(mf);
     if (ne == 3)
-      one_tri++;
+      num_tri++;
     else if (ne == 4)
-      one_quad++;
+      num_quad++;
     else if (ne == 5)
-      one_penta++;
+      num_penta++;
   }
 
-  CHECK_EQUAL(one_tri,1);
-  CHECK_EQUAL(one_quad,1);
-  CHECK_EQUAL(one_penta,1);
+  CHECK_EQUAL(num_tri,1);
+  CHECK_EQUAL(num_quad,1);
+  CHECK_EQUAL(num_penta,1);
 
   ok = MESH_ExportToFile(mesh,"./poly2-tmp.exo",NULL,0,NULL,NULL,NULL);
 
@@ -44,20 +45,20 @@ TEST(Read_Write_ExodusII_Poly2)
   mesh2 = MESH_New(UNKNOWN_REP);
   ok = MESH_ImportFromFile(mesh2,"./poly2-tmp.exo",NULL,NULL,NULL);
 
-  idx = 0; one_tri = 0; one_quad = 0; one_penta = 0;
+  idx = 0; num_tri = 0; num_quad = 0; num_penta = 0;
   while ((mf = MESH_Next_Face(mesh2,&idx))) {
     int ne = MF_Num_Edges(mf);
     if (ne == 3)
-      one_tri++;
+      num_tri++;
     else if (ne == 4)
-      one_quad++;
+      num_quad++;
     else if (ne == 5)
-      one_penta++;
+      num_penta++;
   }
 
-  CHECK_EQUAL(one_tri,1);
-  CHECK_EQUAL(one_quad,1);
-  CHECK_EQUAL(one_penta,1);
+  CHECK_EQUAL(num_tri,1);
+  CHECK_EQUAL(num_quad,1);
+  CHECK_EQUAL(num_penta,1);
 }
 
 
@@ -296,6 +297,261 @@ TEST(Write_Read_ExodusII_HexMesh) {
         }
       }
       CHECK_EQUAL(found,1);
+    }
+  }
+
+}
+
+TEST(Write_Read_ExodusII_Poly3) {
+  int ok;
+  Mesh_ptr mesh1, mesh2;
+
+  MSTK_Init();
+
+  mesh1 = MESH_New(UNKNOWN_REP);
+  ok = MESH_ImportFromFile(mesh1,"serial/poly3.exo",NULL,NULL,NULL);
+  CHECK_EQUAL(ok,1);
+
+  int use_geometry = 1;
+  ok &= MESH_BuildClassfn(mesh1, use_geometry);
+  ok &= MESH_CheckTopo(mesh1);
+  CHECK_EQUAL(ok, 1);
+
+  int nv1 = MESH_Num_Vertices(mesh1);
+  std::vector<double> vec3(3, 0.0);
+  std::vector< std::vector<double> > vxyz1(nv1, vec3);
+  int idx = 0, i = 0;
+  MVertex_ptr mv;
+  while ((mv = MESH_Next_Vertex(mesh1, &idx))) {
+    MV_Coords(mv, &(vxyz1[i][0]));
+    i++;
+  }
+  
+  int nr1 = MESH_Num_Regions(mesh1);
+  CHECK(nr1 > 0);
+
+  std::vector<int> nrf1(nr1);
+  std::vector< std::vector<int> > nrfv1(nr1);
+  std::vector< std::vector< std::vector<int> > > rfverts1(nr1);
+
+  idx = 0;
+  i = 0;
+  MRegion_ptr mr;
+  while ((mr = MESH_Next_Region(mesh1, &idx))) {
+    List_ptr rfaces = MR_Faces(mr);
+    nrf1[i] = List_Num_Entries(rfaces);
+
+    nrfv1[i].resize(nrf1[i]);
+    rfverts1[i].resize(nrf1[i]);
+    for (int j = 0; j < nrf1[i]; ++j) {
+      MFace_ptr rf = List_Entry(rfaces, j);
+      int rfdir = MR_FaceDir_i(mr, j);
+
+      List_ptr fverts = MF_Vertices(rf, rfdir, 0);
+      nrfv1[i][j] = List_Num_Entries(fverts);
+
+      rfverts1[i][j].resize(nrfv1[i][j]);
+      for (int k = 0; k < nrfv1[i][j]; k++) {
+        MVertex_ptr fv = List_Entry(fverts, k);
+        rfverts1[i][j][k] = MV_ID(fv);
+      }
+      List_Delete(fverts);
+    }
+    List_Delete(rfaces);
+    i++;
+  }
+
+
+  ok = MESH_ExportToFile(mesh1,"./poly3-tmp.exo",NULL,0,NULL,NULL,NULL);
+  CHECK_EQUAL(ok,1);
+
+
+
+  mesh2 = MESH_New(UNKNOWN_REP);
+  ok = MESH_ImportFromFile(mesh2,"./poly3-tmp.exo",NULL,NULL,NULL);
+
+  int nv2 = MESH_Num_Vertices(mesh2);
+  std::vector<std::vector<double> > vxyz2(nv2, vec3);
+  idx = 0, i = 0;
+  while ((mv = MESH_Next_Vertex(mesh2, &idx))) {
+    MV_Coords(mv, &(vxyz2[i][0]));
+    i++;
+  }
+  
+  int nr2 = MESH_Num_Regions(mesh2);
+  CHECK(nr2 > 0);
+
+  std::vector<int> nrf2(nr2);
+  std::vector< std::vector<int> > nrfv2(nr2);
+  std::vector< std::vector< std::vector<int> > > rfverts2(nr2);
+
+  idx = 0;
+  i = 0;
+  while ((mr = MESH_Next_Region(mesh2, &idx))) {
+    List_ptr rfaces = MR_Faces(mr);
+    nrf2[i] = List_Num_Entries(rfaces);
+
+    nrfv2[i].resize(nrf2[i]);
+    rfverts2[i].resize(nrf2[i]);
+    for (int j = 0; j < nrf2[i]; ++j) {
+      MFace_ptr rf = List_Entry(rfaces, j);
+      int rfdir = MR_FaceDir_i(mr, j);
+      List_ptr fverts = MF_Vertices(rf, rfdir, 0);
+      nrfv2[i][j] = List_Num_Entries(fverts);
+
+      rfverts2[i][j].resize(nrfv2[i][j]);
+      for (int k = 0; k < nrfv2[i][j]; k++) {
+        MVertex_ptr fv = List_Entry(fverts, k);
+        rfverts2[i][j][k] = MV_ID(fv);
+      }
+      List_Delete(fverts);
+    }
+    List_Delete(rfaces);
+    i++;
+  }
+
+  // Compare data collected from mesh 1 and mesh 2
+
+  CHECK(nv1 == nv2);
+  for (i = 0; i < nv1; ++i)
+    for (int j = 0; j < 3; ++j)
+      CHECK_CLOSE(vxyz1[i][j], vxyz2[i][j], 1.0e-16);
+
+  CHECK(nr1 == nr2);
+  for (i = 0; i < nr1; ++i) {
+    CHECK(nrf1[i] == nrf2[i]);
+    for (int j = 0; j < nrf1[i]; ++j) {
+      CHECK(nrfv1[i][j] == nrfv2[i][j]);
+      for (int k = 0; k < nrfv1[i][j]; ++k)
+        CHECK(rfverts1[i][j][k] == rfverts2[i][j][k]);
+    }
+  }
+
+}
+
+
+TEST(Write_Read_ExodusII_DegeneratePoly3) {
+  int ok;
+  Mesh_ptr mesh1, mesh2;
+
+  MSTK_Init();
+
+  mesh1 = MESH_New(UNKNOWN_REP);
+  ok = MESH_ImportFromFile(mesh1,"serial/degenpoly3.exo",NULL,NULL,NULL);
+  CHECK_EQUAL(ok,1);
+
+  int use_geometry = 1;
+  ok &= MESH_BuildClassfn(mesh1, use_geometry);
+  ok &= MESH_CheckTopo(mesh1);
+  CHECK_EQUAL(ok, 1);
+
+  int nv1 = MESH_Num_Vertices(mesh1);
+  std::vector<double> vec3(3, 0.0);
+  std::vector< std::vector<double> > vxyz1(nv1, vec3);
+  int idx = 0, i = 0;
+  MVertex_ptr mv;
+  while ((mv = MESH_Next_Vertex(mesh1, &idx))) {
+    MV_Coords(mv, &(vxyz1[i][0]));
+    i++;
+  }
+  
+  int nr1 = MESH_Num_Regions(mesh1);
+  CHECK(nr1 > 0);
+
+  std::vector<int> nrf1(nr1);
+  std::vector< std::vector<int> > nrfv1(nr1);
+  std::vector< std::vector< std::vector<int> > > rfverts1(nr1);
+
+  idx = 0;
+  i = 0;
+  MRegion_ptr mr;
+  while ((mr = MESH_Next_Region(mesh1, &idx))) {
+    List_ptr rfaces = MR_Faces(mr);
+    nrf1[i] = List_Num_Entries(rfaces);
+
+    nrfv1[i].resize(nrf1[i]);
+    rfverts1[i].resize(nrf1[i]);
+    for (int j = 0; j < nrf1[i]; ++j) {
+      MFace_ptr rf = List_Entry(rfaces, j);
+      int rfdir = MR_FaceDir_i(mr, j);
+
+      List_ptr fverts = MF_Vertices(rf, rfdir, 0);
+      nrfv1[i][j] = List_Num_Entries(fverts);
+
+      rfverts1[i][j].resize(nrfv1[i][j]);
+      for (int k = 0; k < nrfv1[i][j]; k++) {
+        MVertex_ptr fv = List_Entry(fverts, k);
+        rfverts1[i][j][k] = MV_ID(fv);
+      }
+      List_Delete(fverts);
+    }
+    List_Delete(rfaces);
+    i++;
+  }
+
+
+  ok = MESH_ExportToFile(mesh1,"./degenpoly3-tmp.exo",NULL,0,NULL,NULL,NULL);
+  CHECK_EQUAL(ok,1);
+
+
+
+  mesh2 = MESH_New(UNKNOWN_REP);
+  ok = MESH_ImportFromFile(mesh2,"./degenpoly3-tmp.exo",NULL,NULL,NULL);
+
+  int nv2 = MESH_Num_Vertices(mesh2);
+  std::vector<std::vector<double> > vxyz2(nv2, vec3);
+  idx = 0, i = 0;
+  while ((mv = MESH_Next_Vertex(mesh2, &idx))) {
+    MV_Coords(mv, &(vxyz2[i][0]));
+    i++;
+  }
+  
+  int nr2 = MESH_Num_Regions(mesh2);
+  CHECK(nr2 > 0);
+
+  std::vector<int> nrf2(nr2);
+  std::vector< std::vector<int> > nrfv2(nr2);
+  std::vector< std::vector< std::vector<int> > > rfverts2(nr2);
+
+  idx = 0;
+  i = 0;
+  while ((mr = MESH_Next_Region(mesh2, &idx))) {
+    List_ptr rfaces = MR_Faces(mr);
+    nrf2[i] = List_Num_Entries(rfaces);
+
+    nrfv2[i].resize(nrf2[i]);
+    rfverts2[i].resize(nrf2[i]);
+    for (int j = 0; j < nrf2[i]; ++j) {
+      MFace_ptr rf = List_Entry(rfaces, j);
+      int rfdir = MR_FaceDir_i(mr, j);
+      List_ptr fverts = MF_Vertices(rf, rfdir, 0);
+      nrfv2[i][j] = List_Num_Entries(fverts);
+
+      rfverts2[i][j].resize(nrfv2[i][j]);
+      for (int k = 0; k < nrfv2[i][j]; k++) {
+        MVertex_ptr fv = List_Entry(fverts, k);
+        rfverts2[i][j][k] = MV_ID(fv);
+      }
+      List_Delete(fverts);
+    }
+    List_Delete(rfaces);
+    i++;
+  }
+
+  // Compare data collected from mesh 1 and mesh 2
+
+  CHECK(nv1 == nv2);
+  for (i = 0; i < nv1; ++i)
+    for (int j = 0; j < 3; ++j)
+      CHECK_CLOSE(vxyz1[i][j], vxyz2[i][j], 1.0e-16);
+
+  CHECK(nr1 == nr2);
+  for (i = 0; i < nr1; ++i) {
+    CHECK(nrf1[i] == nrf2[i]);
+    for (int j = 0; j < nrf1[i]; ++j) {
+      CHECK(nrfv1[i][j] == nrfv2[i][j]);
+      for (int k = 0; k < nrfv1[i][j]; ++k)
+        CHECK(rfverts1[i][j][k] == rfverts2[i][j][k]);
     }
   }
 
