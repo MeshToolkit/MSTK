@@ -489,8 +489,21 @@ void MSTK_Init(void);
   void        MR_Replace_Face_i(MRegion_ptr mregion, int i, MFace_ptr mface, int dir);
   void        MR_Rem_Face(MRegion_ptr mregion, MFace_ptr mface);
   void        MR_Replace_Vertex_i(MRegion_ptr mregion, int i, MVertex_ptr mvertex);
+
+  /* Reverse the direction in which the face is used by the
+   * region. Also, attach the region on the correct side of the face
+   * consistent with the specified direction. If a region already
+   * exists on that side, its overwritten */
+
   int         MR_Rev_FaceDir(MRegion_ptr mregion, MFace_ptr mface);
   int         MR_Rev_FaceDir_i(MRegion_ptr mregion, int i);
+
+
+  /* Set the direction in which the face is used by the region. Also,
+   * attach the region on the correct side of the face consistent with
+   * the specified direction. If a region already exists on that side,
+   * its overwritten */
+
   int         MR_Set_FaceDir(MRegion_ptr mregion, MFace_ptr mface, int dir);
   int         MR_Set_FaceDir_i(MRegion_ptr mregion, int i, int dir);
 
