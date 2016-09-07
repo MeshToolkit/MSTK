@@ -458,6 +458,10 @@ extern "C" {
 	k = i%(8*sizeof(unsigned int));
 
 	adj->fdirs[j] ^= (1UL << k);
+
+        int dir = (adj->fdirs[j])>>k & 1;
+        MF_Add_Region(f, r, !dir);
+
 	return 1;
       }
 
@@ -478,6 +482,12 @@ extern "C" {
     k = i%(8*sizeof(unsigned int));
 
     adj->fdirs[j] ^= (1UL << k);
+
+    int dir = (adj->fdirs[j])>>k & 1;
+    MFace_ptr f = List_Entry(adj->rfaces, i);
+    MF_Rem_Region(f, r);
+    MF_Add_Region(f, r, !dir);
+
     return 1;
   }
 
@@ -496,6 +506,11 @@ extern "C" {
     return 0;
   }
 
+  /* This will set the direction in which the face is used by the
+   * region. It will also attach the region on the appropriate side of
+   * the face to be consistent - if there is already a region on that
+   * side, it will overwrite it */
+
   int MR_Set_FaceDir_i_FNR3R4(MRegion_ptr r, int i, int dir) {
     int j, k;
     MRegion_Adj_FN *adj;
@@ -511,6 +526,15 @@ extern "C" {
 
     adj->fdirs[j] = adj->fdirs[j] & ~(1<<k); /* Set bit to 0 */
     adj->fdirs[j] = adj->fdirs[j] | (dir<<k); /* Set it to desired dir */
+
+    MFace_ptr f = List_Entry(adj->rfaces, i);
+    List_ptr fregs = MF_Regions(f);
+    if (fregs) {
+      if (List_Contains(fregs, r))
+        MF_Rem_Region(f, r);
+      List_Delete(fregs);
+    }
+    MF_Add_Region(f, r, !dir);
     return 1;
   }
 

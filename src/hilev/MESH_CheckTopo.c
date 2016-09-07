@@ -43,6 +43,7 @@ extern "C" {
     /* Also check that the classification of the vertex is consistent
        with respect to the edge */
 
+    int first_unknown_classfn = 1;
     idx1 = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx1))) {
 
@@ -53,7 +54,12 @@ extern "C" {
       vid = MV_ID(mv);
       gvdim = MV_GEntDim(mv);
       gvid  = MV_GEntID(mv);
-      
+
+      if (gvdim == 4 && first_unknown_classfn) {
+        sprintf(mesg, "Vertex %-d - classification unknown\n", vid);
+        MSTK_Report(funcname, mesg, MSTK_WARN);
+        first_unknown_classfn = 0;
+      }
       vedges = MV_Edges(mv);
       if (!vedges) {
         sprintf(mesg,"Vertex %-d does not have any connected edges\n",vid);
@@ -201,6 +207,7 @@ extern "C" {
     /* Edges                                                      */
     /*****************************************************************/    
 
+    first_unknown_classfn = 1;
     idx1 = 0;
     while ((me = MESH_Next_Edge(mesh,&idx1))) {
 
@@ -211,6 +218,12 @@ extern "C" {
       eid = ME_ID(me);
       gedim = ME_GEntDim(me);
       geid = ME_GEntID(me);
+
+      if (gedim == 4 && first_unknown_classfn) {
+        sprintf(mesg, "Edge %-d - unknown classification", eid);
+        MSTK_Report(funcname, mesg, MSTK_WARN);
+        first_unknown_classfn = 0;
+      }
 
       if (ME_Vertex(me,0) == ME_Vertex(me,1)) {
         sprintf(mesg,"Edge %-d has repeated vertices",eid);
@@ -224,16 +237,18 @@ extern "C" {
 	gvid = MV_GEntID(ev);
 	gvdim = MV_GEntDim(ev);
 
-	if (gedim < gvdim) {
-	  sprintf(mesg,"Edge %-d classified on lower dimensional entity than  connected vertex %-d",eid,vid);
-	  MSTK_Report(funcname,mesg,MSTK_WARN);
-	  valid = 0;
-	}
-	else if (gedim == gvdim && geid != gvid) {
-	  sprintf(mesg,"Edge %-d and its vertex %-d classified on different entities of the same dimension",eid,vid);
-	  MSTK_Report(funcname,mesg,MSTK_WARN);
-	  valid = 0;
-	}
+        if (gvdim != 4 && gvdim != 4) {  /* vertex and edge classifn is known */
+          if (gedim < gvdim) {
+            sprintf(mesg,"Edge %-d classified on lower dimensional entity than  connected vertex %-d",eid,vid);
+            MSTK_Report(funcname,mesg,MSTK_WARN);
+            valid = 0;
+          }
+          else if (gedim == gvdim && geid != gvid) {
+            sprintf(mesg,"Edge %-d and its vertex %-d classified on different entities of the same dimension",eid,vid);
+            MSTK_Report(funcname,mesg,MSTK_WARN);
+            valid = 0;
+          }
+        }
 
 	vedges = MV_Edges(ev);
 	if (!List_Contains(vedges,me)) {
@@ -393,6 +408,7 @@ extern "C" {
     /* Faces                                                      */
     /*****************************************************************/    
 
+    first_unknown_classfn = 1;
     idx1 = 0;
     while ((mf = MESH_Next_Face(mesh,&idx1))) {
 
@@ -403,6 +419,12 @@ extern "C" {
       fid = MF_ID(mf);
       gfid = MF_GEntID(mf);
       gfdim = MF_GEntDim(mf);
+
+      if (gfdim == 4 && first_unknown_classfn) {
+        sprintf(mesg, "Face %-d - unknown classification", fid);
+        MSTK_Report(funcname, mesg, MSTK_WARN);
+        first_unknown_classfn = 0;
+      }
 
       fedges = MF_Edges(mf,1,0);
 
@@ -417,15 +439,17 @@ extern "C" {
 	geid = ME_GEntID(fe);
 	gedim = ME_GEntDim(fe);
 
-	if (gfdim < gedim) {
-	  sprintf(mesg,"Face %-d classified on lower order entity than edge %-d",fid,ME_ID(fe));
-	  MSTK_Report(funcname,mesg,MSTK_WARN);
-	  valid = 0;
-	}
-	else if (gedim == gfdim && geid != gfid) {
-	  sprintf(mesg,"Face %-d and edge %-d classified on different\n entities of the same dimension",fid,eid);
-	  MSTK_Report(funcname,mesg,MSTK_WARN);
-	}
+        if (gedim != 4 && gfdim != 4) {  /* Edge, Face classfn is known */
+          if (gfdim < gedim) {
+            sprintf(mesg,"Face %-d classified on lower order entity than edge %-d",fid,ME_ID(fe));
+            MSTK_Report(funcname,mesg,MSTK_WARN);
+            valid = 0;
+          }
+          else if (gedim == gfdim && geid != gfid) {
+            sprintf(mesg,"Face %-d and edge %-d classified on different\n entities of the same dimension",fid,eid);
+            MSTK_Report(funcname,mesg,MSTK_WARN);
+          }
+        }
 
 	efaces = ME_Faces(fe);
 	if (!List_Contains(efaces,mf)) {

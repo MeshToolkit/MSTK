@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include "MSet.h"
 #include "Mesh.h"
 #include "MSTK_private.h"
