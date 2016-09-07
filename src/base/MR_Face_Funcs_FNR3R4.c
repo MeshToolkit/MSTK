@@ -485,7 +485,21 @@ extern "C" {
 
     int dir = (adj->fdirs[j])>>k & 1;
     MFace_ptr f = List_Entry(adj->rfaces, i);
-    MF_Rem_Region(f, r);
+
+    /* Normally, if we are asking a region to reverse the direction in
+       which it uses a face, we would expect that the face thinks that
+       the region is connected to it. However, there are a few
+       situations (with degenerate elements) where the face-region
+       connections are inconsistent and this may not be true. So, we
+       do the following check before asking the region to be removed
+       from the face-region list */ 
+
+    List_ptr fregs = MF_Regions(f);
+    if (fregs) {
+      if (List_Contains(fregs, r))
+        MF_Rem_Region(f, r);
+      List_Delete(fregs);
+    }
     MF_Add_Region(f, r, !dir);
 
     return 1;
