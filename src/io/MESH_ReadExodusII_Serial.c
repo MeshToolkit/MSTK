@@ -848,7 +848,9 @@ extern "C" {
          * the vector from the center of the region to the center of
          * the face for each cell. If, however, we expect degenerate
          * faces we have to eliminate or at least minimize such
-         * comparisons, which is what is done here */
+         * comparisons, which is what is done here. NOTE THAT DURING
+         * THIS PROCESS THE MESH MAY BECOME TEMPORARILY TOPOLOGICALLY
+         * INCONSISTENT*/
 
         MRegion_ptr mrstart = NULL;
 
@@ -948,7 +950,8 @@ extern "C" {
               reliable_dir_face = List_Entry(rfaces, k);
               MEnt_Mark(reliable_dir_face, reliable_dir_mark);
               mrstart = mr;
-              MR_Set_FaceDir_i(mr, k, dir);
+              if (dir != MR_FaceDir_i(mr, k))
+                MR_Rev_FaceDir_i(mr, k);
               break;
             }            
             List_Delete(rfaces);
@@ -1032,13 +1035,17 @@ extern "C" {
                 if (adjface == curface) continue;
                 if (!MF_UsesEntity(adjface, cmnedge, MEDGE)) /* not adjacent */
                   continue; 
-                  
-                List_ChknAdd(rfaces2, adjface);  /* small list - no need of marking */
-                int adjfedir = MF_EdgeDir(adjface, cmnedge);
-                int adjdir = (fedir != adjfedir) ? curdir : !curdir;
-                MR_Set_FaceDir(mr, adjface, adjdir);
-                if (!MEnt_IsMarked(adjface, reliable_dir_mark))
-                  MEnt_Mark(adjface, reliable_dir_mark);
+
+                /* Found adjacent face in region */
+                if (!List_Contains(rfaces2, adjface)) { /* small list - no need of marking */
+                  int adjfedir = MF_EdgeDir(adjface, cmnedge);
+                  int adjdir = (fedir != adjfedir) ? curdir : !curdir;
+                  if (adjdir != MR_FaceDir_i(mr, j2))
+                    MR_Rev_FaceDir_i(mr, j2);
+                  if (!MEnt_IsMarked(adjface, reliable_dir_mark))
+                    MEnt_Mark(adjface, reliable_dir_mark);
+                  List_Add(rfaces2, adjface);
+                }
               }  /* for j2 = 0, nrf-1 */
             }  /* for i2 = 0, nfe-1 */
           }  /* while (curface = List_Next_Entry(rfaces2, &idx2)) */

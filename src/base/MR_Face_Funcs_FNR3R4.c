@@ -443,6 +443,10 @@ extern "C" {
   }
 
 
+  /* Reverse the direction in which this face is being used by this
+   * face. Also, reverse the regions connected to the face and the
+   * direction in which the adjacent region uses this face */
+
   int MR_Rev_FaceDir_FNR3R4(MRegion_ptr r, MFace_ptr f) {
     int i,j,k, nf;
     MRegion_Adj_FN *adj;
@@ -451,20 +455,8 @@ extern "C" {
     nf = List_Num_Entries(adj->rfaces);
 
     for (i = 0; i < nf; i++) {
-
-      if (f == (MFace_ptr) List_Entry(adj->rfaces,i)) {
-
-	j = (int) i/(8*sizeof(unsigned int));
-	k = i%(8*sizeof(unsigned int));
-
-	adj->fdirs[j] ^= (1UL << k);
-
-        int dir = (adj->fdirs[j])>>k & 1;
-        MF_Add_Region(f, r, !dir);
-
-	return 1;
-      }
-
+      if (f == (MFace_ptr) List_Entry(adj->rfaces,i))
+        return MR_Rev_FaceDir_i_FNR3R4(r, i);
     }
 
     return 0;
@@ -485,9 +477,27 @@ extern "C" {
 
     int dir = (adj->fdirs[j])>>k & 1;
     MFace_ptr f = List_Entry(adj->rfaces, i);
-    MF_Rem_Region(f, r);
-    MF_Add_Region(f, r, !dir);
 
+    MRegion_ptr oppr = NULL;
+    List_ptr fregs = MF_Regions(f);
+    if (fregs) {
+      if (List_Num_Entries(fregs) == 2) {
+        oppr = List_Entry(fregs, 0);
+        if (r == oppr)
+          oppr = List_Entry(fregs, 1);
+      }
+      List_Delete(fregs);
+    }
+
+    MF_Rem_Region(f, r);
+    if (oppr)
+      MF_Rem_Region(f, oppr);
+
+    MF_Add_Region(f, r, !dir);
+    if (oppr) {
+      MF_Add_Region(f, oppr, dir);
+      MR_Set_FaceDir(oppr, f, !dir);
+    }
     return 1;
   }
 
