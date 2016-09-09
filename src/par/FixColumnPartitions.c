@@ -19,134 +19,165 @@
 extern "C" {
 #endif
 
+int FixColumnPartitions_IsSide(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) {
+  double fxyz[MAXPV2][3];
+  double znorm;
+  int j, jm, jp, nfv;
+  
+  MF_Coords(rf,&nfv,fxyz);
+
+  znorm = 0.;
+  for (j = 0; j < nfv; j++) {
+    /* determine the average z-normal of the face */
+    if (j == 0) jm = nfv-1;
+    else jm = j-1;
+
+    if (j == nfv-1) jp = 0;
+    else jp = j+1;
+
+    znorm += (fxyz[j][1]-fxyz[jm][1]) * (fxyz[jp][0] - fxyz[j][0])
+        - (fxyz[jp][1]-fxyz[j][1]) * (fxyz[j][0] - fxyz[jm][0]);
+  }
+  znorm /= nfv;
+  if (fabs(znorm) < 1.e-6) 
+    /* z-normal is zero, face is a column side by definition */
+    return 1;
+  else
+    return 0;
+}
+
+/* Searches a region mr to find the "upward" and "downward" oriented faces.
+
+   Returns 1 if the relationship is proper, or 0 if the region has
+   zero volume and is therefore uncertain.
+*/
+int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr up, MFace_ptr dn) {
+  int found;
+  List_ptr rfaces, rfaces2;
+  int nrf, nrf2, i, j, k, nfv, ret;
+  MFace_ptr rf; double rcen[3], upcen[3], dncen[3];
+  double fxyz[MAXPV2][3];
+  MRegion_ptr mr_it;
+
+  up=NULL; dn=NULL;
+  
+  rfaces = MR_Faces(mr);
+
+  /* find two faces that are not sides */
+  found = 0; i = 0;
+  while (found < 2) {
+    rf = List_Entry(rfaces,i);
+    if (!FixColumnPartitions_IsSide(mesh, mr, rf)) {
+      if (found < 1) up = rf;
+      else dn = rf;
+      found++;
+    }
+    i++;
+  }
+  if (!dn)
+    MSTK_Report("FixColumnPartitions","Mesh is not quite columnar, can't find both up and down faces.",MSTK_FATAL);
+
+  /* figure which is up and which is down */
+  MF_Coords(up,&nfv,fxyz);
+  upcen[0] = upcen[1] = upcen[2] = 0.;
+  for (j = 0; j < nfv; j++) {
+    for (k = 0; k < 3; k++)
+      upcen[k] += fxyz[j][k];
+  }
+
+  MF_Coords(dn,&nfv,fxyz);
+  dncen[0] = dncen[1] = dncen[2] = 0.;
+  for (j = 0; j < nfv; j++) {
+    for (k = 0; k < 3; k++)
+      dncen[k] += fxyz[j][k];
+  }
+
+  /* ASSERT x,y are the same */
+  if (fabs(upcen[0] - dncen[0]) > 1.e-6 ||
+      fabs(upcen[1] - dncen[1]) > 1.e-6) {
+    MSTK_Report("FixColumnPartitions","Mesh is not quite columnar, up and down faces do not align.",MSTK_FATAL);
+  }
+
+  if (upcen[2] < dncen[2] - 1.e-6) {
+    rf = up;
+    up = dn;
+    dn = rf;
+    ret = 1;
+  } else if (upcen[2] > dncen[2] + 1.e-6) {
+    ret = 1;
+  } else {
+    /* find the first region upward that is proper */
+    MSTK_Report("FixColumnPartitions","Partitioning with degenerate cells is not yet supported.",MSTK_FATAL);
+    ret = 0;
+  }
+
+  List_Delete(rfaces);
+  return ret;
+}
+
+  
 int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) { 
-  int i, j, k, idx, nrf, nfr, nfv, nrv, curid, nxtid, homepid, nxtpid;
+  int i, j, jp, jm, k, idx, nrf, nfr, nfv, nrv, curid, nxtid, homepid, nxtpid;
   int interior, done, nmove=0, found;
   MRegion_ptr mr, curreg, nxtreg;
-  MFace_ptr rf, topf, botf;
+  MFace_ptr rf, topf, botf, topf2;
   MVertex_ptr fv;
   List_ptr rfaces, fregs, fverts;
-  double fxyz[MAXPV2][3], rxyz[MAXPV3][3], rfvec[3], rcen[3], fcen[3], maxdp, norm;
+  double fxyz[MAXPV2][3], rxyz[MAXPV3][3], rfvec[3], rcen[3], fcen[3], norm;
+  double znorm;
   
   if (MESH_Num_Regions(mesh) == 0) return 1; /* Not implemented for 2D (perhaps not needed either) */
 
+  /* loop over all regions, finding regions whose "up" face is a boundary */
   idx = 0;
   while ((mr = MESH_Next_Region(mesh,&idx))) {
-    rfaces = MR_Faces(mr);
-    nrf = List_Num_Entries(rfaces);
-    
+    FixColumnPartitions_UpDown(mesh, mr, topf, botf);
+
     interior = 1;
-    for (i = 0; i < nrf; i++) {
-      rf = List_Entry(rfaces,i);      
-      fregs = MF_Regions(rf);
-      if (List_Num_Entries(fregs) == 1) 
-        interior = 0;
-      List_Delete(fregs);
-      if (!interior) break;
-    }
-
-    if (interior) {
-      List_Delete(rfaces);
-      continue;
-    }
-
-    /* Found a boundary region - Find the face whose centroid is
-       most directly above the region centroid and check if this
-       is a boundary face */
-
-    rcen[0] = rcen[1] = rcen[2] = 0.0;
-    MR_Coords(mr,&nrv,rxyz);
-    for (i = 0; i < nrv; i++) {
-      for (k = 0; k < 3; k++)
-        rcen[k] += rxyz[i][k];
-    }
-    for (k = 0; k < 3; k++)
-      rcen[k] /= nrv;        
-
-    topf = NULL;
-    maxdp = -1.0e+10;
-    for (i = 0; i < nrf; i++) {
-      rf = List_Entry(rfaces,i);
-      MF_Coords(rf,&nfv,fxyz);
-
-      fcen[0] = fcen[1] = fcen[2] = 0.0;
-      for (j = 0; j < nfv; j++) {
-        for (k = 0; k < 3; k++)
-          fcen[k] += fxyz[j][k];
-      }
-      for (k = 0; k < 3; k++)
-        fcen[k] /= nfv;
-
-      for (k = 0; k < 3; k++)
-        rfvec[k] = fcen[k]-rcen[k];
-      norm = sqrt(rfvec[0]*rfvec[0]+rfvec[1]*rfvec[1]+rfvec[2]*rfvec[2]);
-      for (k = 0; k < 3; k++)
-        rfvec[k] /= norm;
-
-      /* rfvec[2] is same as rfvec dotted with [0,0,1] */
-      if (rfvec[2] > maxdp) {
-        maxdp = rfvec[2];
-        topf = rf;
-      }
-    }
-    List_Delete(rfaces);
-
-    if (!topf)
-      MSTK_Report("FixColumnPartitions","Could not find top face?",MSTK_FATAL);
-
-    /* Check if the top face is also a top boundary face */
-
     fregs = MF_Regions(topf);
-    nfr = List_Num_Entries(fregs);
+    if (List_Num_Entries(fregs) == 1) interior = 0;
+    List_Delete(fregs);
 
-    if (nfr != 1) {
-      List_Delete(fregs);
-      continue; /* Not a mesh region at the top of the mesh */
-    }
-    
-    /* Hopefully, found the top face of a column in the mesh */
+    if (interior) continue;
 
-    curreg = List_Entry(fregs,0);
+    /* found a top face: iterate to the bottom */
+    done = 0;
+    curreg = mr;
     curid = MR_ID(curreg);
     homepid = part[curid-1];
 
+    /* already have the bottom for this reg  - get
+       the next lower mesh region and check if it is on
+       the same partition as the top region */
+    fregs = MF_Regions(botf);
+    if (List_Num_Entries(fregs) == 2) {
+      nxtreg = List_Entry(fregs,0);
+      if (nxtreg == curreg)
+        nxtreg = List_Entry(fregs,1);
+        
+      nxtid = MR_ID(nxtreg);
+      nxtpid = part[nxtid-1];
+      if (nxtpid != homepid) {
+        part[nxtid-1] = homepid;
+        nmove++;
+      }
+
+      curreg = nxtreg;
+      curid = nxtid;
+      topf = botf;
+    }
+    else 
+      done = 1;
     List_Delete(fregs);
 
-
-    done = 0;
+    /* continue to loop through the column */
     while (!done) {
-
-      rfaces = MR_Faces(curreg);
-      nrf = List_Num_Entries(rfaces);
-      botf = 0;
-      for (i = 0; i < nrf; i++) {
-        rf = List_Entry(rfaces,i);
-
-        fverts = MF_Vertices(rf,1,0);
-        nfv = List_Num_Entries(fverts);
-        found = 0;
-        for (j = 0; j < nfv; j++) {
-          fv = List_Entry(fverts,j);
-          if (MF_UsesEntity(topf,fv,MVERTEX)) {
-            found = 1;  /* found common vertex betweeen two faces */
-            break;
-          }
-        }          
-        List_Delete(fverts);
-
-        if (!found) {
-          botf = rf;
-          break;
-        }
-      }
-      List_Delete(rfaces);
-
-      /* Found bottom face of current mesh region - get
-       the next lower mesh region and check if it is on
-      the same partition as the top region */
+      /* find the bottom face of that region */
+      FixColumnPartitions_UpDown(mesh, curreg, topf2, botf);
+      if (topf2 != topf) 
+        MSTK_Report("FixColumnPartitions","Mesh is not columnar, up/down faces aren't consistent.",MSTK_FATAL);
 
       fregs = MF_Regions(botf);
-
       if (List_Num_Entries(fregs) == 2) {
         nxtreg = List_Entry(fregs,0);
         if (nxtreg == curreg)
@@ -167,7 +198,6 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
         done = 1;
       List_Delete(fregs);
     }
-    
   }
 
   if (nmove) {

@@ -55,7 +55,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   char                  attname[256], matname[256], date_str[256];
   int                   jv, jf, gmodel, nrf, nrv, nfv, dir;
   int			i, found, k, nmeshatt, noutatt, ival, idgaps;
-  int                   nalloc, ngent, fnum, fid, vid, icr;
+  int                   nalloc, ngent, fnum=0, fid, vid, icr;
   int                   nv, ne, nf, nr;
   int                   minid, maxid, tempid, prev_tempid;
   int                   attentdim, j, ncells, polygons=0, cellmk, idx;

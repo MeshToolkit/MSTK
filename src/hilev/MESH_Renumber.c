@@ -71,7 +71,7 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
     double minx, miny, minz;
     int mkid = MSTK_GetMarker();
     int minid, maxid;
-    int *nadj, *newmap, *adj, *offset, nconn;
+    int *nadj, *newmap, *adj, *offset, nconn=0;
     int nalloc, depth, maxwidth;
         
 

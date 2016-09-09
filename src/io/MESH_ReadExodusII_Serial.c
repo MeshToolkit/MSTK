@@ -925,7 +925,7 @@ extern "C" {
                 }
                 List_Delete(fedges0);
                 List_Delete(fvrts0);
-                int fdir;
+                int fdir=-1;
                 int found = 0;
                 int k2;
                 for (k2 = 0; k2 < nnpe[j]; k2++) {
