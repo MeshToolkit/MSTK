@@ -51,41 +51,42 @@ int FixColumnPartitions_IsSide(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) {
    Returns 1 if the relationship is proper, or 0 if the region has
    zero volume and is therefore uncertain.
 */
-int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr up, MFace_ptr dn) {
+int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFace_ptr* dn) {
   int found;
   List_ptr rfaces, rfaces2;
-  int nrf, nrf2, i, j, k, nfv, ret;
+  int nrf, i, j, k, nfv, ret;
   MFace_ptr rf; double rcen[3], upcen[3], dncen[3];
   double fxyz[MAXPV2][3];
   MRegion_ptr mr_it;
 
-  up=NULL; dn=NULL;
+  *up=NULL; *dn=NULL;
   
   rfaces = MR_Faces(mr);
+  nrf = List_Num_Entries(rfaces);
 
   /* find two faces that are not sides */
   found = 0; i = 0;
   while (found < 2) {
     rf = List_Entry(rfaces,i);
     if (!FixColumnPartitions_IsSide(mesh, mr, rf)) {
-      if (found < 1) up = rf;
-      else dn = rf;
+      if (found < 1) *up = rf;
+      else *dn = rf;
       found++;
     }
     i++;
+    if (i >= nrf) 
+      MSTK_Report("FixColumnPartitions","Mesh is not columnar, can't find both up and down faces.",MSTK_FATAL);
   }
-  if (!dn)
-    MSTK_Report("FixColumnPartitions","Mesh is not quite columnar, can't find both up and down faces.",MSTK_FATAL);
 
   /* figure which is up and which is down */
-  MF_Coords(up,&nfv,fxyz);
+  MF_Coords(*up,&nfv,fxyz);
   upcen[0] = upcen[1] = upcen[2] = 0.;
   for (j = 0; j < nfv; j++) {
     for (k = 0; k < 3; k++)
       upcen[k] += fxyz[j][k];
   }
 
-  MF_Coords(dn,&nfv,fxyz);
+  MF_Coords(*dn,&nfv,fxyz);
   dncen[0] = dncen[1] = dncen[2] = 0.;
   for (j = 0; j < nfv; j++) {
     for (k = 0; k < 3; k++)
@@ -99,9 +100,9 @@ int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr up, MFac
   }
 
   if (upcen[2] < dncen[2] - 1.e-6) {
-    rf = up;
-    up = dn;
-    dn = rf;
+    rf = *up;
+    *up = *dn;
+    *dn = rf;
     ret = 1;
   } else if (upcen[2] > dncen[2] + 1.e-6) {
     ret = 1;
@@ -117,7 +118,7 @@ int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr up, MFac
 
   
 int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) { 
-  int i, j, jp, jm, k, idx, nrf, nfr, nfv, nrv, curid, nxtid, homepid, nxtpid;
+  int i, j, jp, jm, k, idx, curid, nxtid, homepid, nxtpid;
   int interior, done, nmove=0, found;
   MRegion_ptr mr, curreg, nxtreg;
   MFace_ptr rf, topf, botf, topf2;
@@ -131,7 +132,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
   /* loop over all regions, finding regions whose "up" face is a boundary */
   idx = 0;
   while ((mr = MESH_Next_Region(mesh,&idx))) {
-    FixColumnPartitions_UpDown(mesh, mr, topf, botf);
+    FixColumnPartitions_UpDown(mesh, mr, &topf, &botf);
 
     interior = 1;
     fregs = MF_Regions(topf);
@@ -173,7 +174,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
     /* continue to loop through the column */
     while (!done) {
       /* find the bottom face of that region */
-      FixColumnPartitions_UpDown(mesh, curreg, topf2, botf);
+      FixColumnPartitions_UpDown(mesh, curreg, &topf2, &botf);
       if (topf2 != topf) 
         MSTK_Report("FixColumnPartitions","Mesh is not columnar, up/down faces aren't consistent.",MSTK_FATAL);
 
