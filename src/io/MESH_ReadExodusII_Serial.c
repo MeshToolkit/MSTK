@@ -728,26 +728,7 @@ extern "C" {
     else if (mesh_type == 3)
       elblockatt = MAttrib_New(mesh, "elemblock", INT, MALLTYPE);
     
-
-    /* MFace_ptr (*face_hash)[DEF_MAXFACES] = NULL; */
-    /* int *face_hash_lens = NULL; */
-    /* int nfalloc=0; */
-    /* int nrealloc; */
-    /* int a_prime = 31; */
-    /* unsigned int nums[4] = {nnodes-3,nnodes-2,nnodes-1,nnodes}; */
-    /* unsigned int max_hash_key = hash_ints(4,nums); */
-    /* unsigned int hash_key; */
-
-    /* if (solid_elems) { */
-    /*   /\* Initialize the face_hash *\/ */
-      
-    /*   nfalloc = max_hash_key+1; */
-    /*   nrealloc = 0; */
-    /*   face_hash = (MFace_ptr (*)[DEF_MAXFACES]) malloc(nfalloc*sizeof(MFace_ptr [DEF_MAXFACES])); */
-    /*   face_hash_lens = (int *) calloc(nfalloc,sizeof(int)); */
-    /* } */
-
-      int mkfid = MSTK_GetMarker();
+    int mkfid = MSTK_GetMarker();
 
     for (i = 0; i < nelblock; i++) {
       
@@ -773,6 +754,10 @@ extern "C" {
       if (strcmp(elem_type,"NFACED") == 0 || 
 	  strcmp(elem_type,"nfaced") == 0) {
 	
+        /* Exodus II format for polyhedra does not include face
+         * directions so we have to try and divine them by various
+         * means - hence this section is painfully long */
+
 	/* In this case the nelnodes parameter is actually total number of 
 	   nodes referenced by all the polyhedra (counting duplicates) */
 
@@ -807,152 +792,296 @@ extern "C" {
 	MFace_ptr *rfarr = (MFace_ptr *) malloc(max*sizeof(MFace_ptr));
 	int *rfdirs = (int *) malloc(max*sizeof(int *));
 
+        int this_block_mark = MSTK_GetMarker();
+        int reliable_dir_mark = MSTK_GetMarker();
 	int offset = 0;
 	for (j = 0; j < nel_in_blk[i]; j++) {
-	  mr = MR_New(mesh);
 
-          int nrv = 0;
-          double rcen[3], fcen[MAXPF3][3], fnormal[MAXPF3][3], fxyz[MAXPV2][3];
-          rcen[0] = rcen[1] = rcen[2] = 0.0;
-
-          int mkid = MSTK_GetMarker();
-
-          List_ptr rvlist = List_New(0);
 	  for (k = 0; k < nnpe[j]; k++) {
-
             /* Face of region */
 	    rfarr[k] = MSet_Entry(faceset,connect[offset+k]-1);
             
             /* Exodus II doesn't tell us the direction in which face
-               is used by region. Compute face center, face normal and
-               region center in preparation for computing this
-               geometrically */
-
-            List_ptr rfverts = MF_Vertices(rfarr[k],1,0);
-            int nrfv = List_Num_Entries(rfverts);
-
-            fcen[k][0] = fcen[k][1] = fcen[k][2] = 0.0;
-            fnormal[k][0] = fnormal[k][1] = fnormal[k][2] = 0.0;
-
-            int k1, k2;
-            for (k1 = 0; k1 < nrfv; k1++) {
-              MVertex_ptr v = List_Entry(rfverts,k1);
-              MV_Coords(v,fxyz[k1]);
-
-              for (k2 = 0; k2 < 3; k2++) fcen[k][k2] += fxyz[k1][k2];
-
-              if (!MEnt_IsMarked(v,mkid)) {
-                List_Add(rvlist,v);
-                MEnt_Mark(v,mkid);
-                for (k2 = 0; k2 < 3; k2++) rcen[k2] += fxyz[k1][k2];
-                nrv++;
-              }
-            }
-              List_Delete(rfverts);
-
-            /* geometric center of face */
-            for (k2 = 0; k2 < 3; k2++) fcen[k][k2] /= nrfv;
-
-            /* Average normal of face */
-            for (k1 = 0; k1 < nrfv; k1++) {
-              double vec1[3], vec2[3], normal[3];
-              MSTK_VDiff3(fxyz[(k1+1)%nrfv],fxyz[k1],vec1);
-              MSTK_VDiff3(fxyz[(k1+nrfv-1)%nrfv],fxyz[k1],vec2);
-              MSTK_VCross3(vec1,vec2,normal);
-              MSTK_VNormalize3(normal);
-              MSTK_VSum3(fnormal[k],normal,fnormal[k]);
-            }
-	  }
-
-          for (k = 0; k < 3; k++) rcen[k] /= nrv;
-
-          List_Unmark(rvlist,mkid);
-          MSTK_FreeMarker(mkid);
-          List_Delete(rvlist);
-
-
-          /* Exodus II has no support for specifying face dirs. We
-             have to figure it out ourselves using geometric checks */
-
-          for (k = 0; k < nnpe[j]; k++) {
-              if (MSTK_VLen3(fnormal[k]) < 1.0e-15) {
-                if(!MEnt_IsMarked(rfarr[k], mkfid)) {
-                  MEnt_Mark(rfarr[k], mkfid);
-                  rfdirs[k] = 1;
-                }
-                else {
-                  List_ptr fregs = MF_Regions(rfarr[k]);
-                  if (List_Num_Entries(fregs) > 1)
-                    MSTK_Report(funcname,"Face already connected to two regions",MSTK_FATAL);
-                  
-                  List_Delete(fregs);
-                  rfdirs[k] = 0;
-                }
-              }
-              else {
-                List_ptr rfverts = MF_Vertices(rfarr[k],1,0);
-                int nrfv = List_Num_Entries(rfverts);
+               is used by region. */
+            rfdirs[k] = 1;
+            List_ptr fregs = MF_Regions(rfarr[k]);
+            if (fregs) {
+              if (List_Num_Entries(fregs) == 1) {
+                MRegion_ptr adjreg = List_Entry(fregs, 0);
+                int oppfdir = MR_FaceDir(adjreg, rfarr[k]);
+                rfdirs[k] = !oppfdir;
                 
-            double outvec[3], dp;
-            MSTK_VDiff3(fcen[k],rcen,outvec);
-                
-            dp = MSTK_VDot3(outvec,fnormal[k]);
-            rfdirs[k] = (dp > 0) ? 1 : 0;
+                /* the face direction w.r.t. the adjacent region is only reliable if 
+                   the adjacent region is in a previously processed block */
+                if (!MEnt_IsMarked(adjreg, this_block_mark))
+                  MEnt_Mark(rfarr[k], reliable_dir_mark);
+              }
+              List_Delete(fregs);
+            }
           }
+          
+          /* create the region (possibly with erroneous face
+           * directions) and mark it as being in this block */
+          
+          mr = MR_New(mesh);            
+          MR_Set_Faces(mr, nnpe[j], rfarr, rfdirs);            
+          MR_Set_GEntID(mr, elem_blk_ids[i]);	  
+          MR_Set_GEntDim(mr, 3);
+          
+          MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
+          MSet_Add(matset,mr);
+          
+          MEnt_Mark(mr, this_block_mark);
+
+          offset += nnpe[j];
+        }  /* for (j = 0, nel_in_blk[i]) */
+
+        free(rfarr); free(rfdirs);
+        free(connect);
+        free(nnpe);
+
+        
+        /* Now we have to go through some painful steps to reliably
+         * get all face directions of the regions. If we were sure
+         * that no element would be degenerate (0 volume or having 0
+         * area faces), we could compare the normal of the face with
+         * the vector from the center of the region to the center of
+         * the face for each cell. If, however, we expect degenerate
+         * faces we have to eliminate or at least minimize such
+         * comparisons, which is what is done here. NOTE THAT DURING
+         * THIS PROCESS THE MESH MAY BECOME TEMPORARILY TOPOLOGICALLY
+         * INCONSISTENT*/
+
+        MRegion_ptr mrstart = NULL;
+
+        /* Check if if we can find at least one face in this block
+         * whose direction is considered reliable */
+        
+        MFace_ptr reliable_dir_face = NULL;
+        int idx = 0;
+        while (!reliable_dir_face && ((mr = MSet_Next_Entry(matset, &idx)))) {
+          List_ptr rfaces = MR_Faces(mr);
+          int idx2 = 0;
+          MFace_ptr rf;
+          while ((rf = List_Next_Entry(rfaces, &idx2))) {
+            if (MEnt_IsMarked(rf, reliable_dir_mark)) {
+              reliable_dir_face = rf;
+              mrstart = mr;
+              break;
             }
+          }
+          List_Delete(rfaces);
+          if (mrstart) break;
+        }
 
-	  MR_Set_Faces(mr, nnpe[j], rfarr, rfdirs);
+        if (!reliable_dir_face) {
 
-	  MR_Set_GEntID(mr, elem_blk_ids[i]);	  
-	  MR_Set_GEntDim(mr, 3);
+        /* If not even one face is found with a known direction, we
+         * have to find it geometrically. */
+          
+          idx = 0;
+          while (!reliable_dir_face && ((mr = MSet_Next_Entry(matset, &idx)))) {
 
-	  MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
-	  MSet_Add(matset,mr);
+            double (*fxyz)[3] = (double (*)[3]) malloc(MAXPV2*sizeof(double [3]));
+            
+            /* Geometric center of region */
+            /* Average normal and geometric center of faces */
 
-            for (k = 0; k < nnpe[j]; k++) {
-              if (MEnt_IsMarked(rfarr[k], mkfid)){
-                List_ptr fedges0 = MF_Edges(rfarr[k],1,0);
-                List_ptr fvrts0 = MF_Vertices(rfarr[k],1,0);
-                MEdge_ptr fedge0nd = List_Entry(fedges0,0);
-                MVertex_ptr fvrt0 = List_Entry(fvrts0,0);
-                int fedge0nd_dir = (fvrt0 == ME_Vertex(fedge0nd,0));
-                if (ME_Len(fedge0nd) < 1.0e-15) {
-                  int nedges = List_Num_Entries(fedges0);
-                  fedge0nd = List_Entry(fedges0, nedges - 1);
-                  fedge0nd_dir = (fvrt0 == ME_Vertex(fedge0nd,1));
-                  if (ME_Len(fedge0nd) < 1.0e-15)
-                    MSTK_Report(funcname,"Two adjacent edges of a face are degenerate",MSTK_FATAL);
-                }
-                List_Delete(fedges0);
-                List_Delete(fvrts0);
-                int fdir=-1;
-                int found = 0;
+            List_ptr rfaces = MR_Faces(mr);
+            int nrf = List_Num_Entries(rfaces);
+            
+            List_ptr rverts = List_New(10);
+            int nrv = 0;
+
+            double rcen[3];
+            rcen[0] = rcen[1] = rcen[2] = 0.0;
+            double fcen[MAXPF3][3], fnormal[MAXPF3][3];
+
+            for (k = 0; k < nrf; k++) {
+              MFace_ptr rf = List_Entry(rfaces, k);
+
+              List_ptr fverts = MF_Vertices(rf, 1, 0);
+              int nfv = List_Num_Entries(fverts);
+
+              fcen[k][0] = fcen[k][1] = fcen[k][2] = 0.0;
+              int k1;
+              for (k1 = 0; k1 < nfv; k1++) {
                 int k2;
-                for (k2 = 0; k2 < nnpe[j]; k2++) {
-                  if (k2 == k) continue;
-                  
-                  MFace_ptr cur_face = MSet_Entry(faceset,connect[offset+k2]-1);
-                  if (MF_UsesEntity(cur_face,fedge0nd,MEDGE)) {
-                    int dir_fr_adj0 = MR_FaceDir_i(mr,k2);
-                    int dir_ef_adj0 = MF_EdgeDir(cur_face,fedge0nd);
-                    fdir = (fedge0nd_dir == dir_ef_adj0) ? !dir_fr_adj0 : dir_fr_adj0;
-                    found = 1;
-                    break;
-                  }
+                MVertex_ptr fv = List_Entry(fverts, k1);
+                MV_Coords(fv, fxyz[k1]);
+
+                if (!List_Contains(rverts, fv)) {
+                  List_Add(rverts, fv);
+                  for (k2 = 0; k2 < 3; k2++) rcen[k2] += fxyz[k1][k2];
+                  nrv++;
                 }
-                if (!found)
-                  MSTK_Report(funcname,"No other face with the same edge",MSTK_FATAL);
                 
-                MR_Set_FaceDir_i(mr, k, fdir);
+                for (k2 = 0; k2 < 3; k2++) fcen[k][k2] += fxyz[k1][k2];
+              }
+              for (k1 = 0; k1 < 3; k1++) fcen[k][k1] /= nfv;
+              List_Delete(fverts);
+              
+              fnormal[k][0] = fnormal[k][1] = fnormal[k][2] = 0.0;
+              for (k1 = 0; k1 < nfv; k1++) {
+                double vec1[3], vec2[3], normal[3];
+                MSTK_VDiff3(fxyz[(k1+1)%nfv], fxyz[k1], vec1);
+                MSTK_VDiff3(fxyz[(k1+nfv-1)%nfv], fxyz[k1], vec2);
+                MSTK_VCross3(vec1, vec2, normal);
+                double len2 = MSTK_VLenSqr3(normal);
+                if (len2 > 0.0) MSTK_VNormalize3(normal);
+                MSTK_VSum3(fnormal[k], normal, fnormal[k]);
               }
             }
+            for (k = 0; k < 3; k++) rcen[k] /= nrv;
 
-	  offset += nnpe[j];
-	}
-	
-	free(rfarr); free(rfdirs);
-	free(connect);
-	free(nnpe);
+            for (k = 0; k < nrf; k++) {
+              /* @todo: do checks to make sure face is not too warped */
+
+              if (MSTK_VLenSqr3(fnormal[k]) < 1.0e-20) continue;  /* zero area face */
+
+              double outvec[3];              
+              MSTK_VDiff3(fcen[k], rcen, outvec);
+              if (MSTK_VLenSqr3(outvec) < 1.0e-20) continue;  /* zero volume element */
+
+              MSTK_VNormalize3(outvec);
+              MSTK_VNormalize3(fnormal[k]);
+              double dp = MSTK_VDot3(outvec, fnormal[k]);
+              int dir = (dp > 0) ? 1 : 0;
+              reliable_dir_face = List_Entry(rfaces, k);
+              MEnt_Mark(reliable_dir_face, reliable_dir_mark);
+              mrstart = mr;
+              if (dir != MR_FaceDir_i(mr, k))
+                MR_Rev_FaceDir_i(mr, k);
+              break;
+            }            
+            List_Delete(rfaces);
+
+            if (reliable_dir_face) break;
+
+          }  /* while (!reliable_dir_face && (mr = MSet_Next_Entry(matset, &idx))) */
+        }  /* if (!reliable_dir_face) */
+
+        if (!mrstart)
+          MSTK_Report(funcname,
+                      "Could not find region with at least one reliable face dir!",
+                      MSTK_FATAL);
+
+        /* Starting from the reliable direction face and the block
+         * region it bounds, walk through all other regions in the
+         * block */
+
+        int inreglist_mark = MSTK_GetMarker();
+        List_ptr reglist = List_New(nel_in_blk[i]);
+
+        List_Add(reglist, mrstart);
+        MEnt_Mark(mrstart, inreglist_mark);
+
+        idx = 0;
+        while ((mr = List_Next_Entry(reglist, &idx))) {
+          List_ptr rfaces = MR_Faces(mr);
+          int nrf = List_Num_Entries(rfaces);
+
+          /* if we know the direction in which the region uses at
+           * least one of its faces, we can determine the directions
+           * for all other faces of the region */
+
+          List_ptr rfaces2 = List_New(nrf);
+          MFace_ptr fstart = NULL;
+          for (k = 0; k < nrf; k++) {
+            MFace_ptr rf = List_Entry(rfaces, k);
+            if (MEnt_IsMarked(rf, reliable_dir_mark)) {
+              fstart = rf;
+              break;
+            }
+          }
+
+          if (!fstart) {
+            List_Delete(rfaces2);
+            MSTK_Report(funcname,
+                        "Could not find reliable dir face in a supposedly reliable region",
+                        MSTK_FATAL);
+          }
+
+          List_Add(rfaces2, fstart);
+
+          int idx2 = 0;
+          MFace_ptr curface;
+          while ((curface = List_Next_Entry(rfaces2, &idx2))) {
+            int curdir = MR_FaceDir(mr, curface);
+                
+            List_ptr fedges = MF_Edges(curface, 1, 0);
+            int nfe = List_Num_Entries(fedges);
+                
+            /* For each of the edges, find an adjacent face of the
+             * region sharing that edge and set its direction
+             * based on directional consistency rules for a
+             * 2-manifold object (if two faces of a region sharing
+             * an edge use the edge in opposite senses, then the
+             * two faces are used by the region in the same
+             * sense) */
+            
+            int i2;
+            for (i2 = 0; i2 < nfe; ++i2) {
+              MEdge_ptr cmnedge = List_Entry(fedges, i2);
+              int fedir = MF_EdgeDir_i(curface, i2);
+              
+              /* Find another face in this region that uses this
+               * edge and whose direction of use by the region is
+               * not known */
+              
+              int j2;
+              for (j2 = 0; j2 < nrf; ++j2) {
+                MFace_ptr adjface = List_Entry(rfaces, j2);
+                if (adjface == curface) continue;
+                if (!MF_UsesEntity(adjface, cmnedge, MEDGE)) /* not adjacent */
+                  continue; 
+
+                /* Found adjacent face in region */
+                if (!List_Contains(rfaces2, adjface)) { /* small list - no need of marking */
+                  int adjfedir = MF_EdgeDir(adjface, cmnedge);
+                  int adjdir = (fedir != adjfedir) ? curdir : !curdir;
+                  if (adjdir != MR_FaceDir_i(mr, j2))
+                    MR_Rev_FaceDir_i(mr, j2);
+                  if (!MEnt_IsMarked(adjface, reliable_dir_mark))
+                    MEnt_Mark(adjface, reliable_dir_mark);
+                  List_Add(rfaces2, adjface);
+                }
+              }  /* for j2 = 0, nrf-1 */
+            }  /* for i2 = 0, nfe-1 */
+          }  /* while (curface = List_Next_Entry(rfaces2, &idx2)) */
+          List_Delete(rfaces2);
+
+          for (k = 0; k < nrf; ++k) {
+            MFace_ptr rf = List_Entry(rfaces, k);
+            List_ptr fregs = MF_Regions(rf);
+            if (List_Num_Entries(fregs) == 2) {
+              MRegion_ptr oppr = List_Entry(fregs, 0);
+              if (oppr == mr)
+                oppr = List_Entry(fregs, 1);
+
+              if (!MEnt_IsMarked(oppr, inreglist_mark) &&
+                  MEnt_IsMarked(oppr, this_block_mark)) {
+                List_Add(reglist, oppr);
+                MEnt_Mark(oppr, inreglist_mark);
+              }
+            }
+            List_Delete(fregs);
+          }
+          List_Delete(rfaces);
+
+        }  /* while (mr = List_Next_Entry(reglist, &idx)) */   
+          
+        List_Unmark(reglist, inreglist_mark);
+        List_Delete(reglist);
+        MSTK_FreeMarker(inreglist_mark);
+
+        MSet_Unmark(matset, this_block_mark);
+        MSTK_FreeMarker(this_block_mark);
+
+        idx = 0;
+        while ((mf = MESH_Next_Face(mesh, &idx)))
+          MEnt_Unmark(mf, reliable_dir_mark);
+        MSTK_FreeMarker(reliable_dir_mark);
 
       }
       else if (strncasecmp(elem_type,"TET",3) == 0 ||
@@ -1031,33 +1160,8 @@ extern "C" {
               face = NULL;
 
               int nfv = exo_nrfverts[eltype][k];              
-              for (k1 = 0; k1 < nfv; k1++) {
+              for (k1 = 0; k1 < nfv; k1++)
                 fverts[k1] = rverts[exo_rfverts[eltype][k][k1]];
-                /* nums[k1] = MV_ID(fverts[k1]);  */
-              }
-              /* hash_key = hash_ints(nfv,nums); */
-
-              /* if ((hash_key < nfalloc) && (face_hash_lens[hash_key] != 0)) { */
-                
-              /*   int ii; */
-              /*   for (ii = 0; ii < face_hash_lens[hash_key]; ii++) { */
-              /*     MFace_ptr hash_face = face_hash[hash_key][ii]; */
-                  
-              /*     int jj, has_all_verts = 1; */
-              /*     for (jj = 0; jj < nfv; jj++) */
-              /*       if (!MF_UsesEntity(hash_face,fverts[jj],MVERTEX)) { */
-              /*         has_all_verts = 0; */
-              /*         break; */
-              /*       } */
-
-              /*     if (has_all_verts) { */
-              /*       face = hash_face; */
-              /*       break; */
-              /*     } */
-              /*   } */
-
-              /* } */
-
 
               List_ptr vfaces = MV_Faces(fverts[0]);
               int nvfaces = vfaces ? List_Num_Entries(vfaces) : 0;
@@ -1108,26 +1212,6 @@ extern "C" {
                 MF_Set_Vertices(face,exo_nrfverts[eltype][k],fverts);
                 rfarr[k] = face;
                 rfdirs[k] = exo_rfdirs[eltype][k];
-
-              /*   if (hash_key >= nfalloc) { */
-              /*     int new_alloc = 2*nfalloc; */
-              /*     if (hash_key > new_alloc) */
-              /*       new_alloc = 2*hash_key; */
-              /*     face_hash = (MFace_ptr (*)[DEF_MAXFACES]) realloc(face_hash,new_alloc*sizeof(MFace_ptr [DEF_MAXFACES])); */
-              /*     face_hash_lens = (int *) realloc(face_hash_lens,new_alloc*sizeof(int)); */
-              /*     int ii; */
-              /*     for (ii = nfalloc; ii < new_alloc; ii++) */
-              /*       face_hash_lens[ii] = 0; */
-              /*     nrealloc++; */
-              /*     nfalloc = new_alloc; */
-              /*   } */
-              /*   if (face_hash_lens[hash_key]+1 > DEF_MAXFACES) { */
-              /*     MSTK_Report(funcname,"Increase size of each array in hash table (DEF_MAXFACES) \n or use hash key with fewer conflicts",MSTK_ERROR); */
-              /*     MSTK_Report(funcname,"Cannot insert face into hash table\n",MSTK_FATAL); */
-              /*   } */
-
-              /*   face_hash[hash_key][face_hash_lens[hash_key]] = face; */
-              /*   face_hash_lens[hash_key]++; */
               } 
             }
 	  
@@ -1262,39 +1346,11 @@ extern "C" {
       
     } /* for (i = 0; i < nelblock; i++) */
 
-      int idx = 0;
-      while ((mf = MESH_Next_Face(mesh,&idx)))
-        if(MEnt_IsMarked(mf, mkfid))
-          MEnt_Unmark(mf, mkfid);
-      MSTK_FreeMarker(mkfid);
-
-    /* Deallocate the face hash table */
-/*     if (solid_elems) { */
-
-/* #ifdef DEBUG2 */
-/*       fprintf(stderr,"Face hash table for MESH_ImportFromExodusII has %d entries while the mesh has %d faces\n",nfalloc,MESH_Num_Faces(mesh)); */
-/*       int maxlen=0, num=0, totlen=0, avelen; */
-/*       for (i = 0; i < nfalloc; i++) */
-/*         if (face_hash_lens[i]) { */
-/*           num++; */
-/*           int len = face_hash_lens[i]; */
-/*           if (len > maxlen) maxlen = len; */
-/*           totlen += len; */
-/*         } */
-/*       if (num) { */
-/*         avelen = totlen/num;       */
-/*         fprintf(stderr,"There are %d non-zero entries in the hash_table\n",num); */
-/*         fprintf(stderr,"Maximum list length is %d and average list length is %d\n",maxlen,avelen);  */
-/*         fprintf(stderr,"Number of times face_has array was realloc'ed = %d\n",nrealloc); */
-/*       } */
-/* #endif */
-
-/*       free(face_hash); */
-/*       free(face_hash_lens); */
-/*       nfalloc = 0; */
-
-/*     } */
-
+    int idx = 0;
+    while ((mf = MESH_Next_Face(mesh,&idx)))
+      if(MEnt_IsMarked(mf, mkfid))
+        MEnt_Unmark(mf, mkfid);
+    MSTK_FreeMarker(mkfid);
 
     /* Fix classifications of interior mesh faces only - if this mesh
      is part of a distributed mesh we will get boundary info wrong */

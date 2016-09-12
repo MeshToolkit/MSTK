@@ -59,7 +59,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh, int use_geometry) {
       gvids[ngverts] = gvid;
       
       vedges = MV_Edges(vertex);
-      nve = List_Num_Entries(vedges);
+      nve = vedges ? List_Num_Entries(vedges) : 0;
 
       gvedgeids[ngverts] = (int *) malloc((1+nve)*sizeof(int));
       ngve = 0;
@@ -72,7 +72,7 @@ int MESH_BuildVertexClassfn(Mesh_ptr mesh, int use_geometry) {
       }
       gvedgeids[ngverts][0] = ngve;
 
-      List_Delete(vedges);
+      if (vedges) List_Delete(vedges);
       ngverts++;
     }
   }
