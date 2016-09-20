@@ -30,6 +30,8 @@ extern "C" {
           strcpy(format,"gmv");
         else if (strcmp(ext,"exo") == 0)
           strcpy(format,"exodusii");
+        else if (strcmp(ext,"par") == 0)
+          strcpy(format,"nemesisi");
         else {
           fprintf(stderr,"Unknown file format\n");
           return -1;
