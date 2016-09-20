@@ -948,7 +948,17 @@ extern "C" {
                 rfarr[k] = face;
                 fregs = MF_Regions(face);
                 if (!fregs || !List_Num_Entries(fregs)) {
-                  rfdirs[k] = exo_rfdirs[eltype][k]; /* unlikely to come here */
+                  /* Comes here when the other region attached to this
+                     face will be a polyhedral element that will be
+                     created later. Because polyhedral elements need
+                     to be described in terms of their faces, the
+                     shared face explicitly described may have a
+                     different vertex ordering than the implicit
+                     ordering required by this standard element. In
+                     this case, let the standard element ordering
+                     rule */
+                  MF_Set_Vertices(face, nfv, fverts);
+                  rfdirs[k] = exo_rfdirs[eltype][k]; 
                 }
                 else {
                   if (List_Num_Entries(fregs) == 1) {
@@ -957,7 +967,18 @@ extern "C" {
 
                     freg = List_Entry(fregs,0);
                     dir = MR_FaceDir(freg,face);
-                    rfdirs[k] = !dir;
+                    /* since this is a standard type element, it has
+                     * to follow its face direction according to the
+                     * template and not derive its direction from the
+                     * other region. If the other region is a standard
+                     * element too, it should be consistent in a valid
+                     * mesh. If its a polyhedral element, its face dir
+                     * will be determined from this standard element
+                     * later in the code but we will fix it here to be
+                     * consistent with the standard element */
+                    rfdirs[k] = exo_rfdirs[eltype][k];
+                    if (dir != !rfdirs[k])
+                      MR_Set_FaceDir(freg, face, !dir);
                   }
                   else if (List_Num_Entries(fregs) == 2) {
 		  MSTK_Report(funcname,"Face already connected two faces",MSTK_FATAL);
