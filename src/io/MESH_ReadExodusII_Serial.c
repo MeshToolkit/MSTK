@@ -977,8 +977,10 @@ extern "C" {
                      * later in the code but we will fix it here to be
                      * consistent with the standard element */
                     rfdirs[k] = exo_rfdirs[eltype][k];
-                    if (dir != !rfdirs[k])
+                    if (dir != !rfdirs[k]) {
+                      MF_Set_Vertices(face, nfv, fverts);
                       MR_Set_FaceDir(freg, face, !dir);
+                    }
                   }
                   else if (List_Num_Entries(fregs) == 2) {
 		  MSTK_Report(funcname,"Face already connected two faces",MSTK_FATAL);
