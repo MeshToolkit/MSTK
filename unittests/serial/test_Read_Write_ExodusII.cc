@@ -38,6 +38,9 @@ TEST(Read_Write_ExodusII_Poly2)
   CHECK_EQUAL(num_quad,1);
   CHECK_EQUAL(num_penta,1);
 
+  ok = MESH_CheckTopo(mesh);
+  CHECK_EQUAL(ok, 1);
+
   ok = MESH_ExportToFile(mesh,"./poly2-tmp.exo",NULL,0,NULL,NULL,NULL);
 
   CHECK_EQUAL(ok,1);
@@ -59,6 +62,9 @@ TEST(Read_Write_ExodusII_Poly2)
   CHECK_EQUAL(num_tri,1);
   CHECK_EQUAL(num_quad,1);
   CHECK_EQUAL(num_penta,1);
+
+  ok = MESH_CheckTopo(mesh2);
+  CHECK_EQUAL(ok, 1);
 }
 
 
@@ -76,6 +82,10 @@ TEST(Write_Read_ExodusII_HexMesh) {
 
   Mesh_ptr mesh = MESH_New(UNKNOWN_REP);
   int ok = MESH_InitFromFile(mesh,"serial/reghex3D.mstk",NULL);
+  CHECK_EQUAL(ok, 1);
+
+  ok = MESH_CheckTopo(mesh);
+  CHECK_EQUAL(ok, 1);
 
   /* Reclassify one layer of hexes as belonging to a different ID region */
 
@@ -191,7 +201,10 @@ TEST(Write_Read_ExodusII_HexMesh) {
   Mesh_ptr mesh2 = MESH_New(F1);
 
   ok = MESH_ImportFromFile(mesh2,"temp.exo","exodusii",NULL,NULL);
+  CHECK_EQUAL(ok, 1);
 
+  ok = MESH_CheckTopo(mesh2);
+  CHECK_EQUAL(ok, 1);
 
   /* Now verify that we retrieved all the model regions (element
      blocks) as expected */
@@ -303,6 +316,14 @@ TEST(Write_Read_ExodusII_HexMesh) {
 }
 
 
+// Read/write a layered mesh with (1) a mixture of polyhedral and
+// standard elements abutting each other in different blocks -
+// standard elements in a higher block number than the polyhedral
+// elements (2) disjoint groups of polyhedral elements in a single
+// element block (3) degenerate and zero volume polyhedral
+// elements. All of these conditions stress the part of the code that
+// determines region-face directions for polyhedral elements
+
 TEST(Write_Read_ExodusII_DegeneratePoly3) {
   int ok;
   Mesh_ptr mesh1, mesh2;
@@ -318,116 +339,17 @@ TEST(Write_Read_ExodusII_DegeneratePoly3) {
   ok &= MESH_CheckTopo(mesh1);
   CHECK_EQUAL(ok, 1);
 
-  int nv1 = MESH_Num_Vertices(mesh1);
-  std::vector<double> vec3(3, 0.0);
-  std::vector< std::vector<double> > vxyz1(nv1, vec3);
-  int idx = 0, i = 0;
-  MVertex_ptr mv;
-  while ((mv = MESH_Next_Vertex(mesh1, &idx))) {
-    MV_Coords(mv, &(vxyz1[i][0]));
-    i++;
-  }
-  
-  int nr1 = MESH_Num_Regions(mesh1);
-  CHECK(nr1 > 0);
-
-  std::vector<int> nrf1(nr1);
-  std::vector< std::vector<int> > nrfv1(nr1);
-  std::vector< std::vector< std::vector<int> > > rfverts1(nr1);
-
-  idx = 0;
-  i = 0;
-  MRegion_ptr mr;
-  while ((mr = MESH_Next_Region(mesh1, &idx))) {
-    List_ptr rfaces = MR_Faces(mr);
-    nrf1[i] = List_Num_Entries(rfaces);
-
-    nrfv1[i].resize(nrf1[i]);
-    rfverts1[i].resize(nrf1[i]);
-    for (int j = 0; j < nrf1[i]; ++j) {
-      MFace_ptr rf = List_Entry(rfaces, j);
-      int rfdir = MR_FaceDir_i(mr, j);
-
-      List_ptr fverts = MF_Vertices(rf, rfdir, 0);
-      nrfv1[i][j] = List_Num_Entries(fverts);
-
-      rfverts1[i][j].resize(nrfv1[i][j]);
-      for (int k = 0; k < nrfv1[i][j]; k++) {
-        MVertex_ptr fv = List_Entry(fverts, k);
-        rfverts1[i][j][k] = MV_ID(fv);
-      }
-      List_Delete(fverts);
-    }
-    List_Delete(rfaces);
-    i++;
-  }
-
 
   ok = MESH_ExportToFile(mesh1,"./degenpoly3-tmp.exo",NULL,0,NULL,NULL,NULL);
   CHECK_EQUAL(ok,1);
 
 
-
   mesh2 = MESH_New(UNKNOWN_REP);
   ok = MESH_ImportFromFile(mesh2,"./degenpoly3-tmp.exo",NULL,NULL,NULL);
+  CHECK_EQUAL(ok, 1);
 
-  int nv2 = MESH_Num_Vertices(mesh2);
-  std::vector<std::vector<double> > vxyz2(nv2, vec3);
-  idx = 0, i = 0;
-  while ((mv = MESH_Next_Vertex(mesh2, &idx))) {
-    MV_Coords(mv, &(vxyz2[i][0]));
-    i++;
-  }
-  
-  int nr2 = MESH_Num_Regions(mesh2);
-  CHECK(nr2 > 0);
-
-  std::vector<int> nrf2(nr2);
-  std::vector< std::vector<int> > nrfv2(nr2);
-  std::vector< std::vector< std::vector<int> > > rfverts2(nr2);
-
-  idx = 0;
-  i = 0;
-  while ((mr = MESH_Next_Region(mesh2, &idx))) {
-    List_ptr rfaces = MR_Faces(mr);
-    nrf2[i] = List_Num_Entries(rfaces);
-
-    nrfv2[i].resize(nrf2[i]);
-    rfverts2[i].resize(nrf2[i]);
-    for (int j = 0; j < nrf2[i]; ++j) {
-      MFace_ptr rf = List_Entry(rfaces, j);
-      int rfdir = MR_FaceDir_i(mr, j);
-      List_ptr fverts = MF_Vertices(rf, rfdir, 0);
-      nrfv2[i][j] = List_Num_Entries(fverts);
-
-      rfverts2[i][j].resize(nrfv2[i][j]);
-      for (int k = 0; k < nrfv2[i][j]; k++) {
-        MVertex_ptr fv = List_Entry(fverts, k);
-        rfverts2[i][j][k] = MV_ID(fv);
-      }
-      List_Delete(fverts);
-    }
-    List_Delete(rfaces);
-    i++;
-  }
-
-  // Compare data collected from mesh 1 and mesh 2
-
-  CHECK(nv1 == nv2);
-  for (i = 0; i < nv1; ++i)
-    for (int j = 0; j < 3; ++j)
-      CHECK_CLOSE(vxyz1[i][j], vxyz2[i][j], 1.0e-16);
-
-  CHECK(nr1 == nr2);
-  for (i = 0; i < nr1; ++i) {
-    CHECK(nrf1[i] == nrf2[i]);
-    for (int j = 0; j < nrf1[i]; ++j) {
-      CHECK(nrfv1[i][j] == nrfv2[i][j]);
-      for (int k = 0; k < nrfv1[i][j]; ++k)
-        CHECK(rfverts1[i][j][k] == rfverts2[i][j][k]);
-    }
-  }
-
+  ok = MESH_CheckTopo(mesh2);
+  CHECK_EQUAL(ok, 1);
 }
 
 
@@ -440,6 +362,10 @@ TEST(Write_Read_ExodusII_Variables) {
 
   Mesh_ptr mesh = MESH_New(UNKNOWN_REP);
   int ok = MESH_InitFromFile(mesh,"serial/reghex3D.mstk",NULL);
+  CHECK_EQUAL(ok, 1);
+
+  ok = MESH_CheckTopo(mesh);
+  CHECK_EQUAL(ok, 1);
 
   /* Reclassify one layer of hexes as belonging to a different ID region */
 
@@ -503,6 +429,7 @@ TEST(Write_Read_ExodusII_Variables) {
   /* Now export to an Exodus II file */
 
   ok = MESH_ExportToFile(mesh,"temp.exo","exodusii",0,NULL,NULL,NULL);
+  CHECK_EQUAL(ok, 1);
 
 
   /* Now create another mesh and import this file back */
@@ -510,6 +437,10 @@ TEST(Write_Read_ExodusII_Variables) {
   Mesh_ptr mesh2 = MESH_New(F1);
 
   ok = MESH_ImportFromFile(mesh2,"temp.exo","exodusii",NULL,NULL);
+  CHECK_EQUAL(ok, 1);
+
+  ok = MESH_CheckTopo(mesh2);
+  CHECK_EQUAL(ok, 1);
 
   /* Now verify that we retrieved all the attributes */
 
