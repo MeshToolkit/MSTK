@@ -316,6 +316,14 @@ TEST(Write_Read_ExodusII_HexMesh) {
 }
 
 
+// Read/write a layered mesh with (1) a mixture of polyhedral and
+// standard elements abutting each other in different blocks -
+// standard elements in a higher block number than the polyhedral
+// elements (2) disjoint groups of polyhedral elements in a single
+// element block (3) degenerate and zero volume polyhedral
+// elements. All of these conditions stress the part of the code that
+// determines region-face directions for polyhedral elements
+
 TEST(Write_Read_ExodusII_DegeneratePoly3) {
   int ok;
   Mesh_ptr mesh1, mesh2;
