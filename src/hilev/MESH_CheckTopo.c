@@ -192,8 +192,12 @@ extern "C" {
 	}
 
         if (done && flipped) {
-          sprintf(mesg,"Inconsistent orientations of boundary faces around vertex %-d",vid);
-          MSTK_Report(funcname,mesg,MSTK_WARN);
+          List_ptr fregs = MF_Regions(fcur);
+          if (List_Num_Entries(fregs) < 2) {
+            sprintf(mesg,"Inconsistent orientations of boundary faces around vertex %-d",vid);
+            MSTK_Report(funcname,mesg,MSTK_WARN);
+          }
+          if (fregs) List_Delete(fregs);
         }
       }
 
