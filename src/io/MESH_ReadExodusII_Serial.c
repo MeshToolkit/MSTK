@@ -794,8 +794,6 @@ extern "C" {
 	MFace_ptr *rfarr = (MFace_ptr *) malloc(max*sizeof(MFace_ptr));
 	int *rfdirs = (int *) malloc(max*sizeof(int *));
 
-        int this_block_mark = MSTK_GetMarker();
-        int reliable_dir_mark = MSTK_GetMarker();
 	int offset = 0;
 	for (j = 0; j < nel_in_blk[i]; j++) {
 
@@ -812,11 +810,6 @@ extern "C" {
                 MRegion_ptr adjreg = List_Entry(fregs, 0);
                 int oppfdir = MR_FaceDir(adjreg, rfarr[k]);
                 rfdirs[k] = !oppfdir;
-                
-                /* the face direction w.r.t. the adjacent region is only reliable if 
-                   the adjacent region is in a previously processed block */
-                if (!MEnt_IsMarked(adjreg, this_block_mark))
-                  MEnt_Mark(rfarr[k], reliable_dir_mark);
               }
               List_Delete(fregs);
             }
@@ -833,8 +826,6 @@ extern "C" {
           MEnt_Set_AttVal(mr,elblockatt,elem_blk_ids[i],0.0,NULL);
           MSet_Add(matset,mr);
           
-          MEnt_Mark(mr, this_block_mark);
-
           offset += nnpe[j];
         }  /* for (j = 0, nel_in_blk[i]) */
 
