@@ -43,22 +43,23 @@ extern "C" {
   idx = 0;
   while ((gment = MSet_Next_Entry(gmset,&idx))) {
     MEnt_Get_AttVal(gment,g2latt,0,0,&lmentlist);
-    
-    idx2 = 0;
-    while ((lment = List_Next_Entry(lmentlist,&idx2))) {
-      submesh = MEnt_Mesh(lment);
 
-      for (i = 0; i < num; ++i) {
-	if (submesh == submeshes[i]) {
-	  lmset = lmset_array[i];
-	  if (!lmset)
-	    lmset = lmset_array[i] = MSet_New(submesh,msetname,mtype);
+    if (lmentlist) {
+      idx2 = 0;
+      while ((lment = List_Next_Entry(lmentlist,&idx2))) {
+        submesh = MEnt_Mesh(lment);
+
+        for (i = 0; i < num; ++i) {
+          if (submesh == submeshes[i]) {
+            lmset = lmset_array[i];
+            if (!lmset)
+              lmset = lmset_array[i] = MSet_New(submesh,msetname,mtype);
       
-	  MSet_Add(lmset,lment);
-	  break;
-	}
+            MSet_Add(lmset,lment);
+            break;
+          }
+        }
       }
-
     }
   }
 
