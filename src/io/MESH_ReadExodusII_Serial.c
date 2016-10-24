@@ -1144,14 +1144,15 @@ extern "C" {
     if (nbad) {
       int iter = 0;
       int done = 0;
-      while (!done && iter < 10000) { 
+      while (!done && iter < 1000) { 
         
-        /* Number of iterations determined by number of groups of
-         * elements with unknown directions */
+        /* Number of iterations determined by number of disjoint
+         * blocks containing elements with unknown directions */
 
         int nfixed = 0;
-        MRegion_ptr mrgood = NULL;
-        MRegion_ptr mrbad_start = NULL;
+        int found_start = 0;
+        List_ptr reglist = List_New(0);
+        int inreglist_mark = MSTK_GetMarker();
 
         // Skip this part if 'nbad' == number of regions in the mesh,
         // i.e., the direction of faces of no region is known
@@ -1174,25 +1175,25 @@ extern "C" {
                 if (mr == oppr)
                   oppr = List_Entry(fregs, 1);
                 if (MEnt_IsMarked(oppr, reliable_rfdirs)) {
+                  List_Add(reglist, mr);
+                  MEnt_Mark(mr, inreglist_mark);
                   found = 1;
-                  mrbad_start = mr;
-                  mrgood = oppr;
                 }
               }
               List_Delete(fregs);
-              if (found)
-                break;
+              if (found) break;
             }
             List_Delete(rfaces);
           }
-        }  // if nbad == MESH_Num_Regions(mesh)
+        }  // if nbad != MESH_Num_Regions(mesh)
         
-        if (!mrgood) {
-          /* We did not find a single region with reliable face
-           * directions that could help determine the directions of
-           * faces in the remaining bad regions. We have to do
-           * geometric checks to find one */
+        if (!List_Num_Entries(reglist)) {
+          /* We did not find a single region with unreliable face
+           * directions adjacent to a region with reliable face
+           * directions. We have to do geometric checks to find such a
+           * pair */
           
+          MRegion_ptr mrgood = NULL;
           idx = 0;
           while (!mrgood && ((mr = MESH_Next_Region(mesh, &idx)))) {
             
@@ -1278,14 +1279,19 @@ extern "C" {
 
               for (k = 0; k < nrf; k++) {
                 MFace_ptr rf = List_Entry(rfaces, k);
+                MRegion_ptr adjr = NULL;
                 List_ptr fregs = MF_Regions(rf);
                 if (List_Num_Entries(fregs) == 2) {
-                  mrbad_start = List_Entry(fregs, 0);
-                  if (mrbad_start == mr)
-                    mrbad_start = List_Entry(fregs, 1);
+                  adjr = List_Entry(fregs, 0);
+                  if (adjr == mr)
+                    adjr = List_Entry(fregs, 1);
                 }
                 List_Delete(fregs);
-                if (mrbad_start) break;
+                if (adjr) {
+                  List_Add(reglist, adjr);
+                  MEnt_Mark(adjr, inreglist_mark);
+                  break;
+                }
               }
             }
             List_Delete(rfaces);
@@ -1293,16 +1299,11 @@ extern "C" {
 
           if (!mrgood)
             MSTK_Report(funcname, "Could not find a single region whose faces could be reliably oriented", MSTK_FATAL);
-        }  /* if (!mrgood) */
+        }  /* if (!List_Num_Entries(reglist)) */
 
 
         /* Starting from the reliable direction region, walk through
          * all other connected regions in the mesh */
-
-        List_ptr reglist = List_New(0);
-        List_Add(reglist, mrbad_start);
-        int inreglist_mark = MSTK_GetMarker();
-        MEnt_Mark(mrbad_start, inreglist_mark);
 
         idx = 0;
         while ((mr = List_Next_Entry(reglist, &idx))) {
