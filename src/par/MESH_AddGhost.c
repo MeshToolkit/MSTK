@@ -650,7 +650,6 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   } /* ir */
   List_Unmark(gbverts,mkvid);
   List_Delete(gbverts);
-  MSTK_FreeMarker(mkvid);
 
   free(lfedges);
   free(lfedirs);
