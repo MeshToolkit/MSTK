@@ -239,7 +239,6 @@ extern "C" {
         MF_Set_MasterParID(new_mf,MF_MasterParID(sub_mf));
         MF_Set_GlobalID(new_mf,MF_GlobalID(sub_mf));
       
-        mfedges = MF_Edges(sub_mf,1,0);
         nfe = List_Num_Entries(mfedges);
         for (j = 0; j < nfe; j++) {
           sub_me = List_Entry(mfedges,j);
@@ -620,7 +619,6 @@ extern "C" {
         MR_Set_MasterParID(new_mr,MR_MasterParID(sub_mr));
         MR_Set_GlobalID(new_mr,MR_GlobalID(sub_mr));
 	
-        mrfaces = MR_Faces(sub_mr);
         nrf = List_Num_Entries(mrfaces);
         int i2;
         for(i2 = 0; i2 < nrf; i2++) {
