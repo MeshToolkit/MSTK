@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#ifdef MSTK_USE_MARKERS
+#include <pthread.h>
+#endif
+
 #include "MSTK_private.h"
 #include "MSTK_globals.h"
 
@@ -60,19 +65,29 @@ extern "C" {
 
   /* MARKERS */
 
+#ifdef MSTK_USE_MARKERS
   unsigned int MSTK_marker = 0;
   int MSTK_MAXBITS = 8*sizeof(unsigned int);
   int MSTK_lastbit = -1;
+  pthread_mutex_t marker_lock;
   
   int MSTK_GetMarker() {
-    int i;
-
-    if (MSTK_lastbit < MSTK_MAXBITS-1) {
+    static int first = 1;
+    if (first) {
+      first = 0;
+      fprintf(stderr,"MSTK using markers\n");
+    }
+    int i, marker = -1;
+    pthread_mutex_lock(&marker_lock);
+    
+    if (MSTK_lastbit < MSTK_MAXBITS-1) {      
       MSTK_lastbit++;
       MSTK_marker = MSTK_marker | 1<<MSTK_lastbit;
-      return (MSTK_lastbit+1); /* lastbit goes from 0 to N-1, markers from 1 to N */
-    }
-    else {
+      
+      /* lastbit goes from 0 to N-1, markers from 1 to N */
+      marker = MSTK_lastbit+1;
+
+    } else {
       /* Search if any other bit is free */
       i = 0;
       while (i <= MSTK_MAXBITS-1) {
@@ -80,23 +95,21 @@ extern "C" {
 	  i++;
 	else {
 	  MSTK_marker = MSTK_marker | 1<<i;
-	  return i+1;
+	  marker = i+1;
+          break;
 	}
       }
 
-#ifdef DEBUG
-      MSTK_Report("MSTK_GetMarker","Out of Markers",MSTK_ERROR);
-#endif
-      return -1;
+      if (marker == -1)
+        MSTK_Report("MSTK_GetMarker","Out of Markers",MSTK_FATAL);
     }
 
-#ifdef DEBUG
-    MSTK_Report("MSTK_GetMarker","Cannot allocate Marker",MSTK_ERROR);
-#endif
-    return -1;
+    pthread_mutex_unlock(&marker_lock);
+    return marker;
   }
-
+  
   void MSTK_FreeMarker(int mkr) {
+    pthread_mutex_lock(&marker_lock);
 
 #ifdef DEBUG
     if (mkr < 1 || mkr > MSTK_MAXBITS)
@@ -122,8 +135,10 @@ extern "C" {
       }
 
     }
-  }
 
+    pthread_mutex_unlock(&marker_lock);
+  }
+#endif  /* ifdef MSTK_USE_MARKERS */
 
 #ifdef __cplusplus
 }

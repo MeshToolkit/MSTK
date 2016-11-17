@@ -75,7 +75,8 @@ extern "C" {
                         in node numbering)
   */
 
-  int ownedmk=0;
+  int ownedmk = 0;
+  MAttrib_ptr ownedatt = NULL;
 
   int MESH_ExportToExodusII(Mesh_ptr mesh, const char *filename, 
 			    const int natt, const char **attnames, 
@@ -214,7 +215,11 @@ extern "C" {
          the entities a temporary renumbering to ensure contiguous
          IDs */
         
+#ifdef MSTK_USE_MARKERS
       ownedmk = MSTK_GetMarker();
+#else
+      ownedatt = MAttrib_New(mesh, "ownedatt", INT, MALLTYPE);
+#endif
         
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx = 0;
@@ -229,28 +234,62 @@ extern "C" {
 
           if (MR_ElementType(mr) == RUNKNOWN) continue;
 
+#ifdef MSTK_USE_MARKERS
           MEnt_Mark(mr,ownedmk);
+#else
+          MEnt_Set_AttVal(mr, ownedatt, 1, 0.0, NULL);
+#endif
           nr++;
             
           List_ptr rfaces = MR_Faces(mr);
           idx2 = 0;
           while ((mf = (MFace_ptr) List_Next_Entry(rfaces,&idx2))) {
-            if (!MEnt_IsMarked(mf,ownedmk)) {
+            int fowned;
+#ifdef MSTK_USE_MARKERS
+            fowned = MEnt_IsMarked(mf,ownedmk);
+#else
+            MEnt_Get_AttVal(mf, ownedatt, &fowned, &rval, &pval);
+#endif
+            if (!fowned) {
+#ifdef MSTK_USE_MARKERS
               MEnt_Mark(mf,ownedmk);
+#else
+              MEnt_Set_AttVal(mf, ownedatt, 1, 0.0, NULL);
+#endif
               nf++;
-                
+              
               List_ptr fedges = MF_Edges(mf,1,0);
               int idx3 = 0;
               while ((me = (MEdge_ptr) List_Next_Entry(fedges,&idx3))) {
-                if (!MEnt_IsMarked(me,ownedmk)) {
+                int eowned;
+#ifdef MSTK_USE_MARKERS
+                eowned = MEnt_IsMarked(me,ownedmk);
+#else
+                MEnt_Get_AttVal(me, ownedatt, &eowned, &rval, &pval);
+#endif
+                if (!eowned) {
+#ifdef MSTK_USE_MARKERS
                   MEnt_Mark(me,ownedmk);
+#else
+                  MEnt_Set_AttVal(me, ownedatt, 1, 0.0, NULL);
+#endif
                   ne++;
-                    
+                  
                   int kk;
                   for (kk = 0; kk < 2; kk++) {
                     mv = ME_Vertex(me,kk);
-                    if (!MEnt_IsMarked(mv,ownedmk)) {
+                    int vowned;
+#ifdef MSTK_USE_MARKERS
+                    vowned = MEnt_IsMarked(mv,ownedmk);
+#else
+                    MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
+#endif
+                    if (!vowned) {
+#ifdef MSTK_USE_MARKERS
                       MEnt_Mark(mv,ownedmk);
+#else
+                      MEnt_Set_AttVal(mv, ownedatt, 1, 0.0, NULL);
+#endif
                       nv++;
                       if (enforce_contiguous_ids)
                         MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
@@ -264,7 +303,7 @@ extern "C" {
             }
           } /* while (mf...) */
           List_Delete(rfaces);
-
+          
 #ifdef MSTK_HAVE_MPI
         }
 #endif
@@ -279,7 +318,7 @@ extern "C" {
 
     }
     else if (nfall) {
-
+      
       element_dim = 2; side_dim = 1; boundary_dim = 1;
 
       /* Mark the faces and their lower dimensional entities. In the
@@ -288,7 +327,11 @@ extern "C" {
          the entities a temporary renumbering to ensure contiguous
          IDs */
         
+#ifdef MSTK_USE_MARKERS
       ownedmk = MSTK_GetMarker();
+#else
+      ownedatt = MAttrib_New(mesh, "ownedatt", INT, MALLTYPE);
+#endif
       
       nr = 0; nf = 0; ne = 0; nv = 0;
       idx2 = 0;
@@ -303,21 +346,45 @@ extern "C" {
 
           if (MF_ElementType(mf) == FUNKNOWN) continue; 
 
+#ifdef MSTK_USE_MARKERS
           MEnt_Mark(mf,ownedmk);
+#else
+          MEnt_Set_AttVal(mf, ownedatt, 1, 0, NULL);
+#endif
           nf++;
           
           List_ptr fedges = MF_Edges(mf,1,0);
           int idx3 = 0;
           while ((me = (MEdge_ptr) List_Next_Entry(fedges,&idx3))) {
-            if (!MEnt_IsMarked(me,ownedmk)) {
-              MEnt_Mark(me,ownedmk);
+            int eowned;
+#ifdef MSTK_USE_MARKERS
+            eowned = MEnt_IsMarked(me, ownedmk);
+#else
+            MEnt_Get_AttVal(me, ownedatt, &eowned, &rval, &pval);
+#endif
+            if (!eowned) {
+#ifdef MSTK_USE_MARKERS
+              MEnt_Mark(me, ownedmk);
+#else
+              MEnt_Set_AttVal(me, ownedatt, 1, 0.0, NULL);
+#endif
               ne++;
               
               int kk;
               for (kk = 0; kk < 2; kk++) {
                 mv = ME_Vertex(me,kk);
-                if (!MEnt_IsMarked(mv,ownedmk)) {
+                int vowned;
+#ifdef MSTK_USE_MARKERS
+                vowned = MEnt_IsMarked(mv, ownedmk);
+#else
+                MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
+#endif
+                if (!vowned) {
+#ifdef MSTK_USE_MARKERS
                   MEnt_Mark(mv,ownedmk);
+#else
+                  MEnt_Set_AttVal(mv, ownedatt, 1, 0, NULL);
+#endif
                   nv++;
                   if (enforce_contiguous_ids)
                     MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
@@ -465,7 +532,9 @@ extern "C" {
     face_block = List_New(10);
     num_face_block = 1;
     nvfblock = 0;
+#ifdef MSTK_USE_MARKERS
     int mkid1 = MSTK_GetMarker();
+#endif
     fidatt = MAttrib_New(mesh,"local_face_ids",INT,MFACE);
     
 
@@ -480,11 +549,20 @@ extern "C" {
 
 	  idx2 = 0;
 	  while ((rf = List_Next_Entry(rfaces,&idx2))) {
-	    if (!MEnt_IsMarked(rf,mkid1)) {
+            int inlist;
+#ifdef MSTK_USE_MARKERS
+            inlist = MEnt_IsMarked(rf, mkid1);
+#else
+            MEnt_Get_AttVal(rf, fidatt, &ival, &rval, &pval);
+            inlist = ival > 0 ? 1 : 0;
+#endif
+	    if (!inlist) {
 	      List_Add(face_block,rf);
-	      MEnt_Mark(rf,mkid1);
 	      MEnt_Set_AttVal(rf,fidatt,++j,0.0,NULL);
 	      nvfblock += MF_Num_Vertices(rf);
+#ifdef MSTK_USE_MARKERS
+	      MEnt_Mark(rf,mkid1);
+#endif
 	    }
 	  }
 	  List_Delete(rfaces);
@@ -493,8 +571,10 @@ extern "C" {
       }
     }
 
+#ifdef MSTK_USE_MARKERS
     List_Unmark(face_block,mkid1);
     MSTK_FreeMarker(mkid1);
+#endif
    
     if (List_Num_Entries(face_block) == 0) {
       List_Delete(face_block);
@@ -622,10 +702,16 @@ extern "C" {
 
     idx = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-
-#ifdef MSTK_HAVE_MPI 
-      if (!MEnt_IsMarked(mv,ownedmk)) continue;
+      int vowned;
+#ifdef MSTK_HAVE_MPI
+#ifdef MSTK_USE_MARKERS 
+      vowned = MEnt_IsMarked(mv,ownedmk);
+#else
+      MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
 #endif
+      if (!vowned) continue;
+#endif
+
       MV_Coords(mv,vxyz);
       MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
       xcoord[vid-1] = vxyz[0];
@@ -1052,9 +1138,16 @@ extern "C" {
       int *node_map = (int *) malloc(nv*sizeof(int));
       
       idx = 0; i = 0;
-      while ((mv = MESH_Next_Vertex(mesh,&idx)))
-        if (MEnt_IsMarked(mv,ownedmk))
+      while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+        int vowned;
+#ifdef MSTK_USE_MARKERS
+        vowned = MEnt_IsMarked(mv,ownedmk);
+#else
+        MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
+#endif
+        if (vowned)
           node_map[i++] = MV_GlobalID(mv);
+      }
 
       status = ex_put_node_num_map(exoid, node_map);
       if (status < 0)
@@ -1063,7 +1156,7 @@ extern "C" {
 
       free(node_map);
 
-
+      
       /* Write out element map (global IDs of elements) */
 
       int *elem_map;
@@ -1071,24 +1164,38 @@ extern "C" {
       if (nr) {
         elem_map = (int *) malloc(nr*sizeof(int));
         idx = 0; i = 0;
-        while ((mr = MESH_Next_Region(mesh,&idx)))
-          if (MEnt_IsMarked(mr,ownedmk))
+        while ((mr = MESH_Next_Region(mesh,&idx))) {
+          int rowned;
+#ifdef MSTK_USE_MARKERS
+          rowned = MEnt_IsMarked(mr, ownedmk);
+#else
+          MEnt_Get_AttVal(mr, ownedatt, &rowned, &rval, &pval);
+#endif
+          if (rowned)
             elem_map[i++] = MR_GlobalID(mr);
+        }
       }
       else { // assume surface mesh
         elem_map = (int *) malloc(nf*sizeof(int));
         idx = 0; i = 0;
-        while ((mf = MESH_Next_Face(mesh,&idx)))
-          if (MEnt_IsMarked(mf,ownedmk))
+        while ((mf = MESH_Next_Face(mesh,&idx))) {
+          int fowned;
+#ifdef MSTK_USE_MARKERS
+          fowned = MEnt_IsMarked(mf, ownedmk);
+#else
+          MEnt_Get_AttVal(mf, ownedatt, &fowned, &rval, &pval);
+#endif
+          if (fowned)
             elem_map[i++] = MF_GlobalID(mf);
+        }
+        
+        status = ex_put_elem_num_map(exoid, elem_map);
+        if (status < 0)
+          MSTK_Report(funcname,"Error while writing element map in Exodus II file",
+                      MSTK_FATAL);
+        
+        free(elem_map);
       }
-
-      status = ex_put_elem_num_map(exoid, elem_map);
-      if (status < 0)
-        MSTK_Report(funcname,"Error while writing element map in Exodus II file",
-                    MSTK_FATAL);
-
-      free(elem_map);
     }
 
 #endif /* MSTK_HAVE_MPI */
@@ -1418,6 +1525,7 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI
     if (comm) {
+#ifdef MSTK_USE_MARKERS
       idx = 0;
       while ((mr = MESH_Next_Region(mesh,&idx)))
         MEnt_Unmark(mr,ownedmk);
@@ -1432,6 +1540,9 @@ extern "C" {
         MEnt_Unmark(mv,ownedmk);
       
       MSTK_FreeMarker(ownedmk);
+#else
+      MAttrib_Delete(ownedatt);
+#endif
     }
 #endif
 
@@ -1446,10 +1557,10 @@ extern "C" {
         MEnt_Rem_AttVal(mf,fidatt);
       MAttrib_Delete(fidatt);
     }
-      
+    
     return 1;
-
-  }
+    
+    }
 
 
 
@@ -1468,6 +1579,8 @@ extern "C" {
     MRegion_ptr mr;
     int i, j, k, nb, bid, found, nballoc;
     int rank=0, numprocs=1;
+    double rval;
+    void *pval;
 
 #ifdef MSTK_HAVE_MPI
     if (comm) {
@@ -1486,9 +1599,14 @@ extern "C" {
     if (MESH_Num_Regions(mesh)) {
 
       while ((mr = MESH_Next_Region(mesh, &idx))) {
-
+        int rowned;
 #ifdef MSTK_HAVE_MPI
-        if (!MEnt_IsMarked(mr,ownedmk)) continue;  /* Ghost element */
+#ifdef MSTK_USE_MARKERS
+        rowned = MEnt_IsMarked(mr,ownedmk);  
+#else
+        MEnt_Get_AttVal(mr, ownedatt, &rowned, &rval, &pval);
+#endif
+        if (!rowned) continue;  /* Ghost element */
 #endif
 
 	List_ptr rverts = MR_Vertices(mr);
@@ -1557,9 +1675,14 @@ extern "C" {
     else if (MESH_Num_Faces(mesh)) {
 
       while ((mf = MESH_Next_Face(mesh,&idx))) {
-
+        int fowned;
 #ifdef MSTK_HAVE_MPI
-        if (!MEnt_IsMarked(mf,ownedmk)) continue; /* Ghost element */
+#ifdef MSTK_USE_MARKERS
+        fowned = MEnt_IsMarked(mf,ownedmk);
+#else
+        MEnt_Get_AttVal(mf, ownedatt, &fowned, &rval, &pval);
+#endif        
+        if (!fowned) continue; /* Ghost element */
 #endif
 
 	int nfv = MF_Num_Vertices(mf);
@@ -1876,6 +1999,8 @@ extern "C" {
     char mset_name[256];
     int meshdim=3;
     int rank=0, numprocs=1;
+    double rval;
+    void *pval;
 
 #ifdef MSTK_HAVE_MPI
     if (comm) {
@@ -1931,8 +2056,14 @@ extern "C" {
         while ((mf = MESH_Next_Face(mesh,&idx))) {
           if (MF_GEntDim(mf) == 3) continue; /* Internal face */
           
+          int fowned;
 #ifdef MSTK_HAVE_MPI
-          if (!MEnt_IsMarked(mf,ownedmk)) continue; /* Face cnctd to only ghost elements */
+#ifdef MSTK_USE_MARKERS
+          fowned = MEnt_IsMarked(mf,ownedmk);
+#else
+          MEnt_Get_AttVal(mf, ownedatt, &fowned, &rval, &pval);
+#endif
+          if (!fowned) continue; /* Face cnctd to only ghost elements */
 #endif
           
           sid = MF_GEntID(mf);          
@@ -2008,8 +2139,15 @@ extern "C" {
         while ((me = MESH_Next_Edge(mesh,&idx))) {
           if (ME_GEntDim(me) != 1) continue;
           
+          int eowned;
+
 #ifdef MSTK_HAVE_MPI
-          if (!MEnt_IsMarked(me,ownedmk)) continue; /* Edge cnctd to only ghost elements */
+#ifdef MSTK_USE_MARKERS
+          eowned = MEnt_IsMarked(me,ownedmk);
+#else
+          MEnt_Get_AttVal(me, ownedatt, &eowned, &rval, &pval);
+#endif
+          if (!eowned) continue; /* Edge cnctd to only ghost elements */
 #endif
           
           sid = ME_GEntID(me);
@@ -2193,6 +2331,8 @@ extern "C" {
     int nnodeset, nid, maxnum, maxnum1;
     int rank=0, numprocs=1;
     MSet_ptr mset;
+    double rval;
+    void *pval;
 
 #ifdef MSTK_HAVE_MPI
     if (comm) {
@@ -2240,9 +2380,15 @@ extern "C" {
       while ((mv = MESH_Next_Vertex(mesh,&idx))) {
         if (MV_GEntDim(mv) >= 2) continue;
         
-        
+        int vowned;
+
 #ifdef MSTK_HAVE_MPI
-        if (!MEnt_IsMarked(mv,ownedmk)) continue; /* Vtx cnctd to only ghost elements */
+#ifdef MSTK_USE_MARKERS
+        vowned = MEnt_IsMarked(mv,ownedmk);
+#else
+        MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
+#endif
+        if (!vowned) continue; /* Vtx cnctd to only ghost elements */
 #endif
         
         nid = MV_GEntDim(mv)*10000 + MV_GEntID(mv);

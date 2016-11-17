@@ -539,7 +539,7 @@ int        MESH_Num_Elements(Mesh_ptr mesh) {
 MVertex_ptr MESH_Vertex(Mesh_ptr mesh, int i) {
   if (i >= mesh->nv) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Vertex","Non-existent vertex requested\n",MSTK_ERROR);
+    MSTK_Report("MESH_Vertex","Non-existent vertex requested\n",MSTK_ERROR);
 #endif
     return (MVertex_ptr) NULL;
   }
@@ -558,7 +558,7 @@ MEdge_ptr MESH_Edge(Mesh_ptr mesh, int i) {
   }
   if (i >= mesh->ne) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Edge","Non-existent edge requested\n",MSTK_ERROR);
+    MSTK_Report("MESH_Edge","Non-existent edge requested\n",MSTK_ERROR);
 #endif
     return (MEdge_ptr) NULL;
   }
@@ -579,7 +579,7 @@ MFace_ptr MESH_Face(Mesh_ptr mesh, int i) {
   }
   if (i >= mesh->nf) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Face","Non-existent face requested\n",MSTK_ERROR);
+    MSTK_Report("MESH_Face","Non-existent face requested\n",MSTK_ERROR);
 #endif
     return (MFace_ptr) NULL;
   }
@@ -591,7 +591,7 @@ MRegion_ptr MESH_Region(Mesh_ptr mesh, int i) {
 
   if (i >= mesh->nr) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Region","Non-existent region requested\n",MSTK_ERROR);
+    MSTK_Report("MESH_Region","Non-existent region requested\n",MSTK_ERROR);
 #endif
     return (MRegion_ptr) NULL;
   }

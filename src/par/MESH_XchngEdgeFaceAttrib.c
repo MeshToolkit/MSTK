@@ -101,8 +101,12 @@ extern "C" {
       default:
         MSTK_Report("MESH_Xchng1EdgeFaceAttrib","Invalid entity type for this operation",MSTK_FATAL);
     }
-    
+
+#ifdef MSTK_USE_MARKERS    
     int sendmark = MSTK_GetMarker();
+#else
+    List_ptr sendents = List_New(0);
+#endif
     
      /* First we have to communicate how many entities we are sending
        to each processors - and correspondingly, record how many
@@ -135,7 +139,11 @@ extern "C" {
         }
 
         if (MEnt_MasterParID(ment) == i && MEnt_OnParBoundary(ment)) {
+#ifdef MSTK_USE_MARKERS
           MEnt_Mark(ment,sendmark); 
+#else
+          List_Add(sendents,ment);
+#endif
           send_size[i]++;
         }
             
@@ -235,23 +243,32 @@ extern "C" {
               MSTK_Report("MESH_XchngEdgeFaceAttrib",
                           "Invalid entity type for this operation",MSTK_FATAL);
 	  }
-          if (MEnt_IsMarked(ment,sendmark) && MEnt_MasterParID(ment) == i) {
-	    MEnt_Get_AttVal(ment,attrib,&ival,&rval,&pval);
-	    list_info_send[n] = MEnt_GlobalID(ment);
-	    if (att_type == INT) {
-	      list_value_int_send[n] = ival;
-	    }
-	    else {
-	      if (ncomp == 1)
-		list_value_double_send[n] = rval;
-	      if (ncomp > 1) {
-		rval_arr = (double *)pval;
-		for(k = 0; k < ncomp; k++)
-		  list_value_double_send[ncomp*n+k] = rval_arr[k];
-	      }
-	    }
-            n++;
-	  }
+          int sentent = 0;
+          if (MEnt_MasterParID(ment) == i) {
+#ifdef MSTK_USE_MARKERS          
+            sentent = MEnt_IsMarked(ment,sendmark);
+#else
+            sentent = List_Contains(sendents,ment);
+#endif
+
+            if (sentent) {
+              MEnt_Get_AttVal(ment,attrib,&ival,&rval,&pval);
+              list_info_send[n] = MEnt_GlobalID(ment);
+              if (att_type == INT) {
+                list_value_int_send[n] = ival;
+              }
+              else {
+                if (ncomp == 1)
+                  list_value_double_send[n] = rval;
+                if (ncomp > 1) {
+                  rval_arr = (double *)pval;
+                  for(k = 0; k < ncomp; k++)
+                    list_value_double_send[ncomp*n+k] = rval_arr[k];
+                }
+              }
+              n++;
+            }
+          }
 	} /* for (j = 0; j < num_ghost; ++j) */
 
         if (n != send_size[i]) 
@@ -449,6 +466,7 @@ extern "C" {
     free(recv_size);
 
 
+#ifdef MSTK_USE_MARKERS
     for (j = 0; j < num_ghost; j++) {
       switch (mtype) {
         case MEDGE:
@@ -465,6 +483,9 @@ extern "C" {
     }
 
     MSTK_FreeMarker(sendmark);
+#else
+    List_Delete(sendents);
+#endif
 
     return 1;
 }

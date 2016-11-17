@@ -187,21 +187,32 @@ extern "C" {
     
     newset->entlist = List_Copy(s1->entlist);
     
+#ifdef MSTK_USE_MARKERS
     mkid = MSTK_GetMarker();
 
     MSet_Mark(newset,mkid);
+#endif
 
     idx = 0;
     while ((ent = (MEntity_ptr) MSet_Next_Entry(s2,&idx))) {
-      if (!MEnt_IsMarked(ent,mkid)) {
+      int inset;
+#ifdef MSTK_USE_MARKERS
+      inset = MEnt_IsMarked(ent, mkid);
+#else
+      inset = MSet_Contains(newset,ent);
+#endif
+      if (!inset) {
 	MSet_Add(newset,ent);
+#ifdef MSTK_USE_MARKERS        
 	MEnt_Mark(ent,mkid);
+#endif
       }
     }
 
+#ifdef MSTK_USE_MARKERS
     MSet_Unmark(newset,mkid);
     MSTK_FreeMarker(mkid);
-
+#endif
     return newset;
   }
 
@@ -211,7 +222,7 @@ extern "C" {
   MSet_ptr    MSets_Intersect(MSet_ptr s1, MSet_ptr s2) {
     MSet_ptr newset;
     char *newname, s1name[256], s2name[256];
-    int mkid1, mkid2, idx;
+    int idx;
     MEntity_ptr ent;
     MSet_ptr sa, sb;
     
@@ -244,12 +255,13 @@ extern "C" {
     else
       newset = MSet_New(MSet_Mesh(s1),newname,MSet_EntDim(s1));
 
-
-    mkid1 = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+    int mkid1 = MSTK_GetMarker();
     MSet_Mark(s1,mkid1);
 
-    mkid2 = MSTK_GetMarker();
+    int mkid2 = MSTK_GetMarker();
     MSet_Mark(s2,mkid2);
+#endif
 
     if (MSet_Num_Entries(s1) < MSet_Num_Entries(s2)) {
       sa = s1;
@@ -262,15 +274,21 @@ extern "C" {
 
     idx = 0;
     while ((ent = MSet_Next_Entry(sa,&idx))) {
+#ifdef MSTK_USE_MARKERS
       if (MEnt_IsMarked(ent,mkid1) && MEnt_IsMarked(ent,mkid2))
 	MSet_Add(newset,ent);
+#else
+      if (MSet_Contains(s1,ent) && MSet_Contains(s2,ent))
+        MSet_Add(newset,ent);
+#endif
     }
 
+#ifdef MSTK_USE_MARKERS
     MSet_Unmark(s1,mkid1);
     MSTK_FreeMarker(mkid1);
     MSet_Unmark(s2,mkid2);
     MSTK_FreeMarker(mkid2);
-    
+#endif
 
     if (!MSet_Num_Entries(newset)) {
       MSet_Delete(newset);
@@ -287,11 +305,11 @@ extern "C" {
 
     MSet_ptr newset;
     char *newname, s1name[256], s2name[256];
-    int mkid1, mkid2, idx;
+    int idx;
     MEntity_ptr ent;
     
     if (MSet_Mesh(s1) != MSet_Mesh(s2)) {
-
+      
 #ifdef DEBUG
       MSTK_Report("MSets_Intersect","MSets must belong to same mesh",MSTK_WARN); 
 #endif
@@ -311,23 +329,25 @@ extern "C" {
 
     newset = MSet_New(MSet_Mesh(s1),newname,MSet_EntDim(s1));
 
-
-    mkid1 = MSTK_GetMarker();
-    MSet_Mark(s1,mkid1);
-
-    mkid2 = MSTK_GetMarker();
-    MSet_Mark(s2,mkid2);
-
+#ifdef MSTK_USE_MARKERS
+    int mkid = MSTK_GetMarker();
+    MSet_Mark(s2,mkid);
+    
     idx = 0;
     while ((ent = MSet_Next_Entry(s1,&idx))) {
-      if (MEnt_IsMarked(ent,mkid1) && !MEnt_IsMarked(ent,mkid2))
-	MSet_Add(newset,ent);
+      if (!MEnt_IsMarked(ent,mkid))
+        MSet_Add(newset,ent);
     }
 
-    MSet_Unmark(s1,mkid1);
-    MSTK_FreeMarker(mkid1);
-    MSet_Unmark(s2,mkid2);
-    MSTK_FreeMarker(mkid2);
+    MSet_Unmark(s2,mkid);
+    MSTK_FreeMarker(mkid);
+#else
+    idx = 0;
+    while ((ent = MSet_Next_Entry(s1,&idx))) {
+    if (!MSet_Contains(s2,ent))
+	MSet_Add(newset,ent);
+    }
+#endif
     
 
     if (!MSet_Num_Entries(newset)) {

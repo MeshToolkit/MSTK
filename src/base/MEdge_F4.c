@@ -88,7 +88,7 @@ extern "C" {
   List_ptr ME_Faces_F4(MEdge_ptr e) {
     MEdge_Adj_F4 *adj;
     List_ptr efaces, rfaces;
-    int nf, nrf, nel, mkr, i, j, dim;
+    int nf, nrf, nel, i, j, dim;
     MFace_ptr rface;
     MEntity_ptr ent;
 
@@ -98,16 +98,26 @@ extern "C" {
 
     efaces = List_New(nel);
     nf = 0;
-    mkr = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+    int mkr = MSTK_GetMarker();
+#endif
 
     for (i = 0; i < nel; i++) {
       ent = (MEntity_ptr) List_Entry(adj->elements,i);
       dim = MEnt_Dim(ent);
       if (dim == MFACE) {
-	if (!MEnt_IsMarked(ent,mkr)) {
-	  MEnt_Mark(ent,mkr);
+        int inlist;
+#ifdef MSTK_USE_MARKERS
+        inlist = MEnt_IsMarked(ent,mkr);
+#else
+        inlist = List_Contains(efaces,ent);
+#endif
+	if (!inlist) {
 	  List_Add(efaces,ent);
 	  nf++;
+#ifdef MSTK_USE_MARKERS
+	  MEnt_Mark(ent,mkr);
+#endif
 	}
       }
       else if (dim == MREGION) {
@@ -117,11 +127,19 @@ extern "C" {
 	for (j = 0; j < nrf; j++) {
 	  rface = List_Entry(rfaces,j);
 
-	  if (!MEnt_IsMarked(rface,mkr)) {
+          int inlist;
+#ifdef MSTK_USE_MARKERS
+	  inlist = MEnt_IsMarked(rface,mkr);
+#else
+          inlist = List_Contains(efaces,rface);
+#endif
+          if (!inlist) {
 	    if (MF_UsesEntity(rface,(MEntity_ptr) e,1)) {
-	      MEnt_Mark(rface,mkr);
 	      List_Add(efaces,rface);
 	      nf++;
+#ifdef MSTK_USE_MARKERS
+	      MEnt_Mark(rface,mkr);
+#endif
 	    }
 	  }
 
@@ -131,8 +149,10 @@ extern "C" {
       }
     }
     if (nf) {
+#ifdef MSTK_USE_MARKERS
       List_Unmark(efaces,mkr);
       MSTK_FreeMarker(mkr);
+#endif
       return efaces;
     }
     else {
