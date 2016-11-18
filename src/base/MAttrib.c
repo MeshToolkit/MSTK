@@ -172,9 +172,12 @@ extern "C" {
 
   
   void MAttIns_Delete(MAttIns_ptr attins) {
-    attins->attrib = NULL;
-    attins->att_val.pval = NULL;
-    
+    MAttType atttype = MAttrib_Get_Type(attins->attrib);
+
+    if (atttype == VECTOR || atttype == TENSOR)
+      if (attins->att_val.pval)
+        free(attins->att_val.pval);
+
     free(attins);
   }
 
