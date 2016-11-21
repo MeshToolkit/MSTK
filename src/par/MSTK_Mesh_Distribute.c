@@ -66,6 +66,8 @@ extern "C" {
                               with_attr, del_inmesh, comm, mysubmesh);
 
       free(toranks);
+
+      fprintf(stderr,"Finished partioning and sending on rank 0\n");
     }
 
     if (part) free(part);
@@ -86,6 +88,8 @@ extern "C" {
         *mysubmesh = MESH_New(UNKNOWN_REP);
 
       MESH_RecvMesh(*mysubmesh, fromrank, with_attr, comm);
+
+      fprintf(stderr,"Received mesh on rank %-d\n", rank);
     }
 
 

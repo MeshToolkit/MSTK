@@ -10,7 +10,7 @@ extern "C" {
 
 
   List_ptr MR_Vertices_FNR3R4(MRegion_ptr r) {
-    int i, j, n, ne, nf, mkr, found, idx;
+    int i, j, n, ne, nf, found, idx, mkr;
     int diradj0=0, diropp=0, fdir, fdir0, fdir1, allquad, alltri;
     int nquads, ntris, itri0, itri1, iquad0;
     MFace_ptr face=NULL, face0=NULL, fadj0=NULL, fopp=NULL;
@@ -224,14 +224,18 @@ extern "C" {
     default: 
 
       /* General Polyhedra */
+#ifdef MSTK_USE_MARKERS
       mkr = MSTK_GetMarker();
+#endif
       
       /* Add vertices of first face */
       face = List_Entry(adj->rfaces,0); /* first face */
       fdir = MR_FaceDir_i(r,0);    /* Sense in which face is used in region */
       
       rvertices = MF_Vertices(face,!fdir,0); 
+#ifdef MSTK_USE_MARKERS
       List_Mark(rvertices,mkr);
+#endif
       
       for (i = 1; i < nf-1; i++) {
         face = List_Entry(adj->rfaces,i);
@@ -239,16 +243,25 @@ extern "C" {
         n = List_Num_Entries(fverts);
         for (j = 0; j < n; j++) {
           vert = List_Entry(fverts,j);
-          if (!MEnt_IsMarked(vert,mkr)) {
+          int inlist;
+#ifdef MSTK_USE_MARKERS
+          inlist = MEnt_IsMarked(vert,mkr);
+#else
+          inlist = List_Contains(rvertices,vert);
+#endif
+          if (!inlist) {
             List_Add(rvertices,vert);
+#ifdef MSTK_USE_MARKERS
             MEnt_Mark(vert,mkr);
+#endif
           }
         }
         List_Delete(fverts);
       }
+#ifdef MSTK_USE_MARKERS
       List_Unmark(rvertices,mkr);
       MSTK_FreeMarker(mkr);
-      
+#endif      
       return rvertices;
     }
 

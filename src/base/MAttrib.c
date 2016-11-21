@@ -135,17 +135,39 @@ extern "C" {
     MAttrib_ptr attrib = attins->attrib;
 
     switch (MAttrib_Get_Type(attrib)) {
-    case INT:
-      attins->att_val.ival = ival;
-      break;
-    case DOUBLE:
-      attins->att_val.lval = lval;
-      break;
-    case VECTOR: case TENSOR: case POINTER:
-      attins->att_val.pval = pval;
-      break;
-    default:
-      break;
+      case INT:
+        attins->att_val.ival = ival;
+        break;
+      case DOUBLE:
+        attins->att_val.lval = lval;
+        break;
+      case VECTOR: {
+        /* vectors are stored as pointers to data which needs to be
+         * persistent - so copy the data into newly allocated space
+         * before storing */
+        
+        int ncomp = MAttrib_Get_NumComps(attrib);
+        double *vval_copy = (double *) malloc(ncomp*sizeof(double));
+        memcpy(vval_copy, pval, ncomp*sizeof(double));
+        attins->att_val.pval = vval_copy;
+        break;
+      }
+      case TENSOR: {
+        /* tensors are stored as pointers to data which needs to be
+         * persistent - so copy the data into newly allocated space before
+         * storing */
+        
+        int ncomp = MAttrib_Get_NumComps(attrib);
+        double *tval_copy = (double *) malloc(ncomp*sizeof(double));
+        memcpy(tval_copy, pval, ncomp*sizeof(double));
+        attins->att_val.pval = tval_copy;
+        break;
+      }
+      case POINTER:
+        attins->att_val.pval = pval;
+        break;
+      default:
+        break;
     }
   }
     
@@ -172,9 +194,12 @@ extern "C" {
 
   
   void MAttIns_Delete(MAttIns_ptr attins) {
-    attins->attrib = NULL;
-    attins->att_val.pval = NULL;
-    
+    MAttType atttype = MAttrib_Get_Type(attins->attrib);
+
+    if (atttype == VECTOR || atttype == TENSOR)
+      if (attins->att_val.pval)
+        free(attins->att_val.pval);
+
     free(attins);
   }
 

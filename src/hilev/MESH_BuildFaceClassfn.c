@@ -22,13 +22,20 @@ extern "C" {
   int MESH_BuildFaceClassfn(Mesh_ptr mesh, int use_geometry) {
   int i, j, k, idx, idx2, fnd, gfid, gfid2, gdim;
   int ngfaces, ngfalloc, grid0, grid1;
-  int max_gface_id, processedmk, submk;
+  int max_gface_id;
   int nfe, nef, nbf, nfr, nsub, *gfids, (*gfregids)[2];
   double PI=3.141592, ang, COSSHARPANG;
   MEdge_ptr edge;
   MFace_ptr face, subface, adjface;
   MRegion_ptr freg0, freg1;
   List_ptr fregs, fedges, efaces, ebfaces, gffaces, subfaces;
+#ifdef MSTK_USE_MARKERS
+  int processedmk, submk;
+#else
+  MAttrib_ptr processedatt, sublistatt;
+  double rval;
+  void *pval;
+#endif
 
   COSSHARPANG = cos(5*PI/6);  /* 150 degrees */
 
@@ -172,6 +179,14 @@ extern "C" {
 
   if (use_geometry == 1) {
 
+#ifdef MSTK_USE_MARKERS
+    processedmk = MSTK_GetMarker();
+    submk = MSTK_GetMarker();
+#else
+    processedatt = MAttrib_New(mesh, "processedatt", INT, MALLTYPE);
+    sublistatt = MAttrib_New(mesh, "sublist", INT, MFACE);
+#endif
+
     /* Now assign model face IDs based on whether a sharp set of edges
        enclose a set of faces */
 
@@ -206,21 +221,31 @@ extern "C" {
        
       */
 
-      processedmk = MSTK_GetMarker();
-
       nsub = 0;
       idx = 0;
       while ((face = List_Next_Entry(gffaces,&idx))) {
-        if (MEnt_IsMarked(face,processedmk))
-          continue;
+        int processed;
+#ifdef MSTK_USE_MARKERS
+        processed = MEnt_IsMarked(face,processedmk);
+#else
+        MEnt_Get_AttVal(face, processedatt, &processed, &rval, &pval);
+#endif
+        if (processed) continue;
 
         /* Found a face in gffaces that has not been processed */
+#ifdef MSTK_USE_MARKERS
         MEnt_Mark(face,processedmk);
+#else
+        MEnt_Set_AttVal(face, processedatt, 1, 0.0, NULL);
+#endif
 
-        submk = MSTK_GetMarker();
         subfaces = List_New(10);
         List_Add(subfaces,face);
+#ifdef MSTK_USE_MARKERS
         MEnt_Mark(face,submk);
+#else
+        MEnt_Set_AttVal(face, sublistatt, 1, 0.0, NULL);
+#endif
 
         idx2 = 0;
         while ((subface = List_Next_Entry(subfaces,&idx2))) {
@@ -261,9 +286,19 @@ extern "C" {
               
                 if (ang <= COSSHARPANG) {
                   /* Add face2 to subface list unless its already there */
-                  if (!MEnt_IsMarked(adjface,submk)) {
+                  int inlist;
+#ifdef MSTK_USE_MARKERS
+                  inlist = MEnt_IsMarked(adjface,submk);
+#else
+                  MEnt_Get_AttVal(adjface, sublistatt, &inlist, &rval, &pval);
+#endif                  
+                  if (!inlist) {
                     List_Add(subfaces,adjface);
+#ifdef MSTK_USE_MARKERS
                     MEnt_Mark(adjface,submk);
+#else
+                    MEnt_Set_AttVal(adjface, sublistatt, 1, 0.0, NULL);
+#endif
                   }
                 }
                 else {
@@ -318,18 +353,34 @@ extern "C" {
 
         idx2 = 0;
         while ((subface = List_Next_Entry(subfaces,&idx2))) {
+#ifdef MSTK_USE_MARKERS
           MEnt_Mark(subface,processedmk);
           MEnt_Unmark(subface,submk);
+#else
+          MEnt_Set_AttVal(subface, processedatt, 1, 0.0, NULL);
+          MEnt_Set_AttVal(subface, sublistatt, 0, 0.0, NULL);
+#endif
         }
-        MSTK_FreeMarker(submk);
         List_Delete(subfaces);
       }
 
+#ifdef MSTK_USE_MARKERS
       List_Unmark(gffaces,processedmk);
-      MSTK_FreeMarker(processedmk);
+#else
+      idx = 0;
+      while ((face = List_Next_Entry(gffaces,&idx)))
+        MEnt_Set_AttVal(face, processedatt, 0, 0.0, NULL);
+#endif
       List_Delete(gffaces);
     }
   
+#ifdef MSTK_USE_MARKERS
+    MSTK_FreeMarker(processedmk);
+    MSTK_FreeMarker(submk);
+#else
+    MAttrib_Delete(processedatt);
+    MAttrib_Delete(sublistatt);
+#endif
   } /* if use_geometry == 1 */
 
   free(gfids);

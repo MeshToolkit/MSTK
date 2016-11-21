@@ -35,8 +35,10 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
   MAttrib_ptr vidatt;
   List_ptr vlist;
   double xyz[3];
+  double rval;
   int bandwidth, maxbandwidth1, maxbandwidth2;
   double avebandwidth1, avebandwidth2;
+  void *pval;
 
   if (renum_type == 0) {
     if (mtype == MVERTEX || mtype == MALLTYPE) {
@@ -69,16 +71,19 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
   }
   else if (renum_type == 1) {
     double minx, miny, minz;
-    int mkid = MSTK_GetMarker();
     int minid, maxid;
     int *nadj, *newmap, *adj, *offset, nconn;
     int nalloc, depth, maxwidth;
         
-
+#ifdef MSTK_USE_MARKERS
+    int mkid = MSTK_GetMarker();
+#else
+    MAttrib_ptr mkatt = MAttrib_New(mesh, "mkatt", INT, MALLTYPE);
+#endif
 
     if (mtype == MVERTEX || mtype == MALLTYPE) { 
       int nv = MESH_Num_Vertices(mesh);      
-
+      
       /* Compute a graph of vertex connections across elements (faces
 	 for surface meshes, regions for solid meshes */
 
@@ -118,15 +123,29 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
             List_ptr fverts = MF_Vertices(vf,1,0);
             idx3 = 0;
             while ((adjv = List_Next_Entry(fverts,&idx3))) {
-              if (adjv != mv && !MEnt_IsMarked(adjv,mkid)) {
-                List_Add(adjvlist,adjv);
-                MEnt_Mark(adjv,mkid);
+              if (adjv != mv) {
+                int vmarked;
+#ifdef MSTK_USE_MARKERS
+                vmarked = MEnt_IsMarked(adjv,mkid);
+#else
+                MEnt_Get_AttVal(adjv, mkatt, &vmarked, &rval, &pval);
+#endif
+                if (!vmarked) {
+                  List_Add(adjvlist,adjv);
+#ifdef MSTK_USE_MARKERS
+                  MEnt_Mark(adjv,mkid);
+#else
+                  MEnt_Set_AttVal(adjv, mkatt, 1, 0.0, NULL);
+#endif
+                }
               }
             }
             List_Delete(fverts);
           }
           List_Delete(vfaces);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjvlist,mkid);
+#endif
 
           nadj[i] = List_Num_Entries(adjvlist);
           
@@ -159,15 +178,29 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
             List_ptr rverts = MR_Vertices(vr);
             idx3 = 0;
             while ((adjv = List_Next_Entry(rverts,&idx3))) {
-              if (adjv != mv && !MEnt_IsMarked(adjv,mkid)) {
-                List_Add(adjvlist,adjv);
-                MEnt_Mark(adjv,mkid);
+              if (adjv != mv) {
+                int vmarked;
+#ifdef MSTK_USE_MARKERS
+                vmarked = MEnt_IsMarked(adjv,mkid);
+#else
+                MEnt_Get_AttVal(adjv, mkatt, &vmarked, &rval, &pval);
+#endif
+                if (!vmarked) {
+                  List_Add(adjvlist,adjv);
+#ifdef MSTK_USE_MARKERS
+                  MEnt_Mark(adjv,mkid);
+#else
+                  MEnt_Set_AttVal(adjv, mkatt, 1, 0.0, NULL);
+#endif
+                }
               }
             }
             List_Delete(rverts);
           }
           List_Delete(vregions);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjvlist,mkid);
+#endif
 
           nadj[i] = List_Num_Entries(adjvlist);
 
@@ -344,15 +377,29 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
             List_ptr fedges = MF_Edges(ef,1,0);
             idx3 = 0;
             while ((adje = List_Next_Entry(fedges,&idx3))) {
-              if (adje != me && !MEnt_IsMarked(adje,mkid)) {
-                List_Add(adjelist,adje);
-                MEnt_Mark(adje,mkid);
+              if (adje != me) {
+                int emarked;
+#ifdef MSTK_USE_MARKERS
+                emarked = MEnt_IsMarked(adje,mkid);
+#else
+                MEnt_Get_AttVal(adje, mkatt, &emarked, &rval, &pval);
+#endif
+                if (!emarked) {
+                  List_Add(adjelist,adje);
+#ifdef MSTK_USE_MARKERS
+                  MEnt_Mark(adje,mkid);
+#else
+                  MEnt_Set_AttVal(adje, mkatt, 1, 0.0, NULL);
+#endif
+                }
               }
             }
             List_Delete(fedges);
           }
           List_Delete(efaces);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjelist,mkid);
+#endif
 
           nadj[i] = List_Num_Entries(adjelist);
 
@@ -385,27 +432,41 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
             List_ptr redges = MR_Edges(er);
             idx3 = 0;
             while ((adje = List_Next_Entry(redges,&idx3))) {
-              if (adje != me && !MEnt_IsMarked(adje,mkid)) {
-                List_Add(adjelist,adje);
-                MEnt_Mark(adje,mkid);
+              if (adje != me) {
+                int emarked;
+#ifdef MSTK_USE_MARKERS
+                emarked = MEnt_IsMarked(adje,mkid);
+#else
+                MEnt_Get_AttVal(adje, mkatt, &emarked, &rval, &pval);
+#endif
+                if (!emarked) {
+                  List_Add(adjelist,adje);
+#ifdef MSTK_USE_MARKERS
+                  MEnt_Mark(adje,mkid);
+#else
+                  MEnt_Set_AttVal(adje, mkatt, 1, 0.0, NULL);
+#endif
+                }
               }
             }
             List_Delete(redges);
           }
           List_Delete(eregions);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjelist,mkid);
-
+#endif
+          
           nadj[i] = List_Num_Entries(adjelist);
-
+          
           if (nentries+nadj[i] > nalloc) {
             nalloc *= 2;
             adj = (int *) realloc(adj,nalloc*sizeof(int));
           }
-
+          
           idx2 = 0;
           while ((adje = List_Next_Entry(adjelist,&idx2)))
             adj[nentries++] = ME_ID(adje)-1;
-
+          
           List_Delete(adjelist);
           i++;
         }
@@ -416,7 +477,7 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       offset = (int *) malloc(ne*sizeof(int));
       offset[0] = 0;
       for (i = 1; i < ne; i++)
-	offset[i] = offset[i-1] + nadj[i-1];
+        offset[i] = offset[i-1] + nadj[i-1];
 
 
       /* Compute maximum bandwidth before renumbering */
@@ -424,25 +485,25 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       maxbandwidth1 = 0;
       avebandwidth1 = 0;
       for (i = 0; i < ne; i++) {
-	int off = offset[i];
-	int curid = i;
-	for (j = 0; j < nadj[i]; j++) {
-	  int adjid = adj[off+j];
-	  int diff = abs(adjid-curid);
-	  maxbandwidth1 = (diff > maxbandwidth1) ? diff : maxbandwidth1;
-	  avebandwidth1 += diff;
-	  nconn++;
-	}
+        int off = offset[i];
+        int curid = i;
+        for (j = 0; j < nadj[i]; j++) {
+          int adjid = adj[off+j];
+          int diff = abs(adjid-curid);
+          maxbandwidth1 = (diff > maxbandwidth1) ? diff : maxbandwidth1;
+          avebandwidth1 += diff;
+          nconn++;
+        }
       }
       nconn = offset[ne-1]+nadj[ne-1];
       avebandwidth1 /= nconn;
 
       fprintf(stderr,
-	      "Ave edge ID difference on elements before renumbering: %-lf\n",
-	      avebandwidth1);
+              "Ave edge ID difference on elements before renumbering: %-lf\n",
+              avebandwidth1);
       fprintf(stderr,
-	      "Max edge ID difference on elements before renumbering: %-d\n",
-	      maxbandwidth1);
+              "Max edge ID difference on elements before renumbering: %-d\n",
+              maxbandwidth1);
     
       fprintf(stderr,"\n");
 
@@ -458,15 +519,15 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       maxbandwidth2 = 0;
       avebandwidth2 = 0;
       for (i = 0; i < ne; i++) {
-	int off = offset[i];
-	int curid = newmap[i];
-	for (j = 0; j < nadj[i]; j++) {
-	  int adjid = newmap[adj[off+j]];
-	  int diff = abs(adjid-curid);
-	  maxbandwidth2 = (diff > maxbandwidth2) ? diff : maxbandwidth2;
-	  avebandwidth2 += diff;
-	  nconn++;
-	}
+        int off = offset[i];
+        int curid = newmap[i];
+        for (j = 0; j < nadj[i]; j++) {
+          int adjid = newmap[adj[off+j]];
+          int diff = abs(adjid-curid);
+          maxbandwidth2 = (diff > maxbandwidth2) ? diff : maxbandwidth2;
+          avebandwidth2 += diff;
+          nconn++;
+        }
       }
       nconn = offset[ne-1]+nadj[ne-1];
       avebandwidth2 /= nconn;
@@ -516,39 +577,39 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
 
       if (mtype == MALLTYPE) { 
 
-	/* RCM algorithm already applied on the vertices. Use an edge
-	   connected to the starting vertex as the first edge */
+        /* RCM algorithm already applied on the vertices. Use an edge
+           connected to the starting vertex as the first edge */
 
-	List_ptr vfaces = MV_Faces(v0);
-	f0 = List_Entry(vfaces,0);
-	List_Delete(vfaces);
+        List_ptr vfaces = MV_Faces(v0);
+        f0 = List_Entry(vfaces,0);
+        List_Delete(vfaces);
       }
       else {
-	/* Find the face whose mid point is a minimum point */
-	minx = miny = minz = 1.0e+12;
-	f0 = NULL;
-	idx = 0;
-	while ((mf = MESH_Next_Face(mesh,&idx))) {
+        /* Find the face whose mid point is a minimum point */
+        minx = miny = minz = 1.0e+12;
+        f0 = NULL;
+        idx = 0;
+        while ((mf = MESH_Next_Face(mesh,&idx))) {
           double fxyz[MAXPV2][3];
-	  int nfv;
+          int nfv;
 
-	  MF_Coords(mf,&nfv,fxyz);
-	  xyz[0] = fxyz[0][0];
-	  xyz[1] = fxyz[0][1];
-	  xyz[2] = fxyz[0][2];
-	  for (i = 1; i < nfv; i++) {
-	    xyz[0] += fxyz[i][0];
-	    xyz[1] += fxyz[i][1];
-	    xyz[2] += fxyz[i][2];
-	  }
-	  xyz[0] /= nfv; xyz[1] /= nfv; xyz[2] /= nfv;
-	  if (xyz[0] < minx && xyz[1] < miny && xyz[2] < minz) {
-	    minx = xyz[0];
-	    miny = xyz[1];
-	    minz = xyz[2];
-	    f0 = mf;
-	  }
-	}
+          MF_Coords(mf,&nfv,fxyz);
+          xyz[0] = fxyz[0][0];
+          xyz[1] = fxyz[0][1];
+          xyz[2] = fxyz[0][2];
+          for (i = 1; i < nfv; i++) {
+            xyz[0] += fxyz[i][0];
+            xyz[1] += fxyz[i][1];
+            xyz[2] += fxyz[i][2];
+          }
+          xyz[0] /= nfv; xyz[1] /= nfv; xyz[2] /= nfv;
+          if (xyz[0] < minx && xyz[1] < miny && xyz[2] < minz) {
+            minx = xyz[0];
+            miny = xyz[1];
+            minz = xyz[2];
+            f0 = mf;
+          }
+        }
       }
 
 
@@ -566,21 +627,35 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
           MVertex_ptr fv;
 
           adjflist = List_New(0);
-	  fverts = MF_Vertices(mf,1,0);
+          fverts = MF_Vertices(mf,1,0);
           idx2 = 0;
           while ((fv = List_Next_Entry(fverts,&idx2))) {
             List_ptr vfaces = MV_Faces(fv);
             idx3 = 0;
             while ((adjf = List_Next_Entry(vfaces,&idx3))) {
-              if (adjf != mf && !MEnt_IsMarked(adjf,mkid)) {
-                List_Add(adjflist,adjf);
-                MEnt_Mark(adjf,mkid);
+              if (adjf != mf) {
+                int fmarked;
+#ifdef MSTK_USE_MARKERS
+                fmarked = MEnt_IsMarked(adjf,mkid);
+#else
+                MEnt_Get_AttVal(adjf, mkatt, &fmarked, &rval, &pval);
+#endif
+                if (fmarked) {
+                  List_Add(adjflist,adjf);
+#ifdef MSTK_USE_MARKERS                  
+                  MEnt_Mark(adjf,mkid);
+#else
+                  MEnt_Set_AttVal(adjf, mkatt, 1, 0.0, NULL);
+#endif
+                }
               }
             }	    
             List_Delete(vfaces);
           }
           List_Delete(fverts);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjflist,mkid);
+#endif
 
           nadj[i] = List_Num_Entries(adjflist);
 
@@ -613,15 +688,29 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
             List_ptr rfaces = MR_Faces(fr);
             idx3 = 0;
             while ((adjf = List_Next_Entry(rfaces,&idx3))) {
-              if (adjf != mf && !MEnt_IsMarked(adjf,mkid)) {
-                List_Add(adjflist,adjf);
-                MEnt_Mark(adjf,mkid);
+              if (adjf != mf) {
+                int fmarked;
+#ifdef MSTK_USE_MARKERS
+                fmarked = MEnt_IsMarked(adjf,mkid);
+#else
+                MEnt_Get_AttVal(adjf, mkatt, &fmarked, &rval, &pval);
+#endif
+                if (fmarked) {
+                  List_Add(adjflist,adjf);
+#ifdef MSTK_USE_MARKERS                  
+                  MEnt_Mark(adjf,mkid);
+#else
+                  MEnt_Set_AttVal(adjf, mkatt, 1, 0.0, NULL);
+#endif
+                }
               }
             }
             List_Delete(rfaces);
           }
           List_Delete(fregions);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjflist,mkid);
+#endif
 
           nadj[i] = List_Num_Entries(adjflist);
 
@@ -644,7 +733,7 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       offset = (int *) malloc(nf*sizeof(int));
       offset[0] = 0;
       for (i = 1; i < nf; i++)
-	offset[i] = offset[i-1] + nadj[i-1];
+        offset[i] = offset[i-1] + nadj[i-1];
 
 
       /* Compute maximum bandwidth before renumbering */
@@ -652,15 +741,15 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       maxbandwidth1 = 0;
       avebandwidth1 = 0;
       for (i = 0; i < nf; i++) {
-	int off = offset[i];
-	int curid = i;
-	for (j = 0; j < nadj[i]; j++) {
-	  int adjid = adj[off+j];
-	  int diff = abs(adjid-curid);
-	  maxbandwidth1 = (diff > maxbandwidth1) ? diff : maxbandwidth1;
-	  avebandwidth1 += diff;
-	  nconn++;
-	}
+        int off = offset[i];
+        int curid = i;
+        for (j = 0; j < nadj[i]; j++) {
+          int adjid = adj[off+j];
+          int diff = abs(adjid-curid);
+          maxbandwidth1 = (diff > maxbandwidth1) ? diff : maxbandwidth1;
+          avebandwidth1 += diff;
+          nconn++;
+        }
       }
       nconn = offset[nf-1]+nadj[nf-1];
       avebandwidth1 /= nconn;
@@ -696,15 +785,15 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       maxbandwidth2 = 0;
       avebandwidth2 = 0;
       for (i = 0; i < nf; i++) {
-	int off = offset[i];
-	int curid = newmap[i];
-	for (j = 0; j < nadj[i]; j++) {
-	  int adjid = newmap[adj[off+j]];
-	  int diff = abs(adjid-curid);
-	  maxbandwidth2 = (diff > maxbandwidth2) ? diff : maxbandwidth2;
-	  avebandwidth2 += diff;
-	  nconn++;
-	}
+        int off = offset[i];
+        int curid = newmap[i];
+        for (j = 0; j < nadj[i]; j++) {
+          int adjid = newmap[adj[off+j]];
+          int diff = abs(adjid-curid);
+          maxbandwidth2 = (diff > maxbandwidth2) ? diff : maxbandwidth2;
+          avebandwidth2 += diff;
+          nconn++;
+        }
       }
       nconn = offset[nf-1]+nadj[nf-1];
       avebandwidth2 /= nconn;
@@ -817,15 +906,27 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
             List_ptr vregions = MV_Regions(rv);
             idx3 = 0;
             while ((adjr = List_Next_Entry(vregions,&idx3))) {
-              if (adjr != mr && !MEnt_IsMarked(adjr,mkid)) {
+              if (adjr != mr) {
+                int rmarked;
+#ifdef MSTK_USE_MARKERS
+                rmarked = MEnt_IsMarked(adjr,mkid);
+#else
+                MEnt_Get_AttVal(adjr, mkatt, &rmarked, &rval, &pval);
+#endif
                 List_Add(adjrlist,adjr);
+#ifdef MSTK_USE_MARKERS
                 MEnt_Mark(adjr,mkid);
+#else
+                MEnt_Set_AttVal(adjr, mkatt, 1, 0.0, NULL);
+#endif
               }
             }	    
             List_Delete(vregions);
           }
           List_Delete(rverts);
+#ifdef MSTK_USE_MARKERS
           List_Unmark(adjrlist,mkid);
+#endif
 
           nadj[i] = List_Num_Entries(adjrlist);
 
@@ -937,7 +1038,9 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
       }
     }
 
+#ifdef MSTK_USE_MARKERS
     MSTK_FreeMarker(mkid);
+#endif
   }
   
 

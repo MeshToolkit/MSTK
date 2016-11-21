@@ -1,6 +1,8 @@
 #ifndef _H_MSTK_PRIVATE
 #define _H_MSTK_PRIVATE
 
+#include <pthread.h>
+
 #include "MSTK_types.h"
 #include "MSTK_externs.h"
 #include "MSTK_util.h"
@@ -17,6 +19,12 @@ extern "C" {
 /* If MSTK_KEEP_DELETED is 1, then entities will only be marked as deleted */
 
 extern int MSTK_KEEP_DELETED;
+
+  /* mutex lock for markers (declared in MSTK.c) */
+
+#ifdef MSTK_USE_MARKERS
+  extern pthread_mutex_t marker_lock;
+#endif
 
 /* Don't want users to see this */
 

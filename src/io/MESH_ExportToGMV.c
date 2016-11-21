@@ -58,7 +58,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   int                   nalloc, ngent, fnum, fid, vid, icr;
   int                   nv, ne, nf, nr;
   int                   minid, maxid, tempid, prev_tempid;
-  int                   attentdim, j, ncells, polygons=0, cellmk, idx;
+  int                   attentdim, j, ncells, polygons=0, idx;
   int                   ncells1=0, ncells2=0, ncells3=0;
   int                   ndup, NFACES, rid0, rid1, rid;
   int                   oppfid, opprid;
@@ -235,8 +235,11 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     free(zcoord);
   }
 
-
-  cellmk = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+  int cellmk = MSTK_GetMarker();
+#else
+  MAttrib_ptr cellmkatt = MAttrib_New(mesh, "cellmk", INT, MALLTYPE);
+#endif
 
   /* number of regions */
 
@@ -290,8 +293,12 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       if ((fregs = MF_Regions(face)))
 	List_Delete(fregs);
       else {
-	MEnt_Mark(face,cellmk);
 	ncells2++;
+#ifdef MSTK_USE_MARKERS
+	MEnt_Mark(face,cellmk);
+#else
+        MEnt_Set_AttVal(face, cellmkatt, 1, 0.0, NULL);
+#endif
       }
 
       List_Add(flist,face);
@@ -328,8 +335,12 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
       if ((efaces = ME_Faces(edge)))
 	List_Delete(efaces);
       else {
-	MEnt_Mark(edge,cellmk);
 	ncells1++;
+#ifdef MSTK_USE_MARKERS
+	MEnt_Mark(edge,cellmk);
+#else
+        MEnt_Set_AttVal(edge, cellmkatt, 1, 0.0, NULL);
+#endif
       }
 
       List_Add(elist,edge);
@@ -687,8 +698,14 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
     idx = 0;
     while ((face = List_Next_Entry(flist,&idx))) {
-      if (!MEnt_IsMarked(face,cellmk))
-	continue;
+      int fmarked;
+#ifdef MSTK_USE_MARKERS
+      fmarked = MEnt_IsMarked(face,cellmk);
+#else
+      MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+      if (!fmarked)
+        continue;
       
       if (MF_Num_Vertices(face) > 4) {
 	polygons = 1;
@@ -703,7 +720,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     
     idx = 0;
     while ((face = List_Next_Entry(flist,&idx))) {
-      if (!MEnt_IsMarked(face,cellmk))
+      int fmarked;
+#ifdef MSTK_USE_MARKERS
+      fmarked = MEnt_IsMarked(face,cellmk);
+#else
+      MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+      if (!fmarked)
 	continue;
       
       fnum++;
@@ -778,7 +801,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   if (ncells1) {
     idx = 0;
     while ((edge = List_Next_Entry(elist,&idx))) {
-      if (!MEnt_IsMarked(edge,cellmk))
+      int emarked;
+#ifdef MSTK_USE_MARKERS
+      emarked = MEnt_IsMarked(edge,cellmk);
+#else
+      MEnt_Get_AttVal(edge, cellmkatt, &emarked, &rval, &pval);
+#endif
+      if (!emarked)
 	continue;
       
       fprintf(fp,"line 2 ");
@@ -840,7 +869,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     if (ncells2) {
       idx = 0;
       while ((face = List_Next_Entry(flist,&idx))) {
-	if (!MEnt_IsMarked(face,cellmk))
+        int fmarked;
+#ifdef MSTK_USE_MARKERS
+	fmarked = MEnt_IsMarked(face,cellmk);
+#else
+        MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+        if (!fmarked)
 	  continue;
 
 	gentid = MF_GEntID(face);
@@ -859,7 +894,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     if (ncells1) {
       idx = 0;
       while ((edge = List_Next_Entry(elist,&idx))) {
-	if (!MEnt_IsMarked(edge,cellmk))
+        int emarked;
+#ifdef MSTK_USE_MARKERS
+	emarked = MEnt_IsMarked(edge,cellmk);
+#else
+        MEnt_Get_AttVal(edge, cellmkatt, &emarked, &rval, &pval);
+#endif
+        if (!emarked)
 	  continue;
 
 	gentid = ME_GEntID(edge);
@@ -895,7 +936,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
     if (ncells2) {
       while ((face = List_Next_Entry(flist,&idx))) {
-	if (!MEnt_IsMarked(face,cellmk))
+        int fmarked;
+#ifdef MSTK_USE_MARKERS
+	fmarked = MEnt_IsMarked(face,cellmk);
+#else
+        MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+        if (!fmarked)
 	  continue;
 	else {
 	  gentid = MF_GEntID(face);
@@ -909,7 +956,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
     if (ncells1) {
       idx = 0;
       while ((edge = List_Next_Entry(elist,&idx))) {
-	if (!MEnt_IsMarked(edge,cellmk))
+        int emarked;
+#ifdef MSTK_USE_MARKERS
+	emarked = MEnt_IsMarked(edge,cellmk);
+#else
+        MEnt_Get_AttVal(edge, cellmkatt, &emarked, &rval, &pval);
+#endif
+        if (!emarked)
 	  continue;
 	else {
 	  gentid = ME_GEntID(edge);
@@ -1053,7 +1106,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	if (ncells2) {
 	  idx = 0;
 	  while ((face = List_Next_Entry(flist,&idx))) {
-	    if (!MEnt_IsMarked(face,cellmk))
+            int fmarked;
+#ifdef MSTK_USE_MARKERS
+            fmarked = MEnt_IsMarked(face,cellmk);
+#else
+            MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+            if (!fmarked)
 	      continue;
 
 	    MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
@@ -1075,7 +1134,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 	if (ncells1) {
 	  idx = 0;
 	  while ((edge = List_Next_Entry(elist,&idx))) {
-	    if (!MEnt_IsMarked(edge,cellmk))
+            int emarked;
+#ifdef MSTK_USE_MARKERS
+            emarked = MEnt_IsMarked(edge,cellmk);
+#else
+            MEnt_Get_AttVal(edge, cellmkatt, &emarked, &rval, &pval);
+#endif
+	    if (!emarked)
 	      continue;
 
 	    MEnt_Get_AttVal(edge,attrib,&ival,&rval,&pval);
@@ -1142,7 +1207,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   if (ncells2) {
     idx = 0;
     while ((face = List_Next_Entry(flist,&idx))) {
-      if (!MEnt_IsMarked(face,cellmk))
+      int fmarked;
+#ifdef MSTK_USE_MARKERS
+      fmarked = MEnt_IsMarked(face,cellmk);
+#else
+      MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+      if (!fmarked)
         continue;
       else {
         fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)face));
@@ -1155,7 +1226,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   if (ncells1) {
     idx = 0;
     while ((edge = List_Next_Entry(elist,&idx))) {
-      if (!MEnt_IsMarked(edge,cellmk))
+      int emarked;
+#ifdef MSTK_USE_MARKERS
+      emarked = MEnt_IsMarked(edge,cellmk);
+#else
+      MEnt_Get_AttVal(edge, cellmkatt, &emarked, &rval, &pval);
+#endif
+      if (!emarked)
         continue;
       else {
         fprintf(fp,"%d ",MEnt_GlobalID((MEntity_ptr)edge));
@@ -1182,7 +1259,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   if (ncells2) {    
     idx = 0;
     while ((face = List_Next_Entry(flist,&idx))) {
-      if (!MEnt_IsMarked(face,cellmk))
+      int fmarked;
+#ifdef MSTK_USE_MARKERS
+      fmarked = MEnt_IsMarked(face,cellmk);
+#else
+      MEnt_Get_AttVal(face, cellmkatt, &fmarked, &rval, &pval);
+#endif
+      if (!fmarked)
         continue;
       else {
         fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)face));
@@ -1195,7 +1278,13 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   if (ncells1) {
     idx = 0;
     while ((edge = List_Next_Entry(elist,&idx))) {
-      if (!MEnt_IsMarked(edge,cellmk))
+      int emarked;
+#ifdef MSTK_USE_MARKERS
+      emarked = MEnt_IsMarked(edge,cellmk);
+#else
+      MEnt_Get_AttVal(edge, cellmkatt, &emarked, &rval, &pval);
+#endif
+      if (!emarked)
         continue;
       else {
         fprintf(fp,"%d ",MEnt_MasterParID((MEntity_ptr)edge));
@@ -1223,6 +1312,7 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
 
   free(gentities);
 
+#ifdef MSTK_USE_MARKERS
   if (ncells2) {
     idx = 0;
     while ((face = List_Next_Entry(flist,&idx))) 
@@ -1236,23 +1326,9 @@ int MESH_ExportToGMV(Mesh_ptr mesh, const char *filename, const int natt,
   }
 
   MSTK_FreeMarker(cellmk);
-
-
-  idx = 0;
-  while ((vertex = MESH_Next_Vertex(mesh,&idx)))
-    MEnt_Rem_AttVal(vertex,vidatt);
-   
-  idx = 0;
-  while ((face = MESH_Next_Face(mesh,&idx)))
-    MEnt_Rem_AttVal(face,eidatt);
-
-  idx = 0;
-  while ((edge = MESH_Next_Edge(mesh,&idx)))
-    MEnt_Rem_AttVal(edge,eidatt);
-
-  idx = 0;
-  while ((region = MESH_Next_Region(mesh,&idx)))
-    MEnt_Rem_AttVal(region,ridatt);
+#else
+  MAttrib_Delete(cellmkatt);
+#endif
 
   if (vidatt) MAttrib_Delete(vidatt);
   if (eidatt) MAttrib_Delete(eidatt);

@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   int num, rank;
   char filename[256], basename[256], gmvfilename[256], sname[256];
   int i, j, k, idx, idx1, idx2, nfv, nsteps, dim;
-  int converged, mkid, mkid2, ival;
+  int converged, ival;
   void *pval;
   double vxyz[3], fxyz[10][3], rval;
   double maxrho;
@@ -85,10 +85,13 @@ int main(int argc, char *argv[]) {
 
   rhoatt = MAttrib_New(mymesh,"density",DOUBLE,MFACE);
   
-
-  mkid = MSTK_GetMarker();
-  mkid2 = MSTK_GetMarker();
-
+#ifdef MSTK_USE_MARKERS
+  int mkid = MSTK_GetMarker();
+  int mkid2 = MSTK_GetMarker();
+#else
+  MAttrib_ptr mkatt1 = MAttrib_New(mymesh, "mkatt1", INT, MFACE);
+  MAttrib_ptr mkatt2 = MAttrib_New(mymesh, "mkatt2", INT, MFACE);
+#endif
 
   /* Find the cell(s) connected to the upper left corner vertex */
 
@@ -148,9 +151,19 @@ int main(int argc, char *argv[]) {
 	vfaces = MV_Faces(fv);
 	idx2 = 0;
 	while ((vf = List_Next_Entry(vfaces,&idx2))) {
-	  if (!MEnt_IsMarked(vf,mkid)) {
+          int fmarked1;
+#ifdef MSTK_USE_MARKERS
+          fmarked1 = MEnt_IsMarked(vf,mkid);
+#else
+          MEnt_Get_AttVal(vf, mkatt1, &fmarked1, &rval, &pval);
+#endif
+          if (!fmarked1) {
 	    List_Add(ffaces,vf);
+#ifdef MSTK_USE_MARKERS
 	    MEnt_Mark(vf,mkid);
+#else
+            MEnt_Set_AttVal(vf, mkatt1, 1, 0.0, NULL);
+#endif
 	  }
 	}
 	List_Delete(vfaces);
@@ -158,7 +171,9 @@ int main(int argc, char *argv[]) {
       }
       List_Delete(fverts);
       
+#ifdef MSTK_USE_MARKERS
       List_Unmark(ffaces,mkid);
+#endif
 
       maxrho = 0.0;
       idx1 = 0;
@@ -167,8 +182,8 @@ int main(int argc, char *argv[]) {
 	if (rval > maxrho)
 	  maxrho = rval;
       }
-
-
+      
+      
       fprintf(fp,"MF %-d ffaces: ",MF_ID(mf));
       idx1 = 0;
       while ((ff = List_Next_Entry(ffaces,&idx1))) {
@@ -179,19 +194,36 @@ int main(int argc, char *argv[]) {
 	fprintf(fp," (%-2.0lf)",rval);
       }
       fprintf(fp,"\n");
-
-
-      if (maxrho > 0.0)
+      
+      
+      if (maxrho > 0.0) {
+#ifdef MSTK_USE_MARKERS
 	MEnt_Mark(mf,mkid2);
+#else
+        MEnt_Set_AttVal(mf, mkatt2, 1, 0.0, NULL);
+#endif
+      }
       List_Delete(ffaces);
-
+        
     } /* while (mf = MESH_Next_Face.... */
+
 
     idx = 0;
     while ((mf = MESH_Next_Face(mymesh,&idx))) {
-      if (MEnt_IsMarked(mf,mkid2)) {
+      int fmarked;
+#ifdef MSTK_USE_MARKERS
+      fmarked = MEnt_IsMarked(mf,mkid2);
+#else
+      MEnt_Get_AttVal(mf, mkatt2, &fmarked, &rval, &pval);
+#endif
+      if (fmarked) {
 	MEnt_Set_AttVal(mf,rhoatt,0,10,NULL);
+
+#ifdef MSTK_USE_MARKERS
 	MEnt_Unmark(mf,mkid2);
+#else
+        MEnt_Rem_AttVal(mf, mkatt2);
+#endif
       }
     }
 
@@ -210,6 +242,13 @@ int main(int argc, char *argv[]) {
 
   } /* for (i = 0; i < nsteps; i++) */
 
+#ifdef MSTK_USE_MARKERS
+  MSTK_FreeMarker(mkid);
+  MSTK_FreeMarker(mkid2);
+#else
+  MAttrib_Delete(mkatt1);
+  MAttrib_Delete(mkatt2);
+#endif
 
   MPI_Finalize();
   return 0;

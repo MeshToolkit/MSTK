@@ -98,6 +98,8 @@ TEST(ME_Split)
       ne++;
     }
   }
+
+  MESH_Delete(mesh);
 }
 
 
@@ -206,4 +208,6 @@ TEST(ME_MultiSplit)
       ne++;
     }
   }
+
+  MESH_Delete(mesh);
 }

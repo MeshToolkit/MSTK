@@ -1,4 +1,5 @@
 #include <UnitTest++.h>
+#include <iostream>
 
 #include "../../../include/MSTK.h"
 
@@ -117,6 +118,7 @@ TEST(Partition3D_sym_0ring_METIS) {
   if (rank == 0) MESH_Delete(globalmesh);    
   */
 
+  std::cerr << "FINISHED TEST Partition3D_sym_0ring_METIS" << std::endl;
   return;
 }
 
@@ -236,6 +238,7 @@ TEST(Partition3D_sym_1ring_METIS) {
   if (rank == 0) MESH_Delete(globalmesh);
   */
 
+  std::cerr << "FINISHED TEST Partition3D_sym_1ring_METIS" << std::endl;
   return;
 }
 #endif
@@ -355,6 +358,7 @@ TEST(Partition3D_sym_0ring_ZOLTAN_GRAPH) {
   if (rank == 0) MESH_Delete(globalmesh);    
   */
 
+  std::cerr << "FINISHED TEST Partition3D_sym_0ring_ZOLTAN_GRAPH" << std::endl;
   return;
 }
 
@@ -472,6 +476,7 @@ TEST(Partition3D_sym_1ring_ZOLTAN_GRAPH) {
   
   /* if (rank == 0) MESH_Delete(globalmesh); */
 
+  std::cerr << "FINISHED TEST Partition3D_sym_1ring_ZOLTAN_GRAPH" << std::endl;
   return;
 }
 #endif
@@ -593,6 +598,7 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
 
   /* if (rank == 0) MESH_Delete(globalmesh); */
 
+  std::cerr << "FINISHED TEST Partition3D_sum_0ring_ZOLTAN_RCB" << std::endl;
   return;
 }
 

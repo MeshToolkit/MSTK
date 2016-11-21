@@ -23,13 +23,15 @@ extern "C" {
   int MESH_BuildEdgeClassfn(Mesh_ptr mesh, int use_geometry) {
   int i, j, k, idx, idx2, fnd, fnd2, geid, geid2, gdim;
   int ngedges, ngealloc, ngef, max_loc_gfids, *loc_gfids;
-  int max_gedge_id, processedmk, submk;
+  int max_gedge_id;
   int nve, nbe, nef, nsub, *geids, **gefaceids;
   double PI=3.141592, cosang, COSSHARPANG;
   MVertex_ptr ev[2];
   MEdge_ptr edge, subedge, adjedge;
   MFace_ptr eface;
   List_ptr efaces, vedges, vbedges, geedges, subedges;
+  double rval;
+  void *pval;
 
   COSSHARPANG = cos(5*PI/6);  /* 165 degrees */
 
@@ -347,6 +349,15 @@ extern "C" {
 
   if (use_geometry == 1) {
 
+
+#ifdef MSTK_USE_MARKERS
+    int processedmk = MSTK_GetMarker();
+    int submk = MSTK_GetMarker();
+#else
+    MAttrib_ptr processedatt = MAttrib_New(mesh, "processed", INT, MEDGE);
+    MAttrib_ptr sublistatt = MAttrib_New(mesh, "sublist", INT, MEDGE);
+#endif
+
     /* Now assign model edge IDs based on whether a sharp set of edges
        enclose a set of edges */
 
@@ -380,22 +391,32 @@ extern "C" {
          more edges to process from the original list
        
       */
-
-      processedmk = MSTK_GetMarker();
-
       nsub = 0;
       idx = 0;
       while ((edge = List_Next_Entry(geedges,&idx))) {
-        if (MEnt_IsMarked(edge,processedmk))
+        int emarked;
+#ifdef MSTK_USE_MARKERS
+        emarked = MEnt_IsMarked(edge,processedmk);
+#else
+        MEnt_Get_AttVal(edge, processedatt, &emarked, &rval, &pval);
+#endif
+        if (emarked)
           continue;
-
+        
         /* Found a edge in geedges that has not been processed */
+#ifdef MSTK_USE_MARKERS
         MEnt_Mark(edge,processedmk);
+#else
+        MEnt_Set_AttVal(edge, processedatt, 1, 0.0, NULL);
+#endif
 
-        submk = MSTK_GetMarker();
         subedges = List_New(10);
         List_Add(subedges,edge);
+#ifdef MSTK_USE_MARKERS
         MEnt_Mark(edge,submk);
+#else
+        MEnt_Set_AttVal(edge, sublistatt, 1, 0.0, NULL);
+#endif
 
         idx2 = 0;
         while ((subedge = List_Next_Entry(subedges,&idx2))) {
@@ -433,9 +454,19 @@ extern "C" {
 
                 if (cosang <= COSSHARPANG) {
                   /* Add edge2 to subedge list unless its already there */
-                  if (!MEnt_IsMarked(adjedge,submk)) {
+                  int adjemarked;
+#ifdef MSTK_USE_MARKERS
+                  adjemarked = MEnt_IsMarked(adjedge,submk);
+#else
+                  MEnt_Get_AttVal(adjedge, sublistatt, &adjemarked, &rval, &pval);
+#endif
+                  if (!adjemarked) {
                     List_Add(subedges,adjedge);
+#ifdef MSTK_USE_MARKERS
                     MEnt_Mark(adjedge,submk);
+#else
+                    MEnt_Set_AttVal(adjedge, sublistatt, 1, 0.0, NULL);
+#endif
                   }
                 }
                 else {
@@ -488,20 +519,39 @@ extern "C" {
 
         /* Done with this subedge */
 
+#ifdef MSTK_USE_MARKERS
         idx2 = 0;
         while ((subedge = List_Next_Entry(subedges,&idx2))) {
           MEnt_Mark(subedge,processedmk);
           MEnt_Unmark(subedge,submk);
         }
-        MSTK_FreeMarker(submk);
+#else
+        idx2 = 0;
+        while ((subedge = List_Next_Entry(subedges,&idx2))) {
+          MEnt_Set_AttVal(subedge, processedatt, 1, 0.0, NULL);
+          MEnt_Set_AttVal(subedge, sublistatt, 0, 0.0, NULL);
+        }
+#endif
         List_Delete(subedges);
       }
 
+#ifdef MSTK_USE_MARKERS
       List_Unmark(geedges,processedmk);
-      MSTK_FreeMarker(processedmk);
+#else
+      idx2 = 0;
+      while ((edge = List_Next_Entry(geedges, &idx2)))
+        MEnt_Set_AttVal(edge, processedatt, 1, 0.0, NULL);
+#endif
       List_Delete(geedges);
     }
 
+#ifdef MSTK_USE_MARKERS
+      MSTK_FreeMarker(processedmk);
+      MSTK_FreeMarker(submk);
+#else
+      MAttrib_Delete(processedatt);
+      MAttrib_Delete(sublistatt);
+#endif
   } /* if use_geometry == 1 */
 
   free(geids);

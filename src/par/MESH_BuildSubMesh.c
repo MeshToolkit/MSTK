@@ -42,22 +42,29 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh);
      First update the parallel adjancy information, 
   */
 int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
-  int nv, ne, nf, nfe, j, k;
+  int nfe, j, k;
   MVertex_ptr mv, new_mv;
   MEdge_ptr me, new_me, *fedges;
   MFace_ptr mf, new_mf;
   List_ptr mfedges;
   List_ptr faces, edges, verts;
   int idx, *fedirs;
-  int mkvid, mkeid, mkfid;
   double coor[3];
   int *MV_to_list_id, *ME_to_list_id;
-  nv = MESH_Num_Vertices(mesh);
-  ne = MESH_Num_Edges(mesh);
-  nf = MESH_Num_Faces(mesh);
-  mkvid = MSTK_GetMarker();
-  mkeid = MSTK_GetMarker();
-  mkfid = MSTK_GetMarker();
+  int nv = MESH_Num_Vertices(mesh);
+  int ne = MESH_Num_Edges(mesh);
+  int nf = MESH_Num_Faces(mesh);
+
+#ifdef MSTK_USE_MARKERS
+  int mkvid = MSTK_GetMarker();
+  int mkeid = MSTK_GetMarker();
+  int mkfid = MSTK_GetMarker();
+#else
+  MAttrib_ptr mkatt = MAttrib_New(mesh, "mkatt", INT, MALLTYPE);
+  double rval;
+  void *pval;
+#endif
+
   faces = List_New(10);
   edges = List_New(10);
   verts = List_New(10);
@@ -71,9 +78,22 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
   fedirs = (int *) malloc(MAXPV2*sizeof(int));
   while( (mf = MESH_Next_Face(mesh, &idx)) ) {
     if(MF_PType(mf) != POVERLAP) continue;
-    if(MEnt_IsMarked(mf,mkfid)) continue;
+
+    int f_inlist;
+#ifdef MSTK_USE_MARKERS
+    f_inlist = MEnt_IsMarked(mf,mkfid);
+#else
+    MEnt_Get_AttVal(mf, mkatt, &f_inlist, &rval, &pval);
+#endif
+
+    if (f_inlist) continue;
     List_Add(faces,mf);
+
+#ifdef MSTK_USE_MARKERS
     MEnt_Mark(mf,mkfid);
+#else
+    MEnt_Set_AttVal(mf, mkatt, 1, 0.0, NULL);
+#endif
     new_mf = MF_New(submesh);  /* add new face and copy information */
     MF_Set_GEntDim(new_mf,MF_GEntDim(mf));
     MF_Set_GEntID(new_mf,MF_GEntID(mf));
@@ -85,7 +105,15 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
     nfe = List_Num_Entries(mfedges);
     for(j = 0; j < nfe; j++) {
       me = List_Entry(mfedges,j);
-      if(MEnt_IsMarked(me,mkeid)) new_me = MESH_Edge(submesh,ME_to_list_id[ME_ID(me)-1]);
+      
+      int e_inlist;
+#ifdef MSTK_USE_MARKERS
+      e_inlist = MEnt_IsMarked(me,mkeid);
+#else
+      MEnt_Get_AttVal(me, mkatt, &e_inlist, &rval, &pval);
+#endif
+      if (e_inlist)
+        new_me = MESH_Edge(submesh,ME_to_list_id[ME_ID(me)-1]);
       else {
 	new_me = ME_New(submesh);    /* add new edge and copy information */
 	ME_Set_GEntDim(new_me,ME_GEntDim(me));
@@ -96,10 +124,22 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
 
 	ME_to_list_id[ME_ID(me)-1] = ME_ID(new_me)-1;
 	List_Add(edges,me);
+#ifdef MSTK_USE_MARKERS
 	MEnt_Mark(me,mkeid);
+#else
+        MEnt_Set_AttVal(me, mkatt, 1, 0.0, NULL);
+#endif
  	for(k = 0; k < 2; k++) {
 	  mv = ME_Vertex(me,k);
-	  if(MEnt_IsMarked(mv,mkvid)) new_mv = MESH_Vertex(submesh,MV_to_list_id[MV_ID(mv)-1]);
+
+          int v_inlist;
+#ifdef MSTK_USE_MARKERS
+	  v_inlist = MEnt_IsMarked(mv,mkvid);
+#else
+	  MEnt_Get_AttVal(mv, mkatt, &v_inlist, &rval, &pval);
+#endif
+          if (v_inlist)
+            new_mv = MESH_Vertex(submesh,MV_to_list_id[MV_ID(mv)-1]);
 	  else {
 	    new_mv = MV_New(submesh);  /* add new vertex and copy information */
 	    MV_Set_GEntDim(new_mv,MV_GEntDim(mv));
@@ -112,7 +152,11 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
 
 	    MV_to_list_id[MV_ID(mv)-1] = MV_ID(new_mv)-1;
 	    List_Add(verts,mv);
+#ifdef MSTK_USE_MARKERS
 	    MEnt_Mark(mv,mkvid);
+#else
+            MEnt_Set_AttVal(mv, mkatt, 1, 0.0, NULL);
+#endif
 	  }
 	  ME_Set_Vertex(new_me,k,new_mv);  /* set edge-vertex */
 	}
@@ -125,12 +169,16 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
     List_Delete(mfedges);
   }
 
+#ifdef MSTK_USE_MARKERS
   List_Unmark(faces,mkfid);
   List_Unmark(edges,mkeid);
   List_Unmark(verts,mkvid);
   MSTK_FreeMarker(mkfid);
   MSTK_FreeMarker(mkeid);
   MSTK_FreeMarker(mkvid);
+#else
+  MAttrib_Delete(mkatt);
+#endif
 
   List_Delete(faces);
   List_Delete(edges);
@@ -145,7 +193,7 @@ int MESH_BuildSubMesh_Face(Mesh_ptr mesh, Mesh_ptr submesh) {
   /* right now assume there are no overlapped regions */
 
 int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
-  int nv, ne, nf, nrf, nfe, i, j, k;
+  int nrf, nfe, i, j, k;
   MVertex_ptr mv, new_mv;
   MEdge_ptr me, new_me, *fedges;
   MFace_ptr mf, new_mf, *rfaces;
@@ -153,15 +201,22 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
   List_ptr mrfaces, mfedges;
   List_ptr faces, edges, verts;
   int idx, *fedirs, *rfdirs;
-  int mkvid, mkeid, mkfid;
   int *MV_to_list_id, *ME_to_list_id, *MF_to_list_id;
   double coor[3];
-  nv = MESH_Num_Vertices(mesh);
-  ne = MESH_Num_Edges(mesh);
-  nf = MESH_Num_Faces(mesh);
-  mkvid = MSTK_GetMarker();
-  mkeid = MSTK_GetMarker();
-  mkfid = MSTK_GetMarker();
+  int nv = MESH_Num_Vertices(mesh);
+  int ne = MESH_Num_Edges(mesh);
+  int nf = MESH_Num_Faces(mesh);
+
+#ifdef MSTK_USE_MARKERS
+  int mkvid = MSTK_GetMarker();
+  int mkeid = MSTK_GetMarker();
+  int mkfid = MSTK_GetMarker();
+#else
+  MAttrib_ptr mkatt = MAttrib_New(mesh, "mkatt", INT, MALLTYPE);
+  double rval;
+  void *pval;
+#endif
+
   faces = List_New(10);
   edges = List_New(10);
   verts = List_New(10);
@@ -189,7 +244,15 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
     nrf = List_Num_Entries(mrfaces);
     for(i = 0; i < nrf; i++) {
       mf = List_Entry(mrfaces,i);
-      if(MEnt_IsMarked(mf,mkfid)) new_mf = MESH_Face(submesh,MF_to_list_id[MF_ID(mf)-1]);
+
+      int f_inlist;
+#ifdef MSTK_USE_MARKERS
+      f_inlist = MEnt_IsMarked(mf,mkfid);
+#else
+      MEnt_Get_AttVal(mf, mkatt, &f_inlist, &rval, &pval);
+#endif
+      if (f_inlist)
+        new_mf = MESH_Face(submesh,MF_to_list_id[MF_ID(mf)-1]);
       else {
 	new_mf = MF_New(submesh);  /* add new face and copy information */
 	MF_Set_GEntDim(new_mf,MF_GEntDim(mf));
@@ -199,14 +262,27 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
 	MF_Set_GlobalID(new_mf,MF_GlobalID(mf));
 	
 	List_Add(faces,mf);
+#ifdef MSTK_USE_MARKERS
 	MEnt_Mark(mf,mkfid);
+#else
+        MEnt_Set_AttVal(mf, mkatt, 1, 0.0, NULL);
+#endif
 	MF_to_list_id[MF_ID(mf)-1] = MF_ID(new_mf)-1;
 	
 	mfedges = MF_Edges(mf,1,0);
 	nfe = List_Num_Entries(mfedges);
 	for(j = 0; j < nfe; j++) {
 	  me = List_Entry(mfedges,j);
-	  if(MEnt_IsMarked(me,mkeid)) new_me = MESH_Edge(submesh,ME_to_list_id[ME_ID(me)-1]);
+
+          int e_inlist;
+#ifdef MSTK_USE_MARKERS
+          e_inlist = MEnt_IsMarked(me,mkeid);
+#else
+          MEnt_Get_AttVal(me, mkatt, &e_inlist, &rval, &pval);
+#endif
+
+	  if (e_inlist) 
+            new_me = MESH_Edge(submesh,ME_to_list_id[ME_ID(me)-1]);
 	  else {
 	    new_me = ME_New(submesh);    /* add new edge and copy information */
 	    ME_Set_GEntDim(new_me,ME_GEntDim(me));
@@ -217,10 +293,23 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
 
 	    ME_to_list_id[ME_ID(me)-1] = ME_ID(new_me)-1;
 	    List_Add(edges,me);
+
+#ifdef MSTK_USE_MARKERS
 	    MEnt_Mark(me,mkeid);
+#else
+            MEnt_Set_AttVal(me, mkatt, 1, 0.0, NULL);
+#endif
 	    for(k = 0; k < 2; k++) {
 	      mv = ME_Vertex(me,k);
-	      if(MEnt_IsMarked(mv,mkvid)) new_mv = MESH_Vertex(submesh,MV_to_list_id[MV_ID(mv)-1]);
+
+              int v_inlist;
+#ifdef MSTK_USE_MARKERS
+              v_inlist = MEnt_IsMarked(mv,mkvid);
+#else
+              MEnt_Get_AttVal(mv, mkatt, &v_inlist, &rval, &pval);
+#endif
+	      if (v_inlist)
+                new_mv = MESH_Vertex(submesh,MV_to_list_id[MV_ID(mv)-1]);
 	      else {
 		new_mv = MV_New(submesh);  /* add new vertex and copy information */
 		MV_Set_GEntDim(new_mv,MV_GEntDim(mv));
@@ -233,7 +322,12 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
 		
 		MV_to_list_id[MV_ID(mv)-1] = MV_ID(new_mv)-1;
 		List_Add(verts,mv);
+
+#ifdef MSTK_USE_MARKERS
 		MEnt_Mark(mv,mkvid);
+#else
+                MEnt_Set_AttVal(mv, mkatt, 1, 0.0, NULL);
+#endif
 	      }
 	      ME_Set_Vertex(new_me,k,new_mv);  /* set edge-vertex */
 	    }
@@ -251,12 +345,16 @@ int MESH_BuildSubMesh_Region(Mesh_ptr mesh, Mesh_ptr submesh) {
     List_Delete(mrfaces);
   }
 
+#ifdef MSTK_USE_MARKERS
   List_Unmark(faces,mkfid);
   List_Unmark(edges,mkeid);
   List_Unmark(verts,mkvid);
   MSTK_FreeMarker(mkfid);
   MSTK_FreeMarker(mkeid);
   MSTK_FreeMarker(mkvid);
+#else
+  MAttrib_Delete(mkatt);
+#endif
 
   List_Delete(faces);
   List_Delete(edges);

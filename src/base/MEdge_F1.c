@@ -95,7 +95,7 @@ extern "C" {
 
   List_ptr ME_Regions_F1(MEdge_ptr e) {
     MEdge_Adj_F1 *adj; 
-    int i, j, nr, nf, mkr;
+    int i, j, nr, nf;
     List_ptr eregs;
     MFace_ptr eface;
     MRegion_ptr freg;
@@ -104,23 +104,37 @@ extern "C" {
     nf = List_Num_Entries(adj->efaces);
     eregs = List_New(nf);
    
-    mkr = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+    int mkr = MSTK_GetMarker();
+#endif
     nr = 0;
     for (i = 0; i < nf; i++) {
       eface = List_Entry(adj->efaces,i);
 
       for (j = 0; j < 2; j++) {
 	freg = MF_Region(eface,j);
-	if (freg && !MEnt_IsMarked(freg,mkr)) {
-	  MEnt_Mark(freg,mkr);
-	  List_Add(eregs,freg);
-	  nr++;
+	if (freg) {
+          int inlist;
+#ifdef MSTK_USE_MARKERS
+          inlist = MEnt_IsMarked(freg,mkr);
+#else
+          inlist = List_Contains(eregs,freg);
+#endif
+          if (!inlist) {
+            List_Add(eregs,freg);
+            nr++;
+#ifdef MSTK_USE_MARKERS
+            MEnt_Mark(freg,mkr);
+#endif
+          }
 	}
       }
     }
+#ifdef MSTK_USE_MARKERS
     List_Unmark(eregs,mkr);
     MSTK_FreeMarker(mkr);
-    
+#endif
+
     if (nr) 
       return eregs;
     else {

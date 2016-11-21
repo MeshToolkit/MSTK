@@ -1,7 +1,15 @@
 
 if (BUILD_TESTS)
 
- # Need to copy files for tests otherwise the input files aren't accessible
+  # We need to do some tests with multi-threading to see if the code is thread-safe
+  find_package(OpenMP)
+  if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+  endif(OPENMP_FOUND)
+  
+  # Need to copy files for tests otherwise the input files aren't accessible
 
   if (NOT (${MSTK_SOURCE_DIR} EQUAL ${MSTK_BINARY_DIR}))
     execute_process(COMMAND ${CMAKE_COMMAND} -E
@@ -14,12 +22,22 @@ if (BUILD_TESTS)
   foreach (FILE ${FILES})
     get_filename_component(RELFILE ${FILE} NAME) 
     if (${RELFILE} MATCHES ExodusII OR $(RELFILE) MATCHES NemesisI)
+      
       if (ENABLE_ExodusII)
         set (serialtestfiles ${serialtestfiles} ${FILE})
-      endif ()
-    else ()
+      endif (ENABLE_ExodusII)
+
+    elseif (${RELFILE} EQUAL "test_Markers.cc")
+
+      if (OPENMP_FOUND)
+	set (serialtestfiles ${serialtestfiles} ${FILE})
+      endif (OPENMP_FOUND)
+
+    else (${RELFILE} MATCHES ExodusII OR $(RELFILE) MATCHES NemesisI)
+
       set (serialtestfiles ${serialtestfiles} ${FILE})
-    endif ()
+
+    endif (${RELFILE} MATCHES ExodusII OR $(RELFILE) MATCHES NemesisI)
   endforeach ()
 
   add_executable(mstk_serial_unit_tests ${serialtestfiles})

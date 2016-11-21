@@ -126,6 +126,16 @@ endif ()
 message("\n-------------------------------------------------------------------")
 message("--- Configuring MSTK with:")
 
+
+################################################################################
+# If MSTK should enable and use markers to enable fast constant time searches
+# in list and set operations
+################################################################################
+
+if (MSTK_USE_MARKERS)
+  add_definitions("-DMSTK_USE_MARKERS")
+endif (MSTK_USE_MARKERS)
+
 ################################################################################
 # If user wants to read/write ExodusII files, we check if we can locate the
 # ExodusII and NetCDF include files and libraries

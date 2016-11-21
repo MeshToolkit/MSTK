@@ -174,14 +174,16 @@ extern "C" {
   }
 
   List_ptr MV_Regions_R4(MVertex_ptr v) {
-    int i, j, nr, nf, mkr;
+    int i, j, nr, nf;
     MFace_ptr face;
     MRegion_ptr reg;
     List_ptr vregions, vfaces;
  
     vregions = List_New(10);
     nr = 0;
-    mkr = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+    int mkr = MSTK_GetMarker();
+#endif
 
     vfaces = MV_Faces_R4(v);
     nf = List_Num_Entries(vfaces);
@@ -189,16 +191,28 @@ extern "C" {
       face = List_Entry(vfaces,i);
       for (j = 0; j < 2; j++) {
 	reg = MF_Region(face,j);
-	if (reg && !MEnt_IsMarked(reg,mkr)) {
-	  MEnt_Mark(reg,mkr);
-	  List_Add(vregions,reg);
-	  nr++;
+	if (reg) {
+          int inlist;
+#ifdef MSTK_USE_MARKERS
+          inlist = MEnt_IsMarked(reg,mkr);
+#else
+          inlist = List_Contains(vregions, reg);
+#endif
+          if (!inlist) {
+#ifdef MSTK_USE_MARKERS
+            MEnt_Mark(reg,mkr);
+#endif
+            List_Add(vregions,reg);
+            nr++;
+          }
 	}
       }
     }
     List_Delete(vfaces);
+#ifdef MSTK_USE_MARKERS
     List_Unmark(vregions,mkr);
     MSTK_FreeMarker(mkr);
+#endif
 
     if (nr > 0)
       return vregions;

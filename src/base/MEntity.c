@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "MEntity.h"
 #include "MAttrib.h"
 #include "MSTK.h"
@@ -245,7 +246,15 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
+#ifdef MSTK_USE_MARKERS
+    pthread_mutex_lock(&marker_lock);
+#endif
+
     ent->entdat.marker = ent->entdat.marker | 1<<(markerID-1);
+
+#ifdef MSTK_USE_MARKERS
+    pthread_mutex_unlock(&marker_lock);
+#endif
   }
 
   void MEnt_Unmark(MEntity_ptr ent, int markerID) {
@@ -255,7 +264,15 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
+#ifdef MSTK_USE_MARKERS
+    pthread_mutex_lock(&marker_lock);
+#endif
+
     ent->entdat.marker = ent->entdat.marker & ~(1<<(markerID-1));
+
+#ifdef MSTK_USE_MARKERS
+    pthread_mutex_unlock(&marker_lock);
+#endif
   }
 
 
@@ -307,6 +324,198 @@ extern "C" {
       MAttIns_Set_Value(attins, ival, lval, pval);
 
   }
+
+  /* Set value of an integer attribute */
+
+  void MEnt_Set_IntAttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival) {
+#ifdef DEBUG
+    if (MAttrib_Get_Type(attrib) != INT)
+      MSTK_Report("MEnt_Set_IntAttVal",
+                    "Attribute does not accept integer values",MSTK_ERROR);
+#endif
+
+    MEnt_Set_AttVal(ent, attrib, ival, 0.0, NULL);
+  }
+
+  /* Set value of an double attribute */
+
+  void MEnt_Set_DblAttVal(MEntity_ptr ent, MAttrib_ptr attrib, double lval) {
+#ifdef DEBUG
+    if (MAttrib_Get_Type(attrib) != DOUBLE)
+      MSTK_Report("MEnt_Set_DblAttVal",
+                    "Attribute does not accept double values",MSTK_ERROR);
+#endif
+
+    MEnt_Set_AttVal(ent, attrib, 0, lval, NULL);
+  }
+
+  /* Set value of a pointer attribute */
+
+  void MEnt_Set_PtrAttVal(MEntity_ptr ent, MAttrib_ptr attrib, void *pval) {
+#ifdef DEBUG
+    if (MAttrib_Get_Type(attrib) != POINTER)
+      MSTK_Report("MEnt_Set_PtrAttVal",
+                    "Attribute does not accept pointer values",MSTK_ERROR);
+#endif
+
+    MEnt_Set_AttVal(ent, attrib, 0, 0.0, pval);
+  }
+
+  /* Set value of a vector attribute */
+
+  void MEnt_Set_VecAttVal(MEntity_ptr ent, MAttrib_ptr attrib, double *vval) {
+#ifdef DEBUG
+    if (MAttrib_Get_Type(attrib) != VECTOR)
+      MSTK_Report("MEnt_Set_VecAttVal",
+                    "Attribute does not accept vector values",MSTK_ERROR);
+#endif
+
+    MEnt_Set_AttVal(ent, attrib, 0, 0.0, vval);
+  }
+
+  /* Set value of a tensor attribute */
+
+  void MEnt_Set_TnsrAttVal(MEntity_ptr ent, MAttrib_ptr attrib, double *tval) {
+#ifdef DEBUG
+    if (MAttrib_Get_Type(attrib) != TENSOR)
+      MSTK_Report("MEnt_Set_TnsrAttVal",
+                    "Attribute does not accept tensor values",MSTK_ERROR);
+#endif
+
+    MEnt_Set_AttVal(ent, attrib, 0, 0.0, tval);
+  }
+
+
+  /* Query the value of the attribute */
+
+  int MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
+		      double *lval, void **pval) {
+    int idx, found;
+    MType attentdim, entdim;
+    MAttIns_ptr attins;
+    List_ptr attinslist;
+
+#ifdef DEBUG    
+    attentdim = MAttrib_Get_EntDim(attrib);
+    entdim = ent->entdat.dim;
+    if (attentdim != entdim)
+      if (attentdim != MALLTYPE &&
+          ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
+        MSTK_Report("MEnt_Clear_AttVal",
+                    "Attribute not suitable for this entity type",MSTK_ERROR);
+#endif
+
+    if (ival) *ival = 0;
+    if (lval) *lval = 0;
+    if (pval) *pval = NULL;
+    
+    attinslist = ent->entdat.AttInsList;
+    if (!attinslist)
+      return 0;
+    
+    idx = 0; found = 0;
+    while ((attins = List_Next_Entry(attinslist,&idx))) {
+      if (MAttIns_Attrib(attins) == attrib) {
+        found = 1;
+        break;
+      }
+    }
+    
+    if (!found)
+      return 0;
+    
+    MAttIns_Get_Value(attins, ival, lval, pval);
+    
+    return 1;
+    
+  }
+
+  /* Query the value of an integer attribute */
+
+  int MEnt_Get_IntAttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
+    int ival = 0;
+    double lval = 0.0;
+    void *pval = NULL;
+
+#ifdef DEBUG   
+    if (MAttrib_Get_Type(attrib) != INT)
+      MSTK_Report("MEnt_Get_IntAttVal",
+        "Attribute does not hold integer values",MSTK_ERROR);
+#endif
+
+    MEnt_Get_AttVal(ent, attrib, &ival, &lval, &pval);
+    return ival;
+  }
+
+  /* Query the value of a real attribute */
+
+  double MEnt_Get_DblAttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
+    int ival = 0;
+    double lval = 0.0;
+    void *pval = NULL;
+
+#ifdef DEBUG   
+    if (MAttrib_Get_Type(attrib) != DOUBLE)
+      MSTK_Report("MEnt_Get_DblAttVal",
+        "Attribute does not hold double values",MSTK_ERROR);
+#endif
+
+    MEnt_Get_AttVal(ent, attrib, &ival, &lval, &pval);
+    return lval;
+  }
+
+  /* Query the value of an pointer attribute */
+
+  void *MEnt_Get_PtrAttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
+    int ival = 0;
+    double lval = 0.0;
+    void *pval = NULL;
+
+#ifdef DEBUG   
+    if (MAttrib_Get_Type(attrib) != POINTER)
+      MSTK_Report("MEnt_Get_PtrAttVal",
+        "Attribute does not hold pointer values",MSTK_ERROR);
+#endif
+
+    MEnt_Get_AttVal(ent, attrib, &ival, &lval, &pval);
+    return pval;
+  }
+
+  /* Query the value of an vector attribute */
+
+  double *MEnt_Get_VecAttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
+    int ival = 0;
+    double lval = 0.0;
+    void *pval = NULL;
+
+#ifdef DEBUG   
+    if (MAttrib_Get_Type(attrib) != VECTOR)
+      MSTK_Report("MEnt_Get_VecAttVal",
+        "Attribute does not hold integer values",MSTK_ERROR);
+#endif
+
+    MEnt_Get_AttVal(ent, attrib, &ival, &lval, &pval);
+    return pval;
+  }
+
+  /* Query the value of an tensor attribute */
+
+  double *MEnt_Get_TnsrAttVal(MEntity_ptr ent, MAttrib_ptr attrib) {
+    int ival = 0;
+    double lval = 0.0;
+    void *pval = NULL;
+
+#ifdef DEBUG   
+    if (MAttrib_Get_Type(attrib) != TENSOR)
+      MSTK_Report("MEnt_Get_TnsrAttVal",
+        "Attribute does not hold integer values",MSTK_ERROR);
+#endif
+
+    MEnt_Get_AttVal(ent, attrib, &ival, &lval, &pval);
+    return pval;
+  }
+
+
 
   /* Remove an attribute from entity */
 
@@ -401,51 +610,6 @@ extern "C" {
     List_Delete(attinslist);
 
     ent->entdat.AttInsList = NULL;
-  }
-
-
-  /* Query the value of the attribute */
-
-  int MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
-		      double *lval, void **pval) {
-    int idx, found;
-    MType attentdim, entdim;
-    MAttIns_ptr attins;
-    List_ptr attinslist;
-
-#ifdef DEBUG    
-    attentdim = MAttrib_Get_EntDim(attrib);
-    entdim = ent->entdat.dim;
-    if (attentdim != entdim)
-      if (attentdim != MALLTYPE &&
-          ((entdim == MDELETED) && (attentdim != MEnt_OrigDim(ent))))
-        MSTK_Report("MEnt_Clear_AttVal",
-                    "Attribute not suitable for this entity type",MSTK_ERROR);
-#endif
-
-    if (ival) *ival = 0;
-    if (lval) *lval = 0;
-    if (pval) *pval = NULL;
-    
-    attinslist = ent->entdat.AttInsList;
-    if (!attinslist)
-      return 0;
-    
-    idx = 0; found = 0;
-    while ((attins = List_Next_Entry(attinslist,&idx))) {
-      if (MAttIns_Attrib(attins) == attrib) {
-        found = 1;
-        break;
-      }
-    }
-    
-    if (!found)
-      return 0;
-    
-    MAttIns_Get_Value(attins, ival, lval, pval);
-    
-    return 1;
-    
   }
 
 

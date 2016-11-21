@@ -30,7 +30,7 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
 
 #ifdef DEBUG
   /* check to make sure we got meaningful input */
-
+#ifdef MSTK_USE_MARKERS
   mkid = MSTK_GetMarker();
   redges = MR_Edges(rsplit);
   List_Mark(redges, mkid);
@@ -40,9 +40,17 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
                   MSTK_FATAL);
   List_Unmark(redges,mkid);
   MSTK_FreeMarker(mkid);
+  List_Delete(redges);
+#else
 
+  redges = MR_Edges(rsplit);
+  for (i = 0; i < nfe; i++)
+    if (!List_Contains(redges,fedges[i]))
+      MSTK_Report("MR_Split","Input edges are not part of the region boundary",
+                  MSTK_FATAL);
+  List_Delete(redges);
 #endif
-
+#endif
 
   mesh = MR_Mesh(rsplit);
 
@@ -75,12 +83,20 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
 
   /* Collect info for the first region */
 
+#ifdef MSTK_USE_MARKER
   mkid = MSTK_GetMarker();
+#else
+  List_ptr processed_faces = List_New(0);
+#endif
 
   rfarray1[0] = fnew;
   rfdirs1[0] = 1; 
-  MEnt_Mark(rfarray1[0],mkid);
   nrf1 = 1;
+#ifdef MSTK_USE_MARKERS
+  MEnt_Mark(rfarray1[0],mkid);
+#else
+  List_Add(processed_faces,rfarray1[0]);
+#endif
 
   i = 0;
   while (i < nrf1) {
@@ -111,7 +127,11 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
       idx2 = 0; 
       while ((eface = List_Next_Entry(efaces,&idx2))) { 
         if (eface == curface) continue;
+#ifdef MSTK_USE_MARKERS
         if (MEnt_IsMarked(eface,mkid)) continue; /* already processed */
+#else
+        if (List_Contains(processed_faces,eface)) continue;
+#endif
         if (!MR_UsesEntity(rsplit,eface,MFACE)) continue; /* does not belong to region */
 
         edir_adj = MF_EdgeDir(eface,fe);
@@ -126,7 +146,11 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
             (edir == edir_adj && curdir != rfdir_adj)) {
           rfarray1[nrf1] = eface;
           rfdirs1[nrf1] = rfdir_adj;
+#ifdef MSTK_USE_MARKERS
           MEnt_Mark(rfarray1[nrf1],mkid);
+#else
+          List_Add(processed_faces,rfarray1[nrf1]);
+#endif
           nrf1++;
           break;
         }
@@ -141,8 +165,12 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
 
   rfarray2[0] = fnew;
   rfdirs2[0] = !rfdirs1[0];
-  MEnt_Mark(rfarray2[0],mkid);
   nrf2 = 1;
+#ifdef MSTK_USE_MARKERS
+  MEnt_Mark(rfarray2[0],mkid);
+#else
+  List_Add(processed_faces,rfarray2[0]);
+#endif
   
   i = 0;
   while (i < nrf2) {
@@ -174,7 +202,11 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
       idx2 = 0; 
       while ((eface = List_Next_Entry(efaces,&idx2))) { 
         if (eface == curface) continue;
+#ifdef MSTK_USE_MARKERS
         if (MEnt_IsMarked(eface,mkid)) continue; /* already processed */
+#else
+        if (List_Contains(processed_faces,eface)) continue;
+#endif
         if (!MR_UsesEntity(rsplit,eface,MFACE)) continue; /* does not belong to region */
 
         edir_adj = MF_EdgeDir(eface,fe);
@@ -189,7 +221,11 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
             (edir == edir_adj && curdir != rfdir_adj)) {
           rfarray2[nrf2] = eface;
           rfdirs2[nrf2] = rfdir_adj;
+#ifdef MSTK_USE_MARKERS
           MEnt_Mark(rfarray2[nrf2],mkid);
+#else
+          List_Add(processed_faces,rfarray2[nrf2]);
+#endif
           nrf2++;
           break;
         }
@@ -210,19 +246,22 @@ MFace_ptr MR_Split_with_EdgeLoop(MRegion_ptr rsplit, int nfe, MEdge_ptr *fedges)
   MR_Set_GEntID(rnew[0],gid);
   MR_Set_Faces(rnew[0],nrf1,rfarray1,rfdirs1);
 
-  for (i = 0; i < nrf1; i++)
-    MEnt_Unmark(rfarray1[i],mkid);
-  
   rnew[1] = MR_New(mesh);
   MR_Set_GEntDim(rnew[1],3);
   MR_Set_GEntID(rnew[1],gid);
   MR_Set_Faces(rnew[1],nrf2,rfarray2,rfdirs2);
 
+#ifdef MSTK_USE_MARKERS
+  for (i = 0; i < nrf1; i++)
+    MEnt_Unmark(rfarray1[i],mkid);
   for (i = 0; i < nrf2; i++)
     MEnt_Unmark(rfarray2[i],mkid);
 
   MSTK_FreeMarker(mkid);
-  
+#else
+  List_Delete(processed_faces);
+#endif
+
   return fnew;
 }
 

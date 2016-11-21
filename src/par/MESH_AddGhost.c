@@ -114,7 +114,7 @@ int MESH_AddGhost(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
 
 
 int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
-  int i, j, k, l, ir, idx, mkvid, mkfid;
+  int i, j, k, l, ir, idx;
   int nvf, nfv, nfe, idx2, found;
   double xyz[3];
   MVertex_ptr gmv, gmv2, lmv, lmv2;
@@ -124,6 +124,8 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
   List_ptr bverts, bverts2, ovfaces, gbverts, gbverts2;
   List_ptr lmvlist, lmelist, lmflist;
   MAttrib_ptr g2latt, l2gatt;
+  double rval;
+  void *pval;
 
   g2latt = MESH_AttribByName(mesh,"Global2Local");
   l2gatt = MESH_AttribByName(submesh,"Local2Global");
@@ -131,26 +133,47 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
   /* Mark the list of global elements in this submesh */
 
-  mkfid = MSTK_GetMarker();  
+#ifdef MSTK_USE_MARKERS
+  int mkfid = MSTK_GetMarker();  
+#else
+  MAttrib_ptr gfidatt = MAttrib_New(mesh, "temp_gf_id", INT, MFACE);
+  MAttrib_ptr lfidatt = MAttrib_New(submesh, "temp_lf_id", INT, MFACE);
+#endif
   idx = 0;
   while((lmf = MESH_Next_Face(submesh,&idx))) {
     MEnt_Get_AttVal(lmf,l2gatt,0,0,&gmf);
+#ifdef MSTK_USE_MARKERS
     MEnt_Mark(gmf,mkfid);
+#else
+    MEnt_Set_AttVal(gmf, gfidatt, 1, 0.0, NULL);
+#endif
   }
 
   /* Collect all the PBOUNDARY vertices of submesh */
-  mkvid = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+  int mkvid = MSTK_GetMarker();
+#else
+  MAttrib_ptr lvidatt = MAttrib_New(mesh, "temp_lv_id", INT, MVERTEX);
+  MAttrib_ptr gvidatt = MAttrib_New(submesh, "temp_gv_id", INT, MVERTEX);
+#endif
+
   bverts = List_New(10);
   gbverts = List_New(10);
   idx = 0;
   while ((lmv = MESH_Next_Vertex(submesh,&idx))) {
     if (MV_OnParBoundary(lmv)) {
       List_Add(bverts,lmv);
-      MEnt_Mark(lmv,mkvid);
 
       MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
       List_Add(gbverts,gmv);
+
+#ifdef MSTK_USE_MARKERS
+      MEnt_Mark(lmv,mkvid);
       MEnt_Mark(gmv,mkvid);
+#else
+      MEnt_Set_AttVal(lmv, lvidatt, 1, 0.0, NULL);
+      MEnt_Set_AttVal(gmv, gvidatt, 1, 0.0, NULL);
+#endif
     }
   }
 
@@ -172,10 +195,21 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
       for (j = 0; j < nvf; j++) {
         lmf = List_Entry(vfaces,j);
         
-        if (!MEnt_IsMarked(lmf,mkfid)) {        
+        int fmarked;
+#ifdef MSTK_USE_MARKERS 
+        fmarked = MEnt_IsMarked(lmf,mkfid);
+#else
+        MEnt_Get_AttVal(lmf, lfidatt, &fmarked, &rval, &pval);
+#endif
+        if (!fmarked) {
           List_Add(ovfaces,lmf);
-          MEnt_Mark(lmf,mkfid);
           MF_Set_PType(lmf,POVERLAP);          
+
+#ifdef MSTK_USE_MARKERS
+          MEnt_Mark(lmf,mkfid);
+#else
+          MEnt_Set_AttVal(lmf, lfidatt, 1, 0.0, NULL);
+#endif
 
           fedges = MF_Edges(lmf,1,0);
           nfe = List_Num_Entries(fedges);
@@ -187,11 +221,21 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
             for (l = 0; l < 2; l++) {
               lmv2 = ME_Vertex(lme,l);
-              if (!MEnt_IsMarked(lmv2,mkvid)) {
+              int vmarked;
+#ifdef MSTK_USE_MARKERS
+              vmarked = MEnt_IsMarked(lmv2,mkvid);
+#else
+              MEnt_Get_AttVal(lmv2, lvidatt, &vmarked, &rval, &pval);
+#endif
+              if (!vmarked) {
                 if (!ME_OnParBoundary(lmv2))
                   MV_Set_PType(lmv2,POVERLAP);
                 List_Add(bverts2,lmv2);
+#ifdef MSTK_USE_MARKERS
                 MEnt_Mark(lmv2,mkvid);
+#else
+                MEnt_Set_AttVal(lmv2, lvidatt, 1, 0.0, NULL);
+#endif
               }
             } /* l */
 
@@ -202,17 +246,35 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
       List_Delete(vfaces);
 
     }
+#ifdef MSTK_USE_MARKERS
     List_Unmark(bverts,mkvid);
+#else
+    idx = 0;
+    while ((lmv = List_Next_Entry(bverts, &idx)))
+      MEnt_Set_AttVal(lmv, lvidatt, 0, 0.0, NULL);
+#endif
     List_Delete(bverts);
     
     bverts = bverts2;
 
   } /* for (i = 0; i < ring; i++) */
   
+#ifdef MSTK_USE_MARKERS
   List_Unmark(bverts,mkvid);
+#else
+  idx = 0;
+  while ((lmv = List_Next_Entry(bverts, &idx)))
+    MEnt_Set_AttVal(lmv, lvidatt, 0, 0.0, NULL);
+#endif
   List_Delete(bverts);
 
+#ifdef MSTK_USE_MARKERS
   List_Unmark(ovfaces,mkfid);
+#else
+  idx = 0;
+  while ((lmf = List_Next_Entry(ovfaces, &idx)))
+    MEnt_Set_AttVal(lmf, lfidatt, 0, 0.0, NULL);
+#endif
   List_Delete(ovfaces);
 
 
@@ -233,13 +295,22 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
       for (j = 0; j < nvf; j++) {
 	gmf = List_Entry(vfaces,j);
-
-	if (!MEnt_IsMarked(gmf,mkfid)) { /* not overlapping with submesh */
+        int fmarked;
+#ifdef MSTK_USE_MARKERS
+        fmarked = MEnt_IsMarked(gmf,mkfid);
+#else
+        MEnt_Get_AttVal(gmf, gfidatt, &fmarked, &rval, &pval);
+#endif
+	if (!fmarked) { /* not overlapping with submesh */
 
           /* Found a ghost face that has not yet been processed */
           /* Add to list of ghost faces and duplicate in submesh */
 
+#ifdef MSTK_USE_MARKERS
 	  MEnt_Mark(gmf,mkfid);
+#else
+          MEnt_Set_AttVal(gmf, gfidatt, 1, 0.0, NULL);
+#endif
 
           fedges = MF_Edges(gmf,1,0);
           nfe = List_Num_Entries(fedges);
@@ -299,9 +370,20 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
                    elements. Add it to the gbverts2 list to fetch the
                    next layer of ghost elements */
                     
-                if (!MEnt_IsMarked(gmv2,mkvid)) {
+                int vmarked;
+#ifdef MSTK_USE_MARKERS
+                vmarked = MEnt_IsMarked(gmv2,mkvid);
+#else
+                MEnt_Get_AttVal(gmv2, gvidatt, &vmarked, &rval, &pval);
+#endif
+                if (!vmarked) {
                   List_Add(gbverts2,gmv2);
+
+#ifdef MSTK_USE_MARKERS
                   MEnt_Mark(gmv2,mkvid);
+#else
+                  MEnt_Set_AttVal(gmv2, gvidatt, 1, 0.0, NULL);
+#endif
                 }
               } /* l */
 
@@ -337,19 +419,39 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
 
     }
 
+#ifdef MSTK_USE_MARKERS
     List_Unmark(gbverts,mkvid);    
+#else
+    idx = 0;
+    while ((gmv = List_Next_Entry(gbverts, &idx)))
+      MEnt_Rem_AttVal(gmv, gvidatt);
+#endif
     List_Delete(gbverts);
     
+#ifdef MSTK_USE_MARKERS
     List_Mark(gbverts2,mkvid);
+#else
+    idx = 0;
+    while ((gmv = List_Next_Entry(gbverts2, &idx)))
+      MEnt_Set_AttVal(gmv, gvidatt, 1, 0.0, NULL);
+#endif
     gbverts = gbverts2;
   }
+
+#ifdef MSTK_USE_MARKERS
   List_Unmark(gbverts,mkvid);
+#else
+    idx = 0;
+    while ((gmv = List_Next_Entry(gbverts, &idx)))
+      MEnt_Rem_AttVal(gmv, gvidatt);
+#endif
   List_Delete(gbverts);
 
   free(lfedges);
   free(lfedirs);
 
 
+#ifdef MSTK_USE_MARKERS
   /* Unmark all the global faces corresponding to this submesh and its
      ghost layer */
 
@@ -360,16 +462,24 @@ int MESH_Surf_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring
       MEnt_Unmark(gmf,mkfid);
   }
 
-
   MSTK_FreeMarker(mkvid);
   MSTK_FreeMarker(mkfid);
+
+#else
+
+  MAttrib_Delete(gfidatt);
+  MAttrib_Delete(lfidatt);
+  MAttrib_Delete(gvidatt);
+  MAttrib_Delete(lvidatt);
+
+#endif
 
   return 1;
 }
 
 
 int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring) {
-  int i, j, k, l, ir, idx, mkvid, mkrid;
+  int i, j, k, l, ir, idx;
   int nvr, nvf, nrf, nre, nrv, nfv, nfe, idx2, found;
   double xyz[3];
   MVertex_ptr gmv, gmv2, lmv, lmv2;
@@ -380,6 +490,8 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   List_ptr bverts, bverts2, gghregs, gbverts, gbverts2, ovregions;
   List_ptr lmvlist, lmelist, lmflist, lmrlist;
   MAttrib_ptr g2latt, l2gatt;
+  double rval;
+  void *pval;
 
   g2latt = MESH_AttribByName(mesh,"Global2Local");
   l2gatt = MESH_AttribByName(submesh,"Local2Global");
@@ -387,27 +499,48 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
   /* Mark the list of global entities in this submesh */
 
-  mkrid = MSTK_GetMarker();  
+#ifdef MSTK_USE_MARKERS
+  int mkrid = MSTK_GetMarker();  
+#else
+  MAttrib_ptr gridatt = MAttrib_New(mesh, "temp_gr_id", INT, MREGION); 
+  MAttrib_ptr lridatt = MAttrib_New(submesh, "temp_lr_id", INT, MREGION);
+#endif
+
   idx = 0;
-  while((lmr = MESH_Next_Region(submesh,&idx))) {
+  while ((lmr = MESH_Next_Region(submesh,&idx))) {
     MEnt_Get_AttVal(lmr,l2gatt,0,0,&gmr);
+#ifdef MSTK_USE_MARKERS
     MEnt_Mark(gmr,mkrid);
+#else
+    MEnt_Set_AttVal(gmr,gridatt,1,0.0,NULL);
+#endif
   }
 
   /* Collect all the PBOUNDARY vertices of submesh */
 
-  mkvid = MSTK_GetMarker();
+#ifdef MSTK_USE_MARKERS
+  int mkvid = MSTK_GetMarker();
+#else
+  MAttrib_ptr gvidatt = MAttrib_New(mesh, "temp_gv_id", INT, MVERTEX);
+  MAttrib_ptr lvidatt = MAttrib_New(submesh, "temp_lv_id", INT, MVERTEX);
+#endif
   bverts = List_New(10);
   gbverts = List_New(10);
   idx = 0;
   while ((lmv = MESH_Next_Vertex(submesh,&idx))) {
     if (MV_OnParBoundary(lmv)) {
       List_Add(bverts,lmv);
-      MEnt_Mark(lmv,mkvid);
 
       MEnt_Get_AttVal(lmv,l2gatt,0,0,&gmv);
       List_Add(gbverts,gmv);
+
+#ifdef MSTK_USE_MARKERS
+      MEnt_Mark(lmv,mkvid);
       MEnt_Mark(gmv,mkvid);
+#else
+      MEnt_Set_AttVal(lmv, lvidatt, 1, 0.0, NULL);
+      MEnt_Set_AttVal(gmv, gvidatt, 1, 0.0, NULL);
+#endif
     }
   }
 
@@ -428,11 +561,20 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       for (i = 0; i < nvr; i++) {
         lmr = List_Entry(vregions,i);
 
-        if (!MEnt_IsMarked(lmr,mkrid)) {
+        int rmarked;
+#ifdef MSTK_USE_MARKERS
+        rmarked = MEnt_IsMarked(lmr,mkrid);
+#else
+        MEnt_Get_AttVal(lmr, lridatt, &rmarked, &rval, &pval);
+#endif
+        if (!rmarked) {
           List_Add(ovregions,lmr);
-          MEnt_Mark(lmr,mkrid);
           MR_Set_PType(lmr,POVERLAP);
-
+#ifdef MSTK_USE_MARKERS
+          MEnt_Mark(lmr,mkrid);
+#else
+          MEnt_Set_AttVal(lmr, lridatt, 1, 0.0, NULL);
+#endif
           rfaces = MR_Faces(lmr);
           nrf = List_Num_Entries(rfaces);
           for (j = 0; j < nrf; j++) {
@@ -450,11 +592,21 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
               int l;
               for (l = 0; l < 2; l++) {
                 lmv2 = ME_Vertex(lme,l);
-                if (!MEnt_IsMarked(lmv2,mkvid)) {
+                int vmarked;
+#ifdef MSTK_USE_MARKERS
+                vmarked = MEnt_IsMarked(lmv2,mkvid);
+#else
+                MEnt_Get_AttVal(lmv2, lvidatt, &vmarked, &rval, &pval);
+#endif
+                if (!vmarked) {
                   if (!MV_OnParBoundary(lmv2))
                     MV_Set_PType(lmv2,POVERLAP);
                   List_Add(bverts2,lmv2);
+#ifdef MSTK_USE_MARKERS
                   MEnt_Mark(lmv2,mkvid);
+#else
+                  MEnt_Set_AttVal(lmv2, lvidatt, 1, 0.0, NULL);
+#endif
                 }
               }
 
@@ -469,17 +621,35 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       List_Delete(vregions);
 
     }
+#ifdef MSTK_USE_MARKERS
     List_Unmark(bverts,mkvid);
+#else
+    idx = 0;
+    while ((lmv = List_Next_Entry(bverts,&idx)))
+      MEnt_Set_AttVal(lmv, lvidatt, 0, 0.0, NULL);
+#endif
     List_Delete(bverts);
-
+    
     bverts = bverts2;
-
+    
   } /* for (i = 0; i < ring; i++) */
 
+#ifdef MSTK_USE_MARKERS
   List_Unmark(bverts,mkvid);
+#else
+  idx = 0;
+  while ((lmv = List_Next_Entry(bverts,&idx)))
+    MEnt_Set_AttVal(lmv, lvidatt, 0, 0.0, NULL);
+#endif
   List_Delete(bverts);
 
+#ifdef MSTK_USE_MARKERS
   List_Unmark(ovregions,mkrid);
+#else
+    idx = 0;
+    while ((lmr = List_Next_Entry(ovregions,&idx)))
+      MEnt_Set_AttVal(lmr, lridatt, 0, 0.0, NULL);
+#endif
   List_Delete(ovregions);
 
 
@@ -502,13 +672,22 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
       for (i = 0; i < nvr; i++) {
 	gmr = List_Entry(vregions,i);
-
-	if (!MEnt_IsMarked(gmr,mkrid)) { /* not overlapping with submesh */
+        int rmarked;
+#ifdef MSTK_USE_MARKERS
+        rmarked = MEnt_IsMarked(gmr,mkrid);
+#else
+        MEnt_Get_AttVal(gmr, gridatt, &rmarked, &rval, &pval);
+#endif
+	if (!rmarked) { /* not overlapping with submesh */
 
           /* Found a ghost region that has not yet been processed */
           /* Add to list of ghost regions and duplicate in submesh */
 
+#ifdef MSTK_USE_MARKERS
 	  MEnt_Mark(gmr,mkrid);
+#else
+          MEnt_Set_AttVal(gmr, gridatt, 1, 0.0, NULL);
+#endif
 
           rfaces = MR_Faces(gmr);
           nrf = List_Num_Entries(rfaces);
@@ -591,9 +770,19 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
                        ghost elements. Add it to the gbverts2 list to
                        fetch the next layer of ghost elements */
                     
-                    if (!MEnt_IsMarked(gmv2,mkvid)) {
+                    int vmarked;
+#ifdef MSTK_USE_MARKERS                    
+                    vmarked = MEnt_IsMarked(gmv2,mkvid);
+#else
+                    MEnt_Get_AttVal(gmv2, gvidatt, &vmarked, &rval, &pval);
+#endif
+                    if (!vmarked) {
                       List_Add(gbverts2,gmv2);
+#ifdef MSTK_USE_MARKERS
                       MEnt_Mark(gmv2,mkvid);
+#else
+                      MEnt_Set_AttVal(gmv2, gvidatt, 1, 0.0, NULL);
+#endif
                     }
                     
                   }
@@ -642,13 +831,32 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
 
     }
 
+#ifdef MSTK_USE_MARKERS
     List_Unmark(gbverts,mkvid);
+#else
+    idx = 0;
+    while ((gmv = List_Next_Entry(gbverts,&idx)))
+      MEnt_Set_AttVal(gmv, gvidatt, 0, 0.0, NULL);
+#endif
     List_Delete(gbverts);
     
+#ifdef MSTK_USE_MARKERS
     List_Mark(gbverts2,mkvid);
+#else
+    idx = 0;
+    while ((gmv = List_Next_Entry(gbverts2,&idx)))
+      MEnt_Set_AttVal(gmv, gvidatt, 1, 0.0, NULL);
+#endif
     gbverts = gbverts2;
   } /* ir */
+
+#ifdef MSTK_USE_MARKERS
   List_Unmark(gbverts,mkvid);
+#else
+  idx = 0;
+  while ((gmv = List_Next_Entry(gbverts,&idx)))
+    MEnt_Set_AttVal(gmv, gvidatt, 0, 0.0, NULL);
+#endif
   List_Delete(gbverts);
 
   free(lfedges);
@@ -659,6 +867,8 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
   /* Unmark all the global faces corresponding to this submesh and its
      ghost layer */
 
+#ifdef MSTK_USE_MARKERS
+
   idx = 0;
   while ((lmr = MESH_Next_Region(submesh,&idx))) {
     MEnt_Get_AttVal(lmr,l2gatt,0,0,&gmr);
@@ -666,9 +876,17 @@ int MESH_Vol_AddGhost_FN(Mesh_ptr mesh, Mesh_ptr submesh, int part_no, int ring)
       MEnt_Unmark(gmr,mkrid);
   }
 
-
   MSTK_FreeMarker(mkvid);
   MSTK_FreeMarker(mkrid);
+
+#else
+
+  MAttrib_Delete(lvidatt);
+  MAttrib_Delete(gvidatt);
+  MAttrib_Delete(lridatt);
+  MAttrib_Delete(gridatt);
+
+#endif
 
   return 1;
 }

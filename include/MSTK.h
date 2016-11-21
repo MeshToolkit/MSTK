@@ -565,11 +565,25 @@ void MSTK_Init(void);
 
   /* Attributes on entities */
   
-  void        MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival, 
-			double lval, void *pval);
+  void        MEnt_Set_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival,
+                              double lval, void *pval);
+  void        MEnt_Set_IntAttVal(MEntity_ptr ent, MAttrib_ptr attrib, int ival);
+  void        MEnt_Set_DblAttVal(MEntity_ptr ent, MAttrib_ptr attrib,
+                                 double rval);
+  void        MEnt_Set_PtrAttVal(MEntity_ptr ent, MAttrib_ptr attrib,
+                                 void *pval);
+  void        MEnt_Set_VecAttVal(MEntity_ptr ent, MAttrib_ptr attrib,
+                                 double *vval);
+  void        MEnt_Set_TnsrAttVal(MEntity_ptr ent, MAttrib_ptr attrib,
+                                  double *tval);
+  int         MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival,
+                              double *lval, void **pval);
+  int         MEnt_Get_IntAttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  double      MEnt_Get_DblAttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  void *      MEnt_Get_PtrAttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  double *    MEnt_Get_VecAttVal(MEntity_ptr ent, MAttrib_ptr attrib);
+  double *    MEnt_Get_TnsrAttVal(MEntity_ptr ent, MAttrib_ptr attrib);
   void        MEnt_Rem_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
-  int         MEnt_Get_AttVal(MEntity_ptr ent, MAttrib_ptr attrib, int *ival, 
-			double *lval, void **pval);  
   void        MEnt_Clear_AttVal(MEntity_ptr ent, MAttrib_ptr attrib);
   void        MEnt_Rem_AllAttVals(MEntity_ptr);
 

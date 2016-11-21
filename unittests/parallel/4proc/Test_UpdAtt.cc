@@ -549,8 +549,11 @@ TEST(XchngEdgeAttrib_2D) {
   MESH_XchngEdgeFaceAttrib(mesh,edgeatt,comm);
 
   /* Mark/count all edges on the partition boundary */
-
+#ifdef MSTK_USE_MARKERS
   int prtnmark = MSTK_GetMarker();
+#else
+  MAttrib_ptr prtnatt = MAttrib_New(mesh, "prtnatt", INT, MALLTYPE);
+#endif
 
   int ne = 0;
   idx = 0; 
@@ -567,7 +570,11 @@ TEST(XchngEdgeAttrib_2D) {
     }
     if (!foundghost || !foundowned) continue;
 
+#ifdef MSTK_USE_MARKERS
     MEnt_Mark(me,prtnmark);
+#else
+    MEnt_Set_AttVal(me, prtnatt, 1, 0.0, NULL);
+#endif
     ne++;
   }
 
@@ -596,7 +603,13 @@ TEST(XchngEdgeAttrib_2D) {
   int j = 0;
   idx = 0; 
   while ((me = MESH_Next_Edge(mesh,&idx))) {
-    if (!MEnt_IsMarked(me, prtnmark)) continue;
+    int emarked;
+#ifdef MSTK_USE_MARKERS
+    emarked = MEnt_IsMarked(me, prtnmark);
+#else
+    MEnt_Get_AttVal(me, prtnatt, &emarked, &rval, &pval);
+#endif
+    if (!emarked) continue;
     locgidlist[j] = ME_GlobalID(me);
     locvallist[j] = rank+1;
     j++;
@@ -607,13 +620,15 @@ TEST(XchngEdgeAttrib_2D) {
   
   idx = 0;
   while ((me = MESH_Next_Edge(mesh,&idx))) { 
-    if (!MEnt_IsMarked(me,prtnmark)) continue;
+    int emarked;
+#ifdef MSTK_USE_MARKERS
+    emarked = MEnt_IsMarked(me, prtnmark);
+#else
+    MEnt_Get_AttVal(me, prtnatt, &emarked, &rval, &pval);
+#endif
+    if (!emarked) continue;
 
     int gid = ME_GlobalID(me);
-    
-    int ival;
-    double rval;
-    void *pval;
     
     MEnt_Get_AttVal(me,edgeatt,&ival,&rval,&pval);
     
@@ -637,11 +652,15 @@ TEST(XchngEdgeAttrib_2D) {
   delete [] globgidlist;
   delete [] globvallist;
 
+#ifdef MSTK_USE_MARKERS
   idx = 0;
   while ((me = MESH_Next_Edge(mesh,&idx)))
     MEnt_Unmark(me,prtnmark);
 
   MSTK_FreeMarker(prtnmark);
+#else
+  MAttrib_Delete(prtnatt);
+#endif
     
   return;
 } /* XchngEdgeAttrib_2D */
