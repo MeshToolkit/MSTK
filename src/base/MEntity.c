@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "MEntity.h"
 #include "MAttrib.h"
 #include "MSTK.h"
@@ -245,7 +246,11 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
+    pthread_mutex_lock(&marker_lock);
+
     ent->entdat.marker = ent->entdat.marker | 1<<(markerID-1);
+
+    pthread_mutex_unlock(&marker_lock);
   }
 
   void MEnt_Unmark(MEntity_ptr ent, int markerID) {
@@ -255,7 +260,11 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
+    pthread_mutex_lock(&marker_lock);
+
     ent->entdat.marker = ent->entdat.marker & ~(1<<(markerID-1));
+
+    pthread_mutex_unlock(&marker_lock);
   }
 
 
