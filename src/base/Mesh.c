@@ -107,20 +107,6 @@ void MESH_Delete(Mesh_ptr mesh) {
 
 #endif
 
-  if (mesh->AttribList) {
-    i = 0;
-    while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
-      MAttrib_Destroy_For_MESH_Delete(attrib);
-    List_Delete(mesh->AttribList);
-  }
-
-  if (mesh->MSetList) {
-    i = 0;
-    while ((mset = List_Next_Entry(mesh->MSetList,&i)))
-      MSet_Delete(mset);
-    List_Delete(mesh->MSetList);
-  }
-
   if (mesh->mregion) {
     nr = mesh->nr;
     i = 0;
@@ -145,6 +131,7 @@ void MESH_Delete(Mesh_ptr mesh) {
       List_Delete(mesh->mface);
     }
   }
+
   if (mesh->hedge) {
     Hash_Delete(mesh->hedge);
     if (mesh->medge) {
@@ -214,6 +201,20 @@ void MESH_Delete(Mesh_ptr mesh) {
   }
 #endif
   
+  if (mesh->AttribList) {
+    i = 0;
+    while ((attrib = List_Next_Entry(mesh->AttribList,&i)))
+      MAttrib_Destroy_For_MESH_Delete(attrib);
+    List_Delete(mesh->AttribList);
+  }
+
+  if (mesh->MSetList) {
+    i = 0;
+    while ((mset = List_Next_Entry(mesh->MSetList,&i)))
+      MSet_Delete(mset);
+    List_Delete(mesh->MSetList);
+  }
+
   free(mesh);
 }
 
