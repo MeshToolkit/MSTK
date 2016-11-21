@@ -69,7 +69,7 @@ extern "C" {
   unsigned int MSTK_marker = 0;
   int MSTK_MAXBITS = 8*sizeof(unsigned int);
   int MSTK_lastbit = -1;
-  pthread_mutex_t marker_lock;
+  pthread_mutex_t marker_lock;  /* declared extern in MSTK_private.h */
   
   int MSTK_GetMarker() {
     static int first = 1;
