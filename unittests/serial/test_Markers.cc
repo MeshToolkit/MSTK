@@ -34,7 +34,7 @@ TEST(Mesh_Markers) {
     vcountsN[i] = 0;
   }
 
-  int maxthreads = omp_get_max_threads();
+  int maxthreads = 8;
   omp_set_num_threads(maxthreads);
   std::cerr << "Max threads is " << maxthreads << "\n";
   
