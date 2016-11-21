@@ -246,11 +246,15 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
+#ifdef MSTK_USE_MARKERS
     pthread_mutex_lock(&marker_lock);
+#endif
 
     ent->entdat.marker = ent->entdat.marker | 1<<(markerID-1);
 
+#ifdef MSTK_USE_MARKERS
     pthread_mutex_unlock(&marker_lock);
+#endif
   }
 
   void MEnt_Unmark(MEntity_ptr ent, int markerID) {
@@ -260,11 +264,15 @@ extern "C" {
       MSTK_Report("MEnt_Unmark","Not a valid topological entity",MSTK_ERROR);
 #endif
 
+#ifdef MSTK_USE_MARKERS
     pthread_mutex_lock(&marker_lock);
+#endif
 
     ent->entdat.marker = ent->entdat.marker & ~(1<<(markerID-1));
 
+#ifdef MSTK_USE_MARKERS
     pthread_mutex_unlock(&marker_lock);
+#endif
   }
 
 
