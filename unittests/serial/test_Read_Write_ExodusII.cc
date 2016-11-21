@@ -65,6 +65,9 @@ TEST(Read_Write_ExodusII_Poly2)
 
   ok = MESH_CheckTopo(mesh2);
   CHECK_EQUAL(ok, 1);
+
+  MESH_Delete(mesh);
+  MESH_Delete(mesh2);
 }
 
 
@@ -313,6 +316,8 @@ TEST(Write_Read_ExodusII_HexMesh) {
     }
   }
 
+  MESH_Delete(mesh);
+  MESH_Delete(mesh2);
 }
 
 
@@ -350,6 +355,9 @@ TEST(Write_Read_ExodusII_DegeneratePoly3) {
 
   ok = MESH_CheckTopo(mesh2);
   CHECK_EQUAL(ok, 1);
+
+  MESH_Delete(mesh1);
+  MESH_Delete(mesh2);
 }
 
 
@@ -504,7 +512,7 @@ TEST(Write_Read_ExodusII_Variables) {
   delete [] elvec_out;
   delete [] ndval_out;
   for (int k = 0; k < nv; k++)
-    delete ndvec_out[k];
+    delete [] ndvec_out[k];
   delete [] ndvec_out;
 
   MESH_Delete(mesh);
