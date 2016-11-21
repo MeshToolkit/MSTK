@@ -57,4 +57,6 @@ TEST(MF_Split)
         break;
     }
   }
+
+  MESH_Delete(mesh);
 }

@@ -110,4 +110,6 @@ TEST(MF_Split_with_Edge)
       n++;
     }
   }
+
+  MESH_Delete(mesh);
 }

@@ -100,4 +100,5 @@ TEST(MF_Split_SimplexMesh)
       break;
   }
 
+  MESH_Delete(mesh);
 }
