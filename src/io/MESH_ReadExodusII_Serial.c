@@ -1430,6 +1430,7 @@ extern "C" {
                   }
                 }  /* for j2 = 0, nrf-1 */
               }  /* for i2 = 0, nfe-1 */
+              List_Delete(fedges);
             }  /* while (curface = List_Next_Entry(rfaces2, &idx2)) */
             List_Delete(rfaces2);
 
