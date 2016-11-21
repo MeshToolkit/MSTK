@@ -353,14 +353,7 @@ extern "C" {
                     "Attribute does not accept vector values",MSTK_ERROR);
 #endif
 
-    /* vectors are stored as pointers to data which needs to be
-     * persistent - so copy the data into newly allocated space before
-     * storing */
-
-    int ncomp = MAttrib_Get_NumComps(attrib);
-    double *vval_copy = (double *) malloc(ncomp*sizeof(double));
-    memcpy(vval_copy, vval, ncomp*sizeof(double));
-    MEnt_Set_AttVal(ent, attrib, 0, 0.0, vval_copy);
+    MEnt_Set_AttVal(ent, attrib, 0, 0.0, vval);
   }
 
   /* Set value of a tensor attribute */
@@ -372,14 +365,7 @@ extern "C" {
                     "Attribute does not accept tensor values",MSTK_ERROR);
 #endif
 
-    /* tensors are stored as pointers to data which needs to be
-     * persistent - so copy the data into newly allocated space before
-     * storing */
-
-    int ncomp = MAttrib_Get_NumComps(attrib);
-    double *tval_copy = (double *) malloc(ncomp*sizeof(double));
-    memcpy(tval_copy, tval, ncomp*sizeof(double));
-    MEnt_Set_AttVal(ent, attrib, 0, 0.0, tval_copy);
+    MEnt_Set_AttVal(ent, attrib, 0, 0.0, tval);
   }
 
 
