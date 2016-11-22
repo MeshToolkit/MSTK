@@ -11,7 +11,7 @@
 */
 
 
-#define MSTK_VERSION "2.25rc2"
+#define MSTK_VERSION "2.27rc2"
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -634,6 +634,19 @@ void MSTK_Init(void);
 
   /************************************************************************/
   /* ENTITY MARKING                                                       */
+  /*                                                                      */
+  /* Entity marking can be used to avoid searching through lists when     */
+  /* merging two lists, when walking through the mesh and other such      */
+  /* situations. Entity marking is available only if the build is         */
+  /* configured with MSTK_USE_MARKERS=On (Default: Off)                   */
+  /*                                                                      */
+  /* IN MULTI-THREADED SETTINGS THERE ARE 3 IMPORTANT POINTS TO NOTE:     */
+  /* (1) ENTITY MARKING USES pthread_mutex_lock/unlock WHICH CAN KEEP THE */
+  /* CODE FROM SCALING WELL (2) SOME MULTI-THREADING PARADIGMS MAY NOT    */
+  /* USE PTHREADS (3) THERE IS A LIMIT ON THE NUMBER MARKERS THAT CAN BE  */
+  /* IN USE AT A TIME AND IT IS EASY TO HIT THE LIMIT IN MULTI-THREADED   */
+  /* RUNS. SO IT IS ADVISABLE TO USE MARKERS ONLY FOR SINGLE-THREADED     */
+  /* APPLICATIONS                                                         */
   /************************************************************************/
 
   int         MSTK_GetMarker(void);
