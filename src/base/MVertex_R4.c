@@ -181,9 +181,6 @@ extern "C" {
  
     vregions = List_New(10);
     nr = 0;
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
 
     vfaces = MV_Faces_R4(v);
     nf = List_Num_Entries(vfaces);
@@ -193,15 +190,8 @@ extern "C" {
 	reg = MF_Region(face,j);
 	if (reg) {
           int inlist;
-#ifdef MSTK_USE_MARKERS
-          inlist = MEnt_IsMarked(reg,mkr);
-#else
           inlist = List_Contains(vregions, reg);
-#endif
           if (!inlist) {
-#ifdef MSTK_USE_MARKERS
-            MEnt_Mark(reg,mkr);
-#endif
             List_Add(vregions,reg);
             nr++;
           }
@@ -209,10 +199,6 @@ extern "C" {
       }
     }
     List_Delete(vfaces);
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(vregions,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
 
     if (nr > 0)
       return vregions;

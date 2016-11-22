@@ -104,9 +104,6 @@ extern "C" {
     nf = List_Num_Entries(adj->efaces);
     eregs = List_New(nf);
    
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
     nr = 0;
     for (i = 0; i < nf; i++) {
       eface = List_Entry(adj->efaces,i);
@@ -115,25 +112,14 @@ extern "C" {
 	freg = MF_Region(eface,j);
 	if (freg) {
           int inlist;
-#ifdef MSTK_USE_MARKERS
-          inlist = MEnt_IsMarked(freg,mkr);
-#else
           inlist = List_Contains(eregs,freg);
-#endif
           if (!inlist) {
             List_Add(eregs,freg);
             nr++;
-#ifdef MSTK_USE_MARKERS
-            MEnt_Mark(freg,mkr);
-#endif
           }
 	}
       }
     }
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(eregs,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
 
     if (nr) 
       return eregs;

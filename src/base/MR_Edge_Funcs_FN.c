@@ -356,18 +356,12 @@ extern "C" {
     }
 
     /* General Polyhedra */
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
     
     /* Add edges of first face */
     face = List_Entry(adj->rfaces,0); /* first face */
     fdir = adj->fdirs[0] & 1;   /* Sense in which face is used in region */
     
     redges = MF_Edges(face,!fdir,0);
-#ifdef MSTK_USE_MARKERS
-    List_Mark(redges,mkr);
-#endif
     
     for (i = 1; i < nf-1; i++) {
       face = List_Entry(adj->rfaces,i);
@@ -376,24 +370,13 @@ extern "C" {
       for (j = 0; j < n; j++) {
 	edge = List_Entry(fedges,j);
         int inlist;
-#ifdef MSTK_USE_MARKERS
-	inlist = MEnt_IsMarked(edge,mkr);
-#else
         inlist = List_Contains(redges,edge);
-#endif
         if (!inlist) {
 	  List_Add(redges,edge);
-#ifdef MSTK_USE_MARKERS
-	  MEnt_Mark(edge,mkr);
-#endif
 	}
       }
       List_Delete(fedges);
     }
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(redges,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
     
     return redges;
   }

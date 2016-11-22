@@ -224,18 +224,12 @@ extern "C" {
     default: 
 
       /* General Polyhedra */
-#ifdef MSTK_USE_MARKERS
-      mkr = MSTK_GetMarker();
-#endif
       
       /* Add vertices of first face */
       face = List_Entry(adj->rfaces,0); /* first face */
       fdir = MR_FaceDir_i(r,0);    /* Sense in which face is used in region */
       
       rvertices = MF_Vertices(face,!fdir,0); 
-#ifdef MSTK_USE_MARKERS
-      List_Mark(rvertices,mkr);
-#endif
       
       for (i = 1; i < nf-1; i++) {
         face = List_Entry(adj->rfaces,i);
@@ -244,24 +238,14 @@ extern "C" {
         for (j = 0; j < n; j++) {
           vert = List_Entry(fverts,j);
           int inlist;
-#ifdef MSTK_USE_MARKERS
-          inlist = MEnt_IsMarked(vert,mkr);
-#else
           inlist = List_Contains(rvertices,vert);
-#endif
           if (!inlist) {
             List_Add(rvertices,vert);
-#ifdef MSTK_USE_MARKERS
-            MEnt_Mark(vert,mkr);
-#endif
           }
         }
         List_Delete(fverts);
       }
-#ifdef MSTK_USE_MARKERS
-      List_Unmark(rvertices,mkr);
-      MSTK_FreeMarker(mkr);
-#endif      
+
       return rvertices;
     }
 

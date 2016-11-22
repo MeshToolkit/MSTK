@@ -72,11 +72,6 @@ extern "C" {
   pthread_mutex_t marker_lock;  /* declared extern in MSTK_private.h */
   
   int MSTK_GetMarker() {
-    static int first = 1;
-    if (first) {
-      first = 0;
-      fprintf(stderr,"MSTK using markers\n");
-    }
     int i, marker = -1;
     pthread_mutex_lock(&marker_lock);
     
