@@ -98,26 +98,16 @@ extern "C" {
 
     efaces = List_New(nel);
     nf = 0;
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
 
     for (i = 0; i < nel; i++) {
       ent = (MEntity_ptr) List_Entry(adj->elements,i);
       dim = MEnt_Dim(ent);
       if (dim == MFACE) {
         int inlist;
-#ifdef MSTK_USE_MARKERS
-        inlist = MEnt_IsMarked(ent,mkr);
-#else
         inlist = List_Contains(efaces,ent);
-#endif
 	if (!inlist) {
 	  List_Add(efaces,ent);
 	  nf++;
-#ifdef MSTK_USE_MARKERS
-	  MEnt_Mark(ent,mkr);
-#endif
 	}
       }
       else if (dim == MREGION) {
@@ -128,18 +118,11 @@ extern "C" {
 	  rface = List_Entry(rfaces,j);
 
           int inlist;
-#ifdef MSTK_USE_MARKERS
-	  inlist = MEnt_IsMarked(rface,mkr);
-#else
           inlist = List_Contains(efaces,rface);
-#endif
           if (!inlist) {
 	    if (MF_UsesEntity(rface,(MEntity_ptr) e,1)) {
 	      List_Add(efaces,rface);
 	      nf++;
-#ifdef MSTK_USE_MARKERS
-	      MEnt_Mark(rface,mkr);
-#endif
 	    }
 	  }
 
@@ -149,10 +132,6 @@ extern "C" {
       }
     }
     if (nf) {
-#ifdef MSTK_USE_MARKERS
-      List_Unmark(efaces,mkr);
-      MSTK_FreeMarker(mkr);
-#endif
       return efaces;
     }
     else {

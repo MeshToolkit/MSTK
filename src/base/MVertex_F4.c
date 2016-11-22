@@ -172,9 +172,6 @@ extern "C" {
 
     n = 0;
     vfaces = List_New(ne);
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
 
     for (i = 0; i < ne; i++) {
       edge = List_Entry(vedges,i);
@@ -191,18 +188,11 @@ extern "C" {
 	  for (k = 0; k < nf; k++) {
 	    face = List_Entry(rfaces,k);
             int fmarked;
-#ifdef MSTK_USE_MARKERS
-            fmarked = MEnt_IsMarked(face,mkr);
-#else
             fmarked = List_Contains(vfaces,face);
-#endif
 	    if (!fmarked) {
 	      if (MF_UsesEntity(face,(MEntity_ptr) v,0)) {		
 		List_Add(vfaces,face);
 		n++;
-#ifdef MSTK_USE_MARKERS
-		MEnt_Mark(face,mkr);
-#endif
 	      }
 	    }
 	  }
@@ -219,18 +209,11 @@ extern "C" {
 	  for (k = 0; k < nf; k++) {
 	    face = List_Entry(efaces,k);
             int fmarked;
-#ifdef MSTK_USE_MARKERS
-	    fmarked = MEnt_IsMarked(face,mkr);
-#else
             fmarked = List_Contains(vfaces,face);
-#endif
             if (!fmarked) {
 	      if (MF_UsesEntity(face,(MEntity_ptr) v,0)) {
 		List_Add(vfaces,face);
 		n++;
-#ifdef MSTK_USE_MARKERS                
-		MEnt_Mark(face,mkr);
-#endif
 	      }
 	    }
 	  }
@@ -238,10 +221,6 @@ extern "C" {
 	}
       }
     }
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(vfaces,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
     if (n > 0)
       return vfaces;
     else {
@@ -277,9 +256,6 @@ extern "C" {
 
     n = 0;
     vregions = List_New(ne);
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
 
     for (i = 0; i < ne; i++) {
       edge = List_Entry(vedges,i);
@@ -292,27 +268,16 @@ extern "C" {
 	  region = List_Entry(eregions,j);
 
           int rmarked;
-#ifdef MSTK_USE_MARKERS
-	  rmarked = MEnt_IsMarked(region,mkr);
-#else
           rmarked = List_Contains(vregions,region);
-#endif
           if (!rmarked) {
 	    List_Add(vregions,region);
 	    n++;
-#ifdef MSTK_USE_MARKERS
-	    MEnt_Mark(region,mkr);
-#endif
 	  }
 	}
 	
 	List_Delete(eregions);
       }
     }
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(vregions,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
 
     if (n > 0)
       return vregions;

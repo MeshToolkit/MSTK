@@ -176,9 +176,6 @@ extern "C" {
 
     n = 0;
     vfaces = List_New(ne);
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
 
     for (i = 0; i < ne; i++) {
       edge = List_Entry(vedges,i);
@@ -192,25 +189,14 @@ extern "C" {
       for (j = 0; j < nf; j++) {
 	face = List_Entry(efaces,j);
         int inlist;
-#ifdef MSTK_USE_MARKERS
-	inlist = MEnt_IsMarked(face, mkr);
-#else
         inlist = List_Contains(vfaces, face);
-#endif
         if (!inlist) {
-#ifdef MSTK_USE_MARKERS
-	  MEnt_Mark(face,mkr);
-#endif
 	  List_Add(vfaces,face);
 	  n++;
 	}
       }
       List_Delete(efaces);
     }
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(vfaces,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
     if (n > 0)
       return vfaces;
     else {
@@ -248,9 +234,6 @@ extern "C" {
 
     n = 0;
     vregions = List_New(ne);
-#ifdef MSTK_USE_MARKERS
-    int mkr = MSTK_GetMarker();
-#endif
 
     for (i = 0; i < ne; i++) {
       edge = List_Entry(vedges,i);
@@ -266,15 +249,8 @@ extern "C" {
 	  region = MF_Region(eface,k);
 	  if (region) {
             int inlist;
-#ifdef MSTK_USE_MARKERS
-            inlist = MEnt_IsMarked(region,mkr);
-#else
             inlist = List_Contains(vregions,region);
-#endif
             if (!inlist) {
-#ifdef MSTK_USE_MARKERS
-              MEnt_Mark(region,mkr);
-#endif
               List_Add(vregions,region);
               n++;
             }
@@ -283,10 +259,6 @@ extern "C" {
       }
       List_Delete(efaces);
     }
-#ifdef MSTK_USE_MARKERS
-    List_Unmark(vregions,mkr);
-    MSTK_FreeMarker(mkr);
-#endif
 
     if (n > 0)
       return vregions;
