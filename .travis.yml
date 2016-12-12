@@ -1,4 +1,4 @@
-language: c
+language: cpp
 
 sudo: required
 dist: trusty
@@ -23,6 +23,12 @@ before_install:
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
+before_script:
+  - cmake --version
+  - mpirun --version
+  - mpiexec --version
+
+
 after_failure:
   - echo $TRAVIS_TEST_RESULT
   - cat Testing/Temporary/LastTest.log
@@ -45,6 +51,7 @@ script:
      ..    && 
      make -j2 &&
      mpirun --version &&
+     mpirun -n 4 utils/meshconvert/meshconvert &&
      make test &&
      make install DESTDIR=$HOME
 
