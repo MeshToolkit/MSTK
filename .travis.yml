@@ -44,3 +44,6 @@ cache:
 compiler:
   - gcc
   - clang
+
+after_failure:
+  - cat $TRAVIS_TEST_RESULT
