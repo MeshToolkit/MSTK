@@ -46,4 +46,5 @@ compiler:
   - clang
 
 after_failure:
-  - cat $TRAVIS_TEST_RESULT
+  - echo $TRAVIS_TEST_RESULT
+  - cat Testing/Temporary/LastTest.log
