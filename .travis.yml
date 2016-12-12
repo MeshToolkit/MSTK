@@ -9,7 +9,7 @@ addons:
       - debian-sid
     packages:
       - libopenmpi-dev
-      - openmpi-bin
+#      - openmpi-bin
       - libmetis-dev
       - libunittest++-dev
 env:
