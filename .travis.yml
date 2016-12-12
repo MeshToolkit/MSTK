@@ -35,7 +35,7 @@ script:
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
      make -j2 
-  -  make test 
+  -  make test && cat build/Testing/Temporary/LastTest.log
   -  make install DESTDIR=$HOME
 
 cache:
