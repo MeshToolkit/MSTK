@@ -18,6 +18,12 @@ env:
   matrix:
     - PARALLEL=ON
     - PARALLEL=OFF
+
+after_failure:
+  - echo $TRAVIS_TEST_RESULT
+  - pwd
+  - cat Testing/Temporary/LastTest.log
+
 script:
   - >
      mkdir build &&
@@ -35,8 +41,8 @@ script:
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
      make -j2 
-  -  tests_passed = make test 
-  -  test tests_passed = false && cat Testing/Temporary/LastTest.log
+  -  make test 
+  -  cat Testing/Temporary/LastTest.log
   -  make install DESTDIR=$HOME
 
 cache:
@@ -45,7 +51,3 @@ cache:
 compiler:
   - gcc
   - clang
-
-after_failure:
-  - test $TRAVIS_TEST_RESULT &&
-    cat Testing/Temporary/LastTest.log
