@@ -19,7 +19,7 @@ env:
     - PARALLEL=ON
     - PARALLEL=OFF
 
-before_install:
+before_script:
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
