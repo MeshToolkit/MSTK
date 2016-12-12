@@ -19,6 +19,10 @@ env:
     - PARALLEL=ON
     - PARALLEL=OFF
 
+before_install:
+  - test -n $CC && unset CC
+  - test -n $CXX && unset CXX
+
 after_failure:
   - echo $TRAVIS_TEST_RESULT
   - cat Testing/Temporary/LastTest.log
