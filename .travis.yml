@@ -35,8 +35,8 @@ script:
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
      make -j2 
-     make test 
-     make install DESTDIR=$HOME
+  -  make test 
+  -  make install DESTDIR=$HOME
 
 cache:
   - ccache
