@@ -47,4 +47,4 @@ compiler:
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
-  - cat Testing/Temporary/LastTest.log
+  - cat build/Testing/Temporary/LastTest.log
