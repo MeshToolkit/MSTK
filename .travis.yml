@@ -21,7 +21,6 @@ env:
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
-  - pwd
   - cat Testing/Temporary/LastTest.log
 
 script:
@@ -40,10 +39,9 @@ script:
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
-     make -j2 
-  -  make test 
-  -  cat Testing/Temporary/LastTest.log
-  -  make install DESTDIR=$HOME
+     make -j2 &&
+     make test &&
+     make install DESTDIR=$HOME
 
 cache:
   - ccache
