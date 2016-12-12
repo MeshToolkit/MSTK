@@ -34,8 +34,8 @@ script:
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
-     make -j2 &&
-     make test &&
+     make -j2 
+     make test 
      make install DESTDIR=$HOME
 
 cache:
