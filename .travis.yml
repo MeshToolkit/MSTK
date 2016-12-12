@@ -44,6 +44,7 @@ script:
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
      make -j2 &&
+     mpirun --version &&
      make test &&
      make install DESTDIR=$HOME
 
