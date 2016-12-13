@@ -8,7 +8,6 @@ addons:
     sources:
       - debian-sid
     packages:
-      - libmpich-dev
       - mpich
       - libmetis-dev
       - libunittest++-dev
@@ -20,8 +19,6 @@ env:
     - PARALLEL=OFF
 
 before_install:
-  - apt search mpich
-  - apt search mpirun
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
