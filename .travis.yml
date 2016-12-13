@@ -8,9 +8,6 @@ addons:
     sources:
       - debian-sid
     packages:
-#      - libopenmpi-dev
-#      - openmpi-bin
-      - libopenmpi1.6
       - libopenmpi-dev
       - openmpi-bin
       - libmetis-dev
@@ -26,8 +23,13 @@ before_install:
   - sudo apt search openmpi
   - sudo apt search libopenmpi-dev
   - sudo apt search openmpi-bin
+  - sudo apt search mpich
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
+
+before_script:
+  - cmake --version
+
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
