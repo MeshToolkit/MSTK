@@ -11,6 +11,8 @@ addons:
 #      - libopenmpi-dev
 #      - openmpi-bin
       - libopenmpi1.6
+      - libopenmpi1.6-dev
+      - openmpi1.6-bin
       - libmetis-dev
       - libunittest++-dev
 env:
