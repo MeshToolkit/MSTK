@@ -21,6 +21,8 @@ env:
 
 before_install:
   - sudo apt search openmpi
+  - sudo apt search libopenmpi-dev
+  - sudo apt search openmpi-bin
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
