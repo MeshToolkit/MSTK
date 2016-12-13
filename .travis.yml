@@ -8,7 +8,8 @@ addons:
     sources:
       - debian-sid
     packages:
-      - mpich
+      - libopenmpi-dev
+      - openmpi-bin
       - libmetis-dev
       - libunittest++-dev
 env:
