@@ -8,8 +8,8 @@ addons:
     sources:
       - debian-sid
     packages:
-      - libopenmpi-dev=1.6.5-8
-      - openmpi-bin=1.6.5-8
+      - libopenmpi-dev
+      - openmpi-bin
       - libmetis-dev
       - libunittest++-dev
 env:
@@ -19,7 +19,8 @@ env:
     - PARALLEL=ON
     - PARALLEL=OFF
 
-before_script:
+before_install:
+  - sudo apt search openmpi
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
