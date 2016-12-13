@@ -8,9 +8,7 @@ addons:
     sources:
       - debian-sid
     packages:
-      - gcc-5.3
       - libopenmpi-dev
-      - openmpi-bin
       - libmetis-dev
       - libunittest++-dev
 env:
@@ -21,10 +19,8 @@ env:
     - PARALLEL=OFF
 
 before_install:
-  - sudo apt search openmpi
-  - sudo apt search libopenmpi-dev
-  - sudo apt search openmpi-bin
-  - sudo apt search mpich
+  - apt search mpich
+  - apt search mpirun
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
@@ -54,6 +50,7 @@ script:
      ..    && 
      make -j2 &&
      mpirun --version &&
+     mpirun -n 4 utils/meshconvert/meshconvert &&
      make test &&
      make install DESTDIR=$HOME
 
