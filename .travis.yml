@@ -1,4 +1,4 @@
-language: cpp
+language: c
 
 sudo: required
 dist: trusty
@@ -26,14 +26,6 @@ before_install:
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
 
-before_script:
-  - cmake --version
-  - mpirun --version
-  - mpiexec --version
-  - dpkg -L libexodusii-dev
-  - dpkg -L libexodusii5
-  - dpkg -L libnemesis3
-
 after_failure:
   - echo $TRAVIS_TEST_RESULT
   - cat Testing/Temporary/LastTest.log
@@ -54,12 +46,9 @@ script:
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
-     make -j2 
-  -  mpiexec --version 
-  -  mpiexec -n 4 utils/meshconvert/meshconvert 
-  -  mpiexec -n 1 utils/meshconvert/meshconvert 
-  -  make test 
-  -  make install DESTDIR=$HOME
+     make -j2 &&
+     make test &&
+     make install DESTDIR=$HOME
 
 cache:
   - ccache
