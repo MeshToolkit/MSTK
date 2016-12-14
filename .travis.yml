@@ -9,9 +9,6 @@ addons:
       - libopenmpi-dev
       - openmpi-bin
       - libmetis-dev
-      - h5utils
-      - hdf5-helpers
-      - hdf5-tools
       - libhdf5-openmpi-dev
       - libnetcdf-dev
       - libexodusii5
@@ -27,16 +24,13 @@ env:
 before_install:
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
-  - ls -l /usr/include/H5public.h
 
 before_script:
   - cmake --version
   - mpirun --version
   - mpiexec --version
-  - ls -l /usr/include/H5public.h
-  - ls -l /usr/include/H5pubconf.h
-  - grep -i VERSION /usr/include/H5pubconf.h
-  - grep -i VERS /usr/include/H5public.h
+  - dpkg -L libexodusii5
+  - dpkg -L libnemesis3
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
