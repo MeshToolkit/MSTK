@@ -49,7 +49,7 @@ script:
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
-     make -j2 &&
+     make -j2 
   -  mpiexec --version 
   -  mpiexec -n 4 utils/meshconvert/meshconvert 
   -  make test 
