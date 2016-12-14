@@ -11,6 +11,7 @@ addons:
       - libmetis-dev
       - libhdf5-openmpi-dev
       - libnetcdf-dev
+      - libexodusii-dev
       - libexodusii5
       - libnemesis3
       - libunittest++-dev
