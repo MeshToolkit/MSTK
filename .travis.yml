@@ -9,6 +9,8 @@ addons:
       - libopenmpi-dev
       - openmpi-bin
       - libmetis-dev
+      - libhdf5-dev
+      - libnetcdf-dev
       - libexodusii5
       - libnemesis3
       - libunittest++-dev
