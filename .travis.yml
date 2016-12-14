@@ -29,7 +29,8 @@ before_script:
   - cmake --version
   - mpirun --version
   - mpiexec --version
-  - find / -name '*exodus*' -print
+  - dpkg -L libexodusii5
+  - find /usr -name '*exodus*' -print
   - updatedb && locate exodus
 
 after_failure:
