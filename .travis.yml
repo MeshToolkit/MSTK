@@ -29,8 +29,7 @@ before_script:
   - cmake --version
   - mpirun --version
   - mpiexec --version
-  - ls /usr/lib/*exodus*
-  - locate libexodus
+  - locate exodus
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
