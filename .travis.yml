@@ -52,6 +52,8 @@ script:
      make -j2 
   -  mpiexec --version 
   -  mpiexec -n 4 utils/meshconvert/meshconvert 
+  -  mpiexec -np 4 utils/meshconvert/meshconvert 
+  -  mpiexec -np 1 utils/meshconvert/meshconvert 
   -  make test 
   -  ctest
   -  make install DESTDIR=$HOME
