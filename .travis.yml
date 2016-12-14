@@ -6,7 +6,7 @@ dist: trusty
 addons:
   apt:
     sources:
-      - debian-sid
+      - debian-jessie  # stable release of debian
     packages:
       - libopenmpi-dev
       - openmpi-bin
