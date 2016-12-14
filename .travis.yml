@@ -30,8 +30,7 @@ before_script:
   - mpirun --version
   - mpiexec --version
   - dpkg -L libexodusii5
-  - find /usr -name '*exodus*' -print
-  - updatedb && locate exodus
+  - dpkg -L libnemesis3
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
