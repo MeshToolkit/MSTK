@@ -11,6 +11,7 @@ addons:
       - libmetis-dev
       - libhdf5-openmpi-dev
       - libnetcdf-dev
+      - libexodusii-dev
       - libexodusii5
       - libnemesis3
       - libunittest++-dev
@@ -29,6 +30,7 @@ before_script:
   - cmake --version
   - mpirun --version
   - mpiexec --version
+  - dpkg -L libexodusii-dev
   - dpkg -L libexodusii5
   - dpkg -L libnemesis3
 
