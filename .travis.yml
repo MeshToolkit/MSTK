@@ -5,12 +5,12 @@ dist: trusty
 
 addons:
   apt:
-    sources:
-      - debian-jessie  # stable release of debian
     packages:
       - libopenmpi-dev
       - openmpi-bin
       - libmetis-dev
+      - libexodusii5
+      - libnemesis3
       - libunittest++-dev
 env:
   global:
@@ -45,17 +45,15 @@ script:
      -DENABLE_PARALLEL=$PARALLEL
      -DENABLE_METIS=yes
      -DMETIS_INCLUDE_DIR=/usr/include
-     -DENABLE_ExodusII=OFF
+     -DENABLE_ExodusII=ON
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
      make -j2 
   -  mpiexec --version 
   -  mpiexec -n 4 utils/meshconvert/meshconvert 
-  -  mpiexec -np 4 utils/meshconvert/meshconvert 
-  -  mpiexec -np 1 utils/meshconvert/meshconvert 
+  -  mpiexec -n 1 utils/meshconvert/meshconvert 
   -  make test 
-  -  ctest
   -  make install DESTDIR=$HOME
 
 cache:
