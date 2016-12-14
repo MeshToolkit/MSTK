@@ -9,6 +9,9 @@ addons:
       - libopenmpi-dev
       - openmpi-bin
       - libmetis-dev
+      - h5utils
+      - hdf5-helpers
+      - hdf5-tools
       - libhdf5-dev
       - libnetcdf-dev
       - libexodusii5
