@@ -30,8 +30,6 @@ extern "C" {
 
   int MESH_ConcatSubMesh(Mesh_ptr mesh, int topodim, int num, Mesh_ptr *submeshes) {
     
-    fprintf(stderr,"In MESH_ConcatSubMesh....................\n");
-    
     if (topodim == 3)
       MESH_ConcatSubMesh_Region(mesh, num, submeshes);
     else if (topodim == 2) 

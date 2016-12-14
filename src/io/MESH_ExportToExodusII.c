@@ -84,7 +84,7 @@ extern "C" {
 
     int enable_geometry_sets, verbose, enforce_contiguous_ids;
     int i, j, k, idx, idx2, ival;
-    int nv, ne, nf, nr, nvall, neall, nfall, nrall;
+    int nvowned, neowned, nfowned, nrowned, nvall, neall, nfall, nrall;
     int num_element_block_glob, num_side_set_glob, num_node_set_glob,
       num_element_set_glob;
     int num_element_atts_glob, num_node_atts_glob, num_sideset_atts_glob;    
@@ -189,12 +189,12 @@ extern "C" {
     if (verbose)
       fprintf(stdout,"\nMesh representation type is %s\n", 
 	      MESH_rtype_str[reptype]);
-    nv = nvall = MESH_Num_Vertices(mesh);
-    ne = neall = MESH_Num_Edges(mesh);
-    nf = nfall = MESH_Num_Faces(mesh);
-    nr = nrall = MESH_Num_Regions(mesh);
+    nvall = MESH_Num_Vertices(mesh);
+    neall = MESH_Num_Edges(mesh);
+    nfall = MESH_Num_Faces(mesh);
+    nrall = MESH_Num_Regions(mesh);
     
-    if (nv == 0) {
+    if (nvall == 0) {
       fprintf(stdout,"No vertices information \n");
       exit(-1);
     }
@@ -221,7 +221,7 @@ extern "C" {
       ownedatt = MAttrib_New(mesh, "ownedatt", INT, MALLTYPE);
 #endif
         
-      nr = 0; nf = 0; ne = 0; nv = 0;
+      nrowned = 0; nfowned = 0; neowned = 0; nvowned = 0;
       idx = 0;
       while ((mr = MESH_Next_Region(mesh,&idx))) {
 
@@ -239,7 +239,7 @@ extern "C" {
 #else
           MEnt_Set_AttVal(mr, ownedatt, 1, 0.0, NULL);
 #endif
-          nr++;
+          nrowned++;
             
           List_ptr rfaces = MR_Faces(mr);
           idx2 = 0;
@@ -256,7 +256,7 @@ extern "C" {
 #else
               MEnt_Set_AttVal(mf, ownedatt, 1, 0.0, NULL);
 #endif
-              nf++;
+              nfowned++;
               
               List_ptr fedges = MF_Edges(mf,1,0);
               int idx3 = 0;
@@ -273,7 +273,7 @@ extern "C" {
 #else
                   MEnt_Set_AttVal(me, ownedatt, 1, 0.0, NULL);
 #endif
-                  ne++;
+                  neowned++;
                   
                   int kk;
                   for (kk = 0; kk < 2; kk++) {
@@ -290,9 +290,9 @@ extern "C" {
 #else
                       MEnt_Set_AttVal(mv, ownedatt, 1, 0.0, NULL);
 #endif
-                      nv++;
+                      nvowned++;
                       if (enforce_contiguous_ids)
-                        MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
+                        MEnt_Set_AttVal(mv,vidatt,nvowned,0.0,NULL);
                       else
                         MEnt_Set_AttVal(mv,vidatt,MV_ID(mv),0.0,NULL);
                     }
@@ -310,11 +310,11 @@ extern "C" {
       }      
 
       
-      num_element = nr; num_side = nf;
+      num_element = nrowned; num_side = nfowned;
 
       if(verbose)
 	fprintf(stdout,"\nThis is a 3D volume mesh with %d Vertices, %d Edges, %d Faces and %d Regions\n",\
-		nv,ne,nf,nr);
+		nvowned,neowned,nfowned,nrowned);
 
     }
     else if (nfall) {
@@ -333,7 +333,7 @@ extern "C" {
       ownedatt = MAttrib_New(mesh, "ownedatt", INT, MALLTYPE);
 #endif
       
-      nr = 0; nf = 0; ne = 0; nv = 0;
+      nrowned = 0; nfowned = 0; neowned = 0; nvowned = 0;
       idx2 = 0;
       while ((mf = (MFace_ptr) MESH_Next_Face(mesh,&idx2))) {
 
@@ -351,7 +351,7 @@ extern "C" {
 #else
           MEnt_Set_AttVal(mf, ownedatt, 1, 0, NULL);
 #endif
-          nf++;
+          nfowned++;
           
           List_ptr fedges = MF_Edges(mf,1,0);
           int idx3 = 0;
@@ -368,7 +368,7 @@ extern "C" {
 #else
               MEnt_Set_AttVal(me, ownedatt, 1, 0.0, NULL);
 #endif
-              ne++;
+              neowned++;
               
               int kk;
               for (kk = 0; kk < 2; kk++) {
@@ -385,9 +385,9 @@ extern "C" {
 #else
                   MEnt_Set_AttVal(mv, ownedatt, 1, 0, NULL);
 #endif
-                  nv++;
+                  nvowned++;
                   if (enforce_contiguous_ids)
-                    MEnt_Set_AttVal(mv,vidatt,nv,0.0,NULL);
+                    MEnt_Set_AttVal(mv,vidatt,nvowned,0.0,NULL);
                   else
                     MEnt_Set_AttVal(mv,vidatt,MV_ID(mv),0.0,NULL);
                 }
@@ -403,10 +403,10 @@ extern "C" {
       } /* while (mf...) */
         
 
-      num_element = nf; num_side = ne;
+      num_element = nfowned; num_side = neowned;
 
       if(verbose)
-      fprintf(stdout,"\nThis is a 3D surface mesh with %d Vertices, %d Edges and %d Faces\n", nv,ne,nf);
+      fprintf(stdout,"\nThis is a 3D surface mesh with %d Vertices, %d Edges and %d Faces\n", nvowned,neowned,nfowned);
 
     }
     else {
@@ -613,7 +613,7 @@ extern "C" {
     
     ex_init_params par;
     strcpy(par.title,filename);
-    par.num_nodes = nv;
+    par.num_nodes = nvowned;
 
     if (element_dim == 3 || boundary_dim == 2)
       par.num_dim = 3;
@@ -625,7 +625,7 @@ extern "C" {
       par.num_face = face_block ? List_Num_Entries(face_block) : 0;
       par.num_face_blk = num_face_block;
       par.num_edge_blk = 0;
-      par.num_elem = nr;
+      par.num_elem = nrowned;
       par.num_elem_blk = num_element_block_glob;  
       par.num_node_sets = num_node_set_glob;
       par.num_edge_sets = 0;
@@ -658,7 +658,7 @@ extern "C" {
       par.num_face = 0;
       par.num_face_blk = 0;
       par.num_edge_blk = 0;
-      par.num_elem = nf;
+      par.num_elem = nfowned;
       par.num_elem_blk = num_element_block_glob;  
       par.num_node_sets = num_node_set_glob;
       par.num_edge_sets = 0;
@@ -696,9 +696,9 @@ extern "C" {
     /* write coordinate values */
     
     double *xcoord, *ycoord, *zcoord, vxyz[3];
-    xcoord = (double *) malloc(nv*sizeof(double));
-    ycoord = (double *) malloc(nv*sizeof(double));
-    zcoord = (double *) malloc(nv*sizeof(double));
+    xcoord = (double *) malloc(nvowned*sizeof(double));
+    ycoord = (double *) malloc(nvowned*sizeof(double));
+    zcoord = (double *) malloc(nvowned*sizeof(double));
 
     idx = 0;
     while ((mv = MESH_Next_Vertex(mesh,&idx))) {
@@ -1005,7 +1005,7 @@ extern "C" {
       int *elem_list = (int *) malloc(nsides*sizeof(int));
       int *side_list = (int *) malloc(nsides*sizeof(int));
 
-      if (nr) {
+      if (nrowned) {
 	idx = 0; j = 0;
 	while ((mf = MSet_Next_Entry(side_sets_glob[i],&idx))) {
 
@@ -1135,7 +1135,7 @@ extern "C" {
 
       /* Write out node map (global IDs of nodes) */
 
-      int *node_map = (int *) malloc(nv*sizeof(int));
+      int *node_map = (int *) malloc(nvowned*sizeof(int));
       
       idx = 0; i = 0;
       while ((mv = MESH_Next_Vertex(mesh,&idx))) {
@@ -1161,8 +1161,8 @@ extern "C" {
 
       int *elem_map;
 
-      if (nr) {
-        elem_map = (int *) malloc(nr*sizeof(int));
+      if (nrowned) {
+        elem_map = (int *) malloc(nrowned*sizeof(int));
         idx = 0; i = 0;
         while ((mr = MESH_Next_Region(mesh,&idx))) {
           int rowned;
@@ -1176,7 +1176,7 @@ extern "C" {
         }
       }
       else { // assume surface mesh
-        elem_map = (int *) malloc(nf*sizeof(int));
+        elem_map = (int *) malloc(nfowned*sizeof(int));
         idx = 0; i = 0;
         while ((mf = MESH_Next_Face(mesh,&idx))) {
           int fowned;
@@ -1258,7 +1258,7 @@ extern "C" {
 
       /* Now write out each variable */
 
-      double *node_vars = (double *) malloc(nv*sizeof(double));
+      double *node_vars = (double *) malloc(nvowned*sizeof(double));
       int attid = 1;
       for (j = 0; j < num_node_atts_glob; ++j) {
         MAttrib_ptr att = MESH_AttribByName(mesh,node_att_names_glob[j]);
@@ -1275,7 +1275,7 @@ extern "C" {
               node_vars[k++] = ((double *) pval)[n];
             }
              
-            status = ex_put_nodal_var(exoid, 1, attid, nv, node_vars);
+            status = ex_put_nodal_var(exoid, 1, attid, nvowned, node_vars);
             if (status < 0)
               MSTK_Report(funcname,"Error while writing node variable",
                           MSTK_FATAL);
@@ -1286,11 +1286,21 @@ extern "C" {
         else {        
           idx = 0; k = 0;
           while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+            int vowned;
+#ifdef MSTK_HAVE_MPI
+#ifdef MSTK_USE_MARKERS 
+            vowned = MEnt_IsMarked(mv,ownedmk);
+#else
+            MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
+#endif
+            if (!vowned) continue;
+#endif
+
             MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
             node_vars[k++] = rval;
           }
           
-          status = ex_put_nodal_var(exoid, 1, attid, nv, node_vars);
+          status = ex_put_nodal_var(exoid, 1, attid, nvowned, node_vars);
           if (status < 0)
             MSTK_Report(funcname,"Error while writing node variable",
                         MSTK_FATAL);
@@ -1970,7 +1980,7 @@ extern "C" {
     *element_block_types_glob = (char **) malloc(nb*sizeof(char *));
     for (i = 0; i < nb; ++i) {
       (*element_block_types_glob)[i] = (char *) malloc(16*sizeof(char));
-      strncpy((*element_blocks_glob)[i],element_block_types[i],16);
+      strncpy((*element_block_types_glob)[i],element_block_types[i],16);
     }
 #endif
 

@@ -548,5 +548,4 @@ endif()
 
 find_package_handle_standard_args( HDF5 DEFAULT_MESSAGE
                                    HDF5_INCLUDE_DIRS
-                                   HDF5_LIBRARIES
-                                   HDF5_VERSION)
+                                   HDF5_LIBRARIES)

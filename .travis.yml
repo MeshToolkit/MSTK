@@ -5,12 +5,15 @@ dist: trusty
 
 addons:
   apt:
-    sources:
-      - debian-sid
     packages:
       - libopenmpi-dev
       - openmpi-bin
       - libmetis-dev
+      - libhdf5-openmpi-dev
+      - libnetcdf-dev
+      - libexodusii-dev
+      - libexodusii5
+      - libnemesis3
       - libunittest++-dev
 env:
   global:
@@ -18,6 +21,15 @@ env:
   matrix:
     - PARALLEL=ON
     - PARALLEL=OFF
+
+before_install:
+  - test -n $CC && unset CC
+  - test -n $CXX && unset CXX
+
+after_failure:
+  - echo $TRAVIS_TEST_RESULT
+  - cat Testing/Temporary/LastTest.log
+
 script:
   - >
      mkdir build &&
@@ -30,7 +42,7 @@ script:
      -DENABLE_PARALLEL=$PARALLEL
      -DENABLE_METIS=yes
      -DMETIS_INCLUDE_DIR=/usr/include
-     -DENABLE_ExodusII=OFF
+     -DENABLE_ExodusII=ON
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
