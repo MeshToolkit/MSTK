@@ -50,11 +50,11 @@ script:
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
      ..    && 
      make -j2 &&
-   -  mpiexec --version 
-   -  mpiexec -n 4 utils/meshconvert/meshconvert 
-   -  make test 
-   -  ctest
-   -  make install DESTDIR=$HOME
+  -  mpiexec --version 
+  -  mpiexec -n 4 utils/meshconvert/meshconvert 
+  -  make test 
+  -  ctest
+  -  make install DESTDIR=$HOME
 
 cache:
   - ccache
