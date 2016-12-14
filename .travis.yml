@@ -30,7 +30,6 @@ before_script:
   - cmake --version
   - mpirun --version
   - mpiexec --version
-  - dpkg -L libexodusii
   - dpkg -L libexodusii-dev
   - dpkg -L libexodusii5
   - dpkg -L libnemesis3
