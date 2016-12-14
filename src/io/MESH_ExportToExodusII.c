@@ -1980,7 +1980,7 @@ extern "C" {
     *element_block_types_glob = (char **) malloc(nb*sizeof(char *));
     for (i = 0; i < nb; ++i) {
       (*element_block_types_glob)[i] = (char *) malloc(16*sizeof(char));
-      strncpy((*element_blocks_glob)[i],element_block_types[i],16);
+      strncpy((*element_block_types_glob)[i],element_block_types[i],16);
     }
 #endif
 
