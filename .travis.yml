@@ -29,7 +29,10 @@ before_script:
   - cmake --version
   - mpirun --version
   - mpiexec --version
-
+  - ls -l /usr/include/H5public.h
+  - ls -l /usr/include/H5pubconf.h
+  - grep -i VERSION /usr/include/H5pubconf.h
+  - grep -i VERS /usr/include/H5public.h
 
 after_failure:
   - echo $TRAVIS_TEST_RESULT
