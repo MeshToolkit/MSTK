@@ -27,6 +27,7 @@ env:
 before_install:
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
+  - ls -l /usr/include/H5public.h
 
 before_script:
   - cmake --version
