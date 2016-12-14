@@ -25,6 +25,8 @@ before_install:
 
 before_script:
   - cmake --version
+  - mpirun --version
+  - mpiexec --version
 
 
 after_failure:
