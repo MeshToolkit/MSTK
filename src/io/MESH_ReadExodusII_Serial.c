@@ -1224,13 +1224,27 @@ extern "C" {
           if (!List_Num_Entries(reglist)) {
             /* We did not find a single region with unreliable face
              * directions adjacent to a region with reliable face
-             * directions. We have to do geometric checks to find such a
-             * pair */
+             * directions - This may happen in the first iteration
+             * through a disjointed block of polyhedral elements. We
+             * have to do geometric checks to find such a pair */
           
             MRegion_ptr mrgood = NULL;
             idx = 0;
             while (!mrgood && ((mr = MESH_Next_Region(mesh, &idx)))) {
             
+#ifdef MSTK_USE_MARKERS
+              rfdirs_good = MEnt_IsMarked(mr, reliable_rfdirs);
+#else              
+              double rval;
+              void *pval;
+              MEnt_Get_AttVal(mr, dirflagatt, &rfdirs_good, &rval, &pval);
+#endif
+              if (rfdirs_good) continue;  /* region-face dirs are reliable */
+            
+              /* Found a region whose face directions could not be
+                 determined topologically - so determine it
+                 geometrically */
+
               double (*fxyz)[3] =
                   (double (*)[3]) malloc(MAXPV2*sizeof(double [3]));
             
@@ -1314,6 +1328,7 @@ extern "C" {
 #else
                 MEnt_Set_AttVal(mrgood, dirflagatt, 1, 0.0, NULL);
 #endif
+                nfixed++;
 
                 for (k = 0; k < nrf; k++) {
                   MFace_ptr rf = List_Entry(rfaces, k);
@@ -1345,7 +1360,8 @@ extern "C" {
 
 
           /* Starting from the reliable direction region, walk through
-           * all other connected regions in the mesh */
+           * all other connected mesh regions in the mesh or in this
+           * connected block of mesh regions */
 
           idx = 0;
           while ((mr = List_Next_Entry(reglist, &idx))) {
