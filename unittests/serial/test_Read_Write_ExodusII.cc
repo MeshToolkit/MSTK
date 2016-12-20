@@ -361,6 +361,40 @@ TEST(Write_Read_ExodusII_DegeneratePoly3) {
 }
 
 
+// Read/write a multi-block polyhedral mesh where the blocks are disjoint
+
+TEST(Write_Read_ExodusII_MultiBlockPoly3) {
+  int ok;
+  Mesh_ptr mesh1, mesh2;
+
+  MSTK_Init();
+
+  mesh1 = MESH_New(UNKNOWN_REP);
+  ok = MESH_ImportFromFile(mesh1,"serial/multiblock-poly3.exo",NULL,NULL,NULL);
+  CHECK_EQUAL(ok,1);
+
+  int use_geometry = 1;
+  ok &= MESH_BuildClassfn(mesh1, use_geometry);
+  ok &= MESH_CheckTopo(mesh1);
+  CHECK_EQUAL(ok, 1);
+
+
+  ok = MESH_ExportToFile(mesh1,"./multiblock-poly3-tmp.exo",NULL,0,NULL,NULL,NULL);
+  CHECK_EQUAL(ok,1);
+
+
+  mesh2 = MESH_New(UNKNOWN_REP);
+  ok = MESH_ImportFromFile(mesh2,"./multiblock-poly3-tmp.exo",NULL,NULL,NULL);
+  CHECK_EQUAL(ok, 1);
+
+  ok = MESH_CheckTopo(mesh2);
+  CHECK_EQUAL(ok, 1);
+
+  MESH_Delete(mesh1);
+  MESH_Delete(mesh2);
+}
+
+
 TEST(Write_Read_ExodusII_Variables) {
   int i, idx;
   
