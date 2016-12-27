@@ -72,7 +72,7 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
   else if (renum_type == 1) {
     double minx, miny, minz;
     int minid, maxid;
-    int *nadj, *newmap, *adj, *offset, nconn;
+    int *nadj, *newmap, *adj, *offset, nconn=0;
     int nalloc, depth, maxwidth;
         
 #ifdef MSTK_USE_MARKERS

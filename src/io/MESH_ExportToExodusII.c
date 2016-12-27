@@ -3023,7 +3023,8 @@ extern "C" {
     case TET: case PYRAMID: case PRISM: case HEX: {
       int i, j;
       int allfound = 0;
-
+      double xyz[3];
+          
       List_ptr rverts = MR_Vertices(mr);
       List_ptr fverts = MF_Vertices(mf,1,0);
 
@@ -3043,13 +3044,32 @@ extern "C" {
           break;
       }
       
-      List_Delete(rverts);
-      List_Delete(fverts);
-
-      if (allfound)
+      if (allfound) {
+        List_Delete(rverts);
+        List_Delete(fverts);
         return i;
-      else {
-        MSTK_Report("MF_LocalID_in_Region","Face not found in region",MSTK_ERROR);
+      } else {
+        fprintf(stdout, "BAD FACE:\n");
+        for (i=0; i<List_Num_Entries(fverts); ++i) {
+          MV_Coords(List_Entry(fverts,i), xyz);
+          fprintf(stdout, "  %8.16g, %8.16g, %8.16g\n", xyz[0], xyz[1], xyz[2]);
+        }
+        printf("BAD REGION:\n");
+
+        int nrf = MSTK_nrf_template[mrtype];
+        for (i = 0; i < nrf; i++) {
+          fprintf(stdout, " Region Face %d", i);
+          int nrfv = MSTK_rfv_template[mrtype][i][0];
+          for (j = 0; j < nrfv; j++) {
+            MVertex_ptr rv = List_Entry(rverts,MSTK_rfv_template[mrtype][i][j+1]);
+            MV_Coords(rv, xyz);
+            fprintf(stdout, "  %8.16g, %8.16g, %8.16g\n", xyz[0], xyz[1], xyz[2]);
+          }
+        }
+
+        List_Delete(rverts);
+        List_Delete(fverts);
+        MSTK_Report("MF_LocalID_in_Region","Face not found in region",MSTK_FATAL);
         return -1;
       }
       break;
