@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-int FixColumnPartitions_IsSide(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) {
+int FixColumnPartitions_IsSideFace(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) {
   double fxyz[MAXPV2][3];
   double znorm;
   int j, jm, jp, nfv;
@@ -51,7 +51,7 @@ int FixColumnPartitions_IsSide(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) {
    Returns 1 if the relationship is proper, or 0 if the region has
    zero volume and is therefore uncertain.
 */
-int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFace_ptr* dn) {
+int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFace_ptr* dn) {
   int found;
   List_ptr rfaces, rfaces2;
   int nrf, i, j, k, nfv, ret;
@@ -68,7 +68,7 @@ int FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFa
   found = 0; i = 0;
   while (found < 2) {
     rf = List_Entry(rfaces,i);
-    if (!FixColumnPartitions_IsSide(mesh, mr, rf)) {
+    if (!FixColumnPartitions_IsSideFace(mesh, mr, rf)) {
       if (found < 1) *up = rf;
       else *dn = rf;
       found++;
@@ -122,7 +122,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
   int num_touches, num_not_touched;
   int interior, done, nmove=0;
   MRegion_ptr mr, curreg, nxtreg;
-  MFace_ptr topf, botf, topf2;
+  MFace_ptr topf, botf, expected_topf;
   List_ptr fregs;
   int* touched;
   FILE* fid;
@@ -132,17 +132,19 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
   /* ensure every region is touched once */
   touched = calloc(MESH_Num_Regions(mesh),sizeof(int));
   for (idx=0; idx!=MESH_Num_Regions(mesh); ++idx) touched[idx] = 0;
+#ifdef DEBUG
   printf("Read %-d regions", MESH_Num_Regions(mesh));
-
   /* loop over all regions, finding regions whose "up" face is a boundary */
   fid = fopen("col_counts.txt", "w");
-
+#endif
   num_cols = 0;
   num_touches = 0;
   idx = 0;
+  //TODO: FixColumnPartitions_UpDownFaces checks for side faces on every invocation, so
+  //interior side faces are tested twice
   while ((mr = MESH_Next_Region(mesh,&idx))) {
-    FixColumnPartitions_UpDown(mesh, mr, &topf, &botf);
-
+    FixColumnPartitions_UpDownFaces(mesh, mr, &topf, &botf);
+    
     interior = 1;
     fregs = MF_Regions(topf);
     if (List_Num_Entries(fregs) == 1) interior = 0;
@@ -159,6 +161,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
     homepid = part[curid-1];
 
     /* continue to loop through the column */
+    expected_topf = topf;
     while (!done) {
       if (touched[curid-1]) 
         MSTK_Report("FixColumnPartitions","Mesh is not columnar, iteration process touches the same cell twice.",MSTK_FATAL);
@@ -167,8 +170,8 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
       num_touches++;
       
       /* find the bottom face of that region */
-      FixColumnPartitions_UpDown(mesh, curreg, &topf2, &botf);
-      if (topf2 != topf) 
+      FixColumnPartitions_UpDownFaces(mesh, curreg, &topf, &botf);
+      if (topf != expected_topf)
         MSTK_Report("FixColumnPartitions","Mesh is not columnar, up/down faces aren't consistent.",MSTK_FATAL);
 
       fregs = MF_Regions(botf);
@@ -185,14 +188,15 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
 
         curreg = nxtreg;
         curid = nxtid;
-        topf = botf;
+        expected_topf = botf;
       } else {
         done = 1;
       }
       List_Delete(fregs);
     }
-
+#ifdef DEBUG
     fprintf(fid, "%-d\n", num_cells_in_col);
+#endif
   }
 
   if (nmove) {
@@ -200,8 +204,9 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
     sprintf(msg,"Redistributed %-d elements in %-d columns to maintain column partitioning",nmove, num_cols);
     MSTK_Report("FixColumnPartitions",msg,MSTK_MESG);
   }
-
+#ifdef DEBUG
   fclose(fid);
+#endif
   num_not_touched = 0;
   for (idx=0; idx!=MESH_Num_Regions(mesh); ++idx) {
     if (!touched[idx]) {
