@@ -326,6 +326,9 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
                                       int noptions, char **options,
                                       MSTK_Comm comm);
   int        FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm);
+  int        FixColumnPartitions_IsSide(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf);
+  int        FixColumnPartitions_UpDown(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFace_ptr* dn);
+
   int        MESH_Partition(Mesh_ptr parentmesh, int num, int *part, Mesh_ptr *submeshes);
   int        MESH_Partition_and_Send(Mesh_ptr parentmesh, int num, int *parts,
                                      int *toranks, int ring, int with_attr, 
