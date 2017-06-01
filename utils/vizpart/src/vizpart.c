@@ -7,6 +7,7 @@
 #endif
 
 #include "MSTK.h"
+#include "MSTK_private.h"
 
 
 int main(int argc, char **argv) {
