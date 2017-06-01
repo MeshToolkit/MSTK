@@ -453,16 +453,19 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 
 	if (allfound) {
 
+          /* Proceed with merge (which will delete face2) only if
+             face2 is not an external face or both face and face2 are
+             external - HOWEVER, SINCE WE DELETED THE DEGENERATE
+             REGION IN BETWEEN THE TWO FACES, AN EXTERNAL FACE WILL
+             HAVE 0 REGIONS CONNECTED TO IT */
+
           List_ptr fregs = MF_Regions(face);
-          int external_face = fregs ? (List_Num_Entries(fregs) == 1) : 0;
+          int external_face = !fregs || (List_Num_Entries(fregs) == 0);
           if (fregs) List_Delete(fregs);
 
           List_ptr fregs2 = MF_Regions(face2);
-          int external_face2 = fregs2 ? (List_Num_Entries(fregs2) == 1) : 0;
+          int external_face2 = !fregs2 || (List_Num_Entries(fregs2) == 0);
           if (fregs2) List_Delete(fregs2);
-
-          /* Proceed with merge (which will delete face2) only if face2 is
-             not an external face or both face and face2 are external */
 
           if (!external_face2 || (external_face && external_face2)) {
             MFs_Merge(face,face2,topoflag);	
