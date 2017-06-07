@@ -76,20 +76,18 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
 	efaces = ME_Faces(fedge);
 	nef = List_Num_Entries(efaces);
 	
-	if (nef > 2) {
-	  fprintf(stderr,"Non-manifold surface mesh. Exit!\n");
-	  exit(-1);
-	}
-	else if (nef == 1) {
+	if (nef == 1) {
 	  continue;          /* boundary edge; nothing to do */
 	}
 	else {
-	  oppf = List_Entry(efaces,0);
-	  if (oppf == mf)
-	    oppf = List_Entry(efaces,1);
-	  
-	  adjncy[ipos] = MF_ID(oppf)-1;
-	  ipos++;
+          int j;
+          for (j = 0; j < nef; j++) {
+            oppf = List_Entry(efaces,j);
+            if (oppf != mf) {
+              adjncy[ipos] = MF_ID(oppf)-1;
+              ipos++;
+            }
+          }
 	}
 	
 	List_Delete(efaces);
