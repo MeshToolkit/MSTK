@@ -1399,11 +1399,10 @@ extern "C" {
               double *elem_vars = (double *) malloc(nelem*sizeof(double));
               
               MEntity_ptr ment;
-              idx = 0;
+              idx = 0; k = 0;
               while ((ment = MSet_Next_Entry(element_blocks_glob[i],&idx))) {
-                int entid = MEnt_ID(ment);
                 MEnt_Get_AttVal(ment,att,&ival,&rval,&pval);
-                elem_vars[elem_id[entid-1]] = ((double *) pval)[n];
+                elem_vars[k++] = ((double *) pval)[n];
               }
               
               status = ex_put_elem_var(exoid, 1, attid, 
@@ -1428,7 +1427,7 @@ extern "C" {
             while ((ment = MSet_Next_Entry(element_blocks_glob[i],&idx))) {
               int entid = MEnt_ID(ment);
               MEnt_Get_AttVal(ment,att,&ival,&rval,&pval);
-              elem_vars[elem_id[entid-1]] = rval;
+              elem_vars[k++] = rval;
             }
                         
             status = ex_put_elem_var(exoid, 1, attid, element_block_ids_glob[i],
