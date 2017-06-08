@@ -1269,10 +1269,21 @@ extern "C" {
           int ncomp = MAttrib_Get_NumComps(att);
           int n;
           for (n = 0; n < ncomp; n++) {
-            idx = 0; k = 0;
+            idx = 0;
             while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+              int vowned, vid;
+#ifdef MSTK_HAVE_MPI
+#ifdef MSTK_USE_MARKERS 
+              vowned = MEnt_IsMarked(mv,ownedmk);
+#else
+              MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
+#endif
+              if (!vowned) continue;
+#endif
+
+              MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
               MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
-              node_vars[k++] = ((double *) pval)[n];
+              node_vars[vid-1] = ((double *) pval)[n];
             }
              
             status = ex_put_nodal_var(exoid, 1, attid, nvowned, node_vars);
@@ -1286,7 +1297,7 @@ extern "C" {
         else {        
           idx = 0; k = 0;
           while ((mv = MESH_Next_Vertex(mesh,&idx))) {
-            int vowned;
+            int vowned, vid;
 #ifdef MSTK_HAVE_MPI
 #ifdef MSTK_USE_MARKERS 
             vowned = MEnt_IsMarked(mv,ownedmk);
@@ -1296,8 +1307,9 @@ extern "C" {
             if (!vowned) continue;
 #endif
 
+            MEnt_Get_AttVal(mv,vidatt,&vid,&rval,&pval);
             MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
-            node_vars[k++] = rval;
+            node_vars[vid-1] = rval;
           }
           
           status = ex_put_nodal_var(exoid, 1, attid, nvowned, node_vars);
@@ -1413,6 +1425,7 @@ extern "C" {
             MEntity_ptr ment;
             idx = 0; k = 0;
             while ((ment = MSet_Next_Entry(element_blocks_glob[i],&idx))) {
+              int entid = MEnt_ID(ment);
               MEnt_Get_AttVal(ment,att,&ival,&rval,&pval);
               elem_vars[k++] = rval;
             }

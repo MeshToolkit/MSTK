@@ -484,7 +484,9 @@ TEST(Write_Read_ExodusII_Variables) {
   ok = MESH_CheckTopo(mesh2);
   CHECK_EQUAL(ok, 1);
 
-  /* Now verify that we retrieved all the attributes */
+  /* Now verify that we retrieved all the attributes on elements -
+     because of the way elements are written and read back into Exodus
+     II files (by element block) the ordering stays the same */
 
   MAttrib_ptr elvalatt_in = MESH_AttribByName(mesh2,"elval");
   CHECK(elvalatt_in);
@@ -514,6 +516,12 @@ TEST(Write_Read_ExodusII_Variables) {
   }
 
 
+  /* Now verify that we retrieved all the attributes on nodes -
+   * because of the way nodes are written to Exodus II and read back,
+   * the ordering of nodes may not be the same and we have to figure
+   * out a map between the nodes of the original mesh and the
+   * re-imported mesh */
+
   MAttrib_ptr ndvalatt_in = MESH_AttribByName(mesh2,"ndval");
   CHECK(ndvalatt_in);
   CHECK_EQUAL(DOUBLE,MAttrib_Get_Type(ndvalatt_in));
@@ -525,6 +533,32 @@ TEST(Write_Read_ExodusII_Variables) {
   CHECK_EQUAL(MVERTEX,MAttrib_Get_EntDim(ndvecatt_in));
   CHECK_EQUAL(3,MAttrib_Get_NumComps(ndvecatt_in));
 
+  double *node_map = new double[nv];
+  for (i = 0; i < nv; i++) node_map[i] = -1;
+  idx = 0; i = 0;
+  while ((mv = MESH_Next_Vertex(mesh, &idx))) {
+    double coord[3];
+    MV_Coords(mv, coord);
+    
+    int idx2 = 0, k = 0, found = 0;
+    MVertex_ptr mv2;
+    while ((mv2 = MESH_Next_Vertex(mesh2, &idx2))) {
+      double coord2[3];
+      MV_Coords(mv2, coord2);
+
+      double dist2 = ((coord[0]-coord2[0])*(coord[0]-coord2[0]) +
+                      (coord[1]-coord2[1])*(coord[1]-coord2[1]) +
+                      (coord[2]-coord2[2])*(coord[2]-coord2[2]));
+      if (dist2 < 1.0e-12) {
+        found = 1;
+        break;
+      }
+      k++;
+    }
+    CHECK(found);
+    node_map[k] = i;
+    i++;
+  }
  
   idx = 0; i = 0;
   while ((mv = MESH_Next_Vertex(mesh2,&idx))) {
@@ -532,11 +566,12 @@ TEST(Write_Read_ExodusII_Variables) {
     double rval;
     void *pval;
 
+    int k = node_map[i];
     MEnt_Get_AttVal(mv,ndvalatt_in,&ival,&rval,&pval);
-    CHECK_EQUAL(ndval_out[i],rval);
+    CHECK_EQUAL(ndval_out[k],rval);
 
     MEnt_Get_AttVal(mv,ndvecatt_in,&ival,&rval,&pval);
-    CHECK_ARRAY_EQUAL(ndvec_out[i],(double *)pval,3);
+    CHECK_ARRAY_EQUAL(ndvec_out[k],(double *)pval,3);
     i++;
   }
 
