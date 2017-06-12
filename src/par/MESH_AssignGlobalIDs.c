@@ -12,11 +12,18 @@ extern "C" {
 
 
   /* 
-     This function is a collective call
-     It assigns each submesh the global IDs of vertices, edges, faces and regions
-     It assumes no additional information at all
+     THIS IS AN INTERNAL MSTK CALL THAT SHOULD ***ONLY*** BE USED AS
+     ONE STEP IN A SERIES OF WELL COORDINATED STEPS DURING
+     DISTRIBUTING A MESH FROM ONE PROCESSOR TO MANY.
 
-     It also assign the proper master partition id and ptype
+     Assign global IDs of vertices (by comparing coordinates, if not
+     already given), and use global IDs of vertices to match up and
+     assign global IDs of edges, faces and regions on each
+     partition. Also assign the proper master partition ID and
+     parallel type for entities on the parallel boundary.
+
+     At this stage, there are no ghost layers and the partitions are
+     not in their final state.
 
      Author(s): Duo Wang, Rao Garimella
   */
