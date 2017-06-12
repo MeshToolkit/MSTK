@@ -193,6 +193,8 @@ void MSTK_Init(void);
                 = 1 --- renumbering using Reverse Cuthill-McKee algorithm 
      mtype      = Type of entity to renumber (MVERTEX, MEDGE, MFACE, MREGION
                   or MALLTYPE)
+
+                  WORKS ONLY FOR SERIAL MESHES - See Mesh_RenumberGlobalIDs
   */
 
   void        MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype);
@@ -268,6 +270,7 @@ void MSTK_Init(void);
 
   int         MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm);
 
+  /* Query Global IDs */
 
   MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
   MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);
@@ -275,6 +278,15 @@ void MSTK_Init(void);
   MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id);
   MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, MType mtype, int i);
 
+  /* Renumber global IDs in a parallel mesh */
+  /* If mtype = MALLTYPE, all entity types are renumbered and made contiguous */
+  /* Only method = 0 (sequential) is supported for now                        */
+  /* Eventually, one could precompute some global IDs and just send it        */
+  /* to this routine (NOT IMPLEMENTED)                                        */
+  /* Cannot use mtype = MALLTYPE for preassigned GIDs                             */
+
+  int         MESH_Renumber_GlobalIDs(Mesh_ptr mesh, MType mtype, int method,
+                                      int *preassigned_gids, MSTK_Comm comm);
 
   /* Get a partitioning for mesh using METIS (method=1) or ZOLTAN (method=2) */
   /* Doesn't actually partition the mesh or distribute it                    */
