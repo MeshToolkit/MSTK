@@ -293,8 +293,11 @@ extern "C" {
 			   sizeof(int),
 			   compareINT);
 
-      if (loc == NULL)
-        MSTK_Report("MESH_UpdateAttr","Cannot find global ID in list",MSTK_ERROR);
+      if (loc == NULL) {
+        char msg[256];
+        sprintf(msg, "Cannot find entity of type %d with global ID %d in list on proc %d", mtype, global_id, myrank);
+        MSTK_Report("MESH_UpdateAttr",msg,MSTK_ERROR);
+      }
 
       /* get the index */
       i = (int)(loc - &list_info_recv[0]);
