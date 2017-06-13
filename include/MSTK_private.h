@@ -259,27 +259,22 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void  MV_Flag_OnParBoundary(MVertex_ptr v);
   void  MV_Unflag_OnParBoundary(MVertex_ptr v);
   void  MV_Set_MasterParID(MVertex_ptr v, int masterpartid);
-  void  MV_Set_GlobalID(MVertex_ptr v, int globalid);
 
   void  ME_Set_PType(MEdge_ptr e, PType ptype);
   void  ME_Flag_OnParBoundary(MEdge_ptr v);
   void  ME_Unflag_OnParBoundary(MEdge_ptr v);
   void  ME_Set_MasterParID(MEdge_ptr e, int masterparid);
-  void  ME_Set_GlobalID(MEdge_ptr e, int globalid);
 
   void  MF_Set_PType(MFace_ptr f, PType ptype);
   void  MF_Flag_OnParBoundary(MFace_ptr v);
   void  MF_Unflag_OnParBoundary(MFace_ptr v);
   void  MF_Set_MasterParID(MFace_ptr f, int masterpartid);
-  void  MF_Set_GlobalID(MFace_ptr f, int globalid);
 
   void  MR_Set_PType(MRegion_ptr r, PType ptype);
   void  MR_Set_MasterParID(MRegion_ptr r, int masterpartid);
-  void  MR_Set_GlobalID(MRegion_ptr r, int globalid);
 
   void  MEnt_Set_PType(MEntity_ptr ent, PType ptype);
   void  MEnt_Set_MasterParID(MEntity_ptr ent, int masterpartid);
-  void  MEnt_Set_GlobalID(MEntity_ptr ent, int globalid);
 
 
   void         MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, 

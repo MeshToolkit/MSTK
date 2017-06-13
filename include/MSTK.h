@@ -345,6 +345,7 @@ void MSTK_Init(void);
   void        MV_RegionIDs(MVertex_ptr mvertex, int *nvr, int *vregionids);
 
   int         MV_GlobalID(MVertex_ptr v);
+  void        MV_Set_GlobalID(MVertex_ptr v, int gid);  /* ** CAUTION!! ** */
 
   PType       MV_PType(MVertex_ptr v);    /* PINTERIOR, PGHOST, POVERLAP */
   int         MV_OnParBoundary(MVertex_ptr v); 
@@ -397,6 +398,7 @@ void MSTK_Init(void);
   void        ME_UnLock(MEdge_ptr e);
 
   int         ME_GlobalID(MEdge_ptr e);
+  void        ME_Set_GlobalID(MEdge_ptr e, int gid);  /* ** CAUTION!! ** */
 
   PType       ME_PType(MEdge_ptr e);
   int         ME_OnParBoundary(MEdge_ptr e);
@@ -470,6 +472,7 @@ void MSTK_Init(void);
   void        MF_UnLock(MFace_ptr f);
 
   int         MF_GlobalID(MFace_ptr f);
+  void        MF_Set_GlobalID(MFace_ptr f, int gid);  /* ** CAUTION!! ** */
 
   PType       MF_PType(MFace_ptr f);  
   int         MF_OnParBoundary(MFace_ptr f);
@@ -549,6 +552,7 @@ void MSTK_Init(void);
   void        MR_Coords(MRegion_ptr mregion, int *n, double (*xyz)[3]);
 
   int         MR_GlobalID(MRegion_ptr r);
+  void        MR_Set_GlobalID(MRegion_ptr r, int gid);  /* ** CAUTION!! ** */
 
   PType       MR_PType(MRegion_ptr r);  
   int         MR_MasterParID(MRegion_ptr r);
@@ -601,6 +605,7 @@ void MSTK_Init(void);
 
 
   int         MEnt_GlobalID(MEntity_ptr ent);
+  void        MEnt_Set_GlobalID(MEntity_ptr ent, int gid);  /* caution */
 
   PType       MEnt_PType(MEntity_ptr ent);
   int         MEnt_OnParBoundary(MEntity_ptr ent);
