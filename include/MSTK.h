@@ -750,8 +750,14 @@ void MSTK_Init(void);
 
   /* collapse out edge and delete any faces and regions connected to it */
   /* See MVs_Merge for meaning of topoflag                              */
+  /* deleted_entities contains a list of all entities deleted due to    */
+  /* this operation. merged_entity_pairs contains info about merged     */
+  /* entities by storing the deleted and kept entity in each merged pair*/
+  /* (in that order)                                                    */
+
   MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr ovkeep, int topoflag,
-                          List_ptr *deleted_entities);
+                          List_ptr *deleted_entities,
+                          List_ptr *merged_entity_pairs);
 
   /* Merge faces f1 and f2 - f2 is deleted                      */
   /* See MVs_Merge for meaning of topoflag                      */
