@@ -1996,6 +1996,8 @@ void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
   if (!fnd)
     MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in mesh vertex list",MSTK_FATAL);
 
+  mesh->nv = List_Num_Entries(mesh->mvertex);
+
   fnd = List_RemSorted(mesh->ghvertex,v,&(MV_GlobalID));
   if (!fnd)
     MSTK_Report("MESH_Rem_GhostVertex","Vertex not found in ghost vertex list",MSTK_FATAL);
@@ -2030,6 +2032,8 @@ void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
 
   if (!fnd)
     MSTK_Report("MESH_Rem_GhostEdge","Edge not found in mesh edge list",MSTK_FATAL);
+
+  mesh->ne = List_Num_Entries(mesh->medge);
 
   fnd = List_RemSorted(mesh->ghedge,e,&(ME_GlobalID));
   if (!fnd)
@@ -2066,6 +2070,8 @@ void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
   if (!fnd)
     MSTK_Report("MESH_Rem_Face","Face not found in mesh face list",MSTK_FATAL);
 
+  mesh->nf = List_Num_Entries(mesh->mface);
+
   fnd = List_RemSorted(mesh->ghface,f,&(MF_GlobalID));
   if (!fnd)
     MSTK_Report("MESH_Rem_Face","Face not found in ghost list",MSTK_FATAL);
@@ -2099,6 +2105,8 @@ void MESH_Rem_GhostRegion(Mesh_ptr mesh, MRegion_ptr r){
 
   if (!fnd)
     MSTK_Report("MESH_Rem_GhostRegion","Region not found in mesh region list",MSTK_FATAL);
+
+  mesh->nr = List_Num_Entries(mesh->mregion);
 
   fnd = List_RemSorted(mesh->ghregion,r,&(MR_GlobalID));
   if (!fnd)
