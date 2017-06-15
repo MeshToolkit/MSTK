@@ -1008,6 +1008,7 @@ extern "C" {
       if (nrowned) {
 	idx = 0; j = 0;
 	while ((mf = MSet_Next_Entry(side_sets_glob[i],&idx))) {
+          if (MF_PType(mf) == PGHOST &&  !MF_OnParBoundary(mf)) continue;
 
 	  List_ptr fregs = MF_Regions(mf);
 
@@ -1018,8 +1019,12 @@ extern "C" {
 	  mr = List_Entry(fregs,0);
 
 #ifdef MSTK_HAVE_MPI
-          if (comm && MR_PType(mr) == PGHOST)
-            mr = List_Entry(fregs,1);  /* at least 1 region should be owned */
+          if (comm && MR_PType(mr) == PGHOST) {
+            if (List_Num_Entries(fregs) > 1)
+              mr = List_Entry(fregs,1);  /* at least 1 region should be owned */
+            else  // First check in loop should prevent it from coming here
+              MSTK_Report("MESH_ExportToExodusII", "Trying to write out ghost side set face thats not on the parallel boundary", MSTK_FATAL);
+          }
 #endif
 
           elem_list[j] = elem_id[MR_ID(mr)-1];
