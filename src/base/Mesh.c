@@ -1309,21 +1309,25 @@ void MESH_Enable_GlobalIDSearch(Mesh_ptr mesh) {
 
   if (mesh->nv && !mesh->gid_sorted_mvlist) {
     mesh->gid_sorted_mvlist = List_Copy(mesh->mvertex);
+    List_Compress(mesh->gid_sorted_mvlist);  // can't sort list with gaps
     List_Sort(mesh->gid_sorted_mvlist,mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
   }
 
   if (mesh->ne && !mesh->gid_sorted_melist) {
     mesh->gid_sorted_melist = List_Copy(mesh->medge);
+    List_Compress(mesh->gid_sorted_melist);
     List_Sort(mesh->gid_sorted_melist,mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
   }
 
   if (mesh->nf && !mesh->gid_sorted_mflist) {
     mesh->gid_sorted_mflist = List_Copy(mesh->mface);
+    List_Compress(mesh->gid_sorted_mflist);
     List_Sort(mesh->gid_sorted_mflist,mesh->nf,sizeof(MFace_ptr),compareGlobalID);
   }
 
   if (mesh->nr && !mesh->gid_sorted_mrlist) {
     mesh->gid_sorted_mrlist = List_Copy(mesh->mregion);
+    List_Compress(mesh->gid_sorted_mrlist);
     List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
   }
 
@@ -1447,23 +1451,39 @@ MEntity_ptr MESH_EntityFromGlobalID(Mesh_ptr mesh, int mtype, int id) {
 int MESH_Sort_GhostLists(Mesh_ptr mesh, 
                          int (*compfunc)(const void*, const void*)) {
 
-  if (mesh->ghvertex)
+  if (mesh->ghvertex) {
+    List_Compress(mesh->ghvertex);  /* cannot sort list with gaps - no cost if no gaps */
     List_Sort(mesh->ghvertex,List_Num_Entries(mesh->ghvertex),sizeof(MVertex_ptr),compfunc);
-  if (mesh->ghedge)
+  }
+  if (mesh->ghedge) {
+    List_Compress(mesh->ghedge);
     List_Sort(mesh->ghedge,List_Num_Entries(mesh->ghedge),sizeof(MEdge_ptr),compfunc);
-  if (mesh->ghface)
-      List_Sort(mesh->ghface,List_Num_Entries(mesh->ghface),sizeof(MFace_ptr),compfunc);
-  if (mesh->ghregion)
-      List_Sort(mesh->ghregion,List_Num_Entries(mesh->ghregion),sizeof(MRegion_ptr),compfunc);
+  }
+  if (mesh->ghface) {
+    List_Compress(mesh->ghface);
+    List_Sort(mesh->ghface,List_Num_Entries(mesh->ghface),sizeof(MFace_ptr),compfunc);
+  }
+  if (mesh->ghregion) {
+    List_Compress(mesh->ghregion);
+    List_Sort(mesh->ghregion,List_Num_Entries(mesh->ghregion),sizeof(MRegion_ptr),compfunc);
+  }
 
-  if (mesh->ovvertex)
+  if (mesh->ovvertex) {
+    List_Compress(mesh->ovvertex);
     List_Sort(mesh->ovvertex,List_Num_Entries(mesh->ovvertex),sizeof(MVertex_ptr),compfunc);
-  if (mesh->ovedge)
+  }
+  if (mesh->ovedge) {
+    List_Compress(mesh->ovedge);
     List_Sort(mesh->ovedge,List_Num_Entries(mesh->ovedge),sizeof(MEdge_ptr),compfunc);
-  if (mesh->ovface)
-      List_Sort(mesh->ovface,List_Num_Entries(mesh->ovface),sizeof(MFace_ptr),compfunc);
-  if (mesh->ovregion)
-      List_Sort(mesh->ovregion,List_Num_Entries(mesh->ovregion),sizeof(MRegion_ptr),compfunc);
+  }
+  if (mesh->ovface) {
+    List_Compress(mesh->ovface);
+    List_Sort(mesh->ovface,List_Num_Entries(mesh->ovface),sizeof(MFace_ptr),compfunc);
+  }
+  if (mesh->ovregion) {
+    List_Compress(mesh->ovregion);
+    List_Sort(mesh->ovregion,List_Num_Entries(mesh->ovregion),sizeof(MRegion_ptr),compfunc);
+  }
 
   return 1;
 }
