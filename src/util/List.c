@@ -212,6 +212,12 @@ extern "C" {
 
   void List_Sort(List_ptr l, size_t num, size_t size, 
 		 int(*comp)(const void *,const void *)) {
+    int p, ntot, nent, nrem, rem1;
+
+    pvtList_Get_Pars(l,&nent,&p,&nrem,&rem1);
+
+    if (nrem)
+      MSTK_Report("List_Sort", "Cannot sort list with gaps", MSTK_FATAL);
     qsort(List_Entries(l),num,size,comp);
   }
 
