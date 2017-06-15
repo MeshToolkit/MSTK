@@ -159,10 +159,10 @@ extern "C" {
 
         ME_Set_GlobalID(me,list_edge[nevs+4]);
         
-        int vid0 = list_edge[nevs]-1;
-        int vid1 = list_edge[nevs+1]-1;
-        ME_Set_Vertex(me,0,MESH_Vertex(mesh,vid0));
-        ME_Set_Vertex(me,1,MESH_Vertex(mesh,vid1));
+        int vid0 = list_edge[nevs];
+        int vid1 = list_edge[nevs+1];
+        ME_Set_Vertex(me,0,MESH_VertexFromID(mesh,vid0));
+        ME_Set_Vertex(me,1,MESH_VertexFromID(mesh,vid1));
         nevs += 5;
       }
     }
