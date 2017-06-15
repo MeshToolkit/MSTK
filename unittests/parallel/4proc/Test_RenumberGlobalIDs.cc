@@ -168,6 +168,8 @@ TEST(RenumberGIDs_Dist) {
     }
   CHECK(!fjump_found);
 
+  CHECK(MESH_Parallel_Check(mesh, comm) == 1);
+
   return;
 }
 }
