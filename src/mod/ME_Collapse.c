@@ -26,10 +26,19 @@
 /* performed without consideration to the classification of entities    */
 /*                                                                      */
 /* The routine returns the retained vertex if collapse was successful   */
-
+/*                                                                      */
+/* 'deleted_entities' contains a list of all entities deleted due to    */
+/* this operation. 'merged_entity_pairs' contains info about merged     */
+/* entities by storing the deleted and kept entity in each merged pair  */
+/* (in that order)                                                      */
+/*                                                                      */
+/* NOTE: THIS ROUTINE ONLY MARKS THE DELETED ENTITY AS MDELETED BUT     */
+/* DOES NOT ACTUALLY DELETE THEM. IF YOU WANT THEM REALLY DELETED, YOU  */
+/* CALL THE MEnt_Delete(entity, 0) ROUTINE ON THEM                      */
 
 MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
-                        List_ptr *deleted_entities) {
+                        List_ptr *deleted_entities,
+                        List_ptr *merged_entity_pairs) {
   MVertex_ptr vdel, vkeep, ev00, ev01, ev10, ev11, vert;
   MEdge_ptr edge, edge2, oldedges[3], nuedges[2];
   MFace_ptr face, face2, rface1, rface2;
@@ -144,6 +153,13 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
     return NULL;   /* Cannot collapse due to constraints of topological
 		   conformity with geometric model */
 
+  int num_merged_pairs = 0;
+  *merged_entity_pairs = List_New(10);
+
+  List_Add(*merged_entity_pairs, vdel);
+  List_Add(*merged_entity_pairs, vkeep);
+
+  int num_deleted = 0;
   *deleted_entities = List_New(10);
 
   /* Need to collect this in advance because the info gets messed up later */
@@ -164,11 +180,11 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
         List_Add(*deleted_entities,reg);
         MR_Delete(reg,1);    /* This is a tet that degenerated */
       }
-
+      
       List_Delete(rverts);
     }
   }
-
+  
   /* Delete topologically degenerate faces */
   
   if (efaces) {
@@ -185,7 +201,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
         if (fregs) {
           idx2 = 0;
           while ((reg = List_Next_Entry(fregs,&idx2)))
-          MR_Rem_Face(reg,face);
+            MR_Rem_Face(reg,face);
           
           List_Delete(fregs);
         }
@@ -197,9 +213,9 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
       List_Delete(fedges);
     }
   }
-
+  
   /* Replace vdel with vkeep in all edges connected to vdel */
-
+  
   vedges = MV_Edges(vdel);
   idx1 = 0;
   while ((edge = List_Next_Entry(vedges,&idx1))) {
@@ -213,46 +229,46 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
      the innards of MF_Edges are changed */
 
   
-  if(efaces) {
-  idx1 = 0;
-  while ((face = List_Next_Entry(efaces,&idx1))) {
-
+  if (efaces) {
+    idx1 = 0;
+    while ((face = List_Next_Entry(efaces,&idx1))) {
+      
       if (MEnt_Dim(face) == MDELETED)
         continue;
       
-    fedges = MF_Edges(face,1,0);
-    nfe = List_Num_Entries(fedges);
-
-    /* Find the edge before and after e in the face */
-
-    oldedges[0] = oldedges[2] = NULL;
-    for (i = 0; i < nfe; i++) {
-      edge = List_Entry(fedges,i);
-      if (edge == e) continue;
-
-      dir = MF_EdgeDir_i(face,i);
-
-      if (ME_Vertex(edge,dir) == vkeep)
-	oldedges[0] = edge;
-      else if (ME_Vertex(edge,!dir) == vkeep)
-	oldedges[2] = edge;
+      fedges = MF_Edges(face,1,0);
+      nfe = List_Num_Entries(fedges);
+      
+      /* Find the edge before and after e in the face */
+      
+      oldedges[0] = oldedges[2] = NULL;
+      for (i = 0; i < nfe; i++) {
+        edge = List_Entry(fedges,i);
+        if (edge == e) continue;
+        
+        dir = MF_EdgeDir_i(face,i);
+        
+        if (ME_Vertex(edge,dir) == vkeep)
+          oldedges[0] = edge;
+        else if (ME_Vertex(edge,!dir) == vkeep)
+          oldedges[2] = edge;
+      }
+      oldedges[1] = e;
+      
+      nuedges[0] = oldedges[0];
+      nuedges[1] = oldedges[2];
+      
+      
+      /* Replace oldedges[0], oldedges[1] (=e), oldedges[2] with 
+         oldedges[0], oldedges[2] since e is degenerate */
+      
+      MF_Replace_Edges(face,3,oldedges,2,nuedges);
+      
+      List_Delete(fedges);
     }
-    oldedges[1] = e;
-
-    nuedges[0] = oldedges[0];
-    nuedges[1] = oldedges[2];
-
-
-    /* Replace oldedges[0], oldedges[1] (=e), oldedges[2] with 
-       oldedges[0], oldedges[2] since e is degenerate */
-
-    MF_Replace_Edges(face,3,oldedges,2,nuedges);
-
-    List_Delete(fedges);
-  }
     List_Delete(efaces);
   }
-
+  
 
   /* Delete topologically degenerate regions */
   /* Defined as two faces of the regions having the same vertices */
@@ -272,18 +288,18 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 	for (i = 0; i < nrf; i++) {
 
 	  rface1 = List_Entry(rfaces,i);
-    if (MEnt_Dim(rface1) == MDELETED)
-      continue;
-	
+          if (MEnt_Dim(rface1) == MDELETED)
+            continue;
+          
 	  fverts1 = MF_Vertices(rface1,1,0);
 	  nfv1 = List_Num_Entries(fverts1);
 		
 	  for (j = i+1; j < nrf; j++) {
 	  
 	    rface2 = List_Entry(rfaces,j);
-      if (MEnt_Dim(rface2) == MDELETED)
-        continue;
-
+            if (MEnt_Dim(rface2) == MDELETED)
+              continue;
+            
 	    fverts2 = MF_Vertices(rface2,1,0);
 	    nfv2 = List_Num_Entries(fverts2);
 	  
@@ -300,7 +316,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 		break;
 	      }
 	    }
-	  
+            
 	    List_Delete(fverts2);
 	  
 	    if (allfound) {
@@ -318,7 +334,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 
 	if (degenerate) {
           List_Add(*deleted_entities,reg);
-        MR_Delete(reg,1);
+          MR_Delete(reg,1);
         }
 
       List_Delete(rfaces);
@@ -407,6 +423,8 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
           MEs_Merge(edge,edge2,topoflag);	
           List_Rem(vedges,edge2);	
           List_Add(*deleted_entities,edge2);
+          List_Add(*merged_entity_pairs, edge2);
+          List_Add(*merged_entity_pairs, edge);
           break;
         }
       }
@@ -471,6 +489,8 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
             MFs_Merge(face,face2,topoflag);	
             List_Rem(vfaces,face2);
             List_Add(*deleted_entities,face2);
+            List_Add(*merged_entity_pairs, face2);
+            List_Add(*merged_entity_pairs, face);
             break;
           }
 

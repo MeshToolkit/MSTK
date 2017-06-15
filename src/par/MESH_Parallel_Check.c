@@ -143,7 +143,7 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mv = MESH_Vertex(mesh, ov_list[nov + iloc]-1);  /* get the vertex on current mesh */
+	    mv = MESH_VertexFromID(mesh, ov_list[nov + iloc]);  /* get the vertex on current mesh */
 	    gdim = (recv_list_vertex[3*j] & 7);
 	    gid = (recv_list_vertex[3*j] >> 3);
 	    ptype = (recv_list_vertex[3*j+1] & 3);
@@ -245,7 +245,7 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mv = MESH_Vertex(mesh, ov_list[nov + iloc]-1);  /* get the vertex on current mesh */
+	    mv = MESH_VertexFromID(mesh, ov_list[nov + iloc]);  /* get the vertex on current mesh */
 	    gdim = (recv_list_vertex[3*j] & 7);
 	    gid = (recv_list_vertex[3*j] >> 3);
 	    ptype = (recv_list_vertex[3*j+1] & 3);
@@ -378,7 +378,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	  }
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    me = MESH_Edge(mesh, ov_list[noe + iloc]-1);  /* get the edge on current mesh */
+	    me = MESH_EdgeFromID(mesh, ov_list[noe + iloc]);  /* get the edge on current mesh */
 	    gdim = (recv_list_edge[5*j+2] & 7);
 	    gid = (recv_list_edge[5*j+2] >> 3);
 	    ptype = (recv_list_edge[5*j+3] & 3);
@@ -470,7 +470,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	  }
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    me = MESH_Edge(mesh, ov_list[noe + iloc]-1);  /* get the edge on current mesh */
+	    me = MESH_EdgeFromID(mesh, ov_list[noe + iloc]);  /* get the edge on current mesh */
 	    gdim = (recv_list_edge[5*j+2] & 7);
 	    gid = (recv_list_edge[5*j+2] >> 3);
 	    ptype = (recv_list_edge[5*j+3] & 3);
@@ -602,7 +602,7 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	  }
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mf = MESH_Face(mesh, ov_list[nof + iloc]-1);  /* get the face on current mesh */
+	    mf = MESH_FaceFromID(mesh, ov_list[nof + iloc]);  /* get the face on current mesh */
 	    gdim = (recv_list_face[index_mf+nfe+1] & 7);
 	    gid = (recv_list_face[index_mf+nfe+1] >> 3);
 	    ptype = (recv_list_face[index_mf+nfe+2] & 3);
@@ -697,7 +697,7 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	  }
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mf = MESH_Face(mesh, ov_list[nof + iloc]-1);  /* get the face on current mesh */
+	    mf = MESH_FaceFromID(mesh, ov_list[nof + iloc]);  /* get the face on current mesh */
 	    gdim = (recv_list_face[index_mf+nfe+1] & 7);
 	    gid = (recv_list_face[index_mf+nfe+1] >> 3);
 	    ptype = (recv_list_face[index_mf+nfe+2] & 3);
@@ -818,7 +818,7 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	  }
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mr = MESH_Region(mesh, ov_list[nor + iloc]-1);  /* get the region on current mesh */
+	    mr = MESH_RegionFromID(mesh, ov_list[nor + iloc]);  /* get the region on current mesh */
 	    gdim = (recv_list_region[index_mr+nrf+1] & 7);
 	    gid = (recv_list_region[index_mr+nrf+1] >> 3);
 	    ptype = (recv_list_region[index_mr+nrf+2] & 3);
@@ -912,7 +912,7 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	  }
 	  if(loc) {                /* vertex found, but other information mismatch */
 	    iloc = (int)(loc - ov_list);
-	    mr = MESH_Region(mesh, ov_list[nor + iloc]-1);  /* get the region on current mesh */
+	    mr = MESH_RegionFromID(mesh, ov_list[nor + iloc]);  /* get the region on current mesh */
 	    gdim = (recv_list_region[index_mr+nrf+1] & 7);
 	    gid = (recv_list_region[index_mr+nrf+1] >> 3);
 	    ptype = (recv_list_region[index_mr+nrf+2] & 3);

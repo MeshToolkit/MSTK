@@ -106,7 +106,7 @@ extern "C" {
   }
 
   int         MSet_Locate(MSet_ptr set, void *entry) {
-    return List_Contains(set->entlist, entry);
+    return List_Locate(set->entlist, entry);
   }
 
   void       *MSet_Entry(MSet_ptr set, int i) {
