@@ -23,7 +23,7 @@ TEST(ME_Split)
   CHECK(MESH_Num_Vertices(mesh) > 0);
   
   idx = 0; ne = 0;
-  while ((me = MESH_Next_Edge(mesh,&idx)) && ne == 2) {
+  while ((me = MESH_Next_Edge(mesh,&idx)) && ne != 2) {
     if (ME_GEntDim(me) == 3) {
       
       /* Get vertices of edge */
@@ -59,6 +59,11 @@ TEST(ME_Split)
 
       vnew = ME_Split(me,xyznew);
       CHECK(vnew);
+
+      /* Check the coordinates of vnew */
+      double vnew_xyz[3];
+      MV_Coords(vnew, vnew_xyz);
+      CHECK_ARRAY_EQUAL(xyznew, vnew_xyz, 3);
 
       velist = MV_Edges(vnew);
       nve = List_Num_Entries(velist);
@@ -98,6 +103,8 @@ TEST(ME_Split)
       ne++;
     }
   }
+
+  MESH_Delete(mesh);
 }
 
 
@@ -206,4 +213,6 @@ TEST(ME_MultiSplit)
       ne++;
     }
   }
+
+  MESH_Delete(mesh);
 }
