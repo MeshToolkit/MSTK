@@ -42,7 +42,7 @@ List_ptr ME_MultiSplit(MEdge_ptr esplit, int n, double (*xyz)[3]) {
 
   if (xyz) { /* user specified split coordinates */
     for (i = 1; i <= n; i++)
-      memcpy(vxyz[i],xyz[i],sizeof(double[3]));
+      memcpy(vxyz[i],xyz[i-1],sizeof(double[3]));
   }
   else { /* equispaced split coordinates */
     for (i = 1; i <= n; i++)
