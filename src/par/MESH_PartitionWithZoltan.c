@@ -399,14 +399,6 @@ int NDIM_4_ZOLTAN = 3;
     if (graph.nborIndex) free(graph.nborIndex);
     if (graph.nborGID) free(graph.nborGID);
     if (graph.nborProc) free(graph.nborProc);
-
-    if (nr && strcmp(partition_method_str,"RCB") == 0) {
-      /* This is expected to be a columnar mesh but Zoltan sometimes
-         splits columns across two processors - Fix this */
-
-      FixColumnPartitions(mesh,*part,comm);
-
-    }
   }
   else { 
     *part = NULL;

@@ -104,6 +104,66 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
 
     break;
   }
+  case 3: {
+      
+    /* Call the partitioner only on processor zero */
+    /* For volume meshes, this also assumes that the mesh has a columnar structure
+     and does a redistribution to ensure that all regions in the column are in
+     the same partition */
+    if (rank == 0) {
+#ifdef _MSTK_HAVE_METIS
+      ok = MESH_PartitionWithMetis(mesh, num, part);
+      if (ok)
+        ok = FixColumnPartitions(mesh, *part, comm);
+#else
+      MSTK_Report("MESH_Partition","Metis not enabled",MSTK_FATAL);
+#endif
+    }
+      
+    break;
+  }
+  case 4: {
+    /* This invokes the graph partitioner in Zoltan */
+    /* For volume meshes, this also assumes that the mesh has a columnar structure
+     and does a redistribution to ensure that all regions in the column are in
+     the same partition */
+    /* Even though we assign all entities to processor zero and
+     ask Zoltan to partition the mesh, we have to invoke the
+     Zoltan partitioner on all processors */
+      
+#ifdef _MSTK_HAVE_ZOLTAN
+    noptions = 1;
+    strcpy(options[0],"LB_PARTITION=GRAPH");
+    ok = MESH_PartitionWithZoltan(mesh, num, part, noptions, options, comm);
+    if (ok && (rank == 0))
+      ok = FixColumnPartitions(mesh, *part, comm);
+#else
+    MSTK_Report("MESH_Partition","Zoltan not enabled",MSTK_FATAL);
+#endif
+      
+    break;
+  }
+  case 5: {
+    /* This invokes the Recursive Coordinate Bisection partitioner in Zoltan */
+    /* For volume meshes, this also assumes that the mesh has a columnar structure
+       and does a redistribution to ensure that all regions in the column are in 
+       the same partition */
+    /* Even though we assign all entities to processor zero and
+     ask Zoltan to partition the mesh, we have to invoke the
+     Zoltan partitioner on all processors */
+      
+#ifdef _MSTK_HAVE_ZOLTAN
+    noptions = 1;
+    strcpy(options[0],"LB_PARTITION=RCB");
+    ok = MESH_PartitionWithZoltan(mesh, num, part, noptions, options, comm);
+    if (ok && (rank == 0))
+      ok = FixColumnPartitions(mesh, *part, comm);
+#else
+    MSTK_Report("MESH_Partition","Zoltan not enabled",MSTK_FATAL);
+#endif
+      
+    break;
+  }
   default:
     MSTK_Report("MESH_Get_Partition","Unknown partitioning method",MSTK_FATAL);
   }

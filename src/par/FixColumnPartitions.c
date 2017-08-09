@@ -39,7 +39,8 @@ int FixColumnPartitions_IsSideFace(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) 
         - (fxyz[jp][1]-fxyz[j][1]) * (fxyz[j][0] - fxyz[jm][0]);
   }
   znorm /= nfv;
-  if (fabs(znorm) < 1.e-12) 
+  
+  if (fabs(znorm) < 1.e-12)
     /* z-normal is zero, face is a column side by definition */
     return 1;
   else
@@ -52,14 +53,18 @@ int FixColumnPartitions_IsSideFace(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) 
    zero volume and is therefore uncertain.
 */
 int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFace_ptr* dn) {
-  int found;
-  List_ptr rfaces, rfaces2;
+  int found, up_unknown;
+  List_ptr rfaces, fregs;
   int nrf, i, j, k, nfv, ret;
-  MFace_ptr rf; double rcen[3], upcen[3], dncen[3];
+  MFace_ptr rf, curf_it, nxtf_it;
+  double upcen[3], dncen[3];
+  double cen_it_z;
   double fxyz[MAXPV2][3];
   MRegion_ptr mr_it;
 
-  *up=NULL; *dn=NULL;
+  *dn=NULL;
+  if (*dn == NULL) up_unknown = 1;
+  else up_unknown = 0;
   
   rfaces = MR_Faces(mr);
   nrf = List_Num_Entries(rfaces);
@@ -69,12 +74,22 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
   while (found < 2) {
     rf = List_Entry(rfaces,i);
     if (!FixColumnPartitions_IsSideFace(mesh, mr, rf)) {
-      if (found < 1) *up = rf;
-      else *dn = rf;
+      if (up_unknown == 0) {
+        if (rf != *up) {
+          if (*dn == NULL)
+            *dn = rf;
+          else
+            MSTK_Report("FixColumnPartitions","Mesh is not columnar, up/down faces aren't consistent.",MSTK_FATAL);
+        }
+      }
+      else {
+        if (found < 1) *up = rf;
+        else *dn = rf;
+      }
       found++;
     }
     i++;
-    if (i >= nrf) 
+    if (i > nrf)
       MSTK_Report("FixColumnPartitions","Mesh is not columnar, can't find both up and down faces.",MSTK_FATAL);
   }
 
@@ -99,18 +114,71 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
     MSTK_Report("FixColumnPartitions","Mesh is not quite columnar, up and down faces do not align.",MSTK_FATAL);
   }
 
-  if (upcen[2] < dncen[2] - 1.e-12) {
-    rf = *up;
-    *up = *dn;
-    *dn = rf;
-    ret = 1;
-  } else if (upcen[2] > dncen[2] + 1.e-12) {
-    ret = 1;
-  } else {
-    /* find the first region upward that is proper */
-    MSTK_Report("FixColumnPartitions","Partitioning with degenerate cells is not yet supported.",MSTK_FATAL);
-    ret = 0;
+  if (up_unknown == 1) {
+    if (upcen[2] < dncen[2] - 1.e-12) {
+      rf = *up;
+      *up = *dn;
+      *dn = rf;
+      ret = 1;
+    } else if (upcen[2] > dncen[2] + 1.e-12) {
+      ret = 1;
+    } else {
+      curf_it = *dn;
+      while (up_unknown == 1) {
+        fregs = MF_Regions(curf_it);
+        if (List_Num_Entries(fregs) == 1) break;
+        mr_it = List_Entry(fregs,0);
+        if (mr_it == mr) mr_it = List_Entry(fregs,1);
+        List_Delete(fregs);
+        
+        FixColumnPartitions_UpDownFaces(mesh, mr_it, &curf_it, &nxtf_it);
+        MF_Coords(nxtf_it,&nfv,fxyz);
+        cen_it_z = 0.0;
+        for (j = 0; j < nfv; j++)
+          cen_it_z += fxyz[j][2];
+
+        if (upcen[2] < cen_it_z - 1.e-12) {
+          rf = *up;
+          *up = *dn;
+          *dn = rf;
+          up_unknown = 0;
+        } else if (upcen[2] > cen_it_z + 1.e-12) {
+          up_unknown = 0;
+        }
+        else curf_it = nxtf_it;
+      }
+      curf_it = *up;
+      while (up_unknown == 1) {
+        fregs = MF_Regions(curf_it);
+        if (List_Num_Entries(fregs) == 1) break;
+        mr_it = List_Entry(fregs,0);
+        if (mr_it == mr) mr_it = List_Entry(fregs,1);
+        List_Delete(fregs);
+        
+        FixColumnPartitions_UpDownFaces(mesh, mr_it, &curf_it, &nxtf_it);
+        MF_Coords(nxtf_it,&nfv,fxyz);
+        cen_it_z = 0.0;
+        for (j = 0; j < nfv; j++)
+          cen_it_z += fxyz[j][2];
+        
+        if (cen_it_z < dncen[2] - 1.e-12) {
+          rf = *up;
+          *up = *dn;
+          *dn = rf;
+          up_unknown = 0;
+        } else if (cen_it_z > dncen[2] + 1.e-12) {
+          up_unknown = 0;
+        }
+        else curf_it = nxtf_it;
+      }
+      if (up_unknown == 0) ret = 1;
+      else {
+        MSTK_Report("FixColumnPartitions","Column has only degenerate cells.",MSTK_FATAL);
+        ret = 0;
+      }
+    }
   }
+  else ret = 1;
 
   List_Delete(rfaces);
   return ret;
@@ -129,11 +197,15 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
   
   if (MESH_Num_Regions(mesh) == 0) return 1; /* Not implemented for 2D (perhaps not needed either) */
 
+  MSTK_Report("FixColumnPartitions",
+              "Expecting volume mesh with columnar structure.",MSTK_MESG);
+  MSTK_Report("FixColumnPartitions",
+              "Ensuring that all column's regions are in the same partition.",MSTK_MESG);
   /* ensure every region is touched once */
   touched = calloc(MESH_Num_Regions(mesh),sizeof(int));
   for (idx=0; idx!=MESH_Num_Regions(mesh); ++idx) touched[idx] = 0;
 #ifdef DEBUG
-  printf("Read %-d regions", MESH_Num_Regions(mesh));
+  printf("Read %-d regions\n", MESH_Num_Regions(mesh));
   /* loop over all regions, finding regions whose "up" face is a boundary */
   fid = fopen("col_counts.txt", "w");
 #endif
@@ -143,6 +215,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
   //TODO: FixColumnPartitions_UpDownFaces checks for side faces on every invocation, so
   //interior side faces are tested twice
   while ((mr = MESH_Next_Region(mesh,&idx))) {
+    topf = NULL;
     FixColumnPartitions_UpDownFaces(mesh, mr, &topf, &botf);
     
     interior = 1;
@@ -161,7 +234,6 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
     homepid = part[curid-1];
 
     /* continue to loop through the column */
-    expected_topf = topf;
     while (!done) {
       if (touched[curid-1]) 
         MSTK_Report("FixColumnPartitions","Mesh is not columnar, iteration process touches the same cell twice.",MSTK_FATAL);
@@ -171,9 +243,6 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
       
       /* find the bottom face of that region */
       FixColumnPartitions_UpDownFaces(mesh, curreg, &topf, &botf);
-      if (topf != expected_topf)
-        MSTK_Report("FixColumnPartitions","Mesh is not columnar, up/down faces aren't consistent.",MSTK_FATAL);
-
       fregs = MF_Regions(botf);
       if (List_Num_Entries(fregs) == 2) {
         nxtreg = List_Entry(fregs,0);
@@ -188,7 +257,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
 
         curreg = nxtreg;
         curid = nxtid;
-        expected_topf = botf;
+        topf = botf;
       } else {
         done = 1;
       }
@@ -219,7 +288,7 @@ int FixColumnPartitions(Mesh_ptr mesh, int *part, MSTK_Comm comm) {
   if (num_not_touched > 0) {
     char msg[256];
     sprintf(msg,"Mesh is not columnar, iteration process did not touch %-d cells, did perform %-d touches.", num_not_touched, num_touches);
-    MSTK_Report("FixColumnPartitions",msg,MSTK_MESG);
+    MSTK_Report("FixColumnPartitions",msg,MSTK_FATAL);
   }
   free(touched);
   
