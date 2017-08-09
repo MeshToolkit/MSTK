@@ -63,7 +63,7 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
   MRegion_ptr mr_it;
 
   *dn=NULL;
-  if (*dn == NULL) up_unknown = 1;
+  if (*up == NULL) up_unknown = 1;
   else up_unknown = 0;
   
   rfaces = MR_Faces(mr);
