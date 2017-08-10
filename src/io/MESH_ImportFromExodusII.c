@@ -113,25 +113,43 @@ extern "C" {
       have_metis = 1;
 #endif
       
-      int part_method = parallel_opts[3];
+      PartitionMethod part_method = parallel_opts[3];
       
-      if (part_method == 0) {
+      if (part_method == METIS) {
         if (!have_metis) {
-          MSTK_Report(funcname,"Metis not available. Trying Zoltan",MSTK_WARN);
-          part_method = 1;
+          MSTK_Report(funcname,"Metis not available. Trying Zoltan with GRAPH",MSTK_WARN);
+          part_method = ZOLTAN_GRAPH;
           if (!have_zoltan) 
             MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
         }
       }
-      else if (part_method == 1 || part_method == 2) {
+      else if (part_method == ZOLTAN_GRAPH || part_method == ZOLTAN_RCB) {
         if (!have_zoltan) {
           MSTK_Report(funcname,"Zoltan not available. Trying Metis",MSTK_WARN);
-          part_method = 0;
+          part_method = METIS;
           if (!have_metis) 
             MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
         }
       }
-      
+      else if (part_method == METIS_COLUMNAR) {
+        if (!have_metis) {
+          MSTK_Report(funcname,
+            "Metis not available. Trying Zoltan with RCB for columnar meshes",MSTK_WARN);
+          part_method = ZOLTAN_RCB_COLUMNAR;
+          if (!have_zoltan)
+            MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
+        }
+      }
+      else if (part_method == ZOLTAN_GRAPH_COLUMNAR ||
+               part_method == ZOLTAN_RCB_COLUMNAR) {
+        if (!have_zoltan) {
+          MSTK_Report(funcname,
+            "Zoltan not available. Trying Metis for columnar meshes",MSTK_WARN);
+          part_method = METIS_COLUMNAR;
+          if (!have_metis)
+            MSTK_Report(funcname,"No partitioner defined",MSTK_FATAL);
+        }
+      }
       
       if (parallel_opts[1] == 0) {
         

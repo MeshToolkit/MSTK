@@ -22,7 +22,7 @@ extern "C" {
 
 
   int MSTK_Mesh_Distribute(Mesh_ptr parentmesh, Mesh_ptr *mysubmesh, int *dim, 
-			   int ring, int with_attr, int method, 
+			   int ring, int with_attr, PartitionMethod method,
 			   int del_inmesh, MSTK_Comm comm) {
     int i, a, m, n, recv_dim;
     int *send_dim, *part=NULL;

@@ -224,7 +224,8 @@ void MSTK_Init(void);
 
   int         MSTK_Mesh_Distribute(Mesh_ptr globalmesh, Mesh_ptr *mymesh, 
                                    int *topodim, int ring, int with_attr, 
-                                   int method, int del_inmesh, MSTK_Comm comm);
+                                   PartitionMethod method, int del_inmesh,
+                                   MSTK_Comm comm);
 
 
 
@@ -291,7 +292,7 @@ void MSTK_Init(void);
   /* Get a partitioning for mesh using METIS (method=1) or ZOLTAN (method=2) */
   /* Doesn't actually partition the mesh or distribute it                    */
 
-  int        MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, 
+  int        MESH_Get_Partitioning(Mesh_ptr mesh, PartitionMethod method, int **part,
                                    MPI_Comm comm);
   int        MSTK_Mesh_Partition(Mesh_ptr mesh, int num, int *part,  int ring, 
 	                         int with_attr, int del_inmesh,

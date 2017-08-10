@@ -54,12 +54,12 @@ extern "C" {
   typedef void     *Hash_ptr;
 #endif
 
-  typedef enum {F1=0, F4, R1, R2, R4, UNKNOWN_REP} RepType;
+typedef enum {F1=0, F4, R1, R2, R4, UNKNOWN_REP} RepType;
 
 typedef enum {FDELETED=-1, FUNKNOWN=0, TRI=3, QUAD, POLYGON} MFType;
 typedef enum {RDELETED=-1, RUNKNOWN=0, TET, PYRAMID, PRISM, HEX, POLYHED} MRType;
 
-  typedef enum {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOWNTYPE=4, MALLTYPE=5, MANYTYPE=6} MType;
+typedef enum {MDELETED=-1, MVERTEX=0, MEDGE=1, MFACE=2, MREGION=3, MUNKNOWNTYPE=4, MALLTYPE=5, MANYTYPE=6} MType;
 
 /* typedefs needed for attributes */
 typedef enum {INT=0, DOUBLE, POINTER, VECTOR, TENSOR} MAttType;
@@ -89,6 +89,10 @@ typedef enum {ATTOP_UNDEF, ATTOP_MAX, ATTOP_MIN, ATTOP_SUM, ATTOP_AVG} MAttOpTyp
 
  */
 typedef enum PType {PINTERIOR=0, POVERLAP=1, PBOUNDARY=2, PGHOST=3} PType;
+
+/* typedef for partitioning methods */
+typedef enum {METIS, ZOLTAN_GRAPH, ZOLTAN_RCB,
+              METIS_COLUMNAR, ZOLTAN_GRAPH_COLUMNAR, ZOLTAN_RCB_COLUMNAR} PartitionMethod;
 
 #ifdef __cplusplus
 	   }

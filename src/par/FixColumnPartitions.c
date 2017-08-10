@@ -53,7 +53,7 @@ int FixColumnPartitions_IsSideFace(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr rf) 
    zero volume and is therefore uncertain.
 */
 int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up, MFace_ptr* dn) {
-  int found, up_unknown;
+  int nfound, up_unknown;
   List_ptr rfaces, fregs;
   int nrf, i, j, k, nfv, ret;
   MFace_ptr rf, curf_it, nxtf_it;
@@ -70,8 +70,8 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
   nrf = List_Num_Entries(rfaces);
 
   /* find two faces that are not sides */
-  found = 0; i = 0;
-  while (found < 2) {
+  nfound = 0;
+  for (i = 0; i < nrf; i++) {
     rf = List_Entry(rfaces,i);
     if (!FixColumnPartitions_IsSideFace(mesh, mr, rf)) {
       if (up_unknown == 0) {
@@ -83,15 +83,15 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
         }
       }
       else {
-        if (found < 1) *up = rf;
+        if (nfound < 1) *up = rf;
         else *dn = rf;
       }
-      found++;
+      nfound++;
     }
-    i++;
-    if (i > nrf)
-      MSTK_Report("FixColumnPartitions","Mesh is not columnar, can't find both up and down faces.",MSTK_FATAL);
+    if (nfound > 1) break;
   }
+  if (nfound < 2)
+    MSTK_Report("FixColumnPartitions","Mesh is not columnar, can't find both up and down faces.",MSTK_FATAL);
 
   /* figure which is up and which is down */
   MF_Coords(*up,&nfv,fxyz);

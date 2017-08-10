@@ -19,7 +19,8 @@ extern "C" {
   */
 
 
-int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm) {
+int MESH_Get_Partitioning(Mesh_ptr mesh, PartitionMethod method,
+                          int **part, MSTK_Comm comm) {
   int i, ok = 1, nf, nr, ncells=0;
   int noptions;
   char **options = (char **) malloc(10*sizeof(char *));
@@ -56,7 +57,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
 
 
   switch (method) {
-  case 0: {
+  case METIS: {
 
     /* Call the partitioner only on processor zero */
 
@@ -70,7 +71,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
 
     break;
   }
-  case 1: {
+  case ZOLTAN_GRAPH: {
     /* This invokes the graph partitioner in Zoltan */
     
     /* Even though we assign all entities to processor zero and
@@ -87,7 +88,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
     
     break;
   }
-  case 2: {
+  case ZOLTAN_RCB: {
     /* This invokes the Recursive Coordinate Bisection partitioner in Zoltan */
 
     /* Even though we assign all entities to processor zero and
@@ -104,7 +105,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
 
     break;
   }
-  case 3: {
+  case METIS_COLUMNAR: {
       
     /* Call the partitioner only on processor zero */
     /* For volume meshes, this also assumes that the mesh has a columnar structure
@@ -122,7 +123,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
       
     break;
   }
-  case 4: {
+  case ZOLTAN_GRAPH_COLUMNAR: {
     /* This invokes the graph partitioner in Zoltan */
     /* For volume meshes, this also assumes that the mesh has a columnar structure
      and does a redistribution to ensure that all regions in the column are in
@@ -143,7 +144,7 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
       
     break;
   }
-  case 5: {
+  case ZOLTAN_RCB_COLUMNAR: {
     /* This invokes the Recursive Coordinate Bisection partitioner in Zoltan */
     /* For volume meshes, this also assumes that the mesh has a columnar structure
        and does a redistribution to ensure that all regions in the column are in 
