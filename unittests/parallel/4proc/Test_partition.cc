@@ -107,12 +107,12 @@ TEST(Partition2D_0ring) {
     CHECK(status);
   }
 
-  int method;
+  PartitionMethod method;
 
 #if defined (_MSTK_HAVE_METIS)    
-  method = 0;
+  method = METIS;
 #elif defined (_MSTK_HAVE_ZOLTAN)
-  method = 1;
+  method = ZOLTAN_RCB;
 #else
   fprintf(stderr,"Cannot find partitioner");
   status = 0;
@@ -323,12 +323,12 @@ TEST(Partition2D_1ring) {
     dim = 2;
   }
 
-  int method;
+  PartitionMethod method;
 
 #if defined (_MSTK_HAVE_METIS)    
-  method = 0;
+  method = METIS;
 #elif defined (_MSTK_HAVE_ZOLTAN)
-  method = 1;
+  method = ZOLTAN_RCB;
 #else
   fprintf(stderr,"Cannot find partitioner");
   status = 0;

@@ -47,11 +47,11 @@ TEST(VertexUpdate2D) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int del_inmesh = 1; /* Delete input mesh after partitioning */
-  int method;
+  PartitionMethod method;
 #if defined (_MSTK_HAVE_METIS)
-  method = 0;
+  method = METIS;
 #elif defined (_MSTK_HAVE_ZOLTAN)
-  method = 1;
+  method = ZOLTAN_RCB;
 #else
   fprintf(stderr,"Cannot find partitioner\n");
   status = 0;

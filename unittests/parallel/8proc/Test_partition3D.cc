@@ -49,7 +49,7 @@ TEST(Partition3D_sym_0ring_METIS) {
   MPI_Comm_size(comm,&nproc);
   MPI_Comm_rank(comm,&rank);
 
-  int method=0;
+  PartitionMethod method=METIS;
 
   Mesh_ptr globalmesh=NULL;
   if (rank == 0) {
@@ -166,7 +166,7 @@ TEST(Partition3D_sym_1ring_METIS) {
   MPI_Comm_size(comm,&nproc);
   MPI_Comm_rank(comm,&rank);
     
-  int method=0;
+  PartitionMethod method=METIS;
 
   Mesh_ptr globalmesh=NULL;
   if (rank == 0) {
@@ -289,7 +289,7 @@ TEST(Partition3D_sym_0ring_ZOLTAN_GRAPH) {
   MPI_Comm_size(comm,&nproc);
   MPI_Comm_rank(comm,&rank);
 
-  int method=1; // Zoltan with a graph partitioner
+  PartitionMethod method=ZOLTAN_GRAPH; // Zoltan with a graph partitioner
 
   Mesh_ptr globalmesh=NULL;
   if (rank == 0) {
@@ -406,7 +406,7 @@ TEST(Partition3D_sym_1ring_ZOLTAN_GRAPH) {
   MPI_Comm_size(comm,&nproc);
   MPI_Comm_rank(comm,&rank);
     
-  int method=1;   // Zoltan with a graph partitioner
+  PartitionMethod method=ZOLTAN_GRAPH;   // Zoltan with a graph partitioner
 
   Mesh_ptr globalmesh=NULL;
   if (rank == 0) {
@@ -531,7 +531,7 @@ TEST(Partition3D_sym_0ring_ZOLTAN_RCB) {
   MPI_Comm_size(comm,&nproc);
   MPI_Comm_rank(comm,&rank);
 
-  int method=2;   // Zoltan with Recursive Coordinate Bisection
+  PartitionMethod method=ZOLTAN_RCB;   // Zoltan with Recursive Coordinate Bisection
 
   Mesh_ptr globalmesh=NULL;
   if (rank == 0) {

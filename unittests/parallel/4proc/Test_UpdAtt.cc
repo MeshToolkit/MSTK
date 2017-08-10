@@ -51,12 +51,12 @@ TEST(UpdAtt2D_Dist) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int del_inmesh = 1; /* delete input mesh after partitioning */
-  int method;
+  PartitionMethod method;
 
 #if defined (_MSTK_HAVE_METIS)
-  method = 0;
+  method = METIS;
 #elif defined (_MSTK_HAVE_ZOLTAN)
-  method = 1;
+  method = ZOLTAN_RCB;
 #else
   fprintf(stderr,"Cannot find partitioner\n");
   status = 0;
@@ -242,12 +242,12 @@ TEST(GathScatAttrib_2D) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int del_inmesh = 1; /* delete input mesh after partitioning */
-  int method;
+  PartitionMethod method;
 
 #if defined (_MSTK_HAVE_METIS)
-  method = 0;
+  method = METIS;
 #elif defined (_MSTK_HAVE_ZOLTAN)
-  method = 1;
+  method = ZOLTAN_RCB;
 #else
   fprintf(stderr,"Cannot find partitioner\n");
   status = 0;
@@ -519,12 +519,12 @@ TEST(XchngEdgeAttrib_2D) {
   int ring = 1; /* One ring ghosts */
   int with_attr = 1; /* Do allow exchange of attributes */
   int del_inmesh = 1; /* delete input mesh after partitioning */
-  int method;
+  PartitionMethod method;
 
 #if defined (_MSTK_HAVE_METIS)
-  method = 0;
+  method = METIS;
 #elif defined (_MSTK_HAVE_ZOLTAN)
-  method = 1;
+  method = ZOLTAN_RCB;
 #else
   fprintf(stderr,"Cannot find partitioner\n");
   status = 0;
