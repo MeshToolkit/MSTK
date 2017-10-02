@@ -59,7 +59,7 @@ extern "C" {
         MSTK_Report("MESH_ImportFromFile","Exodus II file support not built in",MSTK_ERROR);
 #endif
       } 
-      else if (strcmp(format,"nem") == 0) {
+      else if (strcmp(format,"nemesisi") == 0) {
 #ifdef ENABLE_ExodusII
         return MESH_ImportFromNemesisI(mesh,infilename,opts,comm);
 #else
