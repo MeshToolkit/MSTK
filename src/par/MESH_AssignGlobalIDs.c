@@ -25,6 +25,13 @@ extern "C" {
      At this stage, there are no ghost layers and the partitions are
      not in their final state.
 
+     **** IF THE MESH HAS DEGENERATE EDGES (COINCIDENT VERTICES) ON
+     **** PARALLEL BOUNDARIES, CALLER MUST PROVIDE UNIQUE GIDs FOR THE
+     **** VERTICES - OTHERWISE, THE WRONG GLOBAL ID MAY BE ASSIGNED TO
+     **** GHOST VERTICES SINCE THE CODE HAS NO GOOD WAY OF KNOWING
+     **** WHICH COINCIDENT VERTEX ON A REMOTE PROCESSOR A PARTICULAR
+     **** GHOST VERTEX CORRESPONDS TO ***
+
      Author(s): Duo Wang, Rao Garimella
   */
 

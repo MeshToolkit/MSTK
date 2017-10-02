@@ -89,7 +89,6 @@ extern "C" {
 
       MESH_RecvMesh(*mysubmesh, fromrank, with_attr, comm);
 
-      fprintf(stderr,"Received mesh on rank %-d\n", rank);
     }
 
 

@@ -43,6 +43,11 @@ extern "C" {
         MESH_Renumber_EntityGlobalIDs(mesh, MFACE, method, NULL, comm);
       if (MESH_Num_Regions(mesh) && (mtype == MREGION || mtype == MALLTYPE))
         MESH_Renumber_EntityGlobalIDs(mesh, MREGION, method, NULL, comm);
+
+      // Ghost entity management in the mesh relies on ghost lists
+      // being sorted according to their global ID
+
+      MESH_Sort_GhostLists(mesh, compareGlobalID);
     }
 
     return 1;
