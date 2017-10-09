@@ -195,8 +195,8 @@ extern "C" {
     nrall = MESH_Num_Regions(mesh);
     
     if (nvall == 0) {
-      fprintf(stdout,"No vertices information \n");
-      exit(-1);
+      MSTK_Report("MESH_ExportToExodusII","No vertices in mesh?\n",MSTK_ERROR);
+      return 0;
     }
 
 
@@ -445,8 +445,9 @@ extern "C" {
     int exoid, err;
     exoid = ex_create(modfilename,EX_CLOBBER,&CPU_word_size,&IO_word_size);
     if (exoid < 0) {
-      fprintf(stderr, "after ex_create, error = %d\n", exoid);
-      exit(-1);
+      MSTK_Report("MESH_ExportToExodusII", "Error in creation of Exodus file",
+                  MSTK_ERROR);
+      return 0;
     }
 
 
