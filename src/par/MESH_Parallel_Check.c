@@ -360,7 +360,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
     if(i == rank) continue;
     if(i < rank) {     
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MEDGE) ) {
-	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);
+	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);  // should we get 5*max_ne?
 	MPI_Get_count(&status,MPI_INT,&count);
 	//printf("rank %d receives %d edges from rank %d\n", rank,count/5, i);
 	for(j = 0; j < count/5;  j++) {
@@ -406,8 +406,8 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
-	    edge_int[0] = recv_list_edge[5*j];
-	    edge_int[1] = recv_list_edge[5*j+1];
+	    edge_int[0] = MV_GlobalID(ME_Vertex(me,0));
+	    edge_int[1] = MV_GlobalID(ME_Vertex(me,1));
 	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
 	      valid = 0;
               //	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
@@ -452,7 +452,7 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	//	printf("rank %d sends %d edges to rank %d\n", rank,index_me, i);
       }
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MEDGE) ) {
-	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);
+	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);  // should we get 5*max_ne
 	MPI_Get_count(&status,MPI_INT,&count);
 	//printf("rank %d receives %d edges from rank %d\n", rank,count/5, i);
 	for(j = 0; j < count/5;  j++) {
@@ -498,8 +498,8 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
 
-	    edge_int[0] = recv_list_edge[5*j];
-	    edge_int[1] = recv_list_edge[5*j+1];
+	    edge_int[0] = MV_GlobalID(ME_Vertex(me,0));
+	    edge_int[1] = MV_GlobalID(ME_Vertex(me,1));
 	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
 	      valid = 0;
               //	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
