@@ -74,7 +74,7 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
       found++;
     }
     i++;
-    if (i >= nrf) 
+    if (i >= nrf && found < 2) 
       MSTK_Report("FixColumnPartitions","Mesh is not columnar, can't find both up and down faces.",MSTK_FATAL);
   }
 
@@ -94,8 +94,8 @@ int FixColumnPartitions_UpDownFaces(Mesh_ptr mesh, MRegion_ptr mr, MFace_ptr* up
   }
 
   /* ASSERT x,y are the same */
-  if (fabs(upcen[0] - dncen[0]) > 1.e-12 ||
-      fabs(upcen[1] - dncen[1]) > 1.e-12) {
+  if (fabs(upcen[0] - dncen[0])/fmax(fabs(upcen[0]),1.) > 1.e-12 ||
+      fabs(upcen[1] - dncen[1])/fmax(fabs(upcen[1]),1.) > 1.e-12) {
     MSTK_Report("FixColumnPartitions","Mesh is not quite columnar, up and down faces do not align.",MSTK_FATAL);
   }
 
