@@ -70,6 +70,18 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
       if (MV_GEntID(vkeep) != MV_GEntID(vdel))
         status = 0;                 /* cannot allow since it will cause 
                                        a dimensional reduction in mesh */
+      else {
+        /* No restriction because of topology - pick the one with the
+         * lower global ID to delete - important for parallel
+         * operation consistency */
+        int vdel_gid = MV_GlobalID(vdel);
+        int vkeep_gid = MV_GlobalID(vkeep);
+        if (vdel_gid < vkeep_gid) {
+          MVertex_ptr vtemp = vdel;
+          vdel = vkeep;
+          vkeep = vtemp;
+        }
+      }
     }
     else if (dimdel < dimkeep) {
       
@@ -362,64 +374,101 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
       if ((ev00 == ev10 && ev01 == ev11) ||
 	  (ev00 == ev11 && ev10 == ev01)) {
 
-        int external_edge, external_edge2;
+        int edge_is_external, edge2_is_external;
         int edim = 4;
-	    
-        external_edge = 0;
+	
+        edge_is_external = 0;
         edim = ME_GEntDim(edge);
-        if (edim == 1 || edim == 2 || edim == 4) { /* check if external edge */
+        if (edim == 1 || edim == 2)
+          edge_is_external = 1;
+        else if (edim == 4 && ME_PType(edge) != PGHOST) {
+          /* Don't know classification of edge so check if its a
+             boundary edge based on topology. However, do this check
+             only if the edge is not a ghost, because edges on the
+             outer boundary of a ghost layer can mimic an external
+             edge */
           
           efaces = ME_Faces(edge);
           int nef = List_Num_Entries(efaces);
           if (nef == 1) {
-            external_edge = 1;
-          }
-          else {
+            edge_is_external = 1;
+          } else {
             idx3 = 0;
             while ((face = List_Next_Entry(efaces,&idx2))) {
               List_ptr fregs = MF_Regions(face);
-              int nfr = fregs ? List_Num_Entries(fregs) : 0;
-              if (fregs) List_Delete(fregs);
-              if (nfr == 1) {
-                external_edge = 1;
-                break;
+              if (fregs) {
+                int nfr = List_Num_Entries(fregs);
+                if (nfr == 1 || 
+                    (nfr == 2 && 
+                     MR_GEntID(List_Entry(fregs,0)) != MR_GEntID(List_Entry(fregs,1))))
+                  edge_is_external = 1;
+                List_Delete(fregs);
               }
+              if (edge_is_external) break;
             }
           }
           List_Delete(efaces);
-          
         }
     
-        external_edge2 = 0;
+        edge2_is_external = 0;
         edim = ME_GEntDim(edge2);
-        if (edim == 1 || edim == 2 || edim == 4) { /* check if external edge */
-
+        if (edim == 1 || edim == 2)
+          edge_is_external = 1;
+        else if (edim == 4 && ME_PType(edge2) != PGHOST) {
+          /* Don't know classification of edge so check if its a 
+             boundary edge based on topology. However, do this check 
+             only if the edge is not a ghost, because edges on the outer 
+             boundary of a ghost layer can mimic an external edge */
+          
           efaces = ME_Faces(edge2);
           int nef = List_Num_Entries(efaces);
           if (nef == 1) {
-            external_edge2 = 1;
-          }
-          else {
+            edge2_is_external = 1;
+          } else {
             idx3 = 0;
             while ((face = List_Next_Entry(efaces,&idx2))) {
               List_ptr fregs = MF_Regions(face);
-              int nfr = fregs ? List_Num_Entries(fregs) : 0;
-              if (fregs) List_Delete(fregs);
-              if (nfr == 1) {
-                external_edge2 = 1;
-                break;
+              if (fregs) {
+                int nfr = List_Num_Entries(fregs);
+                if (nfr == 1 || 
+                    (nfr == 2 && 
+                     MR_GEntID(List_Entry(fregs,0)) != MR_GEntID(List_Entry(fregs,1))))
+                  edge_is_external = 1;
+                List_Delete(fregs);
               }
+              if (edge2_is_external) break;
             }
           }
           List_Delete(efaces);
-          
         }
+    
+        if (edge_is_external == edge2_is_external) {
+          /* if both edges are boundary edges or both are interior, then we
+             don't have to worry about topological consistency of the
+             mesh with the model which way we merge. In that case,
+             merge 'edge2' onto 'edge' only if 'edge' has the lower
+             with the lower global ID - this preserves parallel
+             consistency; if not, continue on and 'edge' will get
+             merged onto 'edge2' when we are processing 'edge2' in the
+             outer loop */
 
-        /* If edge2 is not external or both edges are external, go
-           ahead and merge (edge2 will be deleted subject to
-           topological checks if topoflag is 1) */
+          int egid = ME_GlobalID(edge);
+          int egid2 = ME_GlobalID(edge2);
+          if (egid < egid2) {
+            MEs_Merge(edge,edge2,topoflag);	
+            List_Rem(vedges,edge2);	
+            List_Add(*deleted_entities,edge2);
+            List_Add(*merged_entity_pairs, edge2);
+            List_Add(*merged_entity_pairs, edge);
+            break;
+          }
+        } else if (edge_is_external) {
+          /* 'edge' is external while 'edge2' is not; merge 'edge2'
+           * onto 'edge' regardless of global IDs because boundary
+           * entities may be in boundary sets for boundary
+           * conditions. Any other processor encountering these two
+           * edges will make the same decision */
 
-        if (!external_edge2 || (external_edge && external_edge2)) {
           MEs_Merge(edge,edge2,topoflag);	
           List_Rem(vedges,edge2);	
           List_Add(*deleted_entities,edge2);
@@ -485,7 +534,27 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
           int external_face2 = !fregs2 || (List_Num_Entries(fregs2) == 0);
           if (fregs2) List_Delete(fregs2);
 
-          if (!external_face2 || (external_face && external_face2)) {
+          if (external_face && external_face2) {
+          /* if both faces are boundary faces or both are interior, then we
+             don't have to worry about topological consistency of the
+             mesh with the model which way we merge. In that case,
+             merge 'face2' onto 'face' only if 'face' has the lower
+             with the lower global ID - this preserves parallel
+             consistency; if not, continue on and 'face' will get
+             merged onto 'face2' when we are processing 'face2' in the
+             outer loop */
+
+            int fgid = MF_GlobalID(face);
+            int fgid2 = MF_GlobalID(face2);
+            if (fgid < fgid2) {
+              MFs_Merge(face,face2,topoflag);	
+              List_Rem(vfaces,face2);
+              List_Add(*deleted_entities,face2);
+              List_Add(*merged_entity_pairs, face2);
+              List_Add(*merged_entity_pairs, face);
+              break;
+            }
+          } else if (external_face) {
             MFs_Merge(face,face2,topoflag);	
             List_Rem(vfaces,face2);
             List_Add(*deleted_entities,face2);
@@ -493,7 +562,6 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
             List_Add(*merged_entity_pairs, face);
             break;
           }
-
         }
 	
       } /* while (face2 = List_Next_Entry(vfaces,... */
@@ -517,10 +585,8 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
     while ((reg = List_Next_Entry(eregs,&idx1))) {
       if (MEnt_Dim(reg) == MDELETED)
           continue;
-
       MR_Update_ElementType(reg);
     }
-    
     List_Delete(eregs);
   }
 
