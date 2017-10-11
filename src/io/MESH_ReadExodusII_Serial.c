@@ -195,8 +195,12 @@ extern "C" {
        if necessary */
   
     node_map = (int *) malloc(nnodes*sizeof(int));
-  
+
+#ifdef EXODUS_6_DEPRECATED
     status = ex_get_node_num_map(exoid, node_map);
+#else
+    status = ex_get_id_map(exoid, EX_NODE_MAP, node_map);
+#endif
     if (status < 0) {
       sprintf(mesg,"Error while reading node map in Exodus II file %s\n",filename);
       MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -226,7 +230,11 @@ extern "C" {
     if (nnodesets) {
       nodeset_ids = (int *) malloc(nnodesets*sizeof(int));
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_get_node_set_ids(exoid,nodeset_ids);
+#else
+      status = ex_get_ids(exoid, EX_NODE_SET, nodeset_ids);
+#endif
       if (status < 0) {
         sprintf(mesg,
                 "Error while reading nodeset IDs in Exodus II file %s\n",
@@ -242,13 +250,23 @@ extern "C" {
         nodesetatt = MAttrib_New(mesh,nodesetname,INT,MVERTEX);
 
         nodeset = MSet_New(mesh,nodesetname,MVERTEX);
-    
+
+#ifdef EXODUS_6_DEPRECATED    
         status = ex_get_node_set_param(exoid,nodeset_ids[i],&num_nodes_in_set,
                                        &num_df_in_set);
+#else
+        status = ex_get_set_param(exoid, EX_NODE_SET, nodeset_ids[i],
+                                  &num_nodes_in_set, &num_df_in_set);
+#endif
       
         ns_node_list = (int *) malloc(num_nodes_in_set*sizeof(int));
       
+#ifdef EXODUS_6_DEPRECATED
         status = ex_get_node_set(exoid,nodeset_ids[i],ns_node_list);
+#else
+        status = ex_get_set(exoid, EX_NODE_SET, nodeset_ids[i],
+                            ns_node_list, NULL);
+#endif
         if (status < 0) {
           sprintf(mesg,
                   "Error while reading nodes in nodeset %-d in Exodus II file %s\n",nodeset_ids[i],filename);
@@ -482,7 +500,12 @@ extern "C" {
 
           connect = (int *) calloc(nelnodes*nel_in_blk[i],sizeof(int));
 	
+#ifdef EXODUS_6_DEPRECATED
           status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
+#else
+          status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i],
+                               connect, NULL, NULL);
+#endif
           if (status < 0) {
             sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
             MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -523,8 +546,12 @@ extern "C" {
       if (nsidesets) {
 
         sideset_ids = (int *) malloc(nsidesets*sizeof(int));
-      
+     
+#ifdef EXODUS_6_DEPRECATED 
         status = ex_get_side_set_ids(exoid,sideset_ids);
+#else
+        status = ex_get_ids(exoid, EX_SIDE_SET, sideset_ids);
+#endif
         if (status < 0) {
           sprintf(mesg,
                   "Error while reading sideset IDs in Exodus II file %s\n",
@@ -540,13 +567,23 @@ extern "C" {
           sidesetatt = MAttrib_New(mesh,sidesetname,INT,MEDGE);
           sideset = MSet_New(mesh,sidesetname,MEDGE);
       
+#ifdef EXODUS_6_DEPRECATED
           status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
                                          &num_df_in_set);
+#else
+          status = ex_get_set_param(exoid, EX_SIDE_SET, sideset_ids[i],
+                                    &num_sides_in_set, &num_df_in_set);
+#endif
 	
           ss_elem_list = (int *) malloc(num_sides_in_set*sizeof(int));
           ss_side_list = (int *) malloc(num_sides_in_set*sizeof(int));
-	
+
+#ifdef EXODUS_6_DEPRECATED	
           status = ex_get_side_set(exoid,sideset_ids[i],ss_elem_list,ss_side_list);
+#else
+          status = ex_get_set(exoid, EX_SIDE_SET, sideset_ids[i], ss_elem_list,
+                              ss_side_list);
+#endif
           if (status < 0) {
             sprintf(mesg,
                     "Error while reading elements in sideset %-d in Exodus II file %s\n",sideset_ids[i],filename);
@@ -609,13 +646,13 @@ extern "C" {
 	
           MSet_ptr elemset = MSet_New(mesh,elemsetname,MFACE);
       
-          status = ex_get_set_param(exoid,EX_ELEM_SET,elemset_ids[i],
-                                    &num_elems_in_set,
-                                    &num_df_in_set);
+          status = ex_get_set_param(exoid, EX_ELEM_SET, elemset_ids[i],
+                                    &num_elems_in_set, &num_df_in_set);
 	
           int *es_elem_list = (int *) malloc(num_elems_in_set*sizeof(int));
 	
-          status = ex_get_set(exoid,EX_ELEM_SET,elemset_ids[i],es_elem_list,NULL);
+          status = ex_get_set(exoid, EX_ELEM_SET, elemset_ids[i], es_elem_list,
+                              NULL);
           if (status < 0) {
             sprintf(mesg,
                     "Error while reading elements in elemset %-d in Exodus II file %s\n",elemset_ids[i],filename);
@@ -640,7 +677,11 @@ extern "C" {
     
       elem_map = (int *) malloc(nelems*sizeof(int));
     
+#ifdef EXODUS_6_DEPRECATED
       status = ex_get_elem_num_map(exoid, elem_map);
+#else
+      status = ex_get_id_map(exoid, EX_ELEM_MAP, elem_map);
+#endif
       if (status < 0) {
         sprintf(mesg,"Error while reading element map in Exodus II file %s\n",filename);
         MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -847,7 +888,8 @@ extern "C" {
 	
           connect = (int *) calloc(nelnodes*nel_in_blk[i],sizeof(int));
 	
-          status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
+          status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
+                               NULL, NULL);
           if (status < 0) {
             sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
             MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -1087,8 +1129,13 @@ extern "C" {
           /* Get the connectivity of all elements in this block */
 	
           connect = (int *) calloc(nelnodes*nel_in_blk[i],sizeof(int));
-	
+
+#ifdef EXODUS_6_DEPRECATED	
           status = ex_get_elem_conn(exoid, elem_blk_ids[i], connect);
+#else
+          status = ex_get_conn(exoid, EX_ELEM_BLOCK, elem_blk_ids[i], connect,
+                               NULL, NULL);
+#endif
           if (status < 0) {
             sprintf(mesg,"Error while reading element block %s in Exodus II file %s\n",elem_blknames[i],filename);
             MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -1561,7 +1608,11 @@ extern "C" {
 
         sideset_ids = (int *) malloc(nsidesets*sizeof(int));
 
+#ifdef EXODUS_6_DEPRECATED
         status = ex_get_side_set_ids(exoid,sideset_ids);
+#else
+        status = ex_get_ids(exoid, EX_SIDE_SET, sideset_ids);
+#endif
         if (status < 0) {
           sprintf(mesg,
                   "Error while reading sideset IDs %s in Exodus II file %s\n",
@@ -1574,13 +1625,23 @@ extern "C" {
 
           sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
+#ifdef EXODUS_6_DEPRECATED
           status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,
                                          &num_df_in_set);
+#else
+          status = ex_get_set_param(exoid, EX_SIDE_SET, sideset_ids[i],
+                                    &num_sides_in_set, &num_df_in_set);
+#endif
 	
           ss_elem_list = (int *) malloc(num_sides_in_set*sizeof(int));
           ss_side_list = (int *) malloc(num_sides_in_set*sizeof(int));
 
+#ifdef EXODUS_6_DEPRECATED
           status = ex_get_side_set(exoid,sideset_ids[i],ss_elem_list,ss_side_list);
+#else
+          status = ex_get_set(exoid, EX_SIDE_SET, sideset_ids[i], ss_elem_list,
+                              ss_side_list);
+#endif
           if (status < 0) {
             sprintf(mesg,
                     "Error while reading elements in sideset %-d in Exodus II file %s\n",sideset_ids[i],filename);
@@ -1715,7 +1776,7 @@ extern "C" {
       if (nelemsets) {
 
         int *elemset_ids = (int *) malloc(nelemsets*sizeof(int));
-        status = ex_get_ids(exoid,EX_ELEM_SET,elemset_ids);
+        status = ex_get_ids(exoid, EX_ELEM_SET, elemset_ids);
         if (status < 0) {
           sprintf(mesg,
                   "Error while reading element set IDs in Exodus II file %s\n",
@@ -1732,13 +1793,13 @@ extern "C" {
 	
           MSet_ptr elemset = MSet_New(mesh,elemsetname,MREGION);
       
-          status = ex_get_set_param(exoid,EX_ELEM_SET,elemset_ids[i],
-                                    &num_elems_in_set,
-                                    &num_df_in_set);
+          status = ex_get_set_param(exoid, EX_ELEM_SET, elemset_ids[i],
+                                    &num_elems_in_set, &num_df_in_set);
 	
           int *es_elem_list = (int *) malloc(num_elems_in_set*sizeof(int));
 	
-          status = ex_get_set(exoid,EX_ELEM_SET,elemset_ids[i],es_elem_list,NULL);
+          status = ex_get_set(exoid, EX_ELEM_SET, elemset_ids[i], es_elem_list,
+                              NULL);
           if (status < 0) {
             sprintf(mesg,
                     "Error while reading elements in elemset %-d in Exodus II file %s\n",elemset_ids[i],filename);
@@ -1775,7 +1836,11 @@ extern "C" {
     
       elem_map = (int *) malloc(nelems*sizeof(int));
     
+#ifdef EXODUS_6_DEPRECATED
       status = ex_get_elem_num_map(exoid, elem_map);
+#else
+      status = ex_get_id_map(exoid, EX_ELEM_MAP, elem_map);
+#endif
       if (status < 0) {
         sprintf(mesg,"Error while reading element map in Exodus II file %s\n",filename);
         MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -1829,7 +1894,11 @@ extern "C" {
 
     /* How many variables are there on elements */
 
+#ifdef EXODUS_6_DEPRECATED
     status = ex_get_var_param(exoid, "e", &nelemvars);
+#else
+    status = ex_get_variable_param(exoid, EX_ELEM_BLOCK, &nelemvars);
+#endif
     if (status < 0) {
       sprintf(mesg, 
               "Error while reading element variables in Exodus II file %s\n",
@@ -1845,7 +1914,12 @@ extern "C" {
       for (i = 0; i < nelemvars; i++)
         elvarnames[i] = (char *) malloc(256*sizeof(char));
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_get_var_names(exoid, "e", nelemvars, elvarnames);
+#else
+      status = ex_get_variable_names(exoid, EX_ELEM_BLOCK, nelemvars,
+                                     elvarnames);
+#endif
       if (status < 0) {
         sprintf(mesg, 
                 "Error while reading element variable names in Exodus II file %s\n",
@@ -1924,9 +1998,15 @@ extern "C" {
 
               for (j = 0; j < ncomp; j++) {
                 varindex2 = varindex + j;
+#ifdef EXODUS_6_DEPRECATED
                 status = ex_get_elem_var(exoid, time_step, varindex2+1,
                                          elem_blk_ids[i], nel_in_blk[i], 
                                          elem_var_vals[j]);
+#else
+                status = ex_get_var(exoid, time_step, EX_ELEM_BLOCK,
+                                    varindex2+1, elem_blk_ids[i], nel_in_blk[i],
+                                    elem_var_vals[j]);
+#endif
                 if (status < 0) {
                   sprintf(mesg, 
                           "Error while reading element variables in Exodus II file %s\n",
@@ -1973,8 +2053,14 @@ extern "C" {
           double *elem_var_vals = (double *) malloc(max_el_in_blk*sizeof(double));
 
           for (i = 0; i < nelblock; i++) {
-            status = ex_get_elem_var(exoid, time_step, varindex+1, elem_blk_ids[i], 
+#ifdef EXODUS_6_DEPRECATED
+            status = ex_get_elem_var(exoid, time_step, varindex+1,
+                                     elem_blk_ids[i], 
                                      nel_in_blk[i], elem_var_vals);
+#else
+            status = ex_get_var(exoid, time_step, EX_ELEM_BLOCK, varindex+1,
+                                elem_blk_ids[i], nel_in_blk[i], elem_var_vals);
+#endif
             if (status < 0) {
               sprintf(mesg, 
                       "Error while reading element variables in Exodus II file %s\n",
@@ -2011,7 +2097,11 @@ extern "C" {
 
     /* How many variables are there on nodes */
 
+#ifdef EXODUS_6_DEPRECATED
     status = ex_get_var_param(exoid, "n", &nnodevars);
+#else
+    status = ex_get_variable_param(exoid, EX_NODAL, &nnodevars);
+#endif
     if (status < 0) {
       sprintf(mesg, "Error while reading node variables in Exodus II file %s\n",
               filename);
@@ -2025,7 +2115,11 @@ extern "C" {
       for (i = 0; i < nnodevars; i++)
         nodevarnames[i] = (char *) malloc(256*sizeof(char));
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_get_var_names(exoid, "n", nnodevars, nodevarnames);
+#else
+      status = ex_get_variable_names(exoid, EX_NODAL, nnodevars, nodevarnames);
+#endif
       if (status < 0) {
         sprintf(mesg, "Error while reading node variable names in Exodus II file %s\n",filename);
         MSTK_Report(funcname,mesg,MSTK_FATAL);
@@ -2100,8 +2194,13 @@ extern "C" {
 
             for (j = 0; j < ncomp; j++) {
               varindex2 = varindex + j;
+#ifdef EXODUS_6_DEPRECATED
               status = ex_get_nodal_var(exoid, time_step, varindex2+1,
                                         nnodes, node_var_vals[j]);
+#else
+              status = ex_get_var(exoid, time_step, EX_NODAL, varindex2+1, 1,
+                                  nnodes, node_var_vals[j]);
+#endif
               if (status < 0) {
                 sprintf(mesg, 
                         "Error while reading node variables in Exodus II file %s\n",
@@ -2131,8 +2230,13 @@ extern "C" {
 
           double *node_var_vals = (double *) malloc(nnodes*sizeof(double));
 
+#ifdef EXODUS_6_DEPRECATED
           status = ex_get_nodal_var(exoid, time_step, varindex+1, nnodes, 
                                     node_var_vals);
+#else
+          status = ex_get_var(exoid, time_step, EX_NODAL, varindex+1, 1, nnodes,
+                              node_var_vals);
+#endif
           if (status < 0) {
             sprintf(mesg, 
                     "Error while reading node variables in Exodus II file %s\n",

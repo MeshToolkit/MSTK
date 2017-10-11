@@ -170,21 +170,37 @@ TEST(Verify_Exoatt)
   CHECK(exoid);
 
   int nvars;
+#ifdef EXODUS_6_DEPRECATED
   status = ex_get_var_param(exoid, "e", &nvars);
+#else
+  status = ex_get_variable_param(exoid, EX_ELEM_BLOCK, &nvars);
+#endif
   CHECK_EQUAL(1,nvars);
 
   char var_name[256];
+#ifdef EXODUS_6_DEPRECATED
   status = ex_get_var_name(exoid, "e", 1, var_name);
+#else
+  status = ex_get_variable_name(exoid, EX_ELEM_BLOCK, 1, var_name);
+#endif
   CHECK_EQUAL(attribname,var_name);
 
   double var;
   for (int i = 0; i < nr2; i++) {
+#ifdef EXODUS_6_DEPRECATED
     status = ex_get_elem_var_time(exoid, 1, i+1, 1, 1, &var);
+#else
+    status = ex_get_var_time(exoid, EX_ELEM_BLOCK, 1, i+1, 1, 1, &var);
+#endif
     CHECK_EQUAL(1.0,var);
   }
 
   for (int i = nr2; i < nr; i++) {
+#ifdef EXODUS_6_DEPRECATED
     status = ex_get_elem_var_time(exoid, 1, i+1, 1, 1, &var);
+#else
+    status = ex_get_var_time(exoid, EX_ELEM_BLOCK, 1, i+1, 1, 1, &var);
+#endif
     CHECK_EQUAL(7.7,var);
   }
 

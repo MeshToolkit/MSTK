@@ -742,8 +742,8 @@ extern "C" {
       block_id = 9999999;
 
       ex_put_block(exoid, EX_FACE_BLOCK, block_id, "nsided",
-		   List_Num_Entries(face_block),nvfblock,
-		   0,0,0);
+		   List_Num_Entries(face_block), nvfblock,
+		   0, 0, 0);
       ex_put_name(exoid, EX_FACE_BLOCK, block_id, block_name);
 
 
@@ -896,15 +896,30 @@ extern "C" {
 	if (MESH_Num_Regions(mesh)) {
 	  if (strncasecmp(element_block_types_glob[i],"TETRA",5) == 0) {
 	    nelnodes = 4;
+#ifdef EXODUS_6_DEPRECATED
 	    ex_put_elem_block(exoid, block_id, "TETRA", nelem, nelnodes, 1);
+#else
+            ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "TETRA", nelem,
+                         nelnodes, 0, 0, 1);
+#endif
 	  }
 	  else if (strncasecmp(element_block_types_glob[i],"WEDGE",5) == 0) {
 	    nelnodes = 6;
+#ifdef EXODUS_6_DEPRECATED
 	    ex_put_elem_block(exoid, block_id, "WEDGE", nelem, nelnodes, 1);
+#else
+            ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "WEDGE", nelem,
+                         nelnodes, 0, 0, 1);
+#endif
 	  }
 	  else if (strncasecmp(element_block_types_glob[i],"HEX",3) == 0) {
 	    nelnodes = 8;
+#ifdef EXODUS_6_DEPRECATED
 	    ex_put_elem_block(exoid, block_id, "HEX", nelem, nelnodes, 1);
+#else
+            ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "HEX", nelem,
+                         nelnodes, 0, 0, 1);
+#endif
 	  }
 	  else
 	    MSTK_Report("MESH_ExportToEXODUSII",
@@ -923,8 +938,12 @@ extern "C" {
 	    List_Delete(rverts);	    
 	    k++;
 	  }
-	  
+
+#ifdef EXODUS_6_DEPRECATED	  
 	  ex_put_elem_conn(exoid, block_id, connect);
+#else
+          ex_put_conn(exoid, EX_ELEM_BLOCK, block_id, connect, NULL, NULL);
+#endif
 
 	  free(connect);
 	  
@@ -932,11 +951,21 @@ extern "C" {
 	else if (MESH_Num_Faces(mesh)) {
 	  if (strncasecmp(element_block_types_glob[i],"TRIANGLE",8) == 0) {
 	    nelnodes = 3;
+#ifdef EXODUS_6_DEPRECATED
 	    ex_put_elem_block(exoid, block_id, "TRIANGLE", nelem, nelnodes, 1);
+#else
+            ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "TRIANGLE", nelem,
+                         nelnodes, 0, 0, 1);
+#endif
 	  }
 	  else if (strncasecmp(element_block_types_glob[i],"QUAD",4) == 0) {
 	    nelnodes = 4;
+#ifdef EXODUS_6_DEPRECATED
 	    ex_put_elem_block(exoid, block_id, "QUAD", nelem, nelnodes, 1);
+#else
+            ex_put_block(exoid, EX_ELEM_BLOCK, block_id, "QUAD", nelem,
+                         nelnodes, 0, 0, 1);
+#endif
 	  }
 	  else
 	    MSTK_Report("MESH_ExportToEXODUSII",
@@ -955,7 +984,11 @@ extern "C" {
 	    k++;
 	  }
 
+#ifdef EXODUS_6_DEPRECATED
 	  ex_put_elem_conn(exoid, block_id, connect);
+#else
+          ex_put_conn(exoid, EX_ELEM_BLOCK, block_id, connect, NULL, NULL);
+#endif
 
 	  free(connect);
 	}
@@ -974,7 +1007,11 @@ extern "C" {
    
     for (i = 0; i < num_node_set_glob; i++) {
       int nnodes = MSet_Num_Entries(node_sets_glob[i]);
+#ifdef EXODUS_6_DEPRECATED
       ex_put_node_set_param(exoid, node_set_ids_glob[i], nnodes, 0);
+#else
+      ex_put_set_param(exoid, EX_NODE_SET, node_set_ids_glob[i], nnodes, 0);
+#endif
 
       int *node_list = (int *) malloc(nnodes*sizeof(int));
 
@@ -984,7 +1021,11 @@ extern "C" {
 	node_list[j++] = vid;
       }
 
+#ifdef EXODUS_6_DEPRECATED
       ex_put_node_set(exoid, node_set_ids_glob[i], node_list);
+#else
+      ex_put_set(exoid, EX_NODE_SET, node_set_ids_glob[i], node_list, NULL);
+#endif
 
       free(node_list);
     }
@@ -1001,7 +1042,11 @@ extern "C" {
     for (i = 0; i < num_side_set_glob; i++) {
 
       int nsides = MSet_Num_Entries(side_sets_glob[i]);
+#ifdef EXODUS_6_DEPRECATED
       ex_put_side_set_param(exoid, side_set_ids_glob[i], nsides, 0);
+#else
+      ex_put_set_param(exoid, EX_SIDE_SET, side_set_ids_glob[i], nsides, 0);
+#endif
 
       int *elem_list = (int *) malloc(nsides*sizeof(int));
       int *side_list = (int *) malloc(nsides*sizeof(int));
@@ -1064,7 +1109,12 @@ extern "C" {
 	  j++;
 	}
 
+#ifdef EXODUS_6_DEPRECATED        
 	ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
+#else
+        ex_put_set(exoid, EX_SIDE_SET, side_set_ids_glob[i], elem_list,
+                   side_list);
+#endif
 
       }
       else {
@@ -1100,8 +1150,12 @@ extern "C" {
 	  j++;
 	}
 
+#ifdef EXODUS_6_DEPRECATED
 	ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
-
+#else
+        ex_put_set(exoid, EX_SIDE_SET, side_set_ids_glob[i], elem_list,
+                   side_list);
+#endif
       }
 
       free(elem_list);
@@ -1155,7 +1209,11 @@ extern "C" {
           node_map[i++] = MV_GlobalID(mv);
       }
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_put_node_num_map(exoid, node_map);
+#else
+      status = ex_put_id_map(exoid, EX_NODE_MAP, node_map);
+#endif
       if (status < 0)
         MSTK_Report(funcname,"Error while writing node map in Exodus II file",
                     MSTK_FATAL);
@@ -1195,7 +1253,11 @@ extern "C" {
             elem_map[i++] = MF_GlobalID(mf);
         }
         
+#ifdef EXODUS_6_DEPRECATED
         status = ex_put_elem_num_map(exoid, elem_map);
+#else
+        status = ex_put_id_map(exoid, EX_ELEM_MAP, elem_map);
+#endif
         if (status < 0)
           MSTK_Report(funcname,"Error while writing element map in Exodus II file",
                       MSTK_FATAL);
@@ -1251,13 +1313,22 @@ extern "C" {
         }
       }
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_put_var_param(exoid, "n", num_node_atts_out);
+#else
+      status = ex_put_variable_param(exoid, EX_NODAL, num_node_atts_out);
+#endif
       if (status < 0)
         MSTK_Report(funcname,"Error while writing node variable parameters",
                     MSTK_FATAL);
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_put_var_names(exoid, "n", num_node_atts_out,
                                 node_att_names_out);
+#else
+      status = ex_put_variable_names(exoid, EX_NODAL, num_node_atts_out,
+                                     node_att_names_out);
+#endif
       if (status < 0)
         MSTK_Report(funcname,"Error while writing node variable parameters",
                     MSTK_FATAL);
@@ -1291,8 +1362,13 @@ extern "C" {
               MEnt_Get_AttVal(mv,att,&ival,&rval,&pval);
               node_vars[vid-1] = ((double *) pval)[n];
             }
-             
+    
+#ifdef EXODUS_6_DEPRECATED         
             status = ex_put_nodal_var(exoid, 1, attid, nvowned, node_vars);
+#else
+            status = ex_put_var(exoid, 1, EX_NODAL, attid, 1, nvowned,
+                                node_vars);
+#endif
             if (status < 0)
               MSTK_Report(funcname,"Error while writing node variable",
                           MSTK_FATAL);
@@ -1318,7 +1394,11 @@ extern "C" {
             node_vars[vid-1] = rval;
           }
           
+#ifdef EXODUS_6_DEPRECATED
           status = ex_put_nodal_var(exoid, 1, attid, nvowned, node_vars);
+#else
+          status = ex_put_var(exoid, 1, EX_NODAL, attid, 1, nvowned, node_vars);
+#endif
           if (status < 0)
             MSTK_Report(funcname,"Error while writing node variable",
                         MSTK_FATAL);
@@ -1363,13 +1443,22 @@ extern "C" {
         }
       }
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_put_var_param(exoid, "e", num_element_atts_out);
+#else
+      status = ex_put_variable_param(exoid, EX_ELEM_BLOCK, num_element_atts_out);
+#endif
       if (status < 0)
         MSTK_Report(funcname,"Error while writing variable parameters",
                     MSTK_FATAL);
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_put_var_names(exoid, "e", num_element_atts_out,
                                 element_att_names_out);
+#else
+      status = ex_put_variable_names(exoid, EX_ELEM_BLOCK, num_element_atts_out,
+                                     element_att_names_out);
+#endif
       if (status < 0)
         MSTK_Report(funcname,"Error while writing element variable parameters",
                     MSTK_FATAL);
@@ -1383,8 +1472,13 @@ extern "C" {
         for (j = 0; j < num_element_atts_out; ++j)
           truth_table[k++] = 1;
 
+#ifdef EXODUS_6_DEPRECATED
       status = ex_put_elem_var_tab(exoid, num_element_block_glob, 
                                    num_element_atts_out, truth_table);
+#else
+      status = ex_put_truth_table(exoid, EX_ELEM_BLOCK, num_element_block_glob,
+                                  num_element_atts_out, truth_table);
+#endif
       if (status < 0)
         MSTK_Report(funcname,"Error while writing element variable truth table",
                     MSTK_FATAL);
@@ -1411,9 +1505,14 @@ extern "C" {
                 elem_vars[k++] = ((double *) pval)[n];
               }
               
+#ifdef EXODUS_6_DEPRECATED
               status = ex_put_elem_var(exoid, 1, attid, 
                                        element_block_ids_glob[i], nelem, 
                                        elem_vars);
+#else
+              status = ex_put_var(exoid, 1, EX_ELEM_BLOCK, attid,
+                                  element_block_ids_glob[i], nelem, elem_vars);
+#endif
               if (status < 0)
                 MSTK_Report(funcname,"Error while writing element variable",
                             MSTK_FATAL);
@@ -1436,8 +1535,13 @@ extern "C" {
               elem_vars[k++] = rval;
             }
                         
+#ifdef EXODUS_6_DEPRECATED
             status = ex_put_elem_var(exoid, 1, attid, element_block_ids_glob[i],
                                      nelem, elem_vars);
+#else
+            status = ex_put_var(exoid, 1, EX_ELEM_BLOCK, attid,
+                                element_block_ids_glob[i], nelem, elem_vars);
+#endif
             if (status < 0)
               MSTK_Report(funcname,"Error while writing element variable",
                           MSTK_FATAL);
