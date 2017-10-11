@@ -227,7 +227,7 @@ extern "C" {
                     int(*comp)(const void *,const void *)) {
     void **loc;
     loc = (void **) bsearch(key,List_Entries(l),num,size,comp);
-    return *loc;
+    return loc ? *loc : NULL;
   }
 
 
