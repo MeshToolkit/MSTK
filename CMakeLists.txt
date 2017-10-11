@@ -145,6 +145,9 @@ if (ENABLE_ExodusII)
 
   add_definitions("-DENABLE_ExodusII")
 
+  if (EXODUS_6_DEPRECATED)
+    add_definitions("-DEXODUS_6_DEPRECATED")
+  endif (EXODUS_6_DEPRECATED)
 
   ##############################################################################
   # HDF5 - 
