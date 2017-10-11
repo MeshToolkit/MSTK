@@ -3,7 +3,7 @@ MeSh ToolKit (MSTK)
 Copyright (c) 2016, Los Alamos National Security, LLC
 All rights reserved. LA-CC-04-010
 
-[![Build Status](https://travis-ci.org/MeshToolkit/MSTK.svg?branch=master)](https://travis-ci.org/MeshToolkit/MSTK)
+[MASTER BUILD STATUS on TRAVIS: ![Build Status](https://travis-ci.org/MeshToolkit/MSTK.svg?branch=master)](https://travis-ci.org/MeshToolkit/MSTK)
 
 What is MSTK?
 -------------
