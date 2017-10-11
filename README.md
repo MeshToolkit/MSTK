@@ -1,4 +1,4 @@
-MeSh ToolKit (MSTK)
+MeSh ToolKit (MSTK) https://travis-ci.org/MeshToolkit/MSTK.svg?branch=master
 ===================
 Copyright (c) 2016, Los Alamos National Security, LLC
 All rights reserved. LA-CC-04-010
