@@ -173,7 +173,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank);
 
-
   /* Extra functionality for List manipulation - risky for uninformed users */
 
   int List_Size_Raw(List_ptr l);
@@ -475,6 +474,10 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
   void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
+
+  /*  sort global ID lists */
+  void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh)
+
 #endif /* MSTK_HAVE_MPI */  
 
 
