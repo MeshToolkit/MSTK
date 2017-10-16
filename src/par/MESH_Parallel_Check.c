@@ -148,7 +148,8 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    gid = (recv_list_vertex[3*j] >> 3);
 	    ptype = (recv_list_vertex[3*j+1] & 3);
 	    master_id = (recv_list_vertex[3*j+1] >> 2);
-	    if(MV_GEntDim(mv) != gdim) {
+	    if(MV_GEntDim(mv) != gdim && 
+               !(MV_GEntDim(mv) == MUNKNOWNTYPE || gdim == MUNKNOWNTYPE)) {
 	      valid = 0;
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
@@ -250,7 +251,8 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    gid = (recv_list_vertex[3*j] >> 3);
 	    ptype = (recv_list_vertex[3*j+1] & 3);
 	    master_id = (recv_list_vertex[3*j+1] >> 2);
-	    if(MV_GEntDim(mv) != gdim) {
+	    if(MV_GEntDim(mv) != gdim &&
+               !(MV_GEntDim(mv) == MUNKNOWNTYPE || gdim == MUNKNOWNTYPE)) {
 	      valid = 0;
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MV_GEntDim(mv));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
@@ -383,7 +385,8 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    gid = (recv_list_edge[5*j+2] >> 3);
 	    ptype = (recv_list_edge[5*j+3] & 3);
 	    master_id = (recv_list_edge[5*j+3] >> 2);
-	    if(MV_GEntDim(me) != gdim) {
+	    if(MV_GEntDim(me) != gdim &&
+               !(MV_GEntDim(me) == MUNKNOWNTYPE || gdim == MUNKNOWNTYPE)) {
 	      valid = 0;
 	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
@@ -475,7 +478,8 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    gid = (recv_list_edge[5*j+2] >> 3);
 	    ptype = (recv_list_edge[5*j+3] & 3);
 	    master_id = (recv_list_edge[5*j+3] >> 2);
-	    if(ME_GEntDim(me) != gdim) {
+	    if(ME_GEntDim(me) != gdim &&
+               !(MV_GEntDim(me) == MUNKNOWNTYPE || gdim == MUNKNOWNTYPE)) {
 	      valid = 0;
 	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, ME_GEntDim(me));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
@@ -607,7 +611,8 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    gid = (recv_list_face[index_mf+nfe+1] >> 3);
 	    ptype = (recv_list_face[index_mf+nfe+2] & 3);
 	    master_id = (recv_list_face[index_mf+nfe+2] >> 2);
-	    if(MF_GEntDim(mf) != gdim) {
+	    if(MF_GEntDim(mf) != gdim &&
+               !(MF_GEntDim(mf) == MUNKNOWNTYPE || gdim == MUNKNOWNTYPE)) {
 	      valid = 0;
 	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
@@ -702,7 +707,8 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    gid = (recv_list_face[index_mf+nfe+1] >> 3);
 	    ptype = (recv_list_face[index_mf+nfe+2] & 3);
 	    master_id = (recv_list_face[index_mf+nfe+2] >> 2);
-	    if(MF_GEntDim(mf) != gdim) {
+	    if(MF_GEntDim(mf) != gdim &&
+               !(MF_GEntDim(mf) == MUNKNOWNTYPE || gdim == MUNKNOWNTYPE)) {
 	      valid = 0;
 	      sprintf(mesg,"Global face %-d from processor %d and on processor %d GEntDim mismatch: %d vs %d ", global_id, i, rank, gdim, MF_GEntDim(mf));
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
