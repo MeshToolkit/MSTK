@@ -650,138 +650,85 @@ MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
      MESH_*FromID, relies on the fact the the mesh entities are stored
      in linear arrays. So go to the (ID-1)'th element in the list. If
      it is a static mesh, this will be the element with the right
-     ID. If not, search before this (ID-1)'th upto the beginning of
-     the list. Chances are some elements got deleted and the list got
-     compressed. If still not found, search after the (ID-1)'th entry
-     upto the end of the list. This should be quite efficient for
-     static meshes and modestly efficient for dynamic meshes. However,
-     if we use a different data structure to store mesh entities (like
-     a tree), the efficiency may decrease. So, use with care!!!! */
+     ID. If we get NULL (the ID is higher than the list size due to
+     deletions) or the wrong ID, then brute force search the list */
 
 
 MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
   MVertex_ptr mv;
 
   if (id < 1)
     return NULL;
 
-  istart = id-1;
-  if (istart < mesh->nv) {
-    mv = (MVertex_ptr) List_Entry(mesh->mvertex,istart);
-    if (MV_ID(mv) == id)
-      return mv;
-  }
-  else
-    istart = mesh->nv-1;
-  
-    
-  for (j = istart; j >= 0; j--) {
-    mv = (MVertex_ptr) List_Entry(mesh->mvertex,j);
-    if (MV_ID(mv) == id)
-      return mv;
-  }
-
-  for (j = istart; j < mesh->nv; j++) {
-    mv = (MVertex_ptr) List_Entry(mesh->mvertex,j);
-    if (MV_ID(mv) == id)
-      return mv;
+  mv = (MVertex_ptr) List_Entry(mesh->mvertex,id-1);
+  if (mv && MV_ID(mv) == id)
+    return mv;
+  else {
+    /* Do a brute force search */
+    int idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh, &idx)))
+      if (MV_ID(mv) == id)
+        return mv;
   }
 
   return NULL;
 }
 
 MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
   MEdge_ptr me;
 
   if (id < 1)
     return NULL;
 
-  istart = id-1;
-  if (istart < mesh->ne) {
-    me = (MEdge_ptr) List_Entry(mesh->medge,istart);
-    if (ME_ID(me) == id)
-      return me;
+  me = (MEdge_ptr) List_Entry(mesh->medge,id-1);
+  if (me && ME_ID(me) == id)
+    return me;
+  else {
+    /* Do a brute force search */
+    int idx = 0;
+    while ((me = MESH_Next_Edge(mesh, &idx)))
+      if (ME_ID(me) == id)
+        return me;    
   }
-  else
-    istart = mesh->ne-1;
-  
     
-  for (j = istart; j >= 0; j--) {
-    me = (MEdge_ptr) List_Entry(mesh->medge,j);
-    if (ME_ID(me) == id)
-      return me;
-  }
-
-  for (j = istart; j < mesh->ne; j++) {
-    me = (MEdge_ptr) List_Entry(mesh->medge,j);
-    if (ME_ID(me) == id)
-      return me;
-  }
-
   return NULL;
 }
 
 MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
   MFace_ptr mf;
 
   if (id < 1)
     return NULL;
 
-  istart = id-1;
-  if (istart < mesh->nf) {
-    mf = (MFace_ptr) List_Entry(mesh->mface,istart);
-    if (MF_ID(mf) == id)
-      return mf;
-  }
-  else
-    istart = mesh->nf-1;
-  
-    
-  for (j = istart; j >= 0; j--) {
-    mf = (MFace_ptr) List_Entry(mesh->mface,j);
-    if (MF_ID(mf) == id)
-      return mf;
-  }
-
-  for (j = istart; j < mesh->nf; j++) {
-    mf = (MFace_ptr) List_Entry(mesh->mface,j);
-    if (MF_ID(mf) == id)
-      return mf;
+  mf = (MFace_ptr) List_Entry(mesh->mface,id-1);
+  if (mf && MF_ID(mf) == id)
+    return mf;
+  else {
+    /* Do a brute force search */
+    int idx = 0;
+    while ((mf = MESH_Next_Face(mesh, &idx)))
+      if (MF_ID(mf) == id)
+        return mf;    
   }
 
   return NULL;
 }
 
 MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
   MRegion_ptr mr;
 
   if (id < 1)
     return NULL;
 
-  istart = id-1;
-  if (istart < mesh->nr) {
-    mr = (MRegion_ptr) List_Entry(mesh->mregion,istart);
-    if (MR_ID(mr) == id)
-      return mr;
-  }
-  else
-    istart = mesh->nr-1;
-  
-    
-  for (j = istart; j >= 0; j--) {
-    mr = (MRegion_ptr) List_Entry(mesh->mregion,j);
-    if (MR_ID(mr) == id)
-      return mr;
-  }
-
-  for (j = istart; j < mesh->nr; j++) {
-    mr = (MRegion_ptr) List_Entry(mesh->mregion,j);
-    if (MR_ID(mr) == id)
-      return mr;
+  mr = (MRegion_ptr) List_Entry(mesh->mregion,id-1);
+  if (mr && MR_ID(mr) == id)
+    return mr;
+  else {
+    /* Do a brute force search */
+    int idx = 0;
+    while ((mr = MESH_Next_Region(mesh, &idx)))
+      if (MR_ID(mr) == id)
+        return mr;    
   }
 
   return NULL;
@@ -895,6 +842,12 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
     fnd = 1;
   }
 
+  /* If not, look for the entry assuming the list of vertices is
+   * sorted according to the passed function (in this case
+   * MV_ID). This is true because we never put new entities in holes
+   * in the entity list created by deleted entities - they always go
+   * at the end. */
+  
   if (!fnd)
     fnd = List_RemSorted(mesh->mvertex,v,&(MV_ID));
 
@@ -938,6 +891,12 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
     fnd = 1;
   }
   
+  /* If not, look for the entry assuming the list of vertices is
+   * sorted according to the passed function (in this case
+   * MV_ID). This is true because we never put new entities in holes
+   * in the entity list created by deleted entities - they always go
+   * at the end. */
+  
   if (!fnd)
     fnd = List_RemSorted(mesh->medge,e,&(ME_ID));
 
@@ -980,6 +939,12 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
     fnd = 1;
   }
 
+  /* If not, look for the entry assuming the list of vertices is
+   * sorted according to the passed function (in this case
+   * MV_ID). This is true because we never put new entities in holes
+   * in the entity list created by deleted entities - they always go
+   * at the end. */
+  
   if (!fnd)
     fnd = List_RemSorted(mesh->mface,f,&(MF_ID));
 
@@ -1021,6 +986,12 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
     fnd = 1;
   }
 
+  /* If not, look for the entry assuming the list of vertices is
+   * sorted according to the passed function (in this case
+   * MV_ID). This is true because we never put new entities in holes
+   * in the entity list created by deleted entities - they always go
+   * at the end. */
+  
   if (!fnd)
     fnd = List_RemSorted(mesh->mregion,r,&(MR_ID));
 
@@ -1327,6 +1298,30 @@ void MESH_Enable_GlobalIDSearch(Mesh_ptr mesh) {
 
   if (mesh->nr && !mesh->gid_sorted_mrlist) {
     mesh->gid_sorted_mrlist = List_Copy(mesh->mregion);
+    List_Compress(mesh->gid_sorted_mrlist);
+    List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
+  }
+
+}
+
+void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh) {
+
+  if (mesh->nv && mesh->gid_sorted_mvlist) {
+    List_Compress(mesh->gid_sorted_mvlist);  // can't sort list with gaps
+    List_Sort(mesh->gid_sorted_mvlist,mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
+  }
+
+  if (mesh->ne && mesh->gid_sorted_melist) {
+    List_Compress(mesh->gid_sorted_melist);
+    List_Sort(mesh->gid_sorted_melist,mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
+  }
+
+  if (mesh->nf && mesh->gid_sorted_mflist) {
+    List_Compress(mesh->gid_sorted_mflist);
+    List_Sort(mesh->gid_sorted_mflist,mesh->nf,sizeof(MFace_ptr),compareGlobalID);
+  }
+
+  if (mesh->nr && mesh->gid_sorted_mrlist) {
     List_Compress(mesh->gid_sorted_mrlist);
     List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
   }
