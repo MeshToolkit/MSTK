@@ -56,3 +56,9 @@ cache:
 compiler:
   - gcc
   - clang
+
+notifications:
+  email:
+    - rao@lanl.gov
+  on_success: never
+  on_failure: always
