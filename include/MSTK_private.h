@@ -476,7 +476,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 
   /*  sort global ID lists */
-  void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh)
+  void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh);
 
 #endif /* MSTK_HAVE_MPI */  
 
