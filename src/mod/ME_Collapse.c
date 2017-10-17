@@ -394,7 +394,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
             edge_on_boundary = 1;
           } else {
             idx3 = 0;
-            while ((face = List_Next_Entry(efaces,&idx2))) {
+            while ((face = List_Next_Entry(efaces,&idx3))) {
               List_ptr fregs = MF_Regions(face);
               if (fregs) {
                 int nfr = List_Num_Entries(fregs);
@@ -426,7 +426,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
             edge2_on_boundary = 1;
           } else {
             idx3 = 0;
-            while ((face = List_Next_Entry(efaces,&idx2))) {
+            while ((face = List_Next_Entry(efaces,&idx3))) {
               List_ptr fregs = MF_Regions(face);
               if (fregs) {
                 int nfr = List_Num_Entries(fregs);
