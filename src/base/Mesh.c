@@ -655,80 +655,140 @@ MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
 
 
 MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
   MVertex_ptr mv;
+  int list_size = List_Size_Raw(mesh->mvertex); 
 
-  if (id < 1)
+  if (id < 1 || id > list_size || id > mesh-> max_vid)
     return NULL;
 
-  mv = (MVertex_ptr) List_Entry(mesh->mvertex,id-1);
+  /* Typically this will work for static meshes */
+
+  istart = id-1;
+  mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex,istart);
   if (mv && MV_ID(mv) == id)
     return mv;
-  else {
-    /* Do a brute force search */
-    int idx = 0;
-    while ((mv = MESH_Next_Vertex(mesh, &idx)))
-      if (MV_ID(mv) == id)
-        return mv;
+
+  /* If entities have been deleted and new ones introduced, we have to
+     search. Its a linear search but somewhat smart because it assumes
+     that the entity with the desired ID will be close to where we
+     expected to find it in a static list */
+
+  for (j = istart; j >= 0; j--) {
+    mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex,j);
+    if (mv && MV_ID(mv) == id)
+      return mv;
+  }
+
+  for (j = istart; j < list_size; j++) {
+    mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex,j);
+    if (mv && MV_ID(mv) == id)
+      return mv;
   }
 
   return NULL;
 }
 
 MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
   MEdge_ptr me;
+  int list_size = List_Size_Raw(mesh->medge); 
 
-  if (id < 1)
+  if (id < 1 || id > list_size || id > mesh->max_eid)
     return NULL;
 
-  me = (MEdge_ptr) List_Entry(mesh->medge,id-1);
+  /* Typically this will work for static meshes */
+
+  istart = id-1;
+  me = (MEdge_ptr) List_Entry_Raw(mesh->medge,istart);
   if (me && ME_ID(me) == id)
     return me;
-  else {
-    /* Do a brute force search */
-    int idx = 0;
-    while ((me = MESH_Next_Edge(mesh, &idx)))
-      if (ME_ID(me) == id)
-        return me;    
-  }
     
+  /* If entities have been deleted and new ones introduced, we have to
+     search. Its a linear search but somewhat smart because it assumes
+     that the entity with the desired ID will be close to where we
+     expected to find it in a static list */
+
+  for (j = istart; j >= 0; j--) {
+    me = (MEdge_ptr) List_Entry_Raw(mesh->medge,j);
+    if (me && ME_ID(me) == id)
+      return me;
+  }
+
+  for (j = istart; j < list_size; j++) {
+    me = (MEdge_ptr) List_Entry_Raw(mesh->medge,j);
+    if (me && ME_ID(me) == id)
+      return me;
+  }
+
   return NULL;
 }
 
 MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
   MFace_ptr mf;
+  int list_size = List_Size_Raw(mesh->mface); 
 
-  if (id < 1)
+  if (id < 1 || id > list_size || id > mesh->max_fid)
     return NULL;
 
-  mf = (MFace_ptr) List_Entry(mesh->mface,id-1);
+  /* Typically this will work for static meshes */
+
+  istart = id-1;
+  mf = (MFace_ptr) List_Entry_Raw(mesh->mface,istart);
   if (mf && MF_ID(mf) == id)
     return mf;
-  else {
-    /* Do a brute force search */
-    int idx = 0;
-    while ((mf = MESH_Next_Face(mesh, &idx)))
-      if (MF_ID(mf) == id)
-        return mf;    
+    
+  /* If entities have been deleted and new ones introduced, we have to
+     search. Its a linear search but somewhat smart because it assumes
+     that the entity with the desired ID will be close to where we
+     expected to find it in a static list */
+
+  for (j = istart; j >= 0; j--) {
+    mf = (MFace_ptr) List_Entry_Raw(mesh->mface,j);
+    if (mf && MF_ID(mf) == id)
+      return mf;
+  }
+
+  for (j = istart; j < list_size; j++) {
+    mf = (MFace_ptr) List_Entry_Raw(mesh->mface,j);
+    if (mf && MF_ID(mf) == id)
+      return mf;
   }
 
   return NULL;
 }
 
 MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
+  int istart, j;
   MRegion_ptr mr;
+  int list_size = List_Size_Raw(mesh->mregion); 
 
-  if (id < 1)
+  if (id < 1 || id > list_size || id > mesh->max_rid)
     return NULL;
 
-  mr = (MRegion_ptr) List_Entry(mesh->mregion,id-1);
+  /* Typically this will work for static meshes */
+
+  istart = id-1;
+  mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion,istart);
   if (mr && MR_ID(mr) == id)
     return mr;
-  else {
-    /* Do a brute force search */
-    int idx = 0;
-    while ((mr = MESH_Next_Region(mesh, &idx)))
-      if (MR_ID(mr) == id)
-        return mr;    
+    
+  /* If entities have been deleted and new ones introduced, we have to
+     search. Its a linear search but somewhat smart because it assumes
+     that the entity with the desired ID will be close to where we
+     expected to find it in a static list */
+
+  for (j = istart; j >= 0; j--) {
+    mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion,j);
+    if (MR_ID(mr) == id)
+      return mr;
+  }
+
+  for (j = istart; j < list_size; j++) {
+    mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion,j);
+    if (MR_ID(mr) == id)
+      return mr;
   }
 
   return NULL;
