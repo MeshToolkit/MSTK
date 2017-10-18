@@ -1,4 +1,4 @@
-#include "../../include/MSTK.h"
+#include "../../../include/MSTK.h"
 
 #include <vector>
 #include <UnitTest++.h>
