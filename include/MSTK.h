@@ -58,9 +58,15 @@ void MSTK_Init(void);
 				  int ***rfvtemplate);
 
   /* Import mesh data into the mesh object from various
-     formats. 'comm' can be NULL for serial codes */
-  /* opts is an integer array with different meanings for different
-     formats */
+     formats. 'comm' can be NULL for serial codes. 'opts' is an
+     integer array with different meanings for different
+     formats. 'format' can be 'mstk' for the native format, 'gmv' for
+     the General Mesh Viewer format
+     (http://www.generalmeshviewer.com), 'exo' for the SEACAS/ExodusII
+     format from Sandia National Laboratories
+     (https://github.com/gsjaardema/seacas), 'par' for parallel Exodus
+     files in the SEACAS/NemesisI format
+     (https://github.com/gsjaardema/seacas) */
 
   int         MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
                                   const char *format, int *opts, MSTK_Comm comm);
@@ -115,7 +121,20 @@ void MSTK_Init(void);
   int         MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype, MSTK_Comm comm);
 
   /* Export mesh data to various file formats. 'comm' can be NULL for
-     serial codes */
+     serial codes. 'format' is the mesh file format to be exported
+     to. 'natt' indicates how many attributes to export (-1 means
+     export all attributes present on the mesh), 'attnames' is the
+     list of attributes to export (NULL if 'natt' is -1), 'opts' is a
+     list of format specific output options (can be NULL). 'format'
+     can be 'mstk' for the native format, 'gmv' for the General Mesh
+     Viewer format (http://www.generalmeshviewer.com), 'exo' for the
+     SEACAS/ExodusII format from Sandia National Laboratories
+     (https://github.com/gsjaardema/seacas), 'x3d' for the FLAG X3D
+     format, 'stl' for the STL format. If the number of ranks is
+     greater than 1, selecting the 'exo' format will write out
+     parallel Exodus files (or in other words Nemesis I files) with
+     the extension .par.N.n */
+
   int         MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
                                 const char *format, const int natt, 
                                 const char **attnames, const int *opts, MSTK_Comm comm);
