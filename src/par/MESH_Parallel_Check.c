@@ -139,11 +139,16 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    valid = 0;
 	    sprintf(mesg,"Global vertex %-d from processor %d is not on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
-	  }
-
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    mv = MESH_VertexFromID(mesh, ov_list[nov + iloc]);  /* get the vertex on current mesh */
+            if (!mv) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap vertex with local ID %d on processor %d", ov_list[nov + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_vertex[3*j] & 7);
 	    gid = (recv_list_vertex[3*j] >> 3);
 	    ptype = (recv_list_vertex[3*j+1] & 3);
@@ -175,12 +180,9 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    MV_Coords(mv,coor);
 	    if(compareCoorDouble(coor, &recv_list_coor[3*j]) != 0 ) {
 	      valid = 0;
-              // printf("The recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate values mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-            //	    if(!valid) 
-            //	      printf("the mismatch vertex coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	  }
 	}
       }
@@ -199,7 +201,6 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	  }
 	}
 	MPI_Send(list_vertex,3*index_mv,MPI_INT,i,i,comm);
-	//	printf("rank %d sends %d verts to rank %d\n", rank,index_mv, i);
 	MPI_Send(list_coor,3*index_mv,MPI_DOUBLE,i,i,comm);
 	
       }
@@ -221,14 +222,12 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	  }
 	}
 	MPI_Send(list_vertex,3*index_mv,MPI_INT,i,i,comm);
-	//	printf("rank %d sends %d verts to rank %d\n", rank,index_mv, i);
 	MPI_Send(list_coor,3*index_mv,MPI_DOUBLE,i,i,comm);
 	
       }
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MVERTEX) ) {
 	MPI_Recv(recv_list_vertex,3*nv,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	//	printf("rank %d receives %d verts from rank %d\n", rank,count/3, i);
 	MPI_Recv(recv_list_coor,3*nv,MPI_DOUBLE,i,rank,comm,&status);
 	for(j = 0; j < count/3;  j++) {
 	  global_id = recv_list_vertex[3*j+2];
@@ -242,11 +241,16 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    sprintf(mesg,"Global vertex %-d from processor %d is not on processor %d" , global_id, i, rank);
 	    printf("coor: (%f,%f,%f)\n", recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
-	  }
-
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    mv = MESH_VertexFromID(mesh, ov_list[nov + iloc]);  /* get the vertex on current mesh */
+            if (!mv) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap vertex with local ID %d on processor %d", ov_list[nov + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_vertex[3*j] & 7);
 	    gid = (recv_list_vertex[3*j] >> 3);
 	    ptype = (recv_list_vertex[3*j+1] & 3);
@@ -278,12 +282,9 @@ int MESH_Parallel_Check_VertexGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    MV_Coords(mv,coor);
 	    if(compareCoorDouble(coor, &recv_list_coor[3*j]) != 0 ) {
 	      valid = 0;
-              //	      printf("the recv vertex %d coor: (%f,%f,%f)\n", global_id, recv_list_coor[3*j], recv_list_coor[3*j+1], recv_list_coor[3*j+2]);
 	      sprintf(mesg,"Global vertex %-d from processor %d and on processor %d coordinate value mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-            //	    if(!valid) 
-            //	      printf("the mismatch vertex %d coor: (%f,%f,%f)\n", MV_GlobalID(mv), coor[0], coor[1], coor[2]);
 	  }
 	}
       }
@@ -364,7 +365,6 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MEDGE) ) {
 	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);  // should we get 5*max_ne?
 	MPI_Get_count(&status,MPI_INT,&count);
-	//printf("rank %d receives %d edges from rank %d\n", rank,count/5, i);
 	for(j = 0; j < count/5;  j++) {
 	  global_id = recv_list_edge[5*j+4];
 	  loc = (int *)bsearch(&global_id,
@@ -373,14 +373,19 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 			       sizeof(int),
 			       compareINT);
 	  if(!loc) {
-            //	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	    sprintf(mesg,"Global edge %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
-	  }
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    me = MESH_EdgeFromID(mesh, ov_list[noe + iloc]);  /* get the edge on current mesh */
+            if (!me) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap edge with local ID %d on processor %d", ov_list[noe + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_edge[5*j+2] & 7);
 	    gid = (recv_list_edge[5*j+2] >> 3);
 	    ptype = (recv_list_edge[5*j+3] & 3);
@@ -413,12 +418,9 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    edge_int[1] = MV_GlobalID(ME_Vertex(me,1));
 	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
 	      valid = 0;
-              //	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d endpoints mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-            //	    if(!valid) 
-            //	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
 	  }
 	}
       }	
@@ -435,7 +437,6 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	  }
 	}
 	MPI_Send(list_edge,5*index_me,MPI_INT,i,i,comm);
-	//printf("rank %d sends %d edges to rank %d\n", rank,index_me, i);
       }
     }
     if(i > rank) {     
@@ -452,12 +453,10 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	  }
 	}
 	MPI_Send(list_edge,5*index_me,MPI_INT,i,i,comm);
-	//	printf("rank %d sends %d edges to rank %d\n", rank,index_me, i);
       }
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MEDGE) ) {
 	MPI_Recv(recv_list_edge,5*ne,MPI_INT,i,rank,comm,&status);  // should we get 5*max_ne
 	MPI_Get_count(&status,MPI_INT,&count);
-	//printf("rank %d receives %d edges from rank %d\n", rank,count/5, i);
 	for(j = 0; j < count/5;  j++) {
 	  global_id = recv_list_edge[5*j+4];
 	  loc = (int *)bsearch(&global_id,
@@ -466,14 +465,19 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 			       sizeof(int),
 			       compareINT);
 	  if(!loc) {
-            //	    printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	    sprintf(mesg,"Global edge %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
-	  }
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    me = MESH_EdgeFromID(mesh, ov_list[noe + iloc]);  /* get the edge on current mesh */
+            if (!me) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap edge with local ID %d on processor %d", ov_list[noe + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_edge[5*j+2] & 7);
 	    gid = (recv_list_edge[5*j+2] >> 3);
 	    ptype = (recv_list_edge[5*j+3] & 3);
@@ -506,12 +510,9 @@ int MESH_Parallel_Check_EdgeGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    edge_int[1] = MV_GlobalID(ME_Vertex(me,1));
 	    if(compareEdgeINT(edge_int, &recv_list_edge[5*j]) != 0 ) {
 	      valid = 0;
-              //	      printf("the recv edge %d endpoints: (%d,%d)\n", global_id, recv_list_edge[5*j], recv_list_edge[5*j+1]);
 	      sprintf(mesg,"Global edge %-d from processor %d and on processor %d endpoints mismatch", global_id, i, rank);
 	      MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    }
-            //	    if(!valid) 
-            //	      printf("the mismatch edge %d endpoints: (%d,%d)\n", ME_GlobalID(me), edge_int[0], edge_int[1]);
 	  }
 	}	
       }
@@ -603,10 +604,16 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    sprintf(mesg,"Global face %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
-	  }
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    mf = MESH_FaceFromID(mesh, ov_list[nof + iloc]);  /* get the face on current mesh */
+            if (!mf) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap face with local ID %d on processor %d", ov_list[nof + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_face[index_mf+nfe+1] & 7);
 	    gid = (recv_list_face[index_mf+nfe+1] >> 3);
 	    ptype = (recv_list_face[index_mf+nfe+2] & 3);
@@ -699,10 +706,16 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
 	    sprintf(mesg,"Global face %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
-	  }
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    mf = MESH_FaceFromID(mesh, ov_list[nof + iloc]);  /* get the face on current mesh */
+            if (!mf) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap face with local ID %d on processor %d", ov_list[nof + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_face[index_mf+nfe+1] & 7);
 	    gid = (recv_list_face[index_mf+nfe+1] >> 3);
 	    ptype = (recv_list_face[index_mf+nfe+2] & 3);
@@ -821,10 +834,16 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    sprintf(mesg,"Global region %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
-	  }
-	  if(loc) {                /* vertex found, but other information mismatch */
+            continue;
+	  } else {
 	    iloc = (int)(loc - ov_list);
 	    mr = MESH_RegionFromID(mesh, ov_list[nor + iloc]);  /* get the region on current mesh */
+            if (!mr) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap region with local ID %d on processor %d", ov_list[nor + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_region[index_mr+nrf+1] & 7);
 	    gid = (recv_list_region[index_mr+nrf+1] >> 3);
 	    ptype = (recv_list_region[index_mr+nrf+2] & 3);
@@ -897,12 +916,10 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	  }
 	}
 	MPI_Send(list_region,index_mr,MPI_INT,i,i,comm);
-	//printf("rank %d sends %d regions to rank %d\n", rank,index_mr, i);
       }
       if( MESH_Has_Overlaps_On_Prtn(mesh,i,MREGION) ) {
 	MPI_Recv(recv_list_region,(MAXPF3+4)*nr,MPI_INT,i,rank,comm,&status);
 	MPI_Get_count(&status,MPI_INT,&count);
-	//printf("rank %d receives %d regions from rank %d\n", rank,count, i);
 	for(index_mr = 0; index_mr < count;) {
 	  nrf = recv_list_region[index_mr];
 	  global_id = recv_list_region[index_mr+nrf+3];;
@@ -915,10 +932,17 @@ int MESH_Parallel_Check_RegionGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Co
 	    sprintf(mesg,"Global region %-d from processor %d not found on processor %d ", global_id, i, rank);
 	    MSTK_Report(funcname,mesg,MSTK_ERROR);
 	    valid = 0;
+            continue;
 	  }
-	  if(loc) {                /* vertex found, but other information mismatch */
+	  else {
 	    iloc = (int)(loc - ov_list);
 	    mr = MESH_RegionFromID(mesh, ov_list[nor + iloc]);  /* get the region on current mesh */
+            if (!mr) {
+              valid = 0;
+              sprintf(mesg,"Could not find overlap region with local ID %d on processor %d", ov_list[nor + iloc], rank);
+              MSTK_Report(funcname, mesg, MSTK_ERROR);
+              continue;
+            }
 	    gdim = (recv_list_region[index_mr+nrf+1] & 7);
 	    gid = (recv_list_region[index_mr+nrf+1] >> 3);
 	    ptype = (recv_list_region[index_mr+nrf+2] & 3);
