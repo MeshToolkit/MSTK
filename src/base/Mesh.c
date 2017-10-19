@@ -663,12 +663,7 @@ MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
 
   if (mesh->nv && !mesh->mvlist_sorted_by_lid) {
     List_Compress(mesh->mvertex);  // can't sort list with gaps
-    fprintf(stderr, "Sorting vertex lists....\n");
     List_Sort(mesh->mvertex, mesh->nv, sizeof(MVertex_ptr), compareID);
-    if (!List_IsSorted(mesh->mvertex, &MEnt_ID))
-      MSTK_Report("MESH_VertexFromID", "List_Sort failed to sort", MSTK_ERROR);
-    else
-      fprintf(stderr, "vertex list sorted\n");
     mesh->mvlist_sorted_by_lid = 1;
   }
 
@@ -685,14 +680,6 @@ MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
                                  mesh->nv, sizeof(MVertex_ptr), compareID);
   
   MV_Delete(mv_tmp, 0);
-
-  if (!mv) {
-    int sorted = List_IsSorted(mesh->mvertex, &MV_ID);
-    if (sorted)
-      MSTK_Report("MESH_VertexFromID", "Vertex list is sorted but vertex not found", MSTK_ERROR);
-    else
-      MSTK_Report("MESH_VertexFromID", "Vertex list is not sorted", MSTK_ERROR);
-  }
 
   return mv;
 }
