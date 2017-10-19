@@ -17,6 +17,8 @@ extern "C" {
     List_ptr AttribList;
     List_ptr MSetList;
     int max_vid, max_eid, max_fid, max_rid;
+    int mvlist_sorted_by_lid, melist_sorted_by_lid, mflist_sorted_by_lid,
+      mrlist_sorted_by_lid;
     Hash_ptr hedge, hface;
     int autolock;
 
@@ -28,12 +30,13 @@ extern "C" {
     List_ptr ghvertex, ghedge, ghface, ghregion;
     int max_ghvid, max_gheid, max_ghfid, max_ghrid;
     List_ptr ovvertex, ovedge, ovface, ovregion;
-    List_ptr gid_sorted_mvlist, gid_sorted_melist, gid_sorted_mflist, gid_sorted_mrlist;
+    List_ptr gid_sorted_mvlist, gid_sorted_melist, gid_sorted_mflist,
+      gid_sorted_mrlist;
 #endif
 
   } Mesh, *Mesh_ptr;
 #else
-   typedef void *Mesh;
+  typedef void *Mesh;
 #endif
 
 
@@ -87,6 +90,9 @@ extern "C" {
   void       MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e);
   void       MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f);
   void       MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r);
+
+  void       MESH_Flag_EntList_As_Unsorted(Mesh_ptr mesh, MType mtype);
+  void       MESH_Flag_EntList_As_Sorted(Mesh_ptr mesh, MType mtype);
 
 #ifdef MSTK_HAVE_MPI
   void         MESH_Set_Prtn(Mesh_ptr mesh, unsigned int partition, 
