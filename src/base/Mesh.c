@@ -59,7 +59,10 @@ Mesh_ptr MESH_New(RepType type) {
   else newmesh->hface = (Hash_ptr) NULL;
 
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
-
+  newmesh->mvlist_sorted_by_lid =
+      newmesh->melist_sorted_by_lid =
+      newmesh->mflist_sorted_by_lid =
+      newmesh->mrlist_sorted_by_lid = 0;
 
   return newmesh;
 }
@@ -646,152 +649,139 @@ MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
     return NULL;
 }
 
+
   /* The current implementation of following four functions,
      MESH_*FromID, relies on the fact the the mesh entities are stored
      in linear arrays. So go to the (ID-1)'th element in the list. If
      it is a static mesh, this will be the element with the right
-     ID. If we get NULL (the ID is higher than the list size due to
-     deletions) or the wrong ID, then brute force search the list */
-
+     ID. If we get NULL, then ensure that the relevant list is
+     compressed and sorted and then do a search O(logN) */
 
 MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
-  MVertex_ptr mv;
-  int list_size = List_Size_Raw(mesh->mvertex); 
-
-  if (id < 1 || id > list_size || id > mesh-> max_vid)
+  if (id < 1 || id > mesh->max_vid)
     return NULL;
+
+  if (mesh->nv && !mesh->mvlist_sorted_by_lid) {
+    List_Compress(mesh->mvertex);  // can't sort list with gaps
+    fprintf(stderr, "Sorting vertex lists....\n");
+    List_Sort(mesh->mvertex, mesh->nv, sizeof(MVertex_ptr), compareID);
+    if (!List_IsSorted(mesh->mvertex, &MEnt_ID))
+      MSTK_Report("MESH_VertexFromID", "List_Sort failed to sort", MSTK_ERROR);
+    else
+      fprintf(stderr, "vertex list sorted\n");
+    mesh->mvlist_sorted_by_lid = 1;
+  }
 
   /* Typically this will work for static meshes */
 
-  istart = id-1;
-  mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex,istart);
+  MVertex_ptr mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex, id-1);
   if (mv && MV_ID(mv) == id)
     return mv;
 
-  /* If entities have been deleted and new ones introduced, we have to
-     search. Its a linear search but somewhat smart because it assumes
-     that the entity with the desired ID will be close to where we
-     expected to find it in a static list */
+  MVertex_ptr mv_tmp = MV_New(NULL);  /* floating vertex not in any mesh */
+  MEnt_Set_ID(mv_tmp, id);
 
-  for (j = istart; j >= 0; j--) {
-    mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex,j);
-    if (mv && MV_ID(mv) == id)
-      return mv;
+  mv = (MVertex_ptr) List_Search(mesh->mvertex, (void *) &mv_tmp,
+                                 mesh->nv, sizeof(MVertex_ptr), compareID);
+  
+  MV_Delete(mv_tmp, 0);
+
+  if (!mv) {
+    int sorted = List_IsSorted(mesh->mvertex, &MV_ID);
+    if (sorted)
+      MSTK_Report("MESH_VertexFromID", "Vertex list is sorted but vertex not found", MSTK_ERROR);
+    else
+      MSTK_Report("MESH_VertexFromID", "Vertex list is not sorted", MSTK_ERROR);
   }
 
-  for (j = istart; j < list_size; j++) {
-    mv = (MVertex_ptr) List_Entry_Raw(mesh->mvertex,j);
-    if (mv && MV_ID(mv) == id)
-      return mv;
-  }
-
-  return NULL;
+  return mv;
 }
+
+ 
 
 MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
-  MEdge_ptr me;
-  int list_size = List_Size_Raw(mesh->medge); 
-
-  if (id < 1 || id > list_size || id > mesh->max_eid)
+  if (id < 1 || id > mesh->max_eid)
     return NULL;
+
+  if (mesh->ne && !mesh->melist_sorted_by_lid) {
+    List_Compress(mesh->medge);  // can't sort list with gaps
+    List_Sort(mesh->medge, mesh->ne, sizeof(MEdge_ptr), compareID);
+    mesh->melist_sorted_by_lid = 1;
+  }
 
   /* Typically this will work for static meshes */
 
-  istart = id-1;
-  me = (MEdge_ptr) List_Entry_Raw(mesh->medge,istart);
+  MEdge_ptr me = (MEdge_ptr) List_Entry_Raw(mesh->medge, id-1);
   if (me && ME_ID(me) == id)
     return me;
-    
-  /* If entities have been deleted and new ones introduced, we have to
-     search. Its a linear search but somewhat smart because it assumes
-     that the entity with the desired ID will be close to where we
-     expected to find it in a static list */
 
-  for (j = istart; j >= 0; j--) {
-    me = (MEdge_ptr) List_Entry_Raw(mesh->medge,j);
-    if (me && ME_ID(me) == id)
-      return me;
-  }
+  MEdge_ptr me_tmp = ME_New(NULL);  /* floating edge not in any mesh */
+  MEnt_Set_ID(me_tmp, id);
 
-  for (j = istart; j < list_size; j++) {
-    me = (MEdge_ptr) List_Entry_Raw(mesh->medge,j);
-    if (me && ME_ID(me) == id)
-      return me;
-  }
+  me = (MEdge_ptr) List_Search(mesh->medge, (void *) &me_tmp,
+                                 mesh->ne, sizeof(MEdge_ptr), compareID);
 
-  return NULL;
+  ME_Delete(me_tmp, 0);
+
+  return me;
 }
+
+ 
 
 MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
-  MFace_ptr mf;
-  int list_size = List_Size_Raw(mesh->mface); 
-
-  if (id < 1 || id > list_size || id > mesh->max_fid)
+  if (id < 1 || id > mesh->max_fid)
     return NULL;
+
+  if (mesh->nf && !mesh->mflist_sorted_by_lid) {
+    List_Compress(mesh->mface);  // can't sort list with gaps
+    List_Sort(mesh->mface, mesh->nf, sizeof(MFace_ptr), compareID);
+    mesh->mflist_sorted_by_lid = 1;
+  }
 
   /* Typically this will work for static meshes */
 
-  istart = id-1;
-  mf = (MFace_ptr) List_Entry_Raw(mesh->mface,istart);
+  MFace_ptr mf = (MFace_ptr) List_Entry_Raw(mesh->mface, id-1);
   if (mf && MF_ID(mf) == id)
     return mf;
-    
-  /* If entities have been deleted and new ones introduced, we have to
-     search. Its a linear search but somewhat smart because it assumes
-     that the entity with the desired ID will be close to where we
-     expected to find it in a static list */
 
-  for (j = istart; j >= 0; j--) {
-    mf = (MFace_ptr) List_Entry_Raw(mesh->mface,j);
-    if (mf && MF_ID(mf) == id)
-      return mf;
-  }
+  MFace_ptr mf_tmp = MF_New(NULL);  /* floating face not in any mesh */
+  MEnt_Set_ID(mf_tmp, id);
 
-  for (j = istart; j < list_size; j++) {
-    mf = (MFace_ptr) List_Entry_Raw(mesh->mface,j);
-    if (mf && MF_ID(mf) == id)
-      return mf;
-  }
+  mf = (MFace_ptr) List_Search(mesh->mface, (void *) &mf_tmp,
+                                 mesh->nf, sizeof(MFace_ptr), compareID);
 
-  return NULL;
+  MF_Delete(mf_tmp, 0);
+
+  return mf;
 }
 
-MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
-  int istart, j;
-  MRegion_ptr mr;
-  int list_size = List_Size_Raw(mesh->mregion); 
+ 
 
-  if (id < 1 || id > list_size || id > mesh->max_rid)
+MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
+  if (id < 1 || id > mesh-> max_rid)
     return NULL;
+
+  if (mesh->nr && !mesh->mrlist_sorted_by_lid) {
+    List_Compress(mesh->mregion);  // can't sort list with gaps
+    List_Sort(mesh->mregion, mesh->nr, sizeof(MRegion_ptr), compareID);
+    mesh->mrlist_sorted_by_lid = 1;
+  }
 
   /* Typically this will work for static meshes */
 
-  istart = id-1;
-  mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion,istart);
+  MRegion_ptr mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion, id-1);
   if (mr && MR_ID(mr) == id)
     return mr;
-    
-  /* If entities have been deleted and new ones introduced, we have to
-     search. Its a linear search but somewhat smart because it assumes
-     that the entity with the desired ID will be close to where we
-     expected to find it in a static list */
 
-  for (j = istart; j >= 0; j--) {
-    mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion,j);
-    if (MR_ID(mr) == id)
-      return mr;
-  }
+  MRegion_ptr mr_tmp = MR_New(NULL);  /* floating region not in any mesh */
+  MEnt_Set_ID(mr_tmp, id);
 
-  for (j = istart; j < list_size; j++) {
-    mr = (MRegion_ptr) List_Entry_Raw(mesh->mregion,j);
-    if (MR_ID(mr) == id)
-      return mr;
-  }
+  mr = (MRegion_ptr) List_Search(mesh->mregion, (void *) &mr_tmp,
+                                 mesh->nr, sizeof(MRegion_ptr), compareID);
 
-  return NULL;
+  MR_Delete(mr_tmp, 0);
+
+  return mr;
 }
 
  
@@ -925,7 +915,7 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
   }
 #endif
 
-
+  MESH_Flag_EntList_As_Unsorted(mesh, MVERTEX);
   return;
 }    
      
@@ -973,6 +963,8 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
     MESH_Mark_ParallelAdj_Stale(mesh);
   }
 #endif
+
+  MESH_Flag_EntList_As_Unsorted(mesh, MEDGE);
 
   return;
 }    
@@ -1022,6 +1014,8 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
   }
 #endif
 
+  MESH_Flag_EntList_As_Unsorted(mesh, MFACE);
+
   return;
 }    
      
@@ -1068,6 +1062,10 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
     MESH_Mark_ParallelAdj_Stale(mesh);
   }
 #endif
+
+  MESH_Flag_EntList_As_Unsorted(mesh, MREGION);
+
+  return;
 }    
 
 List_ptr   MESH_Vertex_List(Mesh_ptr mesh) {
@@ -1084,6 +1082,21 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 }
 
 
+void MESH_Flag_EntList_As_Unsorted(Mesh_ptr mesh, MType mtype) {
+  switch (mtype) {
+    case MVERTEX:
+      mesh->mvlist_sorted_by_lid = 0; break;
+    case MEDGE:
+      mesh->melist_sorted_by_lid = 0; break;
+    case MFACE:
+      mesh->mflist_sorted_by_lid = 0; break;
+    case MREGION:
+      mesh->mrlist_sorted_by_lid = 0; break;
+    default:
+      break;
+  }
+  return;
+}
 
 #ifdef MSTK_HAVE_MPI
 
@@ -1338,30 +1351,19 @@ List_ptr   MESH_Region_List(Mesh_ptr mesh) {
 
 void MESH_Enable_GlobalIDSearch(Mesh_ptr mesh) {
 
-  if (mesh->nv && !mesh->gid_sorted_mvlist) {
+  if (mesh->nv && !mesh->gid_sorted_mvlist)
     mesh->gid_sorted_mvlist = List_Copy(mesh->mvertex);
-    List_Compress(mesh->gid_sorted_mvlist);  // can't sort list with gaps
-    List_Sort(mesh->gid_sorted_mvlist,mesh->nv,sizeof(MVertex_ptr),compareGlobalID);
-  }
 
-  if (mesh->ne && !mesh->gid_sorted_melist) {
+  if (mesh->ne && !mesh->gid_sorted_melist)
     mesh->gid_sorted_melist = List_Copy(mesh->medge);
-    List_Compress(mesh->gid_sorted_melist);
-    List_Sort(mesh->gid_sorted_melist,mesh->ne,sizeof(MEdge_ptr),compareGlobalID);
-  }
 
-  if (mesh->nf && !mesh->gid_sorted_mflist) {
+  if (mesh->nf && !mesh->gid_sorted_mflist)
     mesh->gid_sorted_mflist = List_Copy(mesh->mface);
-    List_Compress(mesh->gid_sorted_mflist);
-    List_Sort(mesh->gid_sorted_mflist,mesh->nf,sizeof(MFace_ptr),compareGlobalID);
-  }
 
-  if (mesh->nr && !mesh->gid_sorted_mrlist) {
+  if (mesh->nr && !mesh->gid_sorted_mrlist)
     mesh->gid_sorted_mrlist = List_Copy(mesh->mregion);
-    List_Compress(mesh->gid_sorted_mrlist);
-    List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
-  }
 
+  MESH_Sort_GlobalIDSearch_Lists(mesh);
 }
 
 void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh) {
@@ -2048,7 +2050,7 @@ void MESH_Rem_GhostVertex(Mesh_ptr mesh, MVertex_ptr v) {
 
   if (mesh->ghvertex == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Vertex","No vertices in mesh to remove", MSTK_ERROR);
+    MSTK_Report("Mesh_Rem_GhostVertex","No vertices in mesh to remove", MSTK_ERROR);
 #endif
     return;
   }
@@ -2085,7 +2087,7 @@ void MESH_Rem_GhostEdge(Mesh_ptr mesh, MEdge_ptr e) {
 
   if (mesh->ghedge == (List_ptr) NULL) {
 #ifdef DEBUG
-    MSTK_Report("Mesh_Rem_Edge","No Edges in mesh to remove",MSTK_ERROR);
+    MSTK_Report("Mesh_Rem_GhostEdge","No Edges in mesh to remove",MSTK_ERROR);
 #endif
     return;
   }
@@ -2143,13 +2145,13 @@ void MESH_Rem_GhostFace(Mesh_ptr mesh, MFace_ptr f){
     fnd = List_RemSorted(mesh->mface,f,&(MF_ID));
 
   if (!fnd)
-    MSTK_Report("MESH_Rem_Face","Face not found in mesh face list",MSTK_FATAL);
+    MSTK_Report("MESH_Rem_GhostFace","Face not found in mesh face list",MSTK_FATAL);
 
   mesh->nf = List_Num_Entries(mesh->mface);
 
   fnd = List_RemSorted(mesh->ghface,f,&(MF_GlobalID));
   if (!fnd)
-    MSTK_Report("MESH_Rem_Face","Face not found in ghost list",MSTK_FATAL);
+    MSTK_Report("MESH_Rem_GhostFace","Face not found in ghost list",MSTK_FATAL);
 
   MESH_Mark_ParallelAdj_Stale(mesh);
 }    
