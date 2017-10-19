@@ -116,6 +116,10 @@ extern "C" {
 #endif
 
     ent->entdat.id = id;
+
+    Mesh_ptr mesh = ent->entdat.mesh;
+    if (mesh)
+      MESH_Flag_EntList_As_Unsorted(mesh, ent->entdat.dim);
   }
 
 
