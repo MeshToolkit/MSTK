@@ -115,7 +115,17 @@ extern "C" {
       MSTK_Report("MEnt_SetID","ID too large",MSTK_WARN);
 #endif
 
+    int orig_id = ent->entdat.id;
     ent->entdat.id = id;
+
+    /* if original ID was not zero, we are modifying the ID of
+     * entities after the fact and the entity lists will no longer
+     * have entries with ascending IDs */
+    if (orig_id) {
+      Mesh_ptr mesh = ent->entdat.mesh;
+      if (mesh)
+        MESH_Flag_EntLists_As_Unsorted(mesh);
+    }
   }
 
 

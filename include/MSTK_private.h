@@ -50,6 +50,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   void       MESH_Clear_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
 
+  void       MESH_Flag_EntLists_As_Unsorted(Mesh_ptr mesh);
 
 /*
   void MV_Set_RepType(MVertex_ptr v, RepType rtype);
@@ -172,7 +173,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   */
   int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank);
-
 
   /* Extra functionality for List manipulation - risky for uninformed users */
 
@@ -471,10 +471,9 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   int        MESH_XchngEdgeFaceAttrib(Mesh_ptr mesh, MAttrib_ptr attrib,
                                       MSTK_Comm comm);
 
-  /* Functions for improving searching for entities by global ID */
+  /*  sort global ID lists */
+  void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh);
 
-  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
-  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 #endif /* MSTK_HAVE_MPI */  
 
 

@@ -58,9 +58,15 @@ void MSTK_Init(void);
 				  int ***rfvtemplate);
 
   /* Import mesh data into the mesh object from various
-     formats. 'comm' can be NULL for serial codes */
-  /* opts is an integer array with different meanings for different
-     formats */
+     formats. 'comm' can be NULL for serial codes. 'opts' is an
+     integer array with different meanings for different
+     formats. 'format' can be 'mstk' for the native format, 'gmv' for
+     the General Mesh Viewer format
+     (http://www.generalmeshviewer.com), 'exo' for the SEACAS/ExodusII
+     format from Sandia National Laboratories
+     (https://github.com/gsjaardema/seacas), 'par' for parallel Exodus
+     files in the SEACAS/NemesisI format
+     (https://github.com/gsjaardema/seacas) */
 
   int         MESH_ImportFromFile(Mesh_ptr mesh, const char *filename, 
                                   const char *format, int *opts, MSTK_Comm comm);
@@ -115,7 +121,20 @@ void MSTK_Init(void);
   int         MESH_WriteToFile(Mesh_ptr mesh, const char *filename, RepType rtype, MSTK_Comm comm);
 
   /* Export mesh data to various file formats. 'comm' can be NULL for
-     serial codes */
+     serial codes. 'format' is the mesh file format to be exported
+     to. 'natt' indicates how many attributes to export (-1 means
+     export all attributes present on the mesh), 'attnames' is the
+     list of attributes to export (NULL if 'natt' is -1), 'opts' is a
+     list of format specific output options (can be NULL). 'format'
+     can be 'mstk' for the native format, 'gmv' for the General Mesh
+     Viewer format (http://www.generalmeshviewer.com), 'exo' for the
+     SEACAS/ExodusII format from Sandia National Laboratories
+     (https://github.com/gsjaardema/seacas), 'x3d' for the FLAG X3D
+     format, 'stl' for the STL format. If the number of ranks is
+     greater than 1, selecting the 'exo' format will write out
+     parallel Exodus files (or in other words Nemesis I files) with
+     the extension .par.N.n */
+
   int         MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
                                 const char *format, const int natt, 
                                 const char **attnames, const int *opts, MSTK_Comm comm);
@@ -176,6 +195,13 @@ void MSTK_Init(void);
   MFace_ptr   MESH_Next_Face(Mesh_ptr mesh, int *index);
   MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index);
 
+
+  /* Search for entities by Local ID. If the mesh has been modified or
+   * renumbered, it is recommended that MESH_Enable_LocalIDSearch be
+   * called before a block of code that does such searches - the call
+   * will sort lists for faster searching */
+
+  void MESH_Enable_LocalIDSearch(Mesh_ptr mesh);
 
   MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int i);
   MEdge_ptr   MESH_EdgeFromID(Mesh_ptr mesh, int i);
@@ -270,7 +296,12 @@ void MSTK_Init(void);
 
   int         MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm);
 
-  /* Query Global IDs */
+  /* Query Global IDs - To search for entities by GlobalIDs, one has
+   * to enable them first. Since it takes up additional storage, it
+   * should be disabled as soon as the need is done. */
+
+  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
+  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 
   MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
   MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);

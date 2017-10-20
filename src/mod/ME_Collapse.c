@@ -374,13 +374,13 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
       if ((ev00 == ev10 && ev01 == ev11) ||
 	  (ev00 == ev11 && ev10 == ev01)) {
 
-        int edge_is_external, edge2_is_external;
+        int edge_on_boundary, edge2_on_boundary;
         int edim = 4;
 	
-        edge_is_external = 0;
+        edge_on_boundary = 0;
         edim = ME_GEntDim(edge);
         if (edim == 1 || edim == 2)
-          edge_is_external = 1;
+          edge_on_boundary = 1;
         else if (edim == 4 && ME_PType(edge) != PGHOST) {
           /* Don't know classification of edge so check if its a
              boundary edge based on topology. However, do this check
@@ -391,29 +391,29 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
           efaces = ME_Faces(edge);
           int nef = List_Num_Entries(efaces);
           if (nef == 1) {
-            edge_is_external = 1;
+            edge_on_boundary = 1;
           } else {
             idx3 = 0;
-            while ((face = List_Next_Entry(efaces,&idx2))) {
+            while ((face = List_Next_Entry(efaces,&idx3))) {
               List_ptr fregs = MF_Regions(face);
               if (fregs) {
                 int nfr = List_Num_Entries(fregs);
                 if (nfr == 1 || 
                     (nfr == 2 && 
                      MR_GEntID(List_Entry(fregs,0)) != MR_GEntID(List_Entry(fregs,1))))
-                  edge_is_external = 1;
+                  edge_on_boundary = 1;
                 List_Delete(fregs);
               }
-              if (edge_is_external) break;
+              if (edge_on_boundary) break;
             }
           }
           List_Delete(efaces);
         }
     
-        edge2_is_external = 0;
+        edge2_on_boundary = 0;
         edim = ME_GEntDim(edge2);
         if (edim == 1 || edim == 2)
-          edge_is_external = 1;
+          edge_on_boundary = 1;
         else if (edim == 4 && ME_PType(edge2) != PGHOST) {
           /* Don't know classification of edge so check if its a 
              boundary edge based on topology. However, do this check 
@@ -423,26 +423,26 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
           efaces = ME_Faces(edge2);
           int nef = List_Num_Entries(efaces);
           if (nef == 1) {
-            edge2_is_external = 1;
+            edge2_on_boundary = 1;
           } else {
             idx3 = 0;
-            while ((face = List_Next_Entry(efaces,&idx2))) {
+            while ((face = List_Next_Entry(efaces,&idx3))) {
               List_ptr fregs = MF_Regions(face);
               if (fregs) {
                 int nfr = List_Num_Entries(fregs);
                 if (nfr == 1 || 
                     (nfr == 2 && 
                      MR_GEntID(List_Entry(fregs,0)) != MR_GEntID(List_Entry(fregs,1))))
-                  edge_is_external = 1;
+                  edge_on_boundary = 1;
                 List_Delete(fregs);
               }
-              if (edge2_is_external) break;
+              if (edge2_on_boundary) break;
             }
           }
           List_Delete(efaces);
         }
     
-        if (edge_is_external == edge2_is_external) {
+        if (edge_on_boundary == edge2_on_boundary) {
           /* if both edges are boundary edges or both are interior, then we
              don't have to worry about topological consistency of the
              mesh with the model which way we merge. In that case,
@@ -462,7 +462,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
             List_Add(*merged_entity_pairs, edge);
             break;
           }
-        } else if (edge_is_external) {
+        } else if (edge_on_boundary) {
           /* 'edge' is external while 'edge2' is not; merge 'edge2'
            * onto 'edge' regardless of global IDs because boundary
            * entities may be in boundary sets for boundary
@@ -527,14 +527,14 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
              HAVE 0 REGIONS CONNECTED TO IT */
 
           List_ptr fregs = MF_Regions(face);
-          int external_face = !fregs || (List_Num_Entries(fregs) == 0);
+          int face_on_boundary = ((MF_PType(face) != PGHOST) && !fregs) ? 1 : 0;
           if (fregs) List_Delete(fregs);
 
           List_ptr fregs2 = MF_Regions(face2);
-          int external_face2 = !fregs2 || (List_Num_Entries(fregs2) == 0);
+          int face2_on_boundary = ((MF_PType(face2) != PGHOST) && !fregs2) ? 1 : 0;
           if (fregs2) List_Delete(fregs2);
 
-          if (external_face && external_face2) {
+          if (face_on_boundary == face2_on_boundary) {
           /* if both faces are boundary faces or both are interior, then we
              don't have to worry about topological consistency of the
              mesh with the model which way we merge. In that case,
@@ -554,7 +554,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
               List_Add(*merged_entity_pairs, face);
               break;
             }
-          } else if (external_face) {
+          } else if (face_on_boundary) {
             MFs_Merge(face,face2,topoflag);	
             List_Rem(vfaces,face2);
             List_Add(*deleted_entities,face2);

@@ -48,6 +48,7 @@ extern "C" {
       // being sorted according to their global ID
 
       MESH_Sort_GhostLists(mesh, compareGlobalID);
+      MESH_Sort_GlobalIDSearch_Lists(mesh);
     }
 
     return 1;
