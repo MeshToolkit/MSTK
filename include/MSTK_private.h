@@ -50,7 +50,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   void       MESH_Clear_Attrib(Mesh_ptr mesh, MAttrib_ptr attrib);
 
-  void       MESH_Flag_EntList_As_Unsorted(Mesh_ptr mesh, MType mtype);
+  void       MESH_Flag_EntLists_As_Unsorted(Mesh_ptr mesh);
 
 /*
   void MV_Set_RepType(MVertex_ptr v, RepType rtype);
@@ -470,11 +470,6 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
   int        MESH_XchngEdgeFaceAttrib(Mesh_ptr mesh, MAttrib_ptr attrib,
                                       MSTK_Comm comm);
-
-  /* Functions for improving searching for entities by global ID */
-
-  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
-  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 
   /*  sort global ID lists */
   void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh);

@@ -196,6 +196,13 @@ void MSTK_Init(void);
   MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index);
 
 
+  /* Search for entities by Local ID. If the mesh has been modified or
+   * renumbered, it is recommended that MESH_Enable_LocalIDSearch be
+   * called before a block of code that does such searches - the call
+   * will sort lists for faster searching */
+
+  void MESH_Enable_LocalIDSearch(Mesh_ptr mesh);
+
   MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int i);
   MEdge_ptr   MESH_EdgeFromID(Mesh_ptr mesh, int i);
   MFace_ptr   MESH_FaceFromID(Mesh_ptr mesh, int i);
@@ -289,7 +296,12 @@ void MSTK_Init(void);
 
   int         MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm);
 
-  /* Query Global IDs */
+  /* Query Global IDs - To search for entities by GlobalIDs, one has
+   * to enable them first. Since it takes up additional storage, it
+   * should be disabled as soon as the need is done. */
+
+  void       MESH_Enable_GlobalIDSearch(Mesh_ptr mesh);
+  void       MESH_Disable_GlobalIDSearch(Mesh_ptr mesh);
 
   MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id);
   MEdge_ptr   MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id);
