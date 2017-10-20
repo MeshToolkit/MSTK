@@ -45,6 +45,7 @@ Mesh_ptr MESH_New(RepType type) {
   newmesh->max_ghvid = newmesh->max_gheid = newmesh->max_ghfid = newmesh->max_ghrid = 0;
   newmesh->gid_sorted_mvlist = newmesh->gid_sorted_melist =
     newmesh->gid_sorted_mflist = newmesh->gid_sorted_mrlist = NULL;
+  newmesh->gidlists_sorted = 0;
 #endif
 
   newmesh->geom = (GModel_ptr) NULL;
@@ -59,10 +60,8 @@ Mesh_ptr MESH_New(RepType type) {
   else newmesh->hface = (Hash_ptr) NULL;
 
   newmesh->max_vid = newmesh->max_eid = newmesh->max_fid = newmesh->max_rid = 0;
-  newmesh->mvlist_sorted_by_lid =
-      newmesh->melist_sorted_by_lid =
-      newmesh->mflist_sorted_by_lid =
-      newmesh->mrlist_sorted_by_lid = 0;
+  newmesh->lidlists_sorted = 1;  /* Initially, we will be adding entities */
+                                 /* sequentially anyway                   */
 
   return newmesh;
 }
@@ -650,6 +649,35 @@ MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
 }
 
 
+void MESH_Flag_EntLists_As_Unsorted(Mesh_ptr mesh) {
+  mesh->lidlists_sorted = 0;
+}
+
+void MESH_Enable_LocalIDSearch(Mesh_ptr mesh) {
+  if (mesh->lidlists_sorted) return;
+
+  if (mesh->nv) {
+    List_Compress(mesh->mvertex);  // can't sort list with gaps
+    List_Sort(mesh->mvertex, mesh->nv, sizeof(MVertex_ptr), compareID);
+  }
+  if (mesh->ne) {
+    List_Compress(mesh->medge);  // can't sort list with gaps
+    List_Sort(mesh->medge, mesh->ne, sizeof(MEdge_ptr), compareID);
+  }
+
+  if (mesh->nf) {
+    List_Compress(mesh->mface);  // can't sort list with gaps
+    List_Sort(mesh->mface, mesh->nf, sizeof(MFace_ptr), compareID);
+  }
+
+  if (mesh->nr) {
+    List_Compress(mesh->mregion);  // can't sort list with gaps
+    List_Sort(mesh->mregion, mesh->nr, sizeof(MRegion_ptr), compareID);
+  }
+
+  mesh->lidlists_sorted = 1;
+}
+
   /* The current implementation of following four functions,
      MESH_*FromID, relies on the fact the the mesh entities are stored
      in linear arrays. So go to the (ID-1)'th element in the list. If
@@ -658,14 +686,8 @@ MRegion_ptr MESH_Next_Region(Mesh_ptr mesh, int *index) {
      compressed and sorted and then do a search O(logN) */
 
 MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
-  if (id < 1 || id > mesh->max_vid)
+  if (!mesh->nv || id < 1 || id > mesh->max_vid)
     return NULL;
-
-  if (mesh->nv && !mesh->mvlist_sorted_by_lid) {
-    List_Compress(mesh->mvertex);  // can't sort list with gaps
-    List_Sort(mesh->mvertex, mesh->nv, sizeof(MVertex_ptr), compareID);
-    mesh->mvlist_sorted_by_lid = 1;
-  }
 
   /* Typically this will work for static meshes */
 
@@ -673,13 +695,23 @@ MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
   if (mv && MV_ID(mv) == id)
     return mv;
 
-  MVertex_ptr mv_tmp = MV_New(NULL);  /* floating vertex not in any mesh */
-  MEnt_Set_ID(mv_tmp, id);
+  if (mesh->lidlists_sorted) {
+    MVertex_ptr mv_tmp = MV_New(NULL);  /* floating vertex not in any mesh */
+    MEnt_Set_ID(mv_tmp, id);
 
-  mv = (MVertex_ptr) List_Search(mesh->mvertex, (void *) &mv_tmp,
+    mv = (MVertex_ptr) List_Search(mesh->mvertex, (void *) &mv_tmp,
                                  mesh->nv, sizeof(MVertex_ptr), compareID);
   
-  MV_Delete(mv_tmp, 0);
+    MV_Delete(mv_tmp, 0);
+  } else {
+    MSTK_Report("MESH_VertexFromID",
+                "Call MESH_Enable_LocalIDSearch first for faster queries",
+                MSTK_ERROR);
+
+    int idx = 0;
+    while ((mv = MESH_Next_Vertex(mesh, &idx)))
+      if (MV_ID(mv) == id) break;    
+  }
 
   return mv;
 }
@@ -687,14 +719,8 @@ MVertex_ptr MESH_VertexFromID(Mesh_ptr mesh, int id) {
  
 
 MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
-  if (id < 1 || id > mesh->max_eid)
+  if (!mesh->ne || id < 1 || id > mesh->max_eid)
     return NULL;
-
-  if (mesh->ne && !mesh->melist_sorted_by_lid) {
-    List_Compress(mesh->medge);  // can't sort list with gaps
-    List_Sort(mesh->medge, mesh->ne, sizeof(MEdge_ptr), compareID);
-    mesh->melist_sorted_by_lid = 1;
-  }
 
   /* Typically this will work for static meshes */
 
@@ -702,13 +728,23 @@ MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
   if (me && ME_ID(me) == id)
     return me;
 
-  MEdge_ptr me_tmp = ME_New(NULL);  /* floating edge not in any mesh */
-  MEnt_Set_ID(me_tmp, id);
+  if (mesh->lidlists_sorted) {
+    MEdge_ptr me_tmp = ME_New(NULL);  /* floating edge not in any mesh */
+    MEnt_Set_ID(me_tmp, id);
 
-  me = (MEdge_ptr) List_Search(mesh->medge, (void *) &me_tmp,
+    me = (MEdge_ptr) List_Search(mesh->medge, (void *) &me_tmp,
                                  mesh->ne, sizeof(MEdge_ptr), compareID);
 
-  ME_Delete(me_tmp, 0);
+    ME_Delete(me_tmp, 0);
+  } else {
+    MSTK_Report("MESH_EdgeFromID",
+                "Call MESH_Enable_LocalIDSearch first for faster queries",
+                MSTK_ERROR);
+
+    int idx = 0;
+    while ((me = MESH_Next_Edge(mesh, &idx)))
+      if (ME_ID(me) == id) break;
+  }
 
   return me;
 }
@@ -716,14 +752,8 @@ MEdge_ptr MESH_EdgeFromID(Mesh_ptr mesh, int id) {
  
 
 MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
-  if (id < 1 || id > mesh->max_fid)
+  if (!mesh->nf || id < 1 || id > mesh->max_fid)
     return NULL;
-
-  if (mesh->nf && !mesh->mflist_sorted_by_lid) {
-    List_Compress(mesh->mface);  // can't sort list with gaps
-    List_Sort(mesh->mface, mesh->nf, sizeof(MFace_ptr), compareID);
-    mesh->mflist_sorted_by_lid = 1;
-  }
 
   /* Typically this will work for static meshes */
 
@@ -731,13 +761,23 @@ MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
   if (mf && MF_ID(mf) == id)
     return mf;
 
-  MFace_ptr mf_tmp = MF_New(NULL);  /* floating face not in any mesh */
-  MEnt_Set_ID(mf_tmp, id);
-
-  mf = (MFace_ptr) List_Search(mesh->mface, (void *) &mf_tmp,
+  if (mesh->lidlists_sorted) {
+    MFace_ptr mf_tmp = MF_New(NULL);  /* floating face not in any mesh */
+    MEnt_Set_ID(mf_tmp, id);
+    
+    mf = (MFace_ptr) List_Search(mesh->mface, (void *) &mf_tmp,
                                  mesh->nf, sizeof(MFace_ptr), compareID);
+    
+    MF_Delete(mf_tmp, 0);
+  } else {
+    MSTK_Report("MESH_FaceFromID",
+                "Call MESH_Enable_LocalIDSearch first for faster queries",
+                MSTK_ERROR);
 
-  MF_Delete(mf_tmp, 0);
+    int idx = 0;
+    while ((mf = MESH_Next_Face(mesh, &idx)))
+      if (MF_ID(mf) == id) break;    
+  }
 
   return mf;
 }
@@ -745,14 +785,8 @@ MFace_ptr MESH_FaceFromID(Mesh_ptr mesh, int id) {
  
 
 MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
-  if (id < 1 || id > mesh-> max_rid)
+  if (!mesh->nr || id < 1 || id > mesh->max_rid)
     return NULL;
-
-  if (mesh->nr && !mesh->mrlist_sorted_by_lid) {
-    List_Compress(mesh->mregion);  // can't sort list with gaps
-    List_Sort(mesh->mregion, mesh->nr, sizeof(MRegion_ptr), compareID);
-    mesh->mrlist_sorted_by_lid = 1;
-  }
 
   /* Typically this will work for static meshes */
 
@@ -760,13 +794,23 @@ MRegion_ptr MESH_RegionFromID(Mesh_ptr mesh, int id) {
   if (mr && MR_ID(mr) == id)
     return mr;
 
-  MRegion_ptr mr_tmp = MR_New(NULL);  /* floating region not in any mesh */
-  MEnt_Set_ID(mr_tmp, id);
+  if (mesh->lidlists_sorted) {
+    MRegion_ptr mr_tmp = MR_New(NULL);  /* floating region not in any mesh */
+    MEnt_Set_ID(mr_tmp, id);
+    
+    mr = (MRegion_ptr) List_Search(mesh->mregion, (void *) &mr_tmp,
+                                   mesh->nr, sizeof(MRegion_ptr), compareID);
+    
+    MR_Delete(mr_tmp, 0);
+  } else {
+    MSTK_Report("MESH_RegionFromID",
+                "Call MESH_Enable_LocalIDSearch first for faster queries",
+                MSTK_ERROR);
 
-  mr = (MRegion_ptr) List_Search(mesh->mregion, (void *) &mr_tmp,
-                                 mesh->nr, sizeof(MRegion_ptr), compareID);
-
-  MR_Delete(mr_tmp, 0);
+    int idx = 0;
+    while ((mr = MESH_Next_Region(mesh, &idx)))
+      if (MR_ID(mr) == id) break;    
+  }
 
   return mr;
 }
@@ -840,7 +884,6 @@ void MESH_Add_Face(Mesh_ptr mesh, MFace_ptr f){
   if (MF_ID(f) == 0) { /* New face */
     (mesh->max_fid)++;
     MF_Set_ID(f,mesh->max_fid);
-
   }
 }    
      
@@ -902,7 +945,7 @@ void MESH_Rem_Vertex(Mesh_ptr mesh, MVertex_ptr v) {
   }
 #endif
 
-  MESH_Flag_EntList_As_Unsorted(mesh, MVERTEX);
+  MESH_Flag_EntLists_As_Unsorted(mesh);
   return;
 }    
      
@@ -951,7 +994,7 @@ void MESH_Rem_Edge(Mesh_ptr mesh, MEdge_ptr e) {
   }
 #endif
 
-  MESH_Flag_EntList_As_Unsorted(mesh, MEDGE);
+  MESH_Flag_EntLists_As_Unsorted(mesh);
 
   return;
 }    
@@ -1001,7 +1044,7 @@ void MESH_Rem_Face(Mesh_ptr mesh, MFace_ptr f){
   }
 #endif
 
-  MESH_Flag_EntList_As_Unsorted(mesh, MFACE);
+  MESH_Flag_EntLists_As_Unsorted(mesh);
 
   return;
 }    
@@ -1050,7 +1093,7 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
   }
 #endif
 
-  MESH_Flag_EntList_As_Unsorted(mesh, MREGION);
+  MESH_Flag_EntLists_As_Unsorted(mesh);
 
   return;
 }    
@@ -1066,23 +1109,6 @@ List_ptr   MESH_Face_List(Mesh_ptr mesh) {
 }
 List_ptr   MESH_Region_List(Mesh_ptr mesh) {
   return mesh->mregion;
-}
-
-
-void MESH_Flag_EntList_As_Unsorted(Mesh_ptr mesh, MType mtype) {
-  switch (mtype) {
-    case MVERTEX:
-      mesh->mvlist_sorted_by_lid = 0; break;
-    case MEDGE:
-      mesh->melist_sorted_by_lid = 0; break;
-    case MFACE:
-      mesh->mflist_sorted_by_lid = 0; break;
-    case MREGION:
-      mesh->mrlist_sorted_by_lid = 0; break;
-    default:
-      break;
-  }
-  return;
 }
 
 #ifdef MSTK_HAVE_MPI
@@ -1375,6 +1401,7 @@ void MESH_Sort_GlobalIDSearch_Lists(Mesh_ptr mesh) {
     List_Sort(mesh->gid_sorted_mrlist,mesh->nr,sizeof(MRegion_ptr),compareGlobalID);
   }
 
+  mesh->gidlists_sorted = 1;
 }
 
 
@@ -1384,7 +1411,6 @@ void MESH_Disable_GlobalIDSearch(Mesh_ptr mesh) {
     List_Delete(mesh->gid_sorted_mvlist);
     mesh->gid_sorted_mvlist = NULL;
   }
-
   if (mesh->gid_sorted_melist) {
     List_Delete(mesh->gid_sorted_melist);
     mesh->gid_sorted_melist = NULL;
@@ -1398,6 +1424,7 @@ void MESH_Disable_GlobalIDSearch(Mesh_ptr mesh) {
     mesh->gid_sorted_mrlist = NULL;
   }
 
+  mesh->gidlists_sorted = 0;
 }
                   
   /* right now using linear search, a hash table should be more efficient */
@@ -1406,7 +1433,13 @@ MVertex_ptr MESH_VertexFromGlobalID(Mesh_ptr mesh, int global_id) {
   MVertex_ptr mv;
 
   if (!mesh->gid_sorted_mvlist)
-    MESH_Enable_GlobalIDSearch(mesh);
+    MSTK_Report("MESH_VertexFromGlobalID",
+                "Call MESH_Enable_GlobalIDSearch first; Since this uses extra memory, call MESH_Disable_GlobalIDSearch when such searches are done",
+                MSTK_FATAL);
+  if (!mesh->gidlists_sorted)
+    MSTK_Report("MESH_VertexFromGlobalID",
+                "Call MESH_Sort_GlobalIDSearchLists first",
+                MSTK_FATAL);
 
   MVertex_ptr mv_tmp = MV_New(NULL);
   MEnt_Set_GlobalID(mv_tmp,global_id);
@@ -1424,7 +1457,13 @@ MEdge_ptr MESH_EdgeFromGlobalID(Mesh_ptr mesh, int global_id) {
   MEdge_ptr me;
 
   if (!mesh->gid_sorted_melist)
-    MESH_Enable_GlobalIDSearch(mesh);
+    MSTK_Report("MESH_EdgeFromGlobalID",
+                "Call MESH_Enable_GlobalIDSearch first; Since this uses extra memory, call MESH_Disable_GlobalIDSearch when such searches are done",
+                MSTK_FATAL);
+  if (!mesh->gidlists_sorted)
+    MSTK_Report("MESH_EdgeFromGlobalID",
+                "Call MESH_Sort_GlobalIDSearchLists first",
+                MSTK_FATAL);
 
   MEdge_ptr me_tmp = ME_New(NULL);
   MEnt_Set_GlobalID(me_tmp,global_id);
@@ -1441,8 +1480,14 @@ MFace_ptr MESH_FaceFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MFace_ptr mf;
 
-  if (!mesh->gid_sorted_mflist)
-    MESH_Enable_GlobalIDSearch(mesh);
+  if (!mesh->gid_sorted_mvlist)
+    MSTK_Report("MESH_FaceFromGlobalID",
+                "Call MESH_Enable_GlobalIDSearch first; Since this uses extra memory, call MESH_Disable_GlobalIDSearch when such searches are done",
+                MSTK_FATAL);
+  if (!mesh->gidlists_sorted)
+    MSTK_Report("MESH_FaceFromGlobalID",
+                "Call MESH_Sort_GlobalIDSearchLists first",
+                MSTK_FATAL);
 
   MFace_ptr mf_tmp = MF_New(NULL);
   MEnt_Set_GlobalID(mf_tmp,global_id);
@@ -1459,8 +1504,14 @@ MRegion_ptr MESH_RegionFromGlobalID(Mesh_ptr mesh, int global_id) {
   int idx;
   MRegion_ptr mr;
 
-  if (!mesh->gid_sorted_mrlist)
-    MESH_Enable_GlobalIDSearch(mesh);
+  if (!mesh->gid_sorted_mvlist)
+    MSTK_Report("MESH_RegionFromGlobalID",
+                "Call MESH_Enable_GlobalIDSearch first; Since this uses extra memory, call MESH_Disable_GlobalIDSearch when such searches are done",
+                MSTK_FATAL);
+  if (!mesh->gidlists_sorted)
+    MSTK_Report("MESH_RegionFromGlobalID",
+                "Call MESH_Sort_GlobalIDSearchLists first",
+                MSTK_FATAL);
 
   MRegion_ptr mr_tmp = MR_New(NULL);
   MEnt_Set_GlobalID(mr_tmp,global_id);
