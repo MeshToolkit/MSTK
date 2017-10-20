@@ -26,6 +26,8 @@ int MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm) {
 
   if (num == 1) return 1;
 
+  MESH_Enable_LocalIDSearch(mesh);  /* faster search of entities by Local ID */
+
 #ifdef DEBUG
   fprintf(stderr,"Begin checking parallel information on submesh %d\n",rank);
 #endif
@@ -48,6 +50,7 @@ int MESH_Parallel_Check(Mesh_ptr mesh, MSTK_Comm comm) {
 
 int MESH_Parallel_Check_GlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm comm) {
   int valid = 1;
+
   valid = MESH_Parallel_Check_VertexGlobalID(mesh,rank,num,comm);
   valid &= MESH_Parallel_Check_EdgeGlobalID(mesh,rank,num,comm);
   valid &= MESH_Parallel_Check_FaceGlobalID(mesh,rank,num,comm);

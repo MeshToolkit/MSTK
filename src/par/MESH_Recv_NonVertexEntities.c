@@ -37,6 +37,7 @@ extern "C" {
   int MESH_Recv_NonVertexEntities(Mesh_ptr mesh, int fromrank, int ne, int nf, 
                                   int nr, MSTK_Comm comm) {
     RepType rtype = MESH_RepType(mesh);
+    MESH_Enable_LocalIDSearch(mesh);  /* Faster search for entities by local IDs */
     return MESH_Recv_NonVertexEntities_jmp[rtype](mesh,fromrank,ne,nf,nr,comm);
   }
 
