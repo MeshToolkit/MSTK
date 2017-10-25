@@ -43,39 +43,6 @@ extern "C" {
   int MESH_ImportFromNemesisI(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
   char mesg[256], funcname[32]="MESH_ImportFromNemesisI";
-  char title[256], elem_type[256], sidesetname[256], nodesetname[256];
-  char matsetname[256];
-  char **elem_blknames;
-  int i, j, k, k1;
-  int comp_ws = sizeof(double), io_ws = 0;
-  int exoid=0, status;
-  int ndim, nnodes, nelems, nelblock, nnodesets, nsidesets;
-  int nedges, nedge_blk, nfaces, nface_blk, nelemsets;
-  int nedgesets, nfacesets, nnodemaps, nedgemaps, nfacemaps, nelemmaps;
-  int *elem_blk_ids, *connect, *node_map, *elem_map, *nnpe;
-  int nelnodes, neledges, nelfaces;
-  int nelem_i, natts;
-  int *sideset_ids, *ss_elem_list, *ss_side_list, *nodeset_ids, *ns_node_list;
-  int num_nodes_in_set, num_sides_in_set, num_df_in_set;
-
-  double *xvals, *yvals, *zvals, xyz[3];
-  float version;
-
-  int exo_nrf[3] = {4,5,6};
-  int exo_nrfverts[3][6] =
-    {{3,3,3,3,0,0},{4,4,4,3,3,0},{4,4,4,4,4,4}};
-  int exo_rfverts[3][6][4] =
-    {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{2,1,0,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
-     {{0,1,4,3},{1,2,5,4},{2,0,3,5},{2,1,0,-1},{3,4,5,-1},{-1,-1,-1,-1}},
-     {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{3,2,1,0},{4,5,6,7}}};
-
-  List_ptr fedges, rfaces;
-  MVertex_ptr mv, *fverts, *rverts;
-  MEdge_ptr me;
-  MFace_ptr mf;
-  MRegion_ptr mr;
-  MAttrib_ptr nmapatt=NULL, elblockatt=NULL, nodesetatt=NULL, sidesetatt=NULL;
-  MSet_ptr faceset=NULL, nodeset=NULL, sideset=NULL, matset=NULL;
   int distributed=0;
   
   ex_init_params exopar;
