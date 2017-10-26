@@ -1098,6 +1098,43 @@ void MESH_Rem_Region(Mesh_ptr mesh, MRegion_ptr r){
   return;
 }    
 
+/* Reset the max IDs of entities cached in the mesh data structure
+   Necessary after MESH has been modified and then renumbered for IDs
+   to be contiguous */
+void  MESH_Reset_Cached_MaxIDs(Mesh_ptr mesh) {
+  MVertex_ptr mv;
+  MEdge_ptr me;
+  MFace_ptr mf;
+  MRegion_ptr mr;
+
+  int idx = 0;
+  int maxid = 0;
+  while ((mv = MESH_Next_Vertex(mesh, &idx)))
+    if (maxid < MV_ID(mv)) maxid = MV_ID(mv);
+  mesh->max_vid = maxid;
+
+  idx = 0;
+  maxid = 0;
+  while ((me = MESH_Next_Edge(mesh, &idx)))
+    if (maxid < ME_ID(me)) maxid = ME_ID(me);
+  mesh->max_eid = maxid;
+
+  idx = 0;
+  maxid = 0;
+  while ((mf = MESH_Next_Face(mesh, &idx)))
+    if (maxid < MF_ID(mf)) maxid = MF_ID(mf);
+  mesh->max_fid = maxid;
+
+  idx = 0;
+  maxid = 0;
+  while ((mr = MESH_Next_Region(mesh, &idx)))
+    if (maxid < MR_ID(mr)) maxid = MR_ID(mr);
+  mesh->max_rid = maxid;
+}
+
+
+
+
 List_ptr   MESH_Vertex_List(Mesh_ptr mesh) {
   return mesh->mvertex;
 }
