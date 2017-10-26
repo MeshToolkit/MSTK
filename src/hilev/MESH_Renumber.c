@@ -1049,7 +1049,13 @@ void MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype) {
   while ((mv = MESH_Next_Vertex(mesh,&idx))) {
     MEnt_Set_AttVal(mv,vidatt,MV_ID(mv),0.0,NULL);
   }
-    
+ 
+
+  /* We have to reset the max IDs stored in the mesh so that we can correctly
+     assign IDs to new entities */
+
+  MESH_Reset_Cached_MaxIDs(mesh);
+
   return;
 }
 

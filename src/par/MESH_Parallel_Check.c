@@ -559,6 +559,29 @@ int MESH_Parallel_Check_FaceGlobalID(Mesh_ptr mesh, int rank, int num, MSTK_Comm
                   "Face Global IDs are not contiguous",MSTK_WARN);
   if (fgidlist) free(fgidlist);
 
+  /* Check if at least one of the regions connected to an owned face
+   * is also be owned */
+
+  idx = 0;
+  while ((mf = MESH_Next_Face(mesh, &idx))) {
+    if (MF_PType(mf) == POVERLAP) {
+      List_ptr fregs = MF_Regions(mf);
+      if (fregs) {
+        int nrowned = 0;
+        for (i = 0; i < List_Num_Entries(fregs); i++) {
+          PType ptype = MR_PType(List_Entry(fregs,i));
+          if (ptype == POVERLAP || ptype == PINTERIOR)
+            nrowned++;
+        }
+        if (!nrowned) {
+          sprintf(mesg,
+                  "OWNED face %d (GID %d) on proc %d not connected to any OWNED regions. Potential problem\n", MF_ID(mf), MF_GlobalID(mf), rank);
+          MSTK_Report("MESH_Parallel_Check_FaceGlobalID", mesg, MSTK_WARN);
+        }
+      }
+    }
+  }
+
   /* collect overlap face list for fast checking */
   idx = 0; nof = 0; ov_faces = List_New(10);
   while ((mf = MESH_Next_Face(mesh, &idx)))  {

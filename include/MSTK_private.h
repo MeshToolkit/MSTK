@@ -33,6 +33,7 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
 
 /* THIS FILE HAS ADDITIONAL FUNCTIONS THAT THE NORMAL USER NEED NOT SEE */
 
+  void       MESH_Reset_Cached_MaxIDs(Mesh_ptr mesh);
 
   void       MESH_Add_Vertex(Mesh_ptr mesh, MVertex_ptr v);
   void       MESH_Add_Edge(Mesh_ptr mesh, MEdge_ptr e);
