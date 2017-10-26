@@ -220,7 +220,8 @@ void MSTK_Init(void);
      mtype      = Type of entity to renumber (MVERTEX, MEDGE, MFACE, MREGION
                   or MALLTYPE)
 
-                  WORKS ONLY FOR SERIAL MESHES - See Mesh_RenumberGlobalIDs
+     PER PROCESSOR RENUMBERING ONLY! See Mesh_RenumberGlobalIDs for
+     consistent global ID renumbering of distributed meshes
   */
 
   void        MESH_Renumber(Mesh_ptr mesh, int renum_type, MType mtype);
