@@ -25,11 +25,29 @@ if (PREFER_STATIC_LIBRARIES)
    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a; .so")
 endif()
 
+# Default build type is Release (Optimized)
 
-##############################################################################
-# MSTK LIBRARY BUILD CONFIGURATION
+if (NOT CMAKE_BUILD_TYPE)
+  set (CMAKE_BUILD_TYPE Release)
+endif ()
+
+
+###############################################################################
+# include files and source files - have this upfront so that an MSTK.h from
+# any of the TPL installations doesn't get picked up first
 ##############################################################################
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
+add_subdirectory(src)
+################################################################################
+# Discover TPLs (Third Party Libraries) based on configure options
+################################################################################
+
+message("\n-------------------------------------------------------------------")
+message("--- Configuring MSTK with:")
+
+#
 # Flags for parallel build
 
 if (ENABLE_PARALLEL)
@@ -42,90 +60,6 @@ if (ENABLE_PARALLEL)
     message("PARALLELISM OFF")
   endif (MPI_FOUND)
 endif (ENABLE_PARALLEL)
-
-
-# Default build type is Release (Optimized)
-
-if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE Release)
-endif ()
-
-
-
-# include files and source files
-
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
-add_subdirectory(src)
-
-
-
-# Extra library suffix for Debug builds
-
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-  if (INSTALL_ADD_DEBUG_SUFFIX)
-    set (CONFIG_SUFFIX -d)
-  endif ()
-  add_definitions(-DDEBUG)
-endif ()
-
-# Add version number to library name
-
-if (INSTALL_ADD_VERSION)
-  set (MSTKLIB mstk-${MSTK_VERSION_MAJOR}.${MSTK_VERSION_MINOR}${CONFIG_SUFFIX})
-else ()
-  set (MSTKLIB mstk${CONFIG_SUFFIX})
-endif ()
-
-add_library(${MSTKLIB} ${mstkfiles})
-message(STATUS "Building library " ${MSTKLIB})
-
-
-# Default INSTALL Directory
-
-if (NOT INSTALL_DIR)
-  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-endif ()
-
-# where to install library
-if (INSTALL_PREFIX_ARCHOS) 
-  install(TARGETS ${MSTKLIB}
-    EXPORT mstk
-    ARCHIVE DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
-    LIBRARY DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
-    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-  )
-else ()
-  install(TARGETS ${MSTKLIB}
-    EXPORT mstk
-    ARCHIVE DESTINATION ${INSTALL_DIR}/lib
-    LIBRARY DESTINATION ${INSTALL_DIR}/lib
-    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-  )
-endif ()
-
-# where to install include files
-
-if (${INSTALL_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
-else ()
-INSTALL(FILES 
-	${PROJECT_SOURCE_DIR}/include/MSTK.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_defines.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_types.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_externs.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_util.h
-        DESTINATION ${INSTALL_DIR}/include)
-endif ()
-
-
-
-
-################################################################################
-# Discover TPLs (Third Party Libraries) based on configure options
-################################################################################
-
-message("\n-------------------------------------------------------------------")
-message("--- Configuring MSTK with:")
 
 
 ################################################################################
@@ -347,6 +281,36 @@ set(MSTK_TPL_LIBRARIES_EXPORT ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES}
   ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES_EXPORT})
 
 
+##############################################################################
+# MSTK LIBRARY BUILD CONFIGURATION
+##############################################################################
+
+
+# Extra library suffix for Debug builds
+
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  if (INSTALL_ADD_DEBUG_SUFFIX)
+    set (CONFIG_SUFFIX -d)
+  endif ()
+  add_definitions(-DDEBUG)
+endif ()
+
+# Add version number to library name
+
+if (INSTALL_ADD_VERSION)
+  set (MSTKLIB mstk-${MSTK_VERSION_MAJOR}.${MSTK_VERSION_MINOR}${CONFIG_SUFFIX})
+else ()
+  set (MSTKLIB mstk${CONFIG_SUFFIX})
+endif ()
+
+add_library(${MSTKLIB} ${mstkfiles})
+message(STATUS "Building library " ${MSTKLIB})
+
+# Useful to define this particularly for shared libraries on OSX
+
+target_link_libraries(${MSTKLIB} ${MSTK_TPL_LIBRARIES})
+
+
 #############################################################################
 # Unittests
 ###############################################################################
@@ -368,6 +332,46 @@ add_subdirectory(utils)
 add_subdirectory(example)
 
 
+##########################################################
+# Configuration of installation options
+##########################################################
+
+# Default INSTALL Directory
+
+if (NOT INSTALL_DIR)
+  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+endif ()
+
+# where to install library
+if (INSTALL_PREFIX_ARCHOS) 
+  install(TARGETS ${MSTKLIB}
+    EXPORT mstk
+    ARCHIVE DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
+    LIBRARY DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
+  )
+else ()
+  install(TARGETS ${MSTKLIB}
+    EXPORT mstk
+    ARCHIVE DESTINATION ${INSTALL_DIR}/lib
+    LIBRARY DESTINATION ${INSTALL_DIR}/lib
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
+  )
+endif ()
+
+# where to install include files
+
+if (${INSTALL_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
+else ()
+INSTALL(FILES 
+	${PROJECT_SOURCE_DIR}/include/MSTK.h
+	${PROJECT_SOURCE_DIR}/include/MSTK_defines.h
+	${PROJECT_SOURCE_DIR}/include/MSTK_types.h
+	${PROJECT_SOURCE_DIR}/include/MSTK_externs.h
+	${PROJECT_SOURCE_DIR}/include/MSTK_util.h
+        DESTINATION ${INSTALL_DIR}/include)
+endif ()
+
 ############################################################################## 
 # Write a configuration file from template replacing only variables enclosed
 # by the @ sign. This will let other programs build on MSTK discover how
@@ -379,8 +383,4 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in
 install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
         DESTINATION ${INSTALL_DIR}/share/cmake/)
 
-# export cmake file other projects can use to find MSTK and its dependencies
-# I think this is not needed because of the previous config file
-#
-#install(EXPORT mstk DESTINATION ${INSTALL_DIR}/lib/${ARCHOS})
 
