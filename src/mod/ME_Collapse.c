@@ -413,7 +413,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
         edge2_on_boundary = 0;
         edim = ME_GEntDim(edge2);
         if (edim == 1 || edim == 2)
-          edge_on_boundary = 1;
+          edge2_on_boundary = 1;
         else if (edim == 4 && ME_PType(edge2) != PGHOST) {
           /* Don't know classification of edge so check if its a 
              boundary edge based on topology. However, do this check 
@@ -433,7 +433,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
                 if (nfr == 1 || 
                     (nfr == 2 && 
                      MR_GEntID(List_Entry(fregs,0)) != MR_GEntID(List_Entry(fregs,1))))
-                  edge_on_boundary = 1;
+                  edge2_on_boundary = 1;
                 List_Delete(fregs);
               }
               if (edge2_on_boundary) break;
@@ -454,7 +454,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 
           int egid = ME_GlobalID(edge);
           int egid2 = ME_GlobalID(edge2);
-          if (egid < egid2) {
+          if (egid <= egid2) {  /* Want this to work even when egid,egid2 = 0 */
             MEs_Merge(edge,edge2,topoflag);	
             List_Rem(vedges,edge2);	
             List_Add(*deleted_entities,edge2);
@@ -546,7 +546,7 @@ MVertex_ptr ME_Collapse(MEdge_ptr e, MVertex_ptr vkeep_in, int topoflag,
 
             int fgid = MF_GlobalID(face);
             int fgid2 = MF_GlobalID(face2);
-            if (fgid < fgid2) {
+            if (fgid <= fgid2) {  /* Want this to work when fgid, fgid2 = 0 */
               MFs_Merge(face,face2,topoflag);	
               List_Rem(vfaces,face2);
               List_Add(*deleted_entities,face2);
