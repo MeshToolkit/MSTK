@@ -372,6 +372,7 @@ extern "C" {
         free(nnpe);
       }
 
+      free(face_blk_ids);
     }
 
 
@@ -1399,6 +1400,7 @@ extern "C" {
                 }
               }
               List_Delete(rfaces);
+              free(fxyz);
             }  /* while (!mrgood && (mr = MESH_Next_Entry(mesh, &idx))) */
 
             if (!mrgood)
@@ -2083,16 +2085,12 @@ extern "C" {
         } /* If its a scalar variable */
       } /* for each element variable */
 
-      free(elem_blk_ids);
-      for (i = 0; i < nelblock; i++) free(elem_blknames[i]);
-      free(elem_blknames);
-
       for (i = 0; i < nelemvars; i++)
         free(elvarnames[i]);
       free(elvarnames);
     } /* if (nelemvars) */
 
-
+    
     /* Read in variables associated with nodes */
 
     /* How many variables are there on nodes */
@@ -2261,6 +2259,11 @@ extern "C" {
 
     ex_close(exoid);
 
+    free(elem_blk_ids);
+    for (i = 0; i < nelblock; i++) free(elem_blknames[i]);
+    free(elem_blknames);
+    free(nel_in_blk);
+    
     return 1;
 
   }
