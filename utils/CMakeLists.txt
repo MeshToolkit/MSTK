@@ -36,3 +36,10 @@ endif (ENABLE_ExodusII)
 if (ENABLE_PARALLEL)
   add_subdirectory(vizpart)
 endif (ENABLE_PARALLEL)
+
+
+##############################################################################
+# Rectangular mesh creation
+##############################################################################
+
+add_subdirectory(mkstruc)
