@@ -4,6 +4,7 @@
 #include "../../../include/MSTK_private.h"
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 SUITE(Parallel) {
 TEST(RenumberGIDs_Dist) {
