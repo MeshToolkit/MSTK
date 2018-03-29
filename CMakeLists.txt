@@ -253,6 +253,7 @@ if (ENABLE_Tests)
       ${UnitTest_DIR}/include
       ${UnitTest_DIR}/src 
       ${UnitTest_DIR}/include/unittest++
+      ${UnitTest_DIR}/include/UnitTest++
       )
     if (NOT UNITTEST_INCLUDES)
       message(FATAL_ERROR "Error: could not find UnitTest++ includes")
