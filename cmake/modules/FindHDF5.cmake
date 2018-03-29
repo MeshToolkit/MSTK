@@ -148,17 +148,13 @@ function(_HDF5_EXTRA_LIBRARIES _file _var)
   if (NOT _library_name_flags)
     set(_library_name_flags ${_library_flags})
   endif(NOT _library_name_flags)
-  message(STATUS "_library_flags ${_library_flags}")
-  message(STATUS "_library_name_flags ${_library_name_flags}")
   foreach ( _lib ${_library_name_flags} )
     _HDF5_CHOMP_STRING(${_lib} _lib_chomp)
     string( REGEX REPLACE "^[,]-l|^-l" "" _lib_chomp ${_lib_chomp})
-    message(STATUS "_lib_chomp ${_lib_chomp}")
     list(APPEND _libraries "${_lib_chomp}")
   endforeach()
   string(REGEX REPLACE "^ " "" _libraries "${_libraries}")
 
-  message(STATUS "_libraries ${_libraries}")
 
   # Grab all the extra library paths to build a search list
   _HDF5_EXTRA_LIBRARY_DIRS(${_file} _search_list)
@@ -180,8 +176,6 @@ function(_HDF5_EXTRA_LIBRARIES _file _var)
     if ( NOT _lib_name )
       find_library(_lib_name NAMES ${_lib})
     endif()   
-
-    message(STATUS "_lib  ${_lib}    _lib_name ${_lib_name}")
 
     # Add the full library name if either find succeeded
     # otherwise add the library name.
