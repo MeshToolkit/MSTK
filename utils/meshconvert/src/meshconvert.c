@@ -10,8 +10,6 @@
 
 #include "MSTK.h" 
 
-typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
-
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;

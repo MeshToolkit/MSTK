@@ -90,6 +90,10 @@ typedef enum {ATTOP_UNDEF, ATTOP_MAX, ATTOP_MIN, ATTOP_SUM, ATTOP_AVG} MAttOpTyp
  */
 typedef enum PType {PINTERIOR=0, POVERLAP=1, PBOUNDARY=2, PGHOST=3} PType;
 
+
+/* Mesh file formats */
+typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
+  
 #ifdef __cplusplus
 	   }
 #endif
