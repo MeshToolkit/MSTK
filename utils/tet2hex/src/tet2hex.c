@@ -19,6 +19,8 @@ int main(int argc, char *argv[]) {
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
 
+  fprintf(stderr,"\nApp to convert a tet mesh to a hex mesh by splitting\n");
+  fprintf(stderr,"Contact: Rao Garimella (rao@lanl.gov)\n");
 
   if (argc < 3) {
     fprintf(stderr,"\n");
