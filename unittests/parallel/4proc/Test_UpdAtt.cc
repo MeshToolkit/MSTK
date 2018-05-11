@@ -1,4 +1,5 @@
 #include <UnitTest++.h>
+#include <cstdio>
 
 #include "../../../include/MSTK.h"
 #include "../../../include/MSTK_private.h"

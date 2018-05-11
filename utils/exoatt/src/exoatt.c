@@ -12,8 +12,6 @@
 
 #include "MSTK.h" 
 
-typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
-
 char progname[16] = "exoatt";
 void import_attributes(Mesh_ptr mesh, char *attfname);
 void import_sets(Mesh_ptr mesh, char *elsetfname);

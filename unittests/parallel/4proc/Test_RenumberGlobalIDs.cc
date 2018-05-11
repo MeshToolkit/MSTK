@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <cstdio>
 
 SUITE(Parallel) {
 TEST(RenumberGIDs_Dist) {

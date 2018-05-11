@@ -11,7 +11,7 @@
 */
 
 
-#define MSTK_VERSION "2.27rc2"
+#define MSTK_VERSION "3.0.4"
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -154,6 +154,7 @@ void MSTK_Init(void);
   int         MESH_BuildClassfn(Mesh_ptr mesh, int use_geometry);
   int         MESH_DelInterior(Mesh_ptr mesh);
   int         MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
+  int         MESH_Tri2Quad(Mesh_ptr trimesh, Mesh_ptr *quadmesh);
 
   /* Check if mesh topology is valid */
   int         MESH_CheckTopo(Mesh_ptr mesh);

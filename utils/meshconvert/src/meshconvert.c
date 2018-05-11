@@ -10,8 +10,6 @@
 
 #include "MSTK.h" 
 
-typedef enum {MSTK,GMV,EXODUSII,NEMESISI,CGNS,VTK,STL,AVSUCD,DX,X3D} MshFmt;
-
 int main(int argc, char *argv[]) {
   char infname[256], outfname[256];
   Mesh_ptr mesh;
@@ -20,7 +18,6 @@ int main(int argc, char *argv[]) {
   int check_topo=0;
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
-
 
   if (argc < 3) {
     fprintf(stderr,"\n");
@@ -64,7 +61,11 @@ int main(int argc, char *argv[]) {
 #else
   MSTK_Comm comm = NULL;
 #endif
-  
+
+  if (rank == 0) {
+    fprintf(stderr,"\nApp to convert unstructured meshes between formats\n");
+    fprintf(stderr,"Contact: Rao Garimella (rao@lanl.gov)\n\n");
+  }
 
   if (argc > 3) {
     int i;
