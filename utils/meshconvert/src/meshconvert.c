@@ -19,9 +19,6 @@ int main(int argc, char *argv[]) {
   int num_ghost_layers=0, partmethod=0;
   MshFmt inmeshformat, outmeshformat;
 
-  fprintf(stderr,"\nApp to convert unstructured meshes between formats\n");
-  fprintf(stderr,"Contact: Rao Garimella (rao@lanl.gov)\n");
-
   if (argc < 3) {
     fprintf(stderr,"\n");
     fprintf(stderr,"usage: meshconvert <--classify=0|n|1|y|2> <--partition=y|1|n|0> <--partition-method=0|1|2> <--parallel-check=y|1|n|0> <--weave=y|1|n|0> <--num-ghost-layers=?> <--check-topo=y|1|n|0> infilename outfilename\n\n");
@@ -64,7 +61,11 @@ int main(int argc, char *argv[]) {
 #else
   MSTK_Comm comm = NULL;
 #endif
-  
+
+  if (rank == 0) {
+    fprintf(stderr,"\nApp to convert unstructured meshes between formats\n");
+    fprintf(stderr,"Contact: Rao Garimella (rao@lanl.gov)\n\n");
+  }
 
   if (argc > 3) {
     int i;
