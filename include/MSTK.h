@@ -57,6 +57,13 @@ void MSTK_Init(void);
 				  int *nrv, int **rvids, int *nrf, 
 				  int ***rfvtemplate);
 
+  /* Generate a structured mesh in 2D or in 3D */
+
+  Mesh_ptr    MESH_Gen_Structured(double lx, double ly, double lz,
+				  double ux, double uy, double uz,
+				  int nx, int ny, int nz);
+  
+  
   /* Import mesh data into the mesh object from various
      formats. 'comm' can be NULL for serial codes. 'opts' is an
      integer array with different meanings for different
@@ -98,6 +105,14 @@ void MSTK_Init(void);
 
   int         MESH_ImportFromExodusII(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm);
 
+  /*--------------------------------------------------------------------------*/
+  /* Get element graph from Exodus II file                                    */
+  /* adjbeg - pointer to array containing the offsets of the adjelems list at */
+  /*          which the adjacent elements are enumerated for each element     */
+  /*--------------------------------------------------------------------------*/
+  
+  int        ExodusII_GetElementGraph(const char *filename, int *nelems,
+				      int **adjbeg, int **adjelems);
 
   /*--------------------------------------------------------------------------*/
   /* Read an Nemesis I file into MSTK */
@@ -114,7 +129,7 @@ void MSTK_Init(void);
 
 
   int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
-
+  
 
   /* Write mesh data into a file in the native MSTK format. 'comm' can
      be NULL for serial codes */
@@ -155,6 +170,15 @@ void MSTK_Init(void);
   int         MESH_DelInterior(Mesh_ptr mesh);
   int         MESH_Tet2Hex(Mesh_ptr tetmesh, Mesh_ptr *hexmesh);
   int         MESH_Tri2Quad(Mesh_ptr trimesh, Mesh_ptr *quadmesh);
+
+  /*--------------------------------------------------------------------------*/
+  /* Get element graph from mesh                                              */
+  /* adjbeg - pointer to array containing the offsets of the adjelems list at */
+  /*          which the adjacent elements are enumerated for each element     */
+  /*--------------------------------------------------------------------------*/
+  
+  int        MESH_GetElementGraph(Mesh_ptr mesh, int *nelems,
+				  int **adjbeg, int **adjelems);
 
   /* Check if mesh topology is valid */
   int         MESH_CheckTopo(Mesh_ptr mesh);
