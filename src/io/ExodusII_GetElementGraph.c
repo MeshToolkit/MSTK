@@ -11,9 +11,6 @@
 #include "exodusII_ext.h"
 #endif
 
-#include "uthash.h"
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,6 +46,7 @@ extern "C" {
 
 */
 
+  
   unsigned int hash_ints(int n, unsigned int *nums, unsigned int hash_table_size) {
     /* Doesn't work well for 2 integers */
     int i, k=0;
@@ -81,6 +79,7 @@ extern "C" {
     int i, k=0;
     unsigned int R = 1234567891;
 
+    /* fprintf(stderr, "New hash - hash_table_size %d\n",hash_table_size); */
     unsigned int h = 1;
     unsigned int min = 1e+9;
     for (i = 0; i < n; i++)
@@ -89,14 +88,21 @@ extern "C" {
         k = i;
       }
     if (nums[(k+1)%n] < nums[(k-1+n)%n]) {
-      for (i = 0; i < n; i++)
+      for (i = 0; i < n; i++) {
         h *= R + 2*nums[(k+i)%n];
+	/* fprintf(stderr," %d %d ",nums[(k+i)%n],h); */
+      }
     }
     else {
-      for (i = 0; i < n; i++)
+      for (i = 0; i < n; i++) {
         h *= R + 2*nums[(k-i+n)%n];
+	/* fprintf(stderr," %d %d ",nums[(k-i+n)%n],h); */
+      }
     }
     h /= 2;
+    /* fprintf(stderr,"h/2 %d\n",h); */
+
+    /* fprintf(stderr,"final hash h %% hash_table_size  %d\n\n",h % hash_table_size); */
 
 
     return h % hash_table_size;
@@ -106,7 +112,7 @@ extern "C" {
 #define MAX_COLLISIONS 3
   
   typedef struct {
-    int key;     /* hash key from sorted list of vertices*/ 
+    int mykey;     /* hash key from sorted list of vertices*/ 
     int id;      /* actual id in list of faces */
     int elem[2]; /* ids of elements connected to face - can be -1 */
     int nv;      /* number of vertices */
@@ -116,45 +122,37 @@ extern "C" {
   } face_t;
 
   typedef struct {
-    int key;           /* hash key that all faces in the list share */
+    int mykey;           /* hash key that all faces in the list share */
     int nf;            /* number of faces in list - typically small 2 or so */
     face_t *faces[MAX_COLLISIONS];     /* list of faces */
-
-    UT_hash_handle hh;
   } facelist_t;
   
 
   /* find a face defined by these vertices - assumption is that verts
      is sorted in increasing order */
   
-  face_t *find_face(facelist_t *face_hashtable, int hash_table_size,
+  face_t *find_face(facelist_t **face_hashtable, int hash_table_size,
 		    int nv, int *verts) {
     int hash_key = hash_ints2(nv, verts, hash_table_size);
 
-    facelist_t *flist;
-    HASH_FIND_INT(face_hashtable, &hash_key, flist);
-
+    facelist_t *flist = face_hashtable[hash_key];
     if (!flist)
       return NULL;
     else {
-      if (flist->nf == 1)
-	return flist->faces[0];
-      else {
-	int i;
-	face_t *face = NULL;
-	for (i = 0; i < flist->nf; i++) {
-	  face = flist->faces[i];
-	  if (face->nv != nv) continue;
-	  int allmatch = 1;
-	  int j;
-	  for (j = 0; j < nv; j++)
-	    if (face->verts[j] != verts[j]) {
-	      allmatch = 0;
-	      break;
-	    }
-	  if (allmatch) break;
-	}
-	return face;  /* could be null if a match was not found */
+      int i;
+      face_t *face = NULL;
+      int allmatch;
+      for (i = 0; i < flist->nf; i++) {
+	face = flist->faces[i];
+	if (face->nv != nv) continue;
+	int allmatch = 1;
+	int j;
+	for (j = 0; j < nv; j++)
+	  if (face->verts[j] != verts[j]) {
+	    allmatch = 0;
+	    break;
+	  }
+	if (allmatch) return face;  /* could be null if a match was not found */
       }
     }
 
@@ -164,30 +162,43 @@ extern "C" {
   /* Need address of pointer to face_hashtable since the pointer could
      be modified */
   
-  int add_face(facelist_t **face_hashtable, int hash_table_size, face_t *face) {
+  int add_face(facelist_t **face_hashtable, int hash_table_size, face_t *newface) {
 
-    if (!find_face(*face_hashtable, hash_table_size, face->nv, face->verts)) {
-      face->key = hash_ints2(face->nv, face->verts, hash_table_size);
+    int hash_key = hash_ints2(newface->nv, newface->verts, hash_table_size);
 
-      facelist_t *flist = (facelist_t *) malloc(sizeof(facelist_t));
-      flist->key = face->key;
-      flist->nf = 1;
-      flist->faces[0] = face;
-      
-      HASH_ADD_INT(*face_hashtable, key, flist);
-      return 1;
+    facelist_t *flist = face_hashtable[hash_key];
+
+    if (flist) {
+      face_t *face = NULL;
+      for (int i = 0; i < flist->nf; i++) {
+	face = flist->faces[i];
+	if (face == newface) return 0;  /* already present */
+      }
+    } else {
+      flist = (facelist_t *) malloc(sizeof(facelist_t));
+      flist->nf = 0;
+      flist->mykey = newface->mykey = hash_key;
     }
-    else {
-      MSTK_Report("add_face","Face structure with vertices already in table",
-		  MSTK_FATAL);
-      return 0;
-    }
+
+#ifdef DEBUG    
+    if (flist->nf == MAX_COLLISIONS)
+      MSTK_Report("ExodusII_GetElementGraph/add_face",
+		  "Too many collisions - increase MAX_COLLISIONS", MSTK_FATAL);
+#endif
+    flist->faces[flist->nf++] = newface;
+    face_hashtable[hash_key] = flist;
+    return 1;
   }
 
 
+  /* Get the element connectivity graph and optionally, element center
+     coordinates (which are effectively the graph's node
+     coordinates) */
+
   
-  int ExodusII_GetElementGraph(const char *filename, int *nelems, int **adjbeg,
-			       int **adjelems) {
+  int ExodusII_GetElementGraph(const char *filename, int *ndim, int *nelems,
+			       int **adjbeg, int **adjelems, int get_coords,
+			       double (**elemcen)[3]) {
 
     char mesg[256], funcname[32]="ExodusII_GetElementGraph";
     char title[256];
@@ -196,7 +207,7 @@ extern "C" {
     int i, j, k, k1;
     int comp_ws = sizeof(double), io_ws = 0;
     int exoid=0, status;
-    int ndim, nnodes, nelblock;
+    int nnodes, nelblock;
     int nedges, nedge_blk, nfaces, nface_blk;
     int *elem_blk_ids, *connect, *nnpe;
     int nelnodes, neledges, nelfaces;
@@ -234,19 +245,33 @@ extern "C" {
   
   
     strcpy(title,exopar.title);
-    ndim = exopar.num_dim;
+    *ndim = exopar.num_dim;
     nnodes = exopar.num_nodes;
     nfaces = exopar.num_face;
     nface_blk = exopar.num_face_blk;
     *nelems = exopar.num_elem;
     nelblock = exopar.num_elem_blk;
 
-    if (ndim == 1)
+    if (*ndim == 1)
       MSTK_Report(funcname,"Cannot read 1D meshes",MSTK_FATAL);
 
+    double *xvals, *yvals, *zvals;
+    if (get_coords) {
+      xvals = (double *) malloc(nnodes*sizeof(double));
+      yvals = (double *) malloc(nnodes*sizeof(double));  
+      if (*ndim == 2)
+	zvals = (double *) calloc(nnodes,sizeof(double));
+      else
+	zvals = (double *) malloc(nnodes*sizeof(double));
+   
+      status = ex_get_coord(exoid, xvals, yvals, zvals);
 
+      /* What we will compute from node coordinates and return is
+	 element centers */
+      *elemcen = (double (*)[3]) malloc((*nelems)*sizeof(double [3]));
+    }
+    
     /* Get element block IDs and names */
-  
   
     elem_blk_ids = (int *) malloc(nelblock*sizeof(int));
     status = ex_get_ids(exoid, EX_ELEM_BLOCK, elem_blk_ids);
@@ -347,7 +372,7 @@ extern "C" {
 		  "Cannot build element graph for non-manifold meshes",
 		  MSTK_FATAL);
 
-
+ 
     
     /* Create face pointers array for easy look up by ID */
 
@@ -355,9 +380,9 @@ extern "C" {
 
     /* Create a hash table of face pointer lists for easy look up and
        deduplication using a hash key */
-    
+
     int hash_table_size = 100*max_faces + 1;
-    facelist_t *face_hashtable = NULL;    
+    facelist_t **face_hashtable = (facelist_t **) calloc(hash_table_size, sizeof(facelist_t *));    
 
     
     
@@ -439,7 +464,7 @@ extern "C" {
 	  qsort(newface->verts, newface->nv, sizeof(int), compareINT);
 	  newface->elem[0] = newface->elem[1] = -1;
 
-	  add_face(&face_hashtable, hash_table_size, newface);
+	  add_face(face_hashtable, hash_table_size, newface);
 	  
           offset += nnpe[j];
         }
@@ -514,6 +539,38 @@ extern "C" {
 	    else
 	      faces[fid].elem[1] = max_elem_id;
 	  }
+
+
+	  if (get_coords) {
+	    int rverts[MAXPV3];
+	    int nelnodes = 0;
+	    double xcoord = 0.0, ycoord = 0.0, zcoord = 0.0;
+	    for (k = 0; k < nnpe[j]; k++) {
+	      int fid = connect[offset+k]-1;
+	      
+	      for (k1 = 0; k1 < faces[fid].nv; k1++) {
+		int found = 0;
+		int fvert = faces[fid].verts[k1];
+		for (int k2 = 0; k2 < nelnodes; k2++) {
+		  if (rverts[k2] == fvert) {
+		    found = 1;
+		    break;
+		  }
+		}
+		if (!found) {
+		  rverts[nelnodes++] = fvert;
+		  xcoord += xvals[fvert-1];
+		  ycoord += yvals[fvert-1];
+		  zcoord += zvals[fvert-1];
+		}
+	      }
+	    }
+
+	    (*elemcen)[max_elem_id][0] = xcoord/nelnodes;
+	    (*elemcen)[max_elem_id][1] = ycoord/nelnodes;
+	    (*elemcen)[max_elem_id][2] = zcoord/nelnodes;
+	  }
+	  
 	  max_elem_id++;
 	  offset += nnpe[j];
 
@@ -604,17 +661,24 @@ extern "C" {
 	      newface->elem[0] = max_elem_id;
 	      newface->elem[1] = -1;
 	      
-	      add_face(&face_hashtable, hash_table_size, newface);
+	      add_face(face_hashtable, hash_table_size, newface);
 		
 	      // update element-to-"face" list
 	      elem_faces[max_elem_id][k] = newface->id;
 
 	    } else {
 
-	      if (face->elem[0] >= 0 && face->elem[1] >= 0)
+	      if (face->elem[0] >= 0 && face->elem[1] >= 0) {
+		fprintf(stderr,"face vertices ");
+		for (int jv = 0; jv < nfv; jv++)
+		  fprintf(stderr," %d ",fverts[jv]);
+		fprintf(stderr,"\n");
+		fprintf(stderr, "face->elem[0] %d\n",face->elem[0]);
+		fprintf(stderr, "face->elem[1] %d\n",face->elem[1]);
 		MSTK_Report(funcname,
 			    "Hash table clash. Increase hash table size or Use a different hashing function",
 			    MSTK_FATAL);
+	      }
 	      else {
 
 		// update element-to-"face" list
@@ -626,6 +690,20 @@ extern "C" {
 	      }
 	    }
 	  }
+
+	  if (get_coords) {
+	    double xcoord = 0.0, ycoord = 0.0, zcoord = 0.0;
+	    for (i = 0; i < nelnodes; i++) {
+	      int vid = connect[nelnodes*j+i];
+	      xcoord += xvals[vid-1];
+	      ycoord += yvals[vid-1];
+	      zcoord += zvals[vid-1];
+	    }
+	    (*elemcen)[max_elem_id][0] = xcoord/nelnodes;
+	    (*elemcen)[max_elem_id][1] = ycoord/nelnodes;
+	    (*elemcen)[max_elem_id][2] = zcoord/nelnodes;
+	  }
+	  
 	  max_elem_id++;
 	}
 	
@@ -691,22 +769,28 @@ extern "C" {
 	      newface->nv = 2;
 	      newface->verts = (int *) malloc(2*sizeof(int));
 	      newface->verts[0] = nodeids[0];
-	      newface->verts[1] = nodeids[2];
+	      newface->verts[1] = nodeids[1];
 
 	      newface->elem[0] = max_elem_id;
 	      newface->elem[1] = -1;
 		
-	      add_face(&face_hashtable, hash_table_size, newface);
+	      add_face(face_hashtable, hash_table_size, newface);
 
 	      // update element-to-"face" list
 	      elem_faces[max_elem_id][k] = newface->id;
 
 	    } else {
 
-	      if (face->elem[0] >= 0 && face->elem[1] >= 0)
+	      if (face->elem[0] >= 0 && face->elem[1] >= 0) {
+		fprintf(stderr,"face vertices %d %d\n", nodeids[0], nodeids[1]);
+		fprintf(stderr, "face->elem[0] %d\n",face->elem[0]);
+		fprintf(stderr, "face->elem[1] %d\n",face->elem[1]);
+		fprintf(stderr, "Existing face vertices %d %d\n",
+			face->verts[0], face->verts[1]);
 		MSTK_Report(funcname,
 			    "Hash table clash. Increase hash table size or use a different hashing function",
 			    MSTK_FATAL);
+	      }
 	      else {
 
 		// update element-to-"face" list
@@ -718,6 +802,20 @@ extern "C" {
 	      }
 	    }
 	  }
+
+	  if (get_coords) {
+	    double xcoord = 0.0, ycoord = 0.0, zcoord = 0.0;
+	    for (i = 0; i < nnpe[j]; i++) {
+	      int vid = connect[offset+i];
+	      xcoord += xvals[vid]-1;
+	      ycoord += yvals[vid]-1;
+	      zcoord += zvals[vid]-1;
+	    }
+	    (*elemcen)[max_elem_id][0] = xcoord/nnpe[j];
+	    (*elemcen)[max_elem_id][1] = ycoord/nnpe[j];
+	    (*elemcen)[max_elem_id][2] = zcoord/nnpe[j];
+	  }
+	  
 	  offset += nnpe[j];
 	  max_elem_id++;
 	}
@@ -783,17 +881,23 @@ extern "C" {
 	      newface->elem[0] = max_elem_id;
 	      newface->elem[1] = -1;
 	      
-	      add_face(&face_hashtable, hash_table_size, newface);
+	      add_face(face_hashtable, hash_table_size, newface);
 
 	      // update element-to-"face" list
 	      elem_faces[max_elem_id][k] = newface->id;
 
 	    } else {
 
-	      if (face->elem[0] >= 0 && face->elem[1] >= 0)
+	      if (face->elem[0] >= 0 && face->elem[1] >= 0) {
+		fprintf(stderr,"face vertices %d %d\n", nodeids[0], nodeids[1]);
+		fprintf(stderr, "face->elem[0] %d\n",face->elem[0]);
+		fprintf(stderr, "face->elem[1] %d\n",face->elem[1]);
+		fprintf(stderr, "Existing face vertices %d %d\n",
+			face->verts[0], face->verts[1]);
 		MSTK_Report(funcname,
 			    "Hash table clash. Increase hash table size or Use a different hashing function",
 			    MSTK_FATAL);
+	      }
 	      else {
 
 		// update element-to-"face" list
@@ -806,6 +910,20 @@ extern "C" {
 	    }
 	  }
 	  nelemfaces[max_elem_id] = nelnodes;
+
+	  if (get_coords) {
+	    double xcoord = 0.0, ycoord = 0.0, zcoord = 0.0;
+	    for (i = 0; i < nelnodes; i++) {
+	      int vid = connect[nelnodes*j+i];
+	      xcoord += xvals[vid]-1;
+	      ycoord += yvals[vid]-1;
+	      zcoord += zvals[vid]-1;
+	    }
+	    (*elemcen)[max_elem_id][0] = xcoord/nelnodes;
+	    (*elemcen)[max_elem_id][1] = ycoord/nelnodes;
+	    (*elemcen)[max_elem_id][2] = zcoord/nelnodes;
+	  }
+	  
 	  offset += nelnodes;
 	  max_elem_id++;
 	}
@@ -858,11 +976,9 @@ extern "C" {
     free(nelemfaces);
 
     /* Free the hash table */
-    facelist_t *current_flist, *tmp_flist;
-    HASH_ITER(hh, face_hashtable, current_flist, tmp_flist) {
-      HASH_DEL(face_hashtable, current_flist);
-      free(current_flist);
-    }
+    for (i = 0; i < hash_table_size; i++)
+      if (face_hashtable[i]) free(face_hashtable[i]);
+    free(face_hashtable);
 
     for (i = 0; i < max_face_id; i++)
       free(faces[i].verts);
