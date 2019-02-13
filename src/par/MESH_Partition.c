@@ -209,7 +209,7 @@ extern "C" {
 	    if (mpart_no == 0) { /* not set */
 	      ME_Set_MasterParID(lme,part_no);
 	      ME_Set_MasterParID(gme,part_no+1); 
-              ME_Set_GlobalID(gme,geid++);
+              if (!ME_GlobalID(gme)) ME_Set_GlobalID(gme,geid++);
 	    }
 	    else
 	      ME_Set_MasterParID(lme,mpart_no-1);
@@ -245,7 +245,7 @@ extern "C" {
                 if (mpart_no == 0) {
                   MV_Set_MasterParID(lmv,part_no);
                   MV_Set_MasterParID(gmv,part_no+1); /* will subract 1 at the end */
-                  MV_Set_GlobalID(gmv,gvid++);	    
+                  if (!MV_GlobalID(gmv)) MV_Set_GlobalID(gmv,gvid++);	    
                 }
                 else
                   MV_Set_MasterParID(lmv,mpart_no-1);
@@ -274,9 +274,8 @@ extern "C" {
         //	MF_Set_PType(lmf,PINTERIOR);
 	MF_Set_MasterParID(lmf,part_no);
 	MF_Set_MasterParID(gmf,part_no);
-	MF_Set_GlobalID(lmf,gfid);
-	MF_Set_GlobalID(gmf,gfid);
-        gfid++;
+	if (!MF_GlobalID(gmf)) MF_Set_GlobalID(gmf,gfid++);
+	MF_Set_GlobalID(lmf,MF_GlobalID(gmf));
 	MF_Set_Edges(lmf,nfe,lfedges,lfedirs);
 
 	lmflist = List_New(0);
@@ -371,7 +370,7 @@ extern "C" {
 	    if (mpart_no == 0) { /* not set */
 	      MF_Set_MasterParID(lmf,part_no);
 	      MF_Set_MasterParID(gmf,part_no+1);
-              MF_Set_GlobalID(gmf,gfid++);
+              if (!MF_GlobalID(gmf)) MF_Set_GlobalID(gmf,gfid++);
 	    }
 	    else
 	      MF_Set_MasterParID(lmf,mpart_no-1);
@@ -408,7 +407,7 @@ extern "C" {
                 if (mpart_no == 0) { /* not set */
                   ME_Set_MasterParID(lme,part_no);
                   ME_Set_MasterParID(gme,part_no+1);
-                  ME_Set_GlobalID(gme,geid++);
+                  if (!ME_GlobalID(gme)) ME_Set_GlobalID(gme,geid++);
                 }
                 else
                   ME_Set_MasterParID(lme,mpart_no-1);
@@ -447,7 +446,7 @@ extern "C" {
                     if (mpart_no == 0) { /* Not set */
                       MV_Set_MasterParID(lmv,part_no);
                       MV_Set_MasterParID(gmv,part_no+1);
-                      MV_Set_GlobalID(gmv,gvid++);
+                      if (!MV_GlobalID(gmv)) MV_Set_GlobalID(gmv,gvid++);
                     }
                     else
                       MV_Set_MasterParID(lmv,mpart_no-1);
@@ -487,8 +486,8 @@ extern "C" {
         //	MR_Set_PType(lmr,PINTERIOR);
 	MR_Set_MasterParID(lmr,part_no);
 	MR_Set_MasterParID(gmr,part_no);
-	MR_Set_GlobalID(lmr,grid);
-        MR_Set_GlobalID(gmr,grid);
+        if (!MR_GlobalID(gmr)) MR_Set_GlobalID(gmr,grid++);
+	MR_Set_GlobalID(lmr,MR_GlobalID(gmr));
         grid++;
 	MR_Set_Faces(lmr,nrf,lrfaces,lrfdirs);
 
