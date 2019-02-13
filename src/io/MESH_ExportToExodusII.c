@@ -1252,18 +1252,17 @@ extern "C" {
           if (fowned)
             elem_map[i++] = MF_GlobalID(mf);
         }
-        
-#ifdef EXODUS_6_DEPRECATED
-        status = ex_put_elem_num_map(exoid, elem_map);
-#else
-        status = ex_put_id_map(exoid, EX_ELEM_MAP, elem_map);
-#endif
-        if (status < 0)
-          MSTK_Report(funcname,"Error while writing element map in Exodus II file",
-                      MSTK_FATAL);
-        
-        free(elem_map);
       }
+#ifdef EXODUS_6_DEPRECATED
+      status = ex_put_elem_num_map(exoid, elem_map);
+#else
+      status = ex_put_id_map(exoid, EX_ELEM_MAP, elem_map);
+#endif
+      if (status < 0)
+	MSTK_Report(funcname,"Error while writing element map in Exodus II file",
+		    MSTK_FATAL);
+        
+      free(elem_map);
     }
 
 #endif /* MSTK_HAVE_MPI */
