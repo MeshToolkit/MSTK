@@ -12,7 +12,7 @@
 // back in the element numbering will not change
 
 TEST(READ_GRAPH_2D_SIMPLE) {
-
+  
   MSTK_Init();
 
   Mesh_ptr mesh = MESH_New(F1);
@@ -33,9 +33,13 @@ TEST(READ_GRAPH_2D_SIMPLE) {
     qsort(adjelems1 + off, nadj, sizeof(int), compareINT);
   }
 
+  int ndim;
   int nelems2;
   int *adjoff2, *adjelems2;
-  ExodusII_GetElementGraph("struct2-temp.exo", &nelems2, &adjoff2, &adjelems2);
+  ExodusII_GetElementGraph("serial/mesh5x5-skewed.exo", &ndim, &nelems2, &adjoff2,
+			   &adjelems2, false, NULL);
+  ExodusII_GetElementGraph("struct2-temp.exo", &ndim, &nelems2, &adjoff2,
+			   &adjelems2, false, NULL);
   for (int i = 0; i < nelems2; i++) {
     int off = adjoff2[i];
     int nadj = adjoff2[i+1] - adjoff2[i];
@@ -74,9 +78,12 @@ TEST(READ_GRAPH_3D_SIMPLE) {
     qsort(adjelems1 + off, nadj, sizeof(int), compareINT);
   }
 
+  int ndim;
   int nelems2;
   int *adjoff2, *adjelems2;
-  ExodusII_GetElementGraph("struct3-temp.exo", &nelems2, &adjoff2, &adjelems2);
+  double (*elemcens)[3];
+  ExodusII_GetElementGraph("struct3-temp.exo", &ndim, &nelems2, &adjoff2,
+			   &adjelems2, true, &elemcens);
   for (int i = 0; i < nelems2; i++) {
     int off = adjoff2[i];
     int nadj = adjoff2[i+1] - adjoff2[i];
@@ -117,9 +124,11 @@ TEST(READ_GRAPH_2D_LARGE) {
     qsort(adjelems1 + off, nadj, sizeof(int), compareINT);
   }
 
+  int ndim;
   int nelems2;
   int *adjoff2, *adjelems2;
-  ExodusII_GetElementGraph("struct2-temp.exo", &nelems2, &adjoff2, &adjelems2);
+  ExodusII_GetElementGraph("struct2-temp.exo", &ndim, &nelems2, &adjoff2,
+			   &adjelems2, false, NULL);
   for (int i = 0; i < nelems2; i++) {
     int off = adjoff2[i];
     int nadj = adjoff2[i+1] - adjoff2[i];
@@ -156,9 +165,11 @@ TEST(READ_GRAPH_3D_LARGE) {
     qsort(adjelems1 + off, nadj, sizeof(int), compareINT);
   }
 
+  int ndim;
   int nelems2;
   int *adjoff2, *adjelems2;
-  ExodusII_GetElementGraph("struct3-temp.exo", &nelems2, &adjoff2, &adjelems2);
+  ExodusII_GetElementGraph("struct3-temp.exo", &ndim, &nelems2, &adjoff2,
+			   &adjelems2, false, NULL);
   for (int i = 0; i < nelems2; i++) {
     int off = adjoff2[i];
     int nadj = adjoff2[i+1] - adjoff2[i];
