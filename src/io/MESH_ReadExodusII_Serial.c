@@ -407,8 +407,7 @@ extern "C" {
         sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
         matset = MSet_New(mesh,matsetname,MFACE);
       
-        if (strcmp(elem_type,"NSIDED") == 0 || 
-            strcmp(elem_type,"nsided") == 0) {
+        if (strcasecmp(elem_type,"nsided") == 0) {
 
           /* In this case the nelnodes parameter is actually total number of 
              nodes referenced by all the polygons (counting duplicates) */
