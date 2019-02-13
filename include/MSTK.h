@@ -111,8 +111,9 @@ void MSTK_Init(void);
   /*          which the adjacent elements are enumerated for each element     */
   /*--------------------------------------------------------------------------*/
   
-  int        ExodusII_GetElementGraph(const char *filename, int *nelems,
-				      int **adjbeg, int **adjelems);
+  int        ExodusII_GetElementGraph(const char *filename, int *ndim, int *nelems,
+				      int **adjbeg, int **adjelems, int get_coords,
+				      double (**elemcen)[3]);
 
   /*--------------------------------------------------------------------------*/
   /* Read an Nemesis I file into MSTK */
