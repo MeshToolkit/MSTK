@@ -72,6 +72,18 @@ if (MSTK_USE_MARKERS)
 endif (MSTK_USE_MARKERS)
 
 ################################################################################
+# Make sure uthash (https://github.com/troydhanson/uthash) is pulled in;
+# Otherwise issue reminder to clone with --recursive flag
+################################################################################
+file(GLOB _uthash_contents ${CMAKE_SOURCE_DIR}/uthash/*)
+if (_uthash_contents)
+  include_directories(${CMAKE_SOURCE_DIR}/uthash/include)
+else (_uthash_contents)
+  message(FATAL "Clone MSTK repository with --recursive flag")
+endif (_uthash_contents)
+
+
+################################################################################
 # If user wants to read/write ExodusII files, we check if we can locate the
 # ExodusII and NetCDF include files and libraries
 ################################################################################

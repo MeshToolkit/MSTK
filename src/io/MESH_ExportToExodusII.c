@@ -794,7 +794,7 @@ extern "C" {
 	
 	int nfrblock = 0;
 
-	nnpe = (int *) calloc(List_Num_Entries(element_blocks_glob[i]),
+	nnpe = (int *) calloc(MSet_Num_Entries(element_blocks_glob[i]),
 				   sizeof(int));	
 	idx = 0; j = 0;
 	while ((mr = MSet_Next_Entry(element_blocks_glob[i],&idx))) {	  
@@ -1252,18 +1252,17 @@ extern "C" {
           if (fowned)
             elem_map[i++] = MF_GlobalID(mf);
         }
-        
-#ifdef EXODUS_6_DEPRECATED
-        status = ex_put_elem_num_map(exoid, elem_map);
-#else
-        status = ex_put_id_map(exoid, EX_ELEM_MAP, elem_map);
-#endif
-        if (status < 0)
-          MSTK_Report(funcname,"Error while writing element map in Exodus II file",
-                      MSTK_FATAL);
-        
-        free(elem_map);
       }
+#ifdef EXODUS_6_DEPRECATED
+      status = ex_put_elem_num_map(exoid, elem_map);
+#else
+      status = ex_put_id_map(exoid, EX_ELEM_MAP, elem_map);
+#endif
+      if (status < 0)
+	MSTK_Report(funcname,"Error while writing element map in Exodus II file",
+		    MSTK_FATAL);
+        
+      free(elem_map);
     }
 
 #endif /* MSTK_HAVE_MPI */

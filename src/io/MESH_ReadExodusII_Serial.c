@@ -31,48 +31,6 @@ extern "C" {
 
 #define DEF_MAXFACES 20
 
-  /* create a hash function from n positive integers. Since these
-     integers are the IDs of face vertices, we know that if the same
-     set of integers is passed into the function repeatedly they will
-     be in the same order or reverse order as the first time,
-     i.e. given numbers a,b,c,d the first time, we will get a,b,c,d or
-     b,c,d,a or c,d,a,b or d,a,b,c or a,d,c,b or b,a,d,c or c,b,a,d or
-     d,c,b,a but never a,c,d,b. So to hash we start at the minimum
-     number and then go in the direction of the smaller next
-     number. For example, if we are given 22, 10, 24, 220, we order
-     them as 10, 22, 220, 24 - this lets us get away with having just
-     the first two numbers in ascending order instead of having to
-     sort all the numbers. Hash table size should be of medium size
-     according to the size of the mesh to avoid having a very large
-     but sparsely populated or very small but very densely populated
-     structure. It should also preferably be a prime number to avoid
-     too many conflicts. */
-
-  unsigned int hash_ints(int n, unsigned int *nums, unsigned int hash_table_size) {
-    int i, k=0;
-    unsigned int p1 = 3;
-
-    unsigned int h = 0;
-    unsigned int min = 1e+9;
-    for (i = 0; i < n; i++)
-      if (nums[i] < min) {
-        min = nums[i];
-        k = i;
-      }
-    if (nums[(k+1)%n] < nums[(k-1+n)%n]) {
-      for (i = 0; i < n; i++)
-        h = h*p1 + nums[(k+i)%n];
-    }
-    else {
-      for (i = 0; i < n; i++)
-        h = h*p1 + nums[(k-i+n)%n];
-    }
-    
-    /* h = (int) ((double)h/(n-1) + 0.5); */
-
-    return h % hash_table_size;
-  }
-
 
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank) {
 
@@ -297,20 +255,28 @@ extern "C" {
 
     /* Read face blocks if they are there - these will be used by
        polyhedral elements - There should only be one per EXODUS II
-       specification and the following coding */
+       specification and this just assumes a general case */
 
     if (nface_blk) {
       int nfblock, ntotnodes, *face_blk_ids;    
 
+      /* Face block IDs */
+      
       face_blk_ids = (int *) malloc(nface_blk*sizeof(int));
 
       status = ex_get_ids(exoid, EX_FACE_BLOCK, face_blk_ids);
       if (status < 0) {
-        sprintf(mesg,"Error while reading element block ids in Exodus II file %s\n",filename);
+        sprintf(mesg,
+		"Error while reading face block ids in Exodus II file %s\n",
+		filename);
         MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
       for (i = 0; i < nface_blk; i++) {
 
+	/* Some info about this face block like the number of faces in
+	   the block and the total number of node entries used to
+	   describe the faces. Useful for sizing */
+	
         status = ex_get_block(exoid, EX_FACE_BLOCK, face_blk_ids[i], face_type,
                               &nfblock, &ntotnodes, NULL, NULL, NULL);
 
@@ -321,6 +287,8 @@ extern "C" {
           MSTK_Report(funcname,mesg,MSTK_FATAL);
         }
 
+	/* Face descriptions in terms of their nodes */
+	
         connect = (int *) malloc(ntotnodes*sizeof(int));
 
         status = ex_get_conn(exoid, EX_FACE_BLOCK, face_blk_ids[i], connect,
@@ -334,6 +302,9 @@ extern "C" {
         }
 
       
+	/* Node count for each face so we know how to step through
+	   connectivity array */
+
         nnpe = (int *) malloc(nfblock*sizeof(int));
 
         status = ex_get_entity_count_per_polyhedra(exoid, EX_FACE_BLOCK,
@@ -436,8 +407,7 @@ extern "C" {
         sprintf(matsetname,"matset_%-d",elem_blk_ids[i]);
         matset = MSet_New(mesh,matsetname,MFACE);
       
-        if (strcmp(elem_type,"NSIDED") == 0 || 
-            strcmp(elem_type,"nsided") == 0) {
+        if (strcasecmp(elem_type,"nsided") == 0) {
 
           /* In this case the nelnodes parameter is actually total number of 
              nodes referenced by all the polygons (counting duplicates) */
