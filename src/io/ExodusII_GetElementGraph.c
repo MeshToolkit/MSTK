@@ -170,7 +170,8 @@ extern "C" {
 
     if (flist) {
       face_t *face = NULL;
-      for (int i = 0; i < flist->nf; i++) {
+      int i;
+      for (i = 0; i < flist->nf; i++) {
 	face = flist->faces[i];
 	if (face == newface) return 0;  /* already present */
       }
@@ -551,7 +552,8 @@ extern "C" {
 	      for (k1 = 0; k1 < faces[fid].nv; k1++) {
 		int found = 0;
 		int fvert = faces[fid].verts[k1];
-		for (int k2 = 0; k2 < nelnodes; k2++) {
+                int k2;
+		for (k2 = 0; k2 < nelnodes; k2++) {
 		  if (rverts[k2] == fvert) {
 		    found = 1;
 		    break;
@@ -670,7 +672,8 @@ extern "C" {
 
 	      if (face->elem[0] >= 0 && face->elem[1] >= 0) {
 		fprintf(stderr,"face vertices ");
-		for (int jv = 0; jv < nfv; jv++)
+                int jv;
+		for (jv = 0; jv < nfv; jv++)
 		  fprintf(stderr," %d ",fverts[jv]);
 		fprintf(stderr,"\n");
 		fprintf(stderr, "face->elem[0] %d\n",face->elem[0]);
