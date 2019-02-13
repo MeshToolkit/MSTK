@@ -1144,7 +1144,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   /* Slaved Nodes Data Block - not written out                           */
   /***********************************************************************/
 
-  fprintf(fp,"slaved_nodes       0\n");
+  fprintf(fp,"%-12s% 10d\n","slaved_nodes",0);
   fprintf(fp,"end_slaved_nodes\n");
 
   /***********************************************************************/

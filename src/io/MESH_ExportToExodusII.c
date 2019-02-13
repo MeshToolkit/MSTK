@@ -794,7 +794,7 @@ extern "C" {
 	
 	int nfrblock = 0;
 
-	nnpe = (int *) calloc(List_Num_Entries(element_blocks_glob[i]),
+	nnpe = (int *) calloc(MSet_Num_Entries(element_blocks_glob[i]),
 				   sizeof(int));	
 	idx = 0; j = 0;
 	while ((mr = MSet_Next_Entry(element_blocks_glob[i],&idx))) {	  
