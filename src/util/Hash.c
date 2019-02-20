@@ -138,6 +138,8 @@ extern "C" {
     return pvtHash_Get_Nent(h);
   }
 
+  /* Jenkins "one at a time" hash 
+     https://en.wikipedia.org/wiki/Jenkins_hash_function */
   unsigned int pvtHash_Function(unsigned int np, void* *p) { /* very simple */
     unsigned int i, j;
     unsigned int hash=0;
