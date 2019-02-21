@@ -211,7 +211,7 @@ extern "C" {
 	    for (int i = 0; i < nelems; i++) {
 	      int p = idxpart[i];
 	      int n = part_num_elems[p];
-	      part_elem_gids[p][n] = i;
+	      part_elem_gids[p][n] = i+1;
 	      part_num_elems[p]++;
 	    }
 
@@ -223,15 +223,16 @@ extern "C" {
 
 	    // Now send them to all other partitions
 	    MPI_Request *requests =
-	      (MPI_Request *) malloc(2*(numparts-1)*sizeof(MPI_Request));
+	      (MPI_Request *) malloc(3*(numparts-1)*sizeof(MPI_Request));
 	      
 	    for (int i = 1; i < numprocs; i++) {
-	      MPI_Isend(&part_num_elems[i], 1, MPI_INT, i, 2*i, comm,
-			&(requests[2*(i-1)]));
-	      MPI_Isend(part_elem_gids[i], part_num_elems[i], MPI_INT, i, 2*i+1,
-			comm, &(requests[2*(i-1)+1]));
+	      MPI_Isend(&dim, 1, MPI_INT, i, 3*i, comm, &(requests[3*(i-1)]));
+	      MPI_Isend(&part_num_elems[i], 1, MPI_INT, i, 3*i+1, comm,
+			&(requests[3*(i-1)+1]));
+	      MPI_Isend(part_elem_gids[i], part_num_elems[i], MPI_INT, i, 3*i+2,
+			comm, &(requests[3*(i-1)+2]));
 	    }
-	    if (MPI_Waitall(2*(numparts-1), requests, MPI_STATUSES_IGNORE) !=
+	    if (MPI_Waitall(3*(numparts-1), requests, MPI_STATUSES_IGNORE) !=
 		MPI_SUCCESS)
 	      MSTK_Report("MSTK_ImportFromExodusII",
 			  "Cound not distribute partition info", MSTK_FATAL);
@@ -245,15 +246,22 @@ extern "C" {
 	  } else {
 	    // Get partiton info from rank 0
 	    MPI_Request request;
+
+	    MPI_Irecv(&dim, 1, MPI_INT, 0, 3*rank, comm, &request);
+	    if (MPI_Wait(&request, MPI_STATUS_IGNORE) != MPI_SUCCESS)
+	      MSTK_Report("MSTK_ImportFromExodusII",
+			  "Could not receive mesh dimension on partiion",
+			  MSTK_FATAL);
+
 	    
-	    MPI_Irecv(&num_myelems, 1, MPI_INT, 0, 2*rank, comm, &request);
+	    MPI_Irecv(&num_myelems, 1, MPI_INT, 0, 3*rank+1, comm, &request);
 	    if (MPI_Wait(&request, MPI_STATUS_IGNORE) != MPI_SUCCESS)
 	      MSTK_Report("MSTK_ImportFromExodusII",
 			  "Could not receive num elems on partiion",
 			  MSTK_FATAL);
 
 	    myelems = (int *) malloc(num_myelems*sizeof(int));
-	    MPI_Irecv(myelems, num_myelems, MPI_INT, 0, 2*rank+1, comm, &request);
+	    MPI_Irecv(myelems, num_myelems, MPI_INT, 0, 3*rank+2, comm, &request);
 	    if (MPI_Wait(&request, MPI_STATUS_IGNORE) != MPI_SUCCESS)
 	      MSTK_Report("MSTK_ImportFromExodusII",
 			  "Could not receive elem GIDs on partiton",
