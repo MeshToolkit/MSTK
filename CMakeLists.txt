@@ -19,6 +19,8 @@ set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99")
+
 # This option may be needed for machines like Edison and Hopper
 
 if (PREFER_STATIC_LIBRARIES)
