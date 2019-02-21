@@ -1914,7 +1914,7 @@ extern "C" {
 	    int ibeg = 0;
 	    while (ibeg < nnodes2read) {
 	      int iend = ibeg;
-	      while (nodes2read[iend+1] = nodes2read[iend]+1) iend++;
+	      while (nodes2read[iend+1] == nodes2read[iend]+1) iend++;
 	      int nnodes_cur = iend - ibeg + 1;
 
 	      for (int k = 0; k < ncomp; k++) {
@@ -1957,7 +1957,7 @@ extern "C" {
 	  int ibeg = 0;
 	  while (ibeg < nnodes2read) {
 	    int iend = ibeg;
-	    while (nodes2read[iend+1] = nodes2read[iend]+1) iend++;
+	    while (nodes2read[iend+1] == nodes2read[iend]+1) iend++;
 	    int nnodes_cur = iend - ibeg + 1;
 	    
 	    /* ex_get_partial_conn is using indices starting from 1 */
