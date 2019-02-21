@@ -152,9 +152,6 @@ TEST(UpdAtt2D_Weave) {
 
    CHECK(status);
 
-   status = MESH_CheckTopo(mesh);
-   CHECK(status);
-
    int DebugWait=0;
    while (DebugWait);
 
