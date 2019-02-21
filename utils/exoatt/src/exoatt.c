@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #ifdef _MSTK_HAVE_MPI
 #include <mpi.h>
