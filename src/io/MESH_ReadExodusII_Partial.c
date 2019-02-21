@@ -45,12 +45,11 @@ extern "C" {
 				const int rank, const int nelems,
 				int *elem_ids) {
 
-    char mesg[256], funcname[32]="MESH_ImportFromExodusII";
+    char mesg[256], funcname[32]="MESH_ReadExodusII_Partial";
     char title[256], sidesetname[256], nodesetname[256];
     char face_type[256];
     char matsetname[256];
     char **elblock_names;
-    int i, j, k, k1;
     int comp_ws = sizeof(double), io_ws = 0;
     int exoid=0, status;
     int *elblock_ids, *connect, *node_map, *elem_map, *nnpe;
@@ -133,7 +132,8 @@ extern "C" {
 
 
     /* maps from elements in full mesh to partial mesh and vice versa */
-    int *global2local_elem_map = (int *) malloc(nelems_total*sizeof(int));
+    int nalloc = (max_elem_id > nelems_total) ? max_elem_id+1 : nelems_total+1;
+    int *global2local_elem_map = (int *) calloc(nalloc, sizeof(int));
     int *local2global_elem_map = (int *) malloc(nelems*sizeof(int));
 
     /* Get element block IDs and element block info */
@@ -148,7 +148,7 @@ extern "C" {
     }
   
     elblock_names = (char **) malloc(nelblock_total*sizeof(char *));
-    for (i = 0; i < nelblock_total; i++)
+    for (int i = 0; i < nelblock_total; i++)
       elblock_names[i] = (char *) malloc(256*sizeof(char));
     status = ex_get_names(exoid, EX_ELEM_BLOCK, elblock_names);
     if (status < 0) {
@@ -172,7 +172,7 @@ extern "C" {
     int mesh_type = (ndim == 2) ? 1 : 0;  /* 0: unknown, 1: surface, 2: solid */
     int surf_elems = 0, solid_elems = 0;
     
-    int offset = 0;
+    int elstart = 1;
     for (int b = 0; b < nelblock_total; b++) {
       status = ex_get_block(exoid, EX_ELEM_BLOCK, elblock_ids[b], 
 			    elblock_type[b], &(elblock_nelems[b]),
@@ -185,16 +185,16 @@ extern "C" {
 	MSTK_Report(funcname,mesg,MSTK_FATAL);
       }
 
-      elblock_min[b] = offset;
-      elblock_max[b] = offset + elblock_nelems[b];
-      offset += elblock_nelems[b];
+      elblock_min[b] = elstart;
+      elblock_max[b] = elstart + elblock_nelems[b] - 1;
+      elstart += elblock_nelems[b];
 
       elblock_itype[b] = -1;  /* need this only for tets, prisms and hexes */
       if (ndim == 3) {
-	if (strncasecmp(elblock_type[b],"NSIDED",6) ||
-	    strncasecmp(elblock_type[b],"TRI",3) ||
-	    strncasecmp(elblock_type[b],"QUAD",4) ||
-	    strncasecmp(elblock_type[b],"SHELL",5))
+	if (strncasecmp(elblock_type[b],"NSIDED",6) == 0 ||
+	    strncasecmp(elblock_type[b],"TRI",3) == 0 ||
+	    strncasecmp(elblock_type[b],"QUAD",4) == 0 ||
+	    strncasecmp(elblock_type[b],"SHELL",5) == 0)
 	  mesh_type = 1;  /* surface mesh in 3D */
 	else {
 	  mesh_type = 2;  /* must be a solid element*/
@@ -254,10 +254,14 @@ extern "C" {
     
     /* Gather info needed for any polyhedral elements */
 
+    int reliable_rfdirs = -1;
+    
     if (ndim == 3 && nfaceblock_total) {
 
-#ifndef MSTK_USE_MARKERS
-      dirflagatt = MAttrib_New(mesh, "dirflagatt", INT, MFACE);
+#ifdef MSTK_USE_MARKERS
+      reliable_rfdirs = MSTK_GetMarker();  /* region knows its face dirs? */
+#else
+      dirflagatt = MAttrib_New(mesh, "dirflagatt", INT, MREGION);
 #endif
       
       nelfaces = (int *) malloc(nelems*sizeof(int));  /* num faces for each element */
@@ -307,7 +311,7 @@ extern "C" {
 		nelfaces_cur_sum += nelfaces_cur[jbeg+j];
 		nelfaces[elcounter] = nelfaces_cur[jbeg+j];
 		elem_blockidx[elcounter] = b;
-		global2local_elem_map[begel+j] = elcounter;
+		global2local_elem_map[begel+j] = elcounter+1;
 		local2global_elem_map[elcounter] = begel+j;
 		elcounter++;
 	      }
@@ -391,7 +395,6 @@ extern "C" {
       nfnodes_sum = 0;  /* reset to use as counter */
       ibeg = 0;  /* ibeg, iend are indices into faces2read array */
       while (ibeg < nfaces2read) {
-
 	/* Find range of contiguous face numbers */
 	int iend = ibeg;
 	while (faces2read[iend+1] == faces2read[iend]+1) iend++;
@@ -457,11 +460,11 @@ extern "C" {
     int *nelnodes = (int *) malloc(nelems_total*sizeof(int));
 
     int ibeg = 0;
-    while (ibeg < nelems-1) {
+    while (ibeg < nelems) {
       
       /* find a contiguous range of elem_ids starting from begel */
       int iend = ibeg;
-      while (elem_ids[iend+1] == elem_ids[iend]+1 && iend < nelems-1) iend++;
+      while (iend < nelems-1 && elem_ids[iend+1] == elem_ids[iend]+1) iend++;
 
       int begel = elem_ids[ibeg];
       
@@ -473,8 +476,10 @@ extern "C" {
 	  
 	  int jbeg = begel - elblock_min[b];
 	  int endel = elem_ids[iend];
-	  if (elblock_max[b] < endel)
+	  if (elblock_max[b] < endel) {
 	    endel = elblock_max[b];  /* range spans multiple blocks */
+	    iend = ibeg + endel - begel;
+	  }
 	  int nelems_cur = endel - begel + 1;
 
 	  if (strncasecmp(elblock_type[b], "NSIDED", 6) == 0) {
@@ -495,7 +500,7 @@ extern "C" {
 	      nelnodes_cur_sum += nelnodes_cur[jbeg+j];
 	      nelnodes[elcounter] = nelnodes_cur[jbeg+j];
 	      elem_blockidx[elcounter] = b;
-	      global2local_elem_map[begel+j] = elcounter;
+	      global2local_elem_map[begel+j] = elcounter+1;
 	      local2global_elem_map[elcounter] = begel+j;
 	      elcounter++;
 	    }
@@ -525,7 +530,7 @@ extern "C" {
 		     strncasecmp(elblock_type[b],"TET",3) == 0 ||
 		     strncasecmp(elblock_type[b],"WEDGE",5) == 0 ||
 		     strncasecmp(elblock_type[b],"HEX",3) == 0) {
-
+	    
 	    int nelnodes_cur_sum = nelems_cur*elblock_nelnodes[b];
 	    
 	    if (nelnodes_sum + nelnodes_cur_sum > nelnodes_alloc) {
@@ -539,32 +544,33 @@ extern "C" {
 	    if (status < 0) {
 	      sprintf(mesg,
 		      "Error reading element block %s in Exodus II file %s\n",
-		      elblock_names[i],filename);
+		      elblock_names[b],filename);
 	      MSTK_Report(funcname,mesg,MSTK_FATAL);
 	    }
-
+	    
 	    
 	    /* This is a block of standard elements - each element has
 	       the same number of nodes */
 	    for (int j = 0; j < nelems_cur; j++) {
 	      nelnodes[elcounter] = elblock_nelnodes[b];
 	      elem_blockidx[elcounter] = b;
-	      global2local_elem_map[begel+j] = elcounter;
+	      global2local_elem_map[begel+j] = elcounter+1;
 	      local2global_elem_map[elcounter] = begel+j;
 	      elcounter++;
 	    }
 
 	    nelnodes_sum += elblock_nelnodes[b]*nelems_cur;
+	  } else if (strncasecmp(elblock_type[b],"NFACED",5) == 0) {
+	    /* we already collected data from this block */
+	  } else {
+	    if (status < 0) {
+	      sprintf(mesg,
+		      "UNKNOWN element type (%s) info in Exodus II file %s\n",
+		      elblock_type[b], filename);
+	      MSTK_Report(funcname,mesg,MSTK_FATAL);
+	    }
 	  }
-	} else if (strncasecmp(elblock_type[b],"NFACED",5) == 0) {
-	  /* we already collected data from this block */
-	} else {
-	  if (status < 0) {
-	    sprintf(mesg, "UNKNOWN element type (%s) info in Exodus II file %s\n",
-		    elblock_type[b], filename);
-	    MSTK_Report(funcname,mesg,MSTK_FATAL);
-	  }
-	}
+	}  /* if (elblock_min[b] <= begel ....etc */
       }  /* for b = 0, nelblock_total-1 */
 
       ibeg = iend+1;
@@ -599,21 +605,24 @@ extern "C" {
     
     /* Create the nodes required by this partition */
 
+    int min_node_id = nodes2read[0];
+    int max_node_id = nodes2read[nnodes2read-1];
     MVertex_ptr *mverts = (MVertex_ptr *) malloc(nnodes2read*sizeof(MVertex_ptr));
 
-    int *global2local_node_map = (int *) malloc(nnodes_total*sizeof(int));
+    nalloc = (max_node_id > nnodes_total) ? max_node_id+1 : nnodes_total+1;
+    int *global2local_node_map = (int *) calloc(nalloc, sizeof(int));
     int *local2global_node_map = (int *) malloc(nnodes2read*sizeof(int));
     xvals = (double *) malloc(nnodes2read*sizeof(double));
     yvals = (double *) malloc(nnodes2read*sizeof(double));
     zvals = (double *) malloc(nnodes2read*sizeof(double));
 
     ibeg = 0;
-    int begnode = nodes2read[ibeg];
     while (ibeg < nnodes2read) {
       int iend = ibeg;
-      while (nodes2read[iend+1] == nodes2read[iend]+1 && iend < nnodes2read) iend++;
+      while (iend < nnodes2read-1 && nodes2read[iend+1] == nodes2read[iend]+1) iend++;
       int nnodes_cur = iend - ibeg + 1;
-
+      int begnode = nodes2read[ibeg];
+      
       status = ex_get_partial_coord(exoid, begnode, nnodes_cur, xvals, yvals, zvals);
       if (status < 0) {
 	sprintf(mesg, "Error reading node coordinates in Exodus II file %s\n",
@@ -624,12 +633,12 @@ extern "C" {
       for (int n = 0; n < nnodes_cur; n++) {
 	MVertex_ptr mv = MV_New(mesh);
     
-	xyz[0] = xvals[i]; xyz[1] = yvals[i]; xyz[2] = zvals[i];
+	xyz[0] = xvals[n]; xyz[1] = yvals[n]; xyz[2] = zvals[n];
 	MV_Set_Coords(mv, xyz);
 	MV_Set_GlobalID(mv, nodes2read[ibeg+n]);
 
 	mverts[ibeg+n] = mv;
-	global2local_node_map[nodes2read[ibeg+n]] = ibeg+n;
+	global2local_node_map[nodes2read[ibeg+n]] = ibeg+n+1;
 	local2global_node_map[ibeg+n] = nodes2read[ibeg+n];
       }
 
@@ -742,7 +751,7 @@ extern "C" {
 	  int ib = elem_blockidx[e];
 	  int b = elblock_ids[ib];
 
-	  int eltype = elblock_itype[b];
+	  int eltype = elblock_itype[ib];
 	  
 	  MRegion_ptr mr = MR_New(mesh);
 
@@ -782,7 +791,7 @@ extern "C" {
 		MFace_ptr face = NULL;
 
 		int nfv = exo_nrfverts[eltype][f];              
-		for (k1 = 0; k1 < nfv; k1++)
+		for (int k1 = 0; k1 < nfv; k1++)
 		  fverts[k1] = rverts[exo_rfverts[eltype][f][k1]];
 
 		/* Use a hash to find faces? */
@@ -858,18 +867,18 @@ extern "C" {
 		} else {
 		  face = MF_New(mesh);
 	      
-		  MF_Set_Vertices(face, exo_nrfverts[eltype][k], fverts);
+		  MF_Set_Vertices(face, exo_nrfverts[eltype][f], fverts);
 		  rfaces_arr[f] = face;
 		  rfdirs[f] = exo_rfdirs[eltype][f];
 		}
-
-		MR_Set_Faces(mr,nrf,rfaces_arr,rfdirs);
-#ifdef MSTK_USE_MARKERS
-		MEnt_Mark(mr, reliable_rfdirs);
-#else
-		MEnt_Set_AttVal(mr, dirflagatt, 1, 0.0, NULL);
-#endif
 	      }
+	      
+	      MR_Set_Faces(mr,nrf,rfaces_arr,rfdirs);
+#ifdef MSTK_USE_MARKERS
+	      MEnt_Mark(mr, reliable_rfdirs);
+#else
+	      MEnt_Set_AttVal(mr, dirflagatt, 1, 0.0, NULL);
+#endif
 	    }
 	    else if (reptype == R1 || reptype == R2)
 	      MR_Set_Vertices(mr, nelnodes[e], rverts, 0, NULL);
@@ -1020,7 +1029,7 @@ extern "C" {
 	      rcen[0] = rcen[1] = rcen[2] = 0.0;
 	      double fcen[MAXPF3][3], fnormal[MAXPF3][3];
             
-	      for (k = 0; k < nrf; k++) {
+	      for (int k = 0; k < nrf; k++) {
 		MFace_ptr rf = List_Entry(rfaces, k);
               
 		List_ptr fvlist = MF_Vertices(rf, 1, 0);
@@ -1056,10 +1065,10 @@ extern "C" {
 		  MSTK_VSum3(fnormal[k], normal, fnormal[k]);
 		}
 	      }
-	      for (k = 0; k < 3; k++) rcen[k] /= nrv;
+	      for (int k = 0; k < 3; k++) rcen[k] /= nrv;
             
 	      int nfgood = 0;
-	      for (k = 0; k < nrf; k++) {
+	      for (int k = 0; k < nrf; k++) {
 		/* @todo: do checks to make sure face is not too warped */
               
 		if (MSTK_VLenSqr3(fnormal[k]) < 1.0e-20) continue;  /* zero area face */
@@ -1090,7 +1099,7 @@ extern "C" {
 #endif
 		nfixed++;
 
-		for (k = 0; k < nrf; k++) {
+		for (int k = 0; k < nrf; k++) {
 		  MFace_ptr rf = List_Entry(rfaces, k);
 		  MRegion_ptr adjr = NULL;
 		  List_ptr fregs = MF_Regions(rf);
@@ -1134,7 +1143,7 @@ extern "C" {
 	     * direction of use of the face in this region */             
 
 	    MFace_ptr fstart = NULL;
-	    for (k = 0; k < nrf; k++) {
+	    for (int k = 0; k < nrf; k++) {
 	      MFace_ptr rf = List_Entry(rfaces, k);
 	      List_ptr fregs = MF_Regions(rf);
 	      if (List_Num_Entries(fregs) == 2) {
@@ -1222,7 +1231,7 @@ extern "C" {
 	    /* Add its neighbors into the list if their face directions
 	     * are not reliably known */
 
-	    for (k = 0; k < nrf; ++k) {
+	    for (int k = 0; k < nrf; ++k) {
 	      MFace_ptr rf = List_Entry(rfaces, k);
 	      List_ptr fregs = MF_Regions(rf);
 	      if (List_Num_Entries(fregs) == 2) {
@@ -1275,14 +1284,16 @@ extern "C" {
       }  /* if (nbad) */
 
 
+      if (ndim == 3 && nfaceblock_total) {
 #ifdef MSTK_USE_MARKERS
-      idx = 0;
-      while ((mr = MESH_Next_Region(mesh, &idx)))
-	MEnt_Unmark(mr, reliable_rfdirs);
-      MSTK_FreeMarker(reliable_rfdirs);
+	idx = 0;
+	while ((mr = MESH_Next_Region(mesh, &idx)))
+	  MEnt_Unmark(mr, reliable_rfdirs);
+	MSTK_FreeMarker(reliable_rfdirs);
 #else
-      MAttrib_Delete(dirflagatt);
+	MAttrib_Delete(dirflagatt);
 #endif
+      }
 
       if (nbad)
 	MSTK_Report(funcname, "Could not fix face dirs of some regions",
@@ -1335,13 +1346,13 @@ extern "C" {
   
     nmapatt = MAttrib_New(mesh, "node_map", INT, MVERTEX);
     
-    for (i = 0; i < nnodes2read; i++) {
+    for (int i = 0; i < nnodes2read; i++) {
       mv = MESH_Vertex(mesh, i);
       int global_node_id = local2global_node_map[i];
-      MEnt_Set_AttVal(mv, nmapatt, node_map[global_node_id], 0.0, NULL);
+      MEnt_Set_AttVal(mv, nmapatt, node_map[global_node_id-1], 0.0, NULL);
       
 #ifdef MSTK_HAVE_MPI
-        MV_Set_GlobalID(mv, node_map[global_node_id]);
+        MV_Set_GlobalID(mv, node_map[global_node_id-1]);
         MV_Set_MasterParID(mv, rank); /* This might get modified later */
 #endif
     }
@@ -1367,7 +1378,7 @@ extern "C" {
       }
     
     
-      for (i = 0; i < nnodesets_total; i++) {
+      for (int i = 0; i < nnodesets_total; i++) {
 
         sprintf(nodesetname,"nodeset_%-d",nodeset_ids[i]);
 
@@ -1398,9 +1409,11 @@ extern "C" {
         }
       
       
-        for (j = 0; j < num_nodes_in_set; j++) {
+        for (int j = 0; j < num_nodes_in_set; j++) {
 	  int global_node_id = ns_node_list[j];
 	  int local_node_id = global2local_node_map[global_node_id];
+	  if (!local_node_id) continue;  /* this node was not read in */
+	  
           mv = MESH_VertexFromID(mesh,local_node_id);
 	
           /* Set attribute value for this node */
@@ -1440,7 +1453,7 @@ extern "C" {
       }
       
       
-      for (i = 0; i < nsidesets_total; i++) {
+      for (int i = 0; i < nsidesets_total; i++) {
 
 	sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
@@ -1471,9 +1484,10 @@ extern "C" {
 	}
 	
 	  
-	for (j = 0; j < num_sides_in_set; j++) {
+	for (int j = 0; j < num_sides_in_set; j++) {
 	  int global_elem_id = ss_elem_list[j];
 	  int local_elem_id = global2local_elem_map[global_elem_id];
+	  if (!local_elem_id) continue;  /* this elem was not read in */
 
 	  if (mstk_elem_type == MFACE) {
 	    MFace_ptr mf = MESH_FaceFromID(mesh,local_elem_id);
@@ -1526,7 +1540,7 @@ extern "C" {
       }
       
       
-      for (i = 0; i < nelemsets_total; i++) {
+      for (int i = 0; i < nelemsets_total; i++) {
 
 	int num_elems_in_set;
 	char elemsetname[256];
@@ -1550,9 +1564,11 @@ extern "C" {
 		  
 	/* Add the faces to the set */
 
-	for (j = 0; j < num_elems_in_set; j++) {
+	for (int j = 0; j < num_elems_in_set; j++) {
 	  int global_elem_id = es_elem_list[j];
 	  int local_elem_id = global2local_elem_map[global_elem_id];
+	  if (!local_elem_id) continue;  /* this element was not read in */
+	  
 	  if (mstk_elem_type == MFACE) {
 	    MFace_ptr mf = MESH_FaceFromID(mesh,local_elem_id);
 	    MSet_Add(elemset,mf);
@@ -1585,24 +1601,24 @@ extern "C" {
     nmapatt = MAttrib_New(mesh, "elem_map", INT, mstk_elem_type);
     
     if (mstk_elem_type == MFACE) {
-      for (i = 0; i < nelems; i++) {
+      for (int i = 0; i < nelems; i++) {
 	MFace_ptr mf = MESH_Face(mesh, i);
 	int global_elem_id = local2global_elem_map[i];
-	MEnt_Set_AttVal(mf, nmapatt, elem_map[global_elem_id], 0.0, NULL);
+	MEnt_Set_AttVal(mf, nmapatt, elem_map[global_elem_id-1], 0.0, NULL);
 	
 #ifdef MSTK_HAVE_MPI
-	MF_Set_GlobalID(mf,elem_map[global_elem_id]);
+	MF_Set_GlobalID(mf,elem_map[global_elem_id-1]);
 	MF_Set_MasterParID(mf,rank);
 #endif
       }
     } else {
-      for (i = 0; i < nelems; i++) {
+      for (int i = 0; i < nelems; i++) {
 	MRegion_ptr mr = MESH_Region(mesh, i);
 	int global_elem_id = local2global_elem_map[i];
-	MEnt_Set_AttVal(mr, nmapatt, elem_map[global_elem_id], 0.0, NULL);
+	MEnt_Set_AttVal(mr, nmapatt, elem_map[global_elem_id-1], 0.0, NULL);
 	
 #ifdef MSTK_HAVE_MPI
-	MR_Set_GlobalID(mr,elem_map[global_elem_id]);
+	MR_Set_GlobalID(mr,elem_map[global_elem_id-1]);
 	MR_Set_MasterParID(mr,rank);
 #endif
       }
@@ -1632,7 +1648,7 @@ extern "C" {
       /* What are their names */
 
       char **elvarnames = (char **) malloc(nelemvars*sizeof(char *));
-      for (i = 0; i < nelemvars; i++)
+      for (int i = 0; i < nelemvars; i++)
         elvarnames[i] = (char *) malloc(256*sizeof(char));
 
       status = ex_get_variable_names(exoid, EX_ELEM_BLOCK, nelemvars,
@@ -1695,7 +1711,7 @@ extern "C" {
 					      mstk_elem_type,ncomp);
 
 	    double **elem_var_vals = (double **) malloc(ncomp*sizeof(double *));
-	    for (j = 0; j < ncomp; j++)
+	    for (int j = 0; j < ncomp; j++)
 	      elem_var_vals[j] = malloc(nelems*sizeof(double));
 
 	    int ibeg = 0;
@@ -1718,12 +1734,12 @@ extern "C" {
 		    endel = elblock_max[b];  /* range spans multiple blocks */
 		  int nelems_cur = endel - begel + 1;
 
-		  for (k = 0; k < ncomp; k++) {
+		  for (int k = 0; k < ncomp; k++) {
 		    varindex2 = varindex + k;
 		    /* ex_get_partial_var is using indices starting from 1 */
 		    status = ex_get_partial_var(exoid, time_step, EX_ELEM_BLOCK,
 						varindex2+1, elblock_ids[b],
-						begel+1, nelems_cur,
+						jbeg+1, nelems_cur,
 						elem_var_vals[k] + begel);
 		    if (status < 0) {
 		      sprintf(mesg,
@@ -1733,9 +1749,9 @@ extern "C" {
 		    }
 		  }
 
-		  for (j = 0; j < nelems_cur; j++) {
+		  for (int j = 0; j < nelems_cur; j++) {
 		    double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_Delete
-		    for (k = 0; k < ncomp; k++)
+		    for (int k = 0; k < ncomp; k++)
 		      pval[k] = elem_var_vals[k][jbeg+j];
 
 		    int localid = global2local_elem_map[begel+j];
@@ -1749,7 +1765,7 @@ extern "C" {
 	      }
 	    }
 	    
-	    for (k = 0; k < ncomp; k++)
+	    for (int k = 0; k < ncomp; k++)
 	      free(elem_var_vals[k]);
 	    free(elem_var_vals);
 	  } /* if its component 0 of a vector */
@@ -1783,7 +1799,7 @@ extern "C" {
 		
 		/* ex_get_partial_var is using indices starting from 1 */
 		status = ex_get_partial_var(exoid, time_step, EX_ELEM_BLOCK,
-					    varindex+1, elblock_ids[b], begel+1,
+					    varindex+1, elblock_ids[b], jbeg+1,
 					    nelems_cur, elem_var_vals+begel);
 		if (status < 0) {
 		  sprintf(mesg,
@@ -1792,7 +1808,7 @@ extern "C" {
 		  MSTK_Report(funcname,mesg,MSTK_FATAL);
 		}
 		
-		for (j = 0; j < nelems_cur; j++) {
+		for (int j = 0; j < nelems_cur; j++) {
 		  int localid = global2local_elem_map[begel+j];
 		  MEntity_ptr ment = (mstk_elem_type == MREGION) ?
 		    MESH_Region(mesh,localid) : MESH_Face(mesh,localid);
@@ -1808,7 +1824,7 @@ extern "C" {
 	
       } /* for each element variable */
 
-      for (i = 0; i < nelemvars; i++)
+      for (int i = 0; i < nelemvars; i++)
         free(elvarnames[i]);
       free(elvarnames);
     } /* if (nelemvars) */
@@ -1829,7 +1845,7 @@ extern "C" {
       /* What are their names */
 
       char **nodevarnames = (char **) malloc(nnodevars*sizeof(char *));
-      for (i = 0; i < nnodevars; i++)
+      for (int i = 0; i < nnodevars; i++)
         nodevarnames[i] = (char *) malloc(256*sizeof(char));
 
       status = ex_get_variable_names(exoid, EX_NODAL, nnodevars, nodevarnames);
@@ -1891,7 +1907,7 @@ extern "C" {
 	    int nodeid = 0;
 
 	    double **node_var_vals = (double **) malloc(ncomp*sizeof(double *));
-	    for (k = 0; k < ncomp; k++)
+	    for (int k = 0; k < ncomp; k++)
 	      node_var_vals[k] = (double *) malloc(nnodes2read*sizeof(double));
 
 	    int ibeg = 0;
@@ -1900,7 +1916,7 @@ extern "C" {
 	      while (nodes2read[iend+1] = nodes2read[iend]+1) iend++;
 	      int nnodes_cur = iend - ibeg + 1;
 
-	      for (k = 0; k < ncomp; k++) {
+	      for (int k = 0; k < ncomp; k++) {
 		varindex2 = varindex + k;
 		
 		/* ex_get_partial_var is using indices starting from 1 */
@@ -1916,15 +1932,15 @@ extern "C" {
 	      }
 	    }
 
-	    for (j = 0; j < nnodes2read; j++) {
+	    for (int j = 0; j < nnodes2read; j++) {
 	      double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_DELETE
-	      for (k = 0; k < ncomp; k++)
+	      for (int k = 0; k < ncomp; k++)
 		pval[k] = node_var_vals[k][j];
 	      MEntity_ptr ment = MESH_Vertex(mesh,j);
 	      MEnt_Set_AttVal(ment,mattrib,0,0.0,pval);
 	    }
 
-	    for (k = 0; k < ncomp; k++)
+	    for (int k = 0; k < ncomp; k++)
 	      free(node_var_vals[k]);
 	    free(node_var_vals);
 
@@ -1953,7 +1969,7 @@ extern "C" {
               MSTK_Report(funcname,mesg,MSTK_FATAL);
             }
 
-            for (j = 0; j < nnodes2read; j++) {
+            for (int j = 0; j < nnodes2read; j++) {
               MEntity_ptr ment = MESH_Vertex(mesh,j);
               MEnt_Set_AttVal(ment,mattrib,0,node_var_vals[j],NULL);
             }
@@ -1963,7 +1979,7 @@ extern "C" {
 	} /* If its a scalar variable */
       } /* for each node variable */
   
-      for (i = 0; i < nnodevars; i++)
+      for (int i = 0; i < nnodevars; i++)
 	free(nodevarnames[i]);
       free(nodevarnames);
     } /* if (nnodevars) */
@@ -1971,7 +1987,7 @@ extern "C" {
     ex_close(exoid);
 
     free(elblock_ids);
-    for (i = 0; i < nelblock_total; i++) free(elblock_names[i]);
+    for (int i = 0; i < nelblock_total; i++) free(elblock_names[i]);
     free(elblock_names);
     free(elblock_nelems);
     
