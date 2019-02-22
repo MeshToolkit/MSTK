@@ -256,15 +256,15 @@ extern "C" {
     /* Gather info needed for any polyhedral elements */
 
     int reliable_rfdirs = -1;
-    
-    if (ndim == 3 && nfaceblock_total) {
-
 #ifdef MSTK_USE_MARKERS
       reliable_rfdirs = MSTK_GetMarker();  /* region knows its face dirs? */
 #else
       dirflagatt = MAttrib_New(mesh, "dirflagatt", INT, MREGION);
 #endif
       
+    
+    if (ndim == 3 && nfaceblock_total) {
+
       nelfaces = (int *) malloc(nelems*sizeof(int));  /* num faces for each element */
       nelfaces_alloc = nelems*5;  /* guess on what nelfaces_sum will be */
       elfaces = (int *) malloc(nelfaces_alloc*sizeof(int));  /* faces of each element */
@@ -1285,16 +1285,14 @@ extern "C" {
       }  /* if (nbad) */
 
 
-      if (ndim == 3 && nfaceblock_total) {
 #ifdef MSTK_USE_MARKERS
-	idx = 0;
-	while ((mr = MESH_Next_Region(mesh, &idx)))
-	  MEnt_Unmark(mr, reliable_rfdirs);
-	MSTK_FreeMarker(reliable_rfdirs);
+      idx = 0;
+      while ((mr = MESH_Next_Region(mesh, &idx)))
+        MEnt_Unmark(mr, reliable_rfdirs);
+      MSTK_FreeMarker(reliable_rfdirs);
 #else
-	MAttrib_Delete(dirflagatt);
+      MAttrib_Delete(dirflagatt);
 #endif
-      }
 
       if (nbad)
 	MSTK_Report(funcname, "Could not fix face dirs of some regions",
