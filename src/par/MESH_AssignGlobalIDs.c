@@ -183,10 +183,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
     int *recv_list_vertex_gid = (int *)malloc(num*max_nbv*sizeof(int));
     
-    /* sort boundary vertices based on coordinate value, for binary search */
+    /* sort boundary vertices based on Global ID, for binary search */
     List_Sort(boundary_verts,nbv,sizeof(MVertex_ptr),compareGlobalID);
 
-    /* only local id and coordinate values are sent */
+    /* only global ids are sent */
     index_nbv = 0;
     for(i = 0; i < nbv; i++) {
       mv = List_Entry(boundary_verts,i);
@@ -214,7 +214,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       for(i = 0; i < nbv; i++) {
         mv = List_Entry(boundary_verts,i);
         int gid = MV_GlobalID(mv);
-        /* check which previous processor has the same coordinate vertex */
+        /* check which previous processor has a vertex with same Global ID*/
         for(j = 0; j < rank; j++) {
           /* since each processor has sorted the boundary vertices, use binary search */
           int *loc = (int *)bsearch(&gid,
@@ -487,7 +487,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   for(i = 0; i < ne; i++) {
     me = MESH_Edge(submesh,i);
     if (ME_PType(me) == PGHOST) continue;
-    ME_Set_GlobalID(me,global_id++);
+    if (!ME_GlobalID(me)) ME_Set_GlobalID(me,global_id++);
     ME_Set_MasterParID(me,rank);
   }
 
@@ -510,8 +510,16 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
   for(i = 0; i < nbe; i++) {
     me = List_Entry(boundary_edges,i);
-    if(ME_PType(me)==PGHOST)
-      ME_Set_GlobalID(me,recv_list_edge[ME_MasterParID(me)*max_nbe+id_on_ov_list[i]]);
+    if(ME_PType(me)==PGHOST) {
+      int gid = recv_list_edge[ME_MasterParID(me)*max_nbe+id_on_ov_list[i]];
+#ifdef DEBUG
+      if (ME_GlobalID(me) && ME_GlobalID(me) != gid)
+	MSTK_Report("MESH_Assign_GlobalIDs_Edge",
+		    "Ghost edge already has different global ID",
+		    MSTK_WARN);
+#endif
+	ME_Set_GlobalID(me, gid);
+    }
   }
 
 
@@ -558,7 +566,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   for(i = 0; i < nf; i++) {
     mf = MESH_Face(submesh,i);
     MF_Set_PType(mf,PINTERIOR);
-    MF_Set_GlobalID(mf,global_id++);
+    if (!MF_GlobalID(mf)) MF_Set_GlobalID(mf,global_id++);
     MF_Set_MasterParID(mf,rank);
   }
 
@@ -695,7 +703,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   for(i = 0; i < nf; i++) {
     mf = MESH_Face(submesh,i);
     if (MF_PType(mf) == PGHOST) continue;
-    MF_Set_GlobalID(mf,global_id++);
+    if (!MF_GlobalID(mf)) MF_Set_GlobalID(mf,global_id++);
     MF_Set_MasterParID(mf,rank);
   }
 
@@ -719,8 +727,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
   for(i = 0; i < nbf; i++) {
     mf = List_Entry(boundary_faces,i);
-    if(MF_PType(mf)==PGHOST)
-      MF_Set_GlobalID(mf,recv_list_face[MF_MasterParID(mf)*max_nbf+id_on_ov_list[i]]);
+    if(MF_PType(mf)==PGHOST) {
+      int gid = recv_list_face[MF_MasterParID(mf)*max_nbf+id_on_ov_list[i]];
+#ifdef DEBUG
+      if (MF_GlobalID(mf) && MF_GlobalID(mf) != gid)
+	MSTK_Report("MESH_AssignGlobalIDs_region",
+		    "Ghost face already has different global ID", MSTK_WARN);
+#endif
+      MF_Set_GlobalID(mf, gid);
+    }
   }
 
   /* assign region global id */
@@ -730,7 +745,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   for(i = 0; i < nr; i++) {
     mr = MESH_Region(submesh,i);
     MR_Set_PType(mr,PINTERIOR);
-    MR_Set_GlobalID(mr,global_id++);
+    if (!MR_GlobalID(mr)) MR_Set_GlobalID(mr,global_id++);
     MR_Set_MasterParID(mr,rank);
   }
 

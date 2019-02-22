@@ -1,8 +1,10 @@
 #include <UnitTest++.h>
 #include <cstdio>
+#include <cstdlib>
 #include <vector>
 
 #include "../../include/MSTK.h"
+#include "../../include/MSTK_private.h"
 
 // Test if we can correctly read a polygonal exodus mesh 
 // Then test if we can correctly write it and read it back
@@ -588,3 +590,103 @@ TEST(Write_Read_ExodusII_Variables) {
   MESH_Delete(mesh2);
 }
 
+
+TEST(Write_Read_ExodusII_Partial_2D) {
+
+  MSTK_Init();
+
+  /* Read a 5x5 mesh of quads */
+
+  Mesh_ptr mesh = MESH_New(F1);
+  int ok = MESH_ReadExodusII_Serial(mesh,"parallel/4proc/mesh5x5-skewed.exo",0);
+  CHECK_EQUAL(ok, 1);
+
+  int nelems_total = MESH_Num_Faces(mesh);
+
+  /* Create a subset of elements to do a partial read */
+
+  int *temp_ptr = new int;
+  srand((long)temp_ptr);
+  delete temp_ptr;
+
+  for (int i = 0; i < 3; i++) {
+    int nelems = rand() % nelems_total + 1;
+    
+    int *elems = new int[nelems];
+    for (int j = 0; j < nelems; j++) {  // generate nelems unique IDs
+      int done = 0;
+      while (!done) {
+	int id = rand() % nelems_total + 1;
+	int found = 0;
+	for (int k = 0; k < j; k++)
+	  if (elems[k] == id) {
+	    found = 1;
+	    break;
+	  }
+	if (!found) {
+	  done = 1;  // found a unique ID
+	  elems[j] = id;
+	}
+      }
+    }
+	
+    Mesh_ptr mesh2 = MESH_New(F1);
+    ok = MESH_ReadExodusII_Partial(mesh2,"parallel/4proc/mesh5x5-skewed.exo",0,
+				    nelems, elems);
+    CHECK_EQUAL(ok, 1);
+    MESH_Delete(mesh2);
+    delete [] elems;
+  }
+
+  MESH_Delete(mesh);
+}
+
+TEST(Write_Read_ExodusII_Partial_3D) {
+
+  MSTK_Init();
+
+  /* Read a 5x5 mesh of quads */
+
+  Mesh_ptr mesh = MESH_New(F1);
+  int ok = MESH_ReadExodusII_Serial(mesh,"parallel/8proc/hex_3x3x3_ss.exo",0);
+  CHECK_EQUAL(ok, 1);
+
+  int nelems_total = MESH_Num_Regions(mesh);
+
+  /* Create a subset of elements to do a partial read */
+
+  int *temp_ptr = new int;
+  srand((long)temp_ptr);
+  delete temp_ptr;
+
+  for (int i = 0; i < 3; i++) {
+    int nelems = rand() % nelems_total + 1;
+    
+    int *elems = new int[nelems];
+    for (int j = 0; j < nelems; j++) {  // generate nelems unique IDs
+      int done = 0;
+      while (!done) {
+	int id = rand() % nelems_total + 1;
+	int found = 0;
+	for (int k = 0; k < j; k++)
+	  if (elems[k] == id) {
+	    found = 1;
+	    break;
+	  }
+	if (!found) {
+	  done = 1;  // found a unique ID
+	  elems[j] = id;
+	}
+      }
+    }
+	
+    Mesh_ptr mesh2 = MESH_New(F1);
+    ok = MESH_ReadExodusII_Partial(mesh2,"parallel/8proc/hex_3x3x3_ss.exo",0,
+				    nelems, elems);
+    CHECK_EQUAL(ok, 1);
+    MESH_Delete(mesh2);
+    delete [] elems;
+  }
+
+  MESH_Delete(mesh);
+}

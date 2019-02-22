@@ -174,6 +174,9 @@ typedef enum MDelType {MDELREGION=-40, MDELFACE=-30, MDELEDGE=-20, MDELVERTEX=-1
   */
   int MESH_ExportToDXBin(Mesh_ptr mesh, const char *filename);
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank);
+  int MESH_ReadExodusII_Partial(Mesh_ptr mesh, const char *filename,
+				const int rank, const int nelems,
+				int *elems);
 
   /* Extra functionality for List manipulation - risky for uninformed users */
 

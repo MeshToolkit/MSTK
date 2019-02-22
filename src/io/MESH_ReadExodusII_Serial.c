@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <math.h>
 
 #include "MSTK.h"
@@ -34,7 +35,7 @@ extern "C" {
 
   int MESH_ReadExodusII_Serial(Mesh_ptr mesh, const char *filename, const int rank) {
 
-    char mesg[256], funcname[32]="MESH_ImportFromExodusII";
+    char mesg[256], funcname[32]="MESH_ReadExodusII_Serial";
     char title[256], sidesetname[256], nodesetname[256];
     char elem_type[256], face_type[256];
     char matsetname[256];

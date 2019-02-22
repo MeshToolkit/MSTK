@@ -19,6 +19,8 @@ set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+
 # This option may be needed for machines like Edison and Hopper
 
 if (PREFER_STATIC_LIBRARIES)
@@ -70,18 +72,6 @@ endif (ENABLE_PARALLEL)
 if (MSTK_USE_MARKERS)
   add_definitions("-DMSTK_USE_MARKERS")
 endif (MSTK_USE_MARKERS)
-
-################################################################################
-# Make sure uthash (https://github.com/troydhanson/uthash) is pulled in;
-# Otherwise issue reminder to clone with --recursive flag
-################################################################################
-file(GLOB _uthash_contents ${CMAKE_SOURCE_DIR}/uthash/*)
-if (_uthash_contents)
-  include_directories(${CMAKE_SOURCE_DIR}/uthash/include)
-else (_uthash_contents)
-  message(FATAL "Clone MSTK repository with --recursive flag")
-endif (_uthash_contents)
-
 
 ################################################################################
 # If user wants to read/write ExodusII files, we check if we can locate the
