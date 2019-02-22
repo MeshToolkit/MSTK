@@ -636,7 +636,9 @@ extern "C" {
     
 	xyz[0] = xvals[n]; xyz[1] = yvals[n]; xyz[2] = zvals[n];
 	MV_Set_Coords(mv, xyz);
+#ifdef MSTK_HAVE_MPI
 	MV_Set_GlobalID(mv, nodes2read[ibeg+n]);
+#endif
 
 	mverts[ibeg+n] = mv;
 	global2local_node_map[nodes2read[ibeg+n]] = ibeg+n+1;
@@ -685,7 +687,9 @@ extern "C" {
 	offset += nelnodes[e];
 
 	MF_Set_Vertices(mf, nelnodes[e], fverts);
+#ifdef MSTK_HAVE_MPI
 	MF_Set_GlobalID(mf, elem_ids[e]);
+#endif
 	MF_Set_GEntID(mf, b);
 	MF_Set_GEntID(mf, 2);
 
@@ -709,7 +713,9 @@ extern "C" {
 	  noffset += nelnodes[e];
 	
 	  MF_Set_Vertices(mf, nelnodes[e], fverts);
+#ifdef MSTK_HAVE_MPI
 	  MF_Set_GlobalID(mf, elem_ids[e]);
+#endif
 	  MF_Set_GEntID(mf, b);
 	  MF_Set_GEntDim(mf, 3);
 	
@@ -885,7 +891,9 @@ extern "C" {
 	      MR_Set_Vertices(mr, nelnodes[e], rverts, 0, NULL);
 	  }
 
+#ifdef MSTK_HAVE_MPI
 	  MR_Set_GlobalID(mr, elem_ids[e]);
+#endif
 	  MR_Set_GEntID(mr, b);
 	  MR_Set_GEntDim(mr, 3);
 	
