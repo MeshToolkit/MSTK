@@ -42,6 +42,7 @@ script:
      -DENABLE_PARALLEL=$PARALLEL
      -DENABLE_METIS=yes
      -DMETIS_INCLUDE_DIR=/usr/include
+     -DHDF5_INCLUDE_DIRS=/usr/include/hdf5/openmpi
      -DENABLE_ExodusII=ON
      -DENABLE_Tests=yes
      -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
