@@ -89,14 +89,14 @@ if (ENABLE_ExodusII)
   # HDF5 - 
   ##############################################################################
 
- set(HDF5_ROOT ${HDF5_DIR})
- find_package(HDF5 REQUIRED 
-              COMPONENTS C CXX HL)
+ message(STATUS "HDF5_ROOT ${HDF5_ROOT}")
+ message(STATUS "HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS}")
+ find_package(HDF5 REQUIRED COMPONENTS C HL)
 
  if(NOT HDF5_FOUND)
     message(FATAL_ERROR "Error: could not find hdf5 library\n"
-      "Try defining HDF5_DIR: (-D HDF5_DIR:FILEPATH=<HDF5_install_prefix>)")
- endif()
+      "Try defining HDF5_ROOT: (-D HDF5_ROOT:FILEPATH=<HDF5_install_prefix>)")
+ endif(NOT HDF5_FOUND)
 
 
   message("---- HDF5_LIBRARIES : " ${HDF5_LIBRARIES})
