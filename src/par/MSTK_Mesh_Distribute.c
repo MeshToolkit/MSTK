@@ -13,9 +13,6 @@ extern "C" {
 
   /* Partition a given mesh and distribute it to 'num' processors 
 
-     I think we don't need to bother with sending dim in and out but
-     need to double check later
-
      Authors: Rao Garimella
               Duo Wang
   */
@@ -28,7 +25,6 @@ extern "C" {
     int *send_dim, *part=NULL;
     int rank, numprocs, *toranks;
     int DebugWait=0;
-    Mesh_ptr *submeshes=NULL;
     MAttrib_ptr attrib;
     MSet_ptr mset;
 
@@ -62,6 +58,7 @@ extern "C" {
       toranks = (int *) malloc(numprocs*sizeof(int));
       for (i = 0; i < numprocs; i++) toranks[i] = i;
 
+      *mysubmesh = MESH_New(MESH_RepType(parentmesh));
       MESH_Partition_and_Send(parentmesh, numprocs, part, toranks, ring, 
                               with_attr, del_inmesh, comm, mysubmesh);
 
@@ -84,9 +81,7 @@ extern "C" {
       int nv, ne, nf, nr;
       RepType rtype;
 
-      if (!(*mysubmesh)) 
-        *mysubmesh = MESH_New(UNKNOWN_REP);
-
+      *mysubmesh = MESH_New(UNKNOWN_REP);
       MESH_RecvMesh(*mysubmesh, fromrank, with_attr, comm);
 
     }
