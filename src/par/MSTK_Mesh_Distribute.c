@@ -58,7 +58,8 @@ extern "C" {
       toranks = (int *) malloc(numprocs*sizeof(int));
       for (i = 0; i < numprocs; i++) toranks[i] = i;
 
-      *mysubmesh = MESH_New(MESH_RepType(parentmesh));
+      if (*mysubmesh == NULL)
+        *mysubmesh = MESH_New(MESH_RepType(parentmesh));
       MESH_Partition_and_Send(parentmesh, numprocs, part, toranks, ring, 
                               with_attr, del_inmesh, comm, mysubmesh);
 
@@ -81,7 +82,8 @@ extern "C" {
       int nv, ne, nf, nr;
       RepType rtype;
 
-      *mysubmesh = MESH_New(UNKNOWN_REP);
+      if (*mysubmesh == NULL)
+        *mysubmesh = MESH_New(UNKNOWN_REP);
       MESH_RecvMesh(*mysubmesh, fromrank, with_attr, comm);
 
     }
