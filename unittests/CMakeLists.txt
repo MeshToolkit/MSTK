@@ -11,12 +11,13 @@ if (BUILD_TESTS)
   
   # Need to copy files for tests otherwise the input files aren't accessible
 
-  if (NOT (${MSTK_SOURCE_DIR} EQUAL ${MSTK_BINARY_DIR}))
+  if (NOT (${PROJECT_SOURCE_DIR} EQUAL ${PROJECT_BINARY_DIR}))
     execute_process(COMMAND ${CMAKE_COMMAND} -E
-      copy_directory ${MSTK_SOURCE_DIR}/unittests ${MSTK_BINARY_DIR}/unittests)
+      copy_directory ${PROJECT_SOURCE_DIR}/unittests ${PROJECT_BINARY_DIR}/unittests)
   endif ()
 
   include_directories(${UnitTest_INCLUDE_DIRS})
+  include_directories(${PROJECT_BINARY_DIR}/include)
 
   file (GLOB FILES serial/*.cc)
   foreach (FILE ${FILES})
