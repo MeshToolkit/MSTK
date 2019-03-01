@@ -56,7 +56,7 @@ extern "C" {
     MSTK_Report("MESH_InitFromFile",
 		"Premature end of file before any mesh data is read",MSTK_FATAL);
 
-  if (ver != MSTK_VER) {
+  if (ver != MSTK_FILE_VER) {
     MSTK_Report("MESH_InitFromFile","Version mismatch",MSTK_WARN);
   }
 

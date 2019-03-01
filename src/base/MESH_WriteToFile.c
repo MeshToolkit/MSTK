@@ -58,7 +58,7 @@ extern "C" {
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
 
-  fprintf(fp,"MSTK %-2.1lf\n",MSTK_VER);
+  fprintf(fp,"MSTK %-2.1lf\n",MSTK_FILE_VER);
   fprintf(fp,"%s %d %d %d %d\n",
 	  MESH_rtype_str[reptype], 
 	  nv, 
