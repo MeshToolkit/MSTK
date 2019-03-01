@@ -1,3 +1,15 @@
+
+
+03/01/2018
+MSTK v3.1.1
+
+Clearly this README is being updated after a long time. The big improvements in this version are
+
+1. A new serial->parallel partitioning option in the library and the meshconvert utility
+2. Preserve existing global IDs for parallel mesh read or serial mesh partitioning
+3. No need for clients to define MSTK_HAVE_MPI. If its built with MPI, this will be defined
+
+
 04/06/2016
 MSTK v2.26rc1
 
