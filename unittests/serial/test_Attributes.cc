@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <vector>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 
 TEST(Mesh_Attributes) {

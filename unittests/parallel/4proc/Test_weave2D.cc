@@ -1,7 +1,7 @@
 #include <UnitTest++.h>
 #include <cstdio>
 
-#include "../../../include/MSTK.h"
+#include "MSTK.h"
 
 SUITE(Parallel) {
 TEST(Weave2D) {

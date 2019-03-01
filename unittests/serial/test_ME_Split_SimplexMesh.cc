@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test if we can split an edge along with connected regions in a tet mesh
 

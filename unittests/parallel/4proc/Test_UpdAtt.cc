@@ -1,8 +1,8 @@
 #include <UnitTest++.h>
 #include <cstdio>
 
-#include "../../../include/MSTK.h"
-#include "../../../include/MSTK_private.h"
+#include "MSTK.h"
+#include "MSTK_private.h"
 
 SUITE(Parallel) {
 TEST(UpdAtt2D_Dist) {

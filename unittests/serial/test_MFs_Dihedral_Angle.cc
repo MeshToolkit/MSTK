@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 TEST(MFs_DihedralAngle) {
 

@@ -1,7 +1,7 @@
 #include <UnitTest++.h>
 #include <iostream>
 
-#include "../../../include/MSTK.h"
+#include "MSTK.h"
 
 SUITE(Parallel) {
 #if defined (_MSTK_HAVE_METIS)

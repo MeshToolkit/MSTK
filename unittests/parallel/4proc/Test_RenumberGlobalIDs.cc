@@ -1,7 +1,7 @@
 #include <UnitTest++.h>
 
-#include "../../../include/MSTK.h"
-#include "../../../include/MSTK_private.h"
+#include "MSTK.h"
+#include "MSTK_private.h"
 #include <vector>
 #include <algorithm>
 #include <iostream>

@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test if we can split a face correctly in a 3D mesh
 

@@ -3,7 +3,7 @@
 #include <vector>
 #include "omp.h"
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test to make sure entity marking works correctly in multi-threaded runs
 // Sadly, I am not able to make this fail with gcc 5.4.0 on Ubuntu 16.04 even

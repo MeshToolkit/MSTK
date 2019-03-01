@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test if we can split an edge correctly in a 2D and 3D mesh
 

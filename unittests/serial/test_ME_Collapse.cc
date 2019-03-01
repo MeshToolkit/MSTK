@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test if we can collapse degenerate edges correctly in a 3D mesh
 // Here we are not worrying about correct classification of entities with 

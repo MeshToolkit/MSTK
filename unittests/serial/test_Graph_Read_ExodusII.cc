@@ -2,8 +2,8 @@
 
 #include <cstdlib>
 
-#include "../../include/MSTK.h"
-#include "../../include/MSTK_private.h"
+#include "MSTK.h"
+#include "MSTK_private.h"
 
 // Test if we can read the Exodus II file to construct only the adjacency graph
 // Do this by comparing against the adjacency graph we get from a full mesh

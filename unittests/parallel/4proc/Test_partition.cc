@@ -1,6 +1,6 @@
 #include <UnitTest++.h>
 
-#include "../../../include/MSTK.h"
+#include "MSTK.h"
 
 SUITE(Parallel) {
 TEST(Partition2D_0ring) {

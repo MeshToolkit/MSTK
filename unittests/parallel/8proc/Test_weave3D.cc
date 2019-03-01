@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "../../../include/MSTK.h"
+#include "MSTK.h"
 
 //
 //  Build a parallel connected mesh from the following distributed
