@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 /* Join two regions sharing a common face.  The faces of the second
    region (excluding the common face) are added to the first
    region. The common face and the second region are deleted and the

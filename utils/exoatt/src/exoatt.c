@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 /* Import a serial Exodus II mesh (exo) and attach real value attributes
    (att) read from an auxilliary file. Export a new Exodus II mesh
    file or partitioned Nemesis I files with the new attributes attached */

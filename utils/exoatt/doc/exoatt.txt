@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 exoatt is a utility to read in a _SERIAL_ Exodus II mesh and augment it
 with (1) real valued attributes read from an auxiliary file and/or (2)
 entity sets read from an auxiliary file. A new Exodus II mesh file
