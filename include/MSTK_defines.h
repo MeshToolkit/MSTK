@@ -5,9 +5,21 @@
 extern "C" {
 #endif
 
-#define MSTK_UNKNOWN -1
 
-#define MSTK_VER    1.0
+/* The following lines (MSTK_*_VERSION and if present, #define
+ * MSTK_HAVE_MPI) are filled in by CMake during installation */
+
+#define MSTK_VERSION_MAJOR @MSTK_VERSION_MAJOR@
+#define MSTK_VERSION_MINOR @MSTK_VERSION_MINOR@
+#define MSTK_VERSION_PATCH @MSTK_VERSION_PATCH@
+
+#cmakedefine MSTK_HAVE_MPI
+ 
+
+
+#define MSTK_FILE_VER 1.0
+
+#define MSTK_UNKNOWN -1
 
 #define MSTK_MAXREP 10
 
