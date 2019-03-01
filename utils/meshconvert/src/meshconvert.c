@@ -310,7 +310,9 @@ int main(int argc, char *argv[]) {
 	if (rank == 0)
 	  dim = MESH_Num_Regions(serial_mesh) ? 3 : 2;
 
+#ifdef MSTK_HAVE_MPI
 	MPI_Bcast(&dim, 1, MPI_INT, 0, comm);
+#endif
 	int ok = MSTK_Mesh_Distribute(serial_mesh, &mesh, &dim, ring, with_attr,
 				      partmethod, del_inmesh, comm);
       } else
