@@ -11,7 +11,6 @@
 */
 
 
-#define MSTK_VERSION "3.0.4"
 
 #include <stdarg.h>
 #include <stddef.h>
