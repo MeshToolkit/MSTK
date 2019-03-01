@@ -1,5 +1,5 @@
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
 add_executable(mkstruc src/mkstruc.c src/transform_xyz.c)
 target_link_libraries(mkstruc 

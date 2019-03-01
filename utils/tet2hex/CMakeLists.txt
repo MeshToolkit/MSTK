@@ -1,5 +1,5 @@
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
 add_executable(tet2hex src/tet2hex.c)
 target_link_libraries(tet2hex

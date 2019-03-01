@@ -1,5 +1,5 @@
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
 add_executable(tri2quad src/tri2quad.c)
 target_link_libraries(tri2quad
