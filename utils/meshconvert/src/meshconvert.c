@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 
   /* Do we have single or multiple input files? */
   int serial_file = 0, parallel_file = 0;
-  if (fp = fopen(infname,"r")) {
+  if ((fp = fopen(infname,"r"))) {
     serial_file = 1;
     fclose(fp);
   }
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
 
   /* now read the mesh */
 
-  Mesh_ptr mesh;
+  Mesh_ptr mesh = NULL;
   int opts[5]={0,0,0,0,0};
   
   if (serial_file) {
@@ -312,9 +312,13 @@ int main(int argc, char *argv[]) {
 
 #ifdef MSTK_HAVE_MPI
 	MPI_Bcast(&dim, 1, MPI_INT, 0, comm);
-#endif
 	int ok = MSTK_Mesh_Distribute(serial_mesh, &mesh, &dim, ring, with_attr,
 				      partmethod, del_inmesh, comm);
+#else
+        MSTK_Report("meshconvert",
+                    "Request for partitioning in serial run - use mpirun",
+                    MSTK_FATAL);
+#endif
       } else
 	mesh = serial_mesh;
     }
@@ -398,7 +402,7 @@ int main(int argc, char *argv[]) {
     case VTK: {
       if (rank == 0)
 	fprintf(stderr,"Cannot import mesh from VTK format. ");
-	break;
+      break;
     }
     case AVSUCD: {
       if (rank == 0)
