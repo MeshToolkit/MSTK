@@ -4,7 +4,7 @@
 #include <UnitTest++.h>
 #include <exodusII.h>
 
-#include "../../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test if we can correctly read a polygonal exodus mesh 
 // Then test if we can correctly write it and read it back
