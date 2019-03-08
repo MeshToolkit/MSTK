@@ -47,9 +47,26 @@ extern "C" {
   MAttrib_ptr attrib, vidatt, eidatt, fidatt, ridatt;
   MType attentdim;
   MAttType atttype;
+
+  char modfilename[256];
+  strcpy(modfilename, filename);
   
-  if (!(fp = fopen(filename,"w"))) {
-    sprintf(mesg,"Cannot open file %-s for writing",filename);
+  int rank = 0, numprocs = 1;
+#ifdef MSTK_HAVE_MPI
+  if (comm) {
+    MPI_Comm_size((MPI_Comm)comm, &numprocs);
+    MPI_Comm_rank((MPI_Comm)comm, &rank);
+  }
+  if (numprocs > 1) {
+    int ndigits = 0;
+    int div = 1;
+    while (numprocs/div) {div *= 10; ndigits++;}
+    sprintf(modfilename,"%s.%d.%0*d",filename,numprocs,ndigits,rank);
+  }
+#endif
+  
+  if (!(fp = fopen(modfilename,"w"))) {
+    sprintf(mesg,"Cannot open file %-s for writing",modfilename);
     MSTK_Report("MESH_WriteToFile",mesg,MSTK_ERROR);
     return 0;
   }
