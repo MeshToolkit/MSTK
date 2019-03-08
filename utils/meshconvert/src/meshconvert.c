@@ -126,10 +126,10 @@ int main(int argc, char *argv[]) {
       else if (strncmp(argv[i],"--partition=",12) == 0) {
         if (strncmp(argv[i]+12,"y",1) == 0 ||
             strncmp(argv[i]+12,"1",1) == 0)
-          partition = 1;  // new method for partitioning serial file
+          partition = 2;  // new method for partitioning serial file
         else if (strncmp(argv[i]+12,"o",1) == 0 ||
                  strncmp(argv[i]+12,"2",1) == 0) 
-          partition = 2;  // old method for partitioning serial file
+          partition = 1;  // old method for partitioning serial file
         else if (strncmp(argv[i]+12,"n",1) == 0 ||
                  strncmp(argv[i]+12,"0",1) == 0) 
           partition = 0;  // no partitioning
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
       if (rank == 0)
 	fprintf(stderr,"Importing mesh from ExodusII file...");
       opts[0] = (partition > 0) ? 1 : 0;
-      opts[1] = (partition > 0) ? partition : 0;
+      opts[1] = (partition > 0) ? partition-1 : 0;
       opts[2] = 1;
       opts[3] = partmethod;
 
@@ -393,12 +393,12 @@ int main(int argc, char *argv[]) {
     }
     case NEMESISI: {
       if (rank == 0)
-	fprintf(stderr,"Reading file in MSTK format...");
+	fprintf(stderr,"Reading file in Exodus/Nemesis format...");
 
       sprintf(parfilename,"%s.%-d.%-d",infname,numprocs,rank);
       mesh = MESH_New(UNKNOWN_REP);
       
-      ok = MESH_ImportFromFile(mesh,parfilename,"nenesisi",opts,comm);
+      ok = MESH_ImportFromFile(mesh,parfilename,"nemesisi",opts,comm);
       
       break;
     }
