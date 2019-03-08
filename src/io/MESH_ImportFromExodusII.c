@@ -152,7 +152,7 @@ extern "C" {
       else if (parallel_opts[1] == 1) {
 	int dim;
 	int nelems, num_myelems;
-	int *myelems, *elemgraphoff, *elemgraphadj;
+	int *myelems=NULL, *elemgraphoff=NULL, *elemgraphadj=NULL;
 	int get_coords = 0;
 	double (*elemcen)[3];
 	
