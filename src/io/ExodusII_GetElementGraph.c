@@ -265,7 +265,7 @@ extern "C" {
     if (*ndim == 1)
       MSTK_Report(funcname,"Cannot read 1D meshes",MSTK_FATAL);
 
-    double *xvals, *yvals, *zvals;
+    double *xvals=NULL, *yvals=NULL, *zvals=NULL;
     if (get_coords) {
       xvals = (double *) malloc(nnodes*sizeof(double));
       yvals = (double *) malloc(nnodes*sizeof(double));  
