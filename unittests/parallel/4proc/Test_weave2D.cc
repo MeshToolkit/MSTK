@@ -83,7 +83,7 @@ TEST(Weave2D) {
 
   mesh = MESH_New(UNKNOWN_REP);
 
-  sprintf(filename,"parallel/4proc/quad4x3.mstk.%-1d",rank);
+  sprintf(filename,"parallel/4proc/quad4x3.mstk.4.%-1d",rank);
   status = MESH_InitFromFile(mesh,filename,comm);
 
   CHECK(status);
