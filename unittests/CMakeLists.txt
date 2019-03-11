@@ -1,3 +1,9 @@
+# Copyright 2019 Triad National Security, LLC. All rights reserved.
+# 
+# This file is part of the MSTK project. Please see the license file at
+# the root of this repository or at
+# https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+
 
 if (BUILD_TESTS)
 
@@ -11,12 +17,13 @@ if (BUILD_TESTS)
   
   # Need to copy files for tests otherwise the input files aren't accessible
 
-  if (NOT (${MSTK_SOURCE_DIR} EQUAL ${MSTK_BINARY_DIR}))
+  if (NOT (${PROJECT_SOURCE_DIR} EQUAL ${PROJECT_BINARY_DIR}))
     execute_process(COMMAND ${CMAKE_COMMAND} -E
-      copy_directory ${MSTK_SOURCE_DIR}/unittests ${MSTK_BINARY_DIR}/unittests)
+      copy_directory ${PROJECT_SOURCE_DIR}/unittests ${PROJECT_BINARY_DIR}/unittests)
   endif ()
 
   include_directories(${UnitTest_INCLUDE_DIRS})
+  include_directories(${PROJECT_BINARY_DIR}/include)
 
   file (GLOB FILES serial/*.cc)
   foreach (FILE ${FILES})

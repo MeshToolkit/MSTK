@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #define _H_Mesh_Private
 
 #include <stdio.h>
@@ -56,7 +64,7 @@ extern "C" {
     MSTK_Report("MESH_InitFromFile",
 		"Premature end of file before any mesh data is read",MSTK_FATAL);
 
-  if (ver != MSTK_VER) {
+  if (ver != MSTK_FILE_VER) {
     MSTK_Report("MESH_InitFromFile","Version mismatch",MSTK_WARN);
   }
 

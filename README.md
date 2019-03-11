@@ -1,6 +1,6 @@
 MeSh ToolKit (MSTK) 
 ===================
-Copyright (c) 2016, Los Alamos National Security, LLC
+Copyright (c) 2019, Triad National Security, LLC
 All rights reserved. LA-CC-04-010
 
 [MASTER BUILD STATUS on TRAVIS: ![Build Status](https://travis-ci.org/MeshToolkit/MSTK.svg?branch=master)](https://travis-ci.org/MeshToolkit/MSTK)
@@ -46,7 +46,7 @@ Copyright
 
 MSTK is distributed as open-source software under a BSD 3-clause
 copyright agreement. Please see the full copyright statement in the
-COPYRIGHT file in this distribution 
+LICENSE file in this distribution 
 
 Install MSTK
 ------------

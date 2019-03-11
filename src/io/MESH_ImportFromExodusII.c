@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -144,7 +152,7 @@ extern "C" {
       else if (parallel_opts[1] == 1) {
 	int dim;
 	int nelems, num_myelems;
-	int *myelems, *elemgraphoff, *elemgraphadj;
+	int *myelems=NULL, *elemgraphoff=NULL, *elemgraphadj=NULL;
 	int get_coords = 0;
 	double (*elemcen)[3];
 	

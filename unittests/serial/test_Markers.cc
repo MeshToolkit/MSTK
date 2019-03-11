@@ -1,9 +1,17 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #include <UnitTest++.h>
 #include <iostream>
 #include <vector>
 #include "omp.h"
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test to make sure entity marking works correctly in multi-threaded runs
 // Sadly, I am not able to make this fail with gcc 5.4.0 on Ubuntu 16.04 even

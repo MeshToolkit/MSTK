@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -307,8 +315,15 @@ extern "C" {
 		MSTK_Report(funcname,mesg,MSTK_FATAL);
 	      }
 
+	      /* Calculate the offset where the faces of this element
+		 will start in the element-face connectivity array */
+	      int elfaces_beg = 0;
+	      int j;
+	      for (j = 0; j < jbeg; j++)
+		elfaces_beg += nelfaces_cur[j];
+	      
 	      int nelfaces_cur_sum = 0;
-	      for (int j = 0; j < nelems_cur; j++) {
+	      for (j = 0; j < nelems_cur; j++) {
 		nelfaces_cur_sum += nelfaces_cur[jbeg+j];
 		nelfaces[elcounter] = nelfaces_cur[jbeg+j];
 		elem_blockidx[elcounter] = b;
@@ -321,9 +336,16 @@ extern "C" {
 		nelfaces_alloc = nelfaces_sum + nelfaces_cur_sum;
 		elfaces = (int *) realloc(elfaces, nelfaces_alloc*sizeof(int));
 	      }
-	      /* ex_get_partial_conn is using indices starting from 1 */
+	      
+	      /* ex_get_partial_conn for NFACED elements is different
+		 than for standard elements; for NFACED elements you
+		 have to give it the offset to the first face of the
+		 starting element (begel) and the number of faces to
+		 be read */
+
 	      status = ex_get_partial_conn(exoid, EX_ELEM_BLOCK,
-					   elblock_ids[b], jbeg+1, nelems_cur,
+					   elblock_ids[b], elfaces_beg+1,
+					   nelfaces_cur_sum,
 					   NULL, NULL,
 					   elfaces + nelfaces_sum);
 	      if (status < 0) {
@@ -426,15 +448,25 @@ extern "C" {
 		      filename);
 	      MSTK_Report(funcname,mesg,MSTK_FATAL);
 	    }
+
+	    /* Calculate the offset for the first node of the first face that is
+	       to be read */
+	    int fnodes_beg = 0;
+	    int j;
+	    for (j = 0; j < jbeg; j++)
+	      fnodes_beg += nfnodes_cur[0];
+
 	    int nfnodes_cur_sum = 0;
 	    for (int j = 0; j < nface_cur; j++) {
 	      nfnodes_cur_sum += nfnodes_cur[jbeg+j];
 	      nfnodes[nfnodes_sum+j] = nfnodes_cur[jbeg+j];
 	    }
 	    
-	    /* ex_get_partial_conn is using indices starting from 1 */
+	    /* ex_get_partial_conn requires us to provde the offset of
+	       the first node of the starting face and the number of
+	       face nodes to retrieve */
 	    status = ex_get_partial_conn(exoid, EX_FACE_BLOCK, faceblock_ids[i],
-					 jbeg+1, nface_cur,
+					 fnodes_beg+1, nfnodes_cur_sum,
 					 fnodes + nfnodes_sum, NULL, NULL);
 	    if (status < 0) {
 	      sprintf(mesg,
@@ -486,6 +518,7 @@ extern "C" {
 	  if (strncasecmp(elblock_type[b], "NSIDED", 6) == 0) {
 	    int *nelnodes_cur = (int *) malloc(elblock_nelems[b]*sizeof(int));
 
+	    /* Number of elements per node for every element in block */
 	    status = ex_get_entity_count_per_polyhedra(exoid, EX_ELEM_BLOCK,
 						       elblock_ids[b],
 						       nelnodes_cur);
@@ -496,8 +529,18 @@ extern "C" {
 	      MSTK_Report(funcname,mesg,MSTK_FATAL);
 	    }
 
+	    /* calculate offset where elem nodes of begel start - need
+	       for extracting partial connectivity of NSIDED
+	       elements */
+	    
+	    int elnodes_beg = 0;
+	    int j;
+	    for (j = 0; j < jbeg; j++)
+	      elnodes_beg += nelnodes_cur[j];
+
+	    /* calculate number of nodes that will be read; also, populate maps */
 	    int nelnodes_cur_sum = 0;
-	    for (int j = 0; j < nelems_cur; j++) {
+	    for (j = 0; j < nelems_cur; j++) {
 	      nelnodes_cur_sum += nelnodes_cur[jbeg+j];
 	      nelnodes[elcounter] = nelnodes_cur[jbeg+j];
 	      elem_blockidx[elcounter] = b;
@@ -511,9 +554,13 @@ extern "C" {
 	      elnodes = (int *) realloc(elnodes, nelnodes_alloc*sizeof(int));
 	    }
 	    
-	    /* ex_get_partial_conn is using indices starting from 1 */
+	    /* ex_get_partial_conn for NSIDED elements is different
+	       from the call for standard elements - you have to give
+	       it the starting offset (+1) for where the first node of
+	       the first element you want is listed and then tell it
+	       the total number of nodes you want read */
 	    status = ex_get_partial_conn(exoid, EX_ELEM_BLOCK, elblock_ids[b],
-					 jbeg+1, nelems_cur,
+					 elnodes_beg+1, nelnodes_cur_sum,
 					 elnodes + nelnodes_sum, NULL, NULL);
 
 	    if (status < 0) {
@@ -552,7 +599,8 @@ extern "C" {
 	    
 	    /* This is a block of standard elements - each element has
 	       the same number of nodes */
-	    for (int j = 0; j < nelems_cur; j++) {
+	    int j;
+	    for (j = 0; j < nelems_cur; j++) {
 	      nelnodes[elcounter] = elblock_nelnodes[b];
 	      elem_blockidx[elcounter] = b;
 	      global2local_elem_map[begel+j] = elcounter+1;

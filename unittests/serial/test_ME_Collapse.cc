@@ -1,6 +1,14 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #include <UnitTest++.h>
 
-#include "../../include/MSTK.h"
+#include "MSTK.h"
 
 // Test if we can collapse degenerate edges correctly in a 3D mesh
 // Here we are not worrying about correct classification of entities with 

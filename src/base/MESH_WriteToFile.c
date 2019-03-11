@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #define _H_Mesh_Private
 
 #include <stdio.h>
@@ -39,9 +47,26 @@ extern "C" {
   MAttrib_ptr attrib, vidatt, eidatt, fidatt, ridatt;
   MType attentdim;
   MAttType atttype;
+
+  char modfilename[256];
+  strcpy(modfilename, filename);
   
-  if (!(fp = fopen(filename,"w"))) {
-    sprintf(mesg,"Cannot open file %-s for writing",filename);
+  int rank = 0, numprocs = 1;
+#ifdef MSTK_HAVE_MPI
+  if (comm) {
+    MPI_Comm_size((MPI_Comm)comm, &numprocs);
+    MPI_Comm_rank((MPI_Comm)comm, &rank);
+  }
+  if (numprocs > 1) {
+    int ndigits = 0;
+    int div = 1;
+    while (numprocs/div) {div *= 10; ndigits++;}
+    sprintf(modfilename,"%s.%d.%0*d",filename,numprocs,ndigits,rank);
+  }
+#endif
+  
+  if (!(fp = fopen(modfilename,"w"))) {
+    sprintf(mesg,"Cannot open file %-s for writing",modfilename);
     MSTK_Report("MESH_WriteToFile",mesg,MSTK_ERROR);
     return 0;
   }
@@ -58,7 +83,7 @@ extern "C" {
   nf = MESH_Num_Faces(mesh);
   nr = MESH_Num_Regions(mesh);
 
-  fprintf(fp,"MSTK %-2.1lf\n",MSTK_VER);
+  fprintf(fp,"MSTK %-2.1lf\n",MSTK_FILE_VER);
   fprintf(fp,"%s %d %d %d %d\n",
 	  MESH_rtype_str[reptype], 
 	  nv, 

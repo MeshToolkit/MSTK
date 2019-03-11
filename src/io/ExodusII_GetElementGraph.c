@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -257,7 +265,7 @@ extern "C" {
     if (*ndim == 1)
       MSTK_Report(funcname,"Cannot read 1D meshes",MSTK_FATAL);
 
-    double *xvals, *yvals, *zvals;
+    double *xvals=NULL, *yvals=NULL, *zvals=NULL;
     if (get_coords) {
       xvals = (double *) malloc(nnodes*sizeof(double));
       yvals = (double *) malloc(nnodes*sizeof(double));  

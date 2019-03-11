@@ -1,3 +1,11 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 
 #include <stdlib.h>
 #include "string.h"
@@ -48,6 +56,8 @@ extern "C" {
       MV_Set_PType(mv_copy,MV_PType(mv));
       MV_Set_MasterParID(mv_copy,MV_MasterParID(mv));
       MV_Set_GlobalID(mv_copy,MV_GlobalID(mv));
+      if (MV_OnParBoundary(mv))
+	MV_Flag_OnParBoundary(mv_copy);
 #endif
 
       MEnt_Set_AttVal(mv,copyatt,0,0.0,mv_copy);
@@ -78,6 +88,8 @@ extern "C" {
         ME_Set_PType(me_copy,ME_PType(me));
         ME_Set_MasterParID(me_copy,ME_MasterParID(me));
         ME_Set_GlobalID(me_copy,ME_GlobalID(me));
+	if (ME_OnParBoundary(me))
+	  ME_Flag_OnParBoundary(me_copy);
 #endif
 
         MEnt_Set_AttVal(me,copyatt,0,0.0,me_copy);
@@ -115,6 +127,8 @@ extern "C" {
         MF_Set_PType(mf_copy,MF_PType(mf));
         MF_Set_MasterParID(mf_copy,MF_MasterParID(mf));
         MF_Set_GlobalID(mf_copy,MF_GlobalID(mf));
+	if (MF_OnParBoundary(mf))
+	  MF_Flag_OnParBoundary(mf_copy);
 #endif
 
         MEnt_Set_AttVal(mf,copyatt,0,0.0,mf_copy);
@@ -147,6 +161,8 @@ extern "C" {
         MF_Set_PType(mf_copy,MF_PType(mf));
         MF_Set_MasterParID(mf_copy,MF_MasterParID(mf));
         MF_Set_GlobalID(mf_copy,MF_GlobalID(mf));
+	if (MF_OnParBoundary(mf))
+	  MF_Flag_OnParBoundary(mf_copy);
 #endif
 
         MEnt_Set_AttVal(mf,copyatt,0,0.0,mf_copy);

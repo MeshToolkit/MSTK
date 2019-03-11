@@ -1,3 +1,15 @@
+# Copyright 2019 Triad National Security, LLC. All rights reserved.
+# 
+# This file is part of the MSTK project. Please see the license file at
+# the root of this repository or at
+# https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+
+# Copyright 2019 Triad National Security, LLC. All rights reserved.
+#
+# This file is part of the MSTK project. Please see the license file at
+# the root of this repository or at
+# https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+
 # -*- mode: cmake -*-
 #
 # Top-Level CMake file for MSTK
@@ -11,7 +23,12 @@
     
 project (MSTK)
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.8)
+
+set(MSTK_VERSION_MAJOR 3)
+set(MSTK_VERSION_MINOR 1)
+set(MSTK_VERSION_PATCH 1)
+
 
 cmake_policy(SET CMP0017 NEW)
 
@@ -21,7 +38,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
-# This option may be needed for machines like Edison and Hopper
+# This option may be needed for some HPC machines
 
 if (PREFER_STATIC_LIBRARIES)
    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a; .so")
@@ -39,7 +56,7 @@ endif ()
 # any of the TPL installations doesn't get picked up first
 ##############################################################################
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
 add_subdirectory(src)
 ################################################################################
@@ -56,7 +73,8 @@ if (ENABLE_PARALLEL)
   find_package(MPI)
   if (MPI_FOUND)
     message("PARALLELISM ON")
-    add_definitions(-DMSTK_HAVE_MPI)
+#    add_definitions(-DMSTK_HAVE_MPI)
+    set(MSTK_HAVE_MPI True CACHE BOOL "If MSTK is compiled with MPI on")
     message(STATUS "MPIEXEC is ${MPIEXEC}")
   else (MPI_FOUND)
     message("PARALLELISM OFF")
@@ -365,26 +383,36 @@ endif ()
 
 # where to install include files
 
-if (${INSTALL_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
-else ()
-INSTALL(FILES 
-	${PROJECT_SOURCE_DIR}/include/MSTK.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_defines.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_types.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_externs.h
-	${PROJECT_SOURCE_DIR}/include/MSTK_util.h
-        DESTINATION ${INSTALL_DIR}/include)
-endif ()
 
-############################################################################## 
-# Write a configuration file from template replacing only variables enclosed
-# by the @ sign. This will let other programs build on MSTK discover how
-# MSTK was built and which TPLs it used
-#############################################################################
+#######################################################
+# Write a configuration file from template replacing only variables
+# enclosed by the @ sign. This will let other programs build on MSTK
+# discover how MSTK was built and which TPLs it used. Also put in some
+# information into MSTK.h header file
+#######################################################
 
 configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in 
                ${PROJECT_BINARY_DIR}/MSTKConfig.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
         DESTINATION ${INSTALL_DIR}/share/cmake/)
+
+file(GLOB ALL_HEADERS ${PROJECT_SOURCE_DIR}/include/*.h)
+foreach (HEADER_FILE ${ALL_HEADERS})
+  file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_BINARY_DIR}/include)
+endforeach(HEADER_FILE)
+configure_file(${PROJECT_SOURCE_DIR}/include/MSTK_defines.h 
+               ${PROJECT_BINARY_DIR}/include/MSTK_defines.h @ONLY)
+
+if (${INSTALL_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
+else ()
+INSTALL(FILES 
+	${PROJECT_BINARY_DIR}/include/MSTK.h
+	${PROJECT_BINARY_DIR}/include/MSTK_defines.h
+	${PROJECT_BINARY_DIR}/include/MSTK_types.h
+	${PROJECT_BINARY_DIR}/include/MSTK_externs.h
+	${PROJECT_BINARY_DIR}/include/MSTK_util.h
+        DESTINATION ${INSTALL_DIR}/include)
+endif ()
+
 
 

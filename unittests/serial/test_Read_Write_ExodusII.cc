@@ -1,10 +1,18 @@
+/* 
+Copyright 2019 Triad National Security, LLC. All rights reserved.
+
+This file is part of the MSTK project. Please see the license file at
+the root of this repository or at
+https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
+*/
+
 #include <UnitTest++.h>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
 
-#include "../../include/MSTK.h"
-#include "../../include/MSTK_private.h"
+#include "MSTK.h"
+#include "MSTK_private.h"
 
 // Test if we can correctly read a polygonal exodus mesh 
 // Then test if we can correctly write it and read it back
