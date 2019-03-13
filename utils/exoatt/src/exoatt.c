@@ -78,7 +78,10 @@ int main(int argc, char *argv[]) {
       if (strncmp(argv[i],"--partition=",12) == 0) {
         if (strncmp(argv[i]+12,"y",1) == 0 ||
             strncmp(argv[i]+12,"1",1) == 0)
-          partition = 1;
+          partition = 2;  // new method for partitioning serial file
+	else if (strncmp(argv[i]+12,"o",1) == 0 ||
+            strncmp(argv[i]+12,"2",1) == 0)
+	  partition = 1;  // old method for partitioning serial file
         else if (strncmp(argv[i]+12,"n",1) == 0 ||
                  strncmp(argv[i]+12,"0",1) == 0) 
           partition = 0;
@@ -159,10 +162,10 @@ int main(int argc, char *argv[]) {
   
     ok = 0;
     fprintf(stderr,"Importing mesh from ExodusII file...");
-    opts[0] = 0; /* don't partition while importing - do it later */
-    opts[1] = 0;
-    opts[2] = 0; /* no ghost layers */  
-    opts[3] = 0;
+    opts[0] = (partition > 0) ? 1 : 0;
+    opts[1] = (partition > 0) ? partition-1 : 0;
+    opts[2] = 1; /* 1 layer of ghosts */
+    opts[3] = partmethod;
     ok = MESH_ImportFromFile(mesh,infname,"exodusii",opts,comm);
     if (ok)
       fprintf(stderr,"done\n\n");
@@ -171,7 +174,9 @@ int main(int argc, char *argv[]) {
     }
     
 
-    /* Read in the attributes only on rank 0 and attach it to the mesh */
+    MESH_Enable_GlobalIDSearch(mesh);
+    
+    /* Read in the attributes and attach it to the mesh */
     if (attfile_given)
       import_attributes(mesh, attfname);
 
@@ -180,72 +185,11 @@ int main(int argc, char *argv[]) {
     if (setfile_given)
       import_sets(mesh, setfname);
 
+    MESH_Disable_GlobalIDSearch(mesh);
+    
 #ifdef MSTK_HAVE_MPI
   }
 #endif
-
-
-#ifdef MSTK_HAVE_MPI
-
-  if (partition) {
-
-    /* Need to make sure that we have a mesh only on processor 0 */
-    /* For now we cannot repartition                             */
-
-    int prepartitioned = 0, mesh_present = 0;
-
-    int dim = 3;
-    if (rank > 0) {
-      if (mesh && MESH_Num_Vertices(mesh) != 0)
-        mesh_present = 1;
-    }
-    
-    MPI_Reduce(&mesh_present,&prepartitioned,1,MPI_INT,MPI_MAX,0,comm);
-    MPI_Bcast(&prepartitioned,1,MPI_INT,0,comm);
-
-    if (!prepartitioned) {
-    
-      Mesh_ptr mesh0=NULL;
-      if (rank == 0) {
-        fprintf(stderr,"Partitioning mesh into %d parts...",numprocs);
-        
-        if (MESH_Num_Regions(mesh))
-          dim = 3;
-        else if (MESH_Num_Faces(mesh))
-          dim = 2;
-        else {
-          fprintf(stderr,"Partitioning possible only for 2D or 3D meshes\n");
-          exit(-1);
-        }
-        
-        mesh0 = mesh;
-        mesh = NULL;
-      }
-      
-      int ring = 0; /* No ghost ring of elements */
-      int with_attr = 1; /* Do allow exchange of attributes */
-      int del_inmesh = 1; /* Delete input mesh after partitioning */
-
-      ok = MSTK_Mesh_Distribute(mesh0, &mesh, &dim, ring, with_attr,
-                                    partmethod, del_inmesh, comm);
-      
-      if (rank == 0) {
-        if (ok)
-          fprintf(stderr,"done\n");
-        else {
-          fprintf(stderr,"failed\n");
-          exit(-1);
-        }
-      }
-
-      /*      if (rank == 0)
-	      MESH_Delete(mesh0);
-      */
-
-    }    
-  }
-
-#endif /* MSTK_HAVE_MPI */
 
 
 #ifdef MSTK_HAVE_MPI
@@ -288,7 +232,7 @@ int main(int argc, char *argv[]) {
 
 void import_attributes(Mesh_ptr mesh, char *attfname) {
   FILE *fp;
-  int i, j, idx, status, entid, natt, nent, celldim;
+  int i, j, idx, status, entid, natt, nent;
   char mesg[256];
   MRegion_ptr mr;
   MFace_ptr mf;
@@ -296,6 +240,31 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
   char attname[256], typestr[256];
   double attval;
   MAttrib_ptr att;
+
+  int celldim = MESH_Num_Regions(mesh) ? 3 : 2;
+
+
+  int rank = 0, nprocs = 1;
+  int nvertglobal = 0;
+  int nvertlocal = MESH_Num_Vertices(mesh);
+  int ncellglobal = 0;
+  int ncelllocal = (celldim == 2) ? MESH_Num_Faces(mesh) : MESH_Num_Regions(mesh);
+#ifdef MSTK_HAVE_MPI
+  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  if (nprocs > 1) {
+    MPI_Allreduce(&nvertlocal, &nvertglobal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+    MPI_Allreduce(&ncelllocal, &ncellglobal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  } else {
+    nvertglobal = nvertlocal;
+    ncellglobal = ncelllocal;
+  }
+#else
+  nvertglobal = nvertlocal;
+  ncellglobal = ncelllocal;  
+#endif
   
 
   fp = fopen(attfname,"r");
@@ -308,8 +277,6 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
   if (status == EOF)
     MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
 
-  celldim = MESH_Num_Regions(mesh) ? 3 : 2;
-  
   for (i = 0; i < natt; ++i) {
 
     status = fscanf(fp,"%s %s %d\n",attname,typestr,&nent);
@@ -320,13 +287,13 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
       att = MAttrib_New(mesh,attname,DOUBLE,MVERTEX);
 
       if (nent == -1) { /* data specified on the whole mesh */
-        idx = 0;
-        while ((mv = MESH_Next_Vertex(mesh,&idx))) {
+	for (j = 0; j < nvertglobal; j++) {
           status = fscanf(fp,"%lf",&attval);
           if (status == EOF)
             MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
-          
-          MEnt_Set_AttVal(mv,att,0,attval,NULL);
+	  mv = (nprocs > 1) ? MESH_VertexFromGlobalID(mesh,j+1) : MESH_Vertex(mesh,j);
+	  if (mv)
+	    MEnt_Set_AttVal(mv,att,0,attval,NULL);
         }
       }
       else {
@@ -335,84 +302,85 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
           if (status == EOF)
             MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
           
-          mv = MESH_VertexFromID(mesh,entid);
-          if (!mv) {
-            sprintf(mesg,"Cannot find mesh element with ID = %-d",entid);
-            MSTK_Report(progname,mesg,MSTK_FATAL);
-          }
-            
-          MEnt_Set_AttVal(mv,att,0,attval,NULL);
+          mv = (nprocs > 1) ? MESH_VertexFromGlobalID(mesh,entid) : MESH_VertexFromID(mesh,entid);
+	  if (mv)
+	    MEnt_Set_AttVal(mv,att,0,attval,NULL);
+          else {
+	    if (nprocs == 1) {
+	      sprintf(mesg,"Cannot find mesh element with ID = %-d",entid);
+	      MSTK_Report(progname,mesg,MSTK_FATAL);
+	    }
+	  }
         }
       }
-    }
-    else if (strcasecmp(typestr,"SIDESET") == 0) {
-      MSTK_Report(progname,"SIDESET attribute import not implemented",MSTK_FATAL);
-    }
-    else if (strcasecmp(typestr,"CELL") == 0) {
+    } else if (strcasecmp(typestr,"CELL") == 0) {
       if (celldim == 3) {
 
         att = MAttrib_New(mesh,attname,DOUBLE,MREGION);
 
         if (nent == -1) { /* data specified on the whole mesh */
-          idx = 0;
-          while ((mr = MESH_Next_Region(mesh,&idx))) {
+	  for (j = 0; j < ncellglobal; j++) {
             status = fscanf(fp,"%lf",&attval);
             if (status == EOF)
               MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
-
-            MEnt_Set_AttVal(mr,att,0,attval,NULL);
+	    mr = (nprocs > 1) ? MESH_RegionFromGlobalID(mesh,j+1) :
+                MESH_Region(mesh,j);
+	    if (mr)
+	      MEnt_Set_AttVal(mr,att,0,attval,NULL);
           }
-        }
-        else {
+	} else {
           for (j = 0; j < nent; ++j) {
             status = fscanf(fp,"%d %lf",&entid,&attval);
             if (status == EOF)
               MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
 
-            mr = MESH_RegionFromID(mesh,entid);
-            if (!mr) {
-              sprintf(mesg,"Cannot find mesh element with ID = %-d",entid);
-              MSTK_Report(progname,mesg,MSTK_FATAL);
-            }
-            
-            MEnt_Set_AttVal(mr,att,0,attval,NULL);
+            mr = (nprocs > 1) ? MESH_RegionFromGlobalID(mesh,entid) :
+	      MESH_RegionFromID(mesh,entid);
+	    if (mr)
+	      MEnt_Set_AttVal(mr,att,0,attval,NULL);
+            else {
+	      if (nprocs == 1) {
+		sprintf(mesg,"Cannot find mesh element with ID = %-d",entid);
+		MSTK_Report(progname,mesg,MSTK_FATAL);
+	      }
+	    }
           }
         }
-      }
-      else {
-
+      } else {
+	
         att = MAttrib_New(mesh,attname,DOUBLE,MFACE);
-
+	  
         if (nent == -1) { /* data specified on the whole mesh */
-          idx = 0;
-          while ((mf = MESH_Next_Face(mesh,&idx))) {
+          for (j = 0; j < ncellglobal; j++) {
             status = fscanf(fp,"%lf",&attval);
             if (status == EOF)
               MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
-
-            MEnt_Set_AttVal(mf,att,0,attval,NULL);
+            mf = (nprocs > 1) ? MESH_FaceFromGlobalID(mesh,j+1) : MESH_Face(mesh,j);
+            if (mf)
+              MEnt_Set_AttVal(mf,att,0,attval,NULL);
           }
-        }
-        else {
+        } else {
           for (j = 0; j < nent; ++j) {
             status = fscanf(fp,"%d %lf",&entid,&attval);
             if (status == EOF)
               MSTK_Report(progname,"Attributes file ended prematurely",MSTK_FATAL);
-
-            mf = MESH_FaceFromID(mesh,entid);
-            if (!mf) {
-              sprintf(mesg,"Cannot find mesh element with ID = %-d",entid);
-              MSTK_Report(progname,mesg,MSTK_FATAL);
-            }
             
-            MEnt_Set_AttVal(mf,att,0,attval,NULL);
+            mf = (nprocs > 1) ? MESH_FaceFromGlobalID(mesh,entid) :
+                MESH_FaceFromID(mesh,entid);
+            if (mf)
+	      MEnt_Set_AttVal(mf,att,0,attval,NULL);
+            else {
+	      if (nprocs > 1) {
+		sprintf(mesg,"Cannot find mesh element with ID = %-d",entid);
+		MSTK_Report(progname,mesg,MSTK_FATAL);
+	      }
+            }
           }
         }        
       }
-    }
-    else
+    } else
       MSTK_Report(progname,
-                  "Unknown entity type for attribute: Valid types are NODE, CELL or SIDESET (case does not matter)",
+                  "Unknown entity type for attribute: Valid types are NODE, CELL (case does not matter)",
                   MSTK_FATAL);
   }
 
@@ -426,7 +394,7 @@ void import_attributes(Mesh_ptr mesh, char *attfname) {
 void import_sets(Mesh_ptr mesh, char *setfname) {
   FILE *fp;
   int i, j, k, l, m;
-  int idx, status, setid, entid, nset, nent, celldim;
+  int idx, status, setid, entid, nset, nent;
   char mesg[256];
   MRegion_ptr mr;
   MFace_ptr mf;
@@ -434,6 +402,30 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
   MVertex_ptr mv;
   char setname[256], typestr[256];
   MSet_ptr mset;
+
+  int celldim = MESH_Num_Regions(mesh) ? 3 : 2;
+  int rank = 0, nprocs = 1;
+  int nvertglobal = 0;
+  int nvertlocal = MESH_Num_Vertices(mesh);
+  int ncellglobal = 0;
+  int ncelllocal = (celldim == 2) ? MESH_Num_Faces(mesh) : MESH_Num_Regions(mesh);
+#ifdef MSTK_HAVE_MPI
+  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  if (nprocs > 1) {
+    MPI_Allreduce(&nvertlocal, &nvertglobal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+    MPI_Allreduce(&ncelllocal, &ncellglobal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  } else {
+    nvertglobal = nvertlocal;
+    ncellglobal = ncelllocal;
+  }
+#else
+  nvertglobal = nvertlocal;
+  ncellglobal = ncelllocal;  
+#endif
+
   
   fp = fopen(setfname,"r");
   if (!fp) {
@@ -465,13 +457,15 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
         if (status == EOF)
           MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
         
-        mv = MESH_VertexFromID(mesh,entid);
-        if (!mv) {
-          sprintf(mesg,"Cannot find mesh vertex with ID = %-d",entid);
-          MSTK_Report(progname,mesg,MSTK_FATAL);
-        }
-            
-        MSet_Add(mset,mv);
+        mv = (nprocs > 1) ? MESH_VertexFromGlobalID(mesh,entid) : MESH_VertexFromID(mesh,entid);
+	if (mv) {
+	  MSet_Add(mset,mv);
+	} else {
+	  if (nprocs == 1) {
+	    sprintf(mesg,"Cannot find mesh vertex with ID = %-d",entid);
+	    MSTK_Report(progname,mesg,MSTK_FATAL);
+	  }
+	} 
       }
     }
     else if (strcasecmp(typestr,"FACE") == 0) {
@@ -499,9 +493,12 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
             status = fscanf(fp,"%d",&(face_verts[k]));
           
           MVertex_ptr fverts[MAXPV2];
-          for (k = 0; k < num_face_verts; k++)
-            fverts[k] = MESH_VertexFromID(mesh,face_verts[0]);
-
+          for (k = 0; k < num_face_verts; k++) {
+            fverts[k] = (nprocs > 1) ? MESH_VertexFromGlobalID(mesh,face_verts[k]) : MESH_VertexFromID(mesh,face_verts[k]);
+	    if (!fverts[k])
+	      MSTK_Report(progname,"Cannot find vertex of face when assigning face sets",MSTK_FATAL);
+          }
+          
           mf = MVs_CommonFace(num_face_verts,fverts);
           if (mf)
             MSet_Add(mset,mf);
@@ -510,8 +507,8 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
             fprintf(stderr,"Did not find common face for verts ");
             for (k = 0; k < num_face_verts; k++)
               fprintf(stderr,"%-d",face_verts[k]);
-          }
-        }
+	  }
+	}
       }
       else { /* assume celldim == 2 */
         mset = MSet_New(mesh,setname,MEDGE);
@@ -526,8 +523,10 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
             MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
 
           MVertex_ptr ev[2];
-          ev[0] = MESH_VertexFromID(mesh,edge_verts[0]);
-          ev[1] = MESH_VertexFromID(mesh,edge_verts[1]);          
+          ev[0] = (nprocs > 1) ? MESH_VertexFromGlobalID(mesh,edge_verts[0]) :
+	    MESH_VertexFromID(mesh,edge_verts[0]);
+          ev[1] = (nprocs > 1) ? MESH_VertexFromGlobalID(mesh,edge_verts[1]) :
+	    MESH_VertexFromID(mesh,edge_verts[1]);          
           me = MVs_CommonEdge(ev[0],ev[1]);
           if (me) 
             MSet_Add(mset,me);
@@ -538,8 +537,7 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
           }
         }
       }
-    }
-    else if (strcasecmp(typestr,"CELL") == 0) {
+    } else if (strcasecmp(typestr,"CELL") == 0) {
 
       sprintf(setname,"elemset_%-d",setid);
       fprintf(stderr,"Creating %s set %s\n",typestr,setname);
@@ -554,13 +552,16 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
           if (status == EOF)
             MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
           
-          mr = MESH_RegionFromID(mesh,entid);
-          if (!mr) {
-            sprintf(mesg,"Cannot find mesh region with ID = %-d",entid);
-            MSTK_Report(progname,mesg,MSTK_FATAL);
-          }
-            
-          MSet_Add(mset,mr);
+          mr = (nprocs > 1) ? MESH_RegionFromGlobalID(mesh,entid) :
+	    MESH_RegionFromID(mesh,entid);
+	  if (mr)
+	    MSet_Add(mset,mr);
+          else {
+	    if (nprocs == 1) {
+	      sprintf(mesg,"Cannot find mesh region with ID = %-d",entid);
+	      MSTK_Report(progname,mesg,MSTK_FATAL);
+	    }
+	  }
         }
       }
       else { /* assume celldim == 2 */
@@ -573,13 +574,16 @@ void import_sets(Mesh_ptr mesh, char *setfname) {
           if (status == EOF)
             MSTK_Report(progname,"Entity sets file ended prematurely",MSTK_FATAL);
           
-          mf = MESH_FaceFromID(mesh,entid);
-          if (!mf) {
-            sprintf(mesg,"Cannot find mesh face with ID = %-d",entid);
-            MSTK_Report(progname,mesg,MSTK_FATAL);
-          }
-            
-          MSet_Add(mset,mf);
+          mf = (nprocs > 1) ? MESH_FaceFromGlobalID(mesh,entid) :
+	    MESH_FaceFromID(mesh,entid);
+	  if (mf)
+	    MSet_Add(mset,mf);
+	  else {
+	    if (nprocs > 1) {
+	      sprintf(mesg,"Cannot find mesh face with ID = %-d",entid);
+	      MSTK_Report(progname,mesg,MSTK_FATAL);
+	    }
+	  }
         }
       }
     }
