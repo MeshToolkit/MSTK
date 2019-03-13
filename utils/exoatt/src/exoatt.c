@@ -173,8 +173,9 @@ int main(int argc, char *argv[]) {
       MSTK_Report(progname,"Failed\n",MSTK_FATAL);
     }
     
-
+#ifdef MSTK_HAVE_MPI
     MESH_Enable_GlobalIDSearch(mesh);
+#endif
     
     /* Read in the attributes and attach it to the mesh */
     if (attfile_given)
@@ -185,7 +186,9 @@ int main(int argc, char *argv[]) {
     if (setfile_given)
       import_sets(mesh, setfname);
 
+#ifdef MSTK_HAVE_MPI
     MESH_Disable_GlobalIDSearch(mesh);
+#endif
     
 #ifdef MSTK_HAVE_MPI
   }
