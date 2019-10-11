@@ -51,6 +51,13 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 
+# Default INSTALL Directory
+
+if (NOT INSTALL_DIR)
+  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+endif ()
+
+
 ###############################################################################
 # include files and source files - have this upfront so that an MSTK.h from
 # any of the TPL installations doesn't get picked up first
@@ -357,12 +364,6 @@ add_subdirectory(example)
 ##########################################################
 # Configuration of installation options
 ##########################################################
-
-# Default INSTALL Directory
-
-if (NOT INSTALL_DIR)
-  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-endif ()
 
 # where to install library
 if (INSTALL_PREFIX_ARCHOS) 

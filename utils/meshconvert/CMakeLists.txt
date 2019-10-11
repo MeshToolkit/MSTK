@@ -13,20 +13,10 @@ target_link_libraries(meshconvert
 		      ${MSTK_TPL_LIBRARIES}
 		      m)
 
-# Would be nice to specify it relative to the path of this CMakeLists.txt file
-
-if (INSTALL_DIR) 
-  if (INSTALL_PREFIX_ARCHOS)
-    install(TARGETS meshconvert DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-  else ()
-    install(TARGETS meshconvert DESTINATION ${INSTALL_DIR}/bin)
-  endif ()
+if (INSTALL_PREFIX_ARCHOS)
+  install(TARGETS meshconvert DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
 else ()
-  if (INSTALL_PREFIX_ARCHOS)
-    install(TARGETS meshconvert DESTINATION ${PROJECT_SOURCE_DIR}/bin/${ARCHOS})
-  else ()
-    install(TARGETS meshconvert DESTINATION ${PROJECT_SOURCE_DIR}/bin)
-  endif ()
+  install(TARGETS meshconvert DESTINATION ${INSTALL_DIR}/bin)
 endif ()
 
 
