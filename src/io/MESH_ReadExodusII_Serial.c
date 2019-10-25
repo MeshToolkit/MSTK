@@ -65,17 +65,19 @@ extern "C" {
     float version;
     void *pval;
 
-    int exo_nrf[3] = {4,5,6};
-    int exo_nrfverts[3][6] =
-        {{3,3,3,3,0,0},{4,4,4,3,3,0},{4,4,4,4,4,4}};
+    int exo_nrf[4] = {4,5,5,6};    /* tet, wedge/prism, pyramid, hex */
+    int exo_nrfverts[4][6] =
+        {{3,3,3,3,0,0},{4,4,4,3,3,0},{3,3,3,3,4,0},{4,4,4,4,4,4}};
 
-    int exo_rfverts[3][6][4] =
+    int exo_rfverts[4][6][4] =
         {{{0,1,3,-1},{1,2,3,-1},{2,0,3,-1},{0,2,1,-1},{-1,-1,-1,-1},{-1,-1,-1,-1}},
          {{0,1,4,3},{1,2,5,4},{2,0,3,5},{0,2,1,-1},{3,4,5,-1},{-1,-1,-1,-1}},
+         {{0,1,4,-1},{1,2,4,-1},{2,3,4,-1},{3,0,4,-1},{0,3,2,1}},
          {{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7},{0,3,2,1},{4,5,6,7}}};
-    int exo_rfdirs[3][6] =
+    int exo_rfdirs[4][6] =
         {{1,1,1,1,-99,-99},
          {1,1,1,1,1,-99},
+         {1,1,1,1,-99,-99},
          {1,1,1,1,1,1}};
 
     List_ptr fedges, rfaces;
@@ -716,6 +718,7 @@ extern "C" {
         if (strncasecmp(elem_type,"NFACED",6) == 0 ||
             strncasecmp(elem_type,"TET",3) == 0 ||
             strncasecmp(elem_type,"WEDGE",5) == 0 ||
+            strncasecmp(elem_type,"PYRAMID",7) == 0 ||
             strncasecmp(elem_type,"HEX",3) == 0) {
 
           solid_elems = 1;
@@ -860,6 +863,7 @@ extern "C" {
         }
         else if (strncasecmp(elem_type,"TET",3) == 0 ||
                  strncasecmp(elem_type,"WEDGE",5) == 0 ||
+                 strncasecmp(elem_type,"PYRAMID",7) == 0 ||
                  strncasecmp(elem_type,"HEX",3) == 0) {
           int nrf, eltype;
           MFace_ptr face;
@@ -896,8 +900,16 @@ extern "C" {
               continue;
             }
           }
-          else if (strncasecmp(elem_type,"HEX",3) == 0) {
+          else if (strncasecmp(elem_type,"PYRAMID",7) == 0) {
             eltype = 2;
+            nrf = 5;
+            if (nelnodes > 5) {
+              MSTK_Report(funcname,"Higher order pyramids not supported",MSTK_WARN);
+              continue;
+            }
+          }
+          else if (strncasecmp(elem_type,"HEX",3) == 0) {
+            eltype = 3;
             nrf = 6;
             if (nelnodes > 8) {
               MSTK_Report(funcname,"Higher order hexes not supported",MSTK_WARN);
@@ -1637,7 +1649,6 @@ extern "C" {
             sideset = MSet_New(mesh,sidesetname,MEDGE);          
       
             for (j = 0; j < num_sides_in_set; j++) {
-              int eltype;
               List_ptr fedges;
             
               mf = MESH_FaceFromID(mesh,ss_elem_list[j]);
@@ -1692,8 +1703,6 @@ extern "C" {
             sideset = MSet_New(mesh,sidesetname,MFACE);
       
             for (j = 0; j < num_sides_in_set; j++) {
-              int eltype;
-            
               mr = MESH_RegionFromID(mesh,ss_elem_list[j]);
               if (!mr)
                 MSTK_Report(funcname,"Could not find element in sideset",MSTK_FATAL);
