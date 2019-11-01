@@ -55,7 +55,7 @@ endif ()
 
 if (NOT INSTALL_DIR)
   set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-endif ()
+endif (NOT INSTALL_DIR)
 
 
 ###############################################################################

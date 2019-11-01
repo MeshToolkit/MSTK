@@ -154,7 +154,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   if (nr) {
     for(i = 0; i < nv; i++) {
       mv = MESH_Vertex(submesh,i);
-      if (vertex_on_boundary3D(mv)) {
+      if (MV_OnParBoundary(mv)) {  // prior knowledge
+        List_Add(boundary_verts,mv);
+        nbv++;
+      } else if (vertex_on_boundary3D(mv)) {
         MV_Flag_OnParBoundary(mv);
         List_Add(boundary_verts,mv);
         nbv++;
@@ -164,7 +167,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   else {
     for(i = 0; i < nv; i++) {
       mv = MESH_Vertex(submesh,i);
-      if (vertex_on_boundary2D(mv)) {
+      if (MV_OnParBoundary(mv)) {  // prior knowledge
+        List_Add(boundary_verts,mv);
+        nbv++;
+      } else if (vertex_on_boundary2D(mv)) {
         MV_Flag_OnParBoundary(mv);
         List_Add(boundary_verts,mv);
         nbv++;
@@ -410,17 +416,24 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   */
   nbe = 0;  boundary_edges = List_New(10);
   for(i = 0; i < ne; i++) {
-    is_boundary = 1;       
     me = MESH_Edge(submesh,i);
-    for( k = 0; k < 2; k++) {
-      mv = ME_Vertex(me,k);
-      if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP)
-	is_boundary = 0;
-    }
-    if(is_boundary) {
-      ME_Flag_OnParBoundary(me);
+    if (ME_OnParBoundary(me)) {  // prior knowledge
       List_Add(boundary_edges,me);
       nbe++;
+    } else {
+      is_boundary = 1;       
+      for( k = 0; k < 2; k++) {
+        mv = ME_Vertex(me,k);
+        if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP) {
+          is_boundary = 0;
+          break;
+        }
+      }
+      if(is_boundary) {
+        ME_Flag_OnParBoundary(me);
+        List_Add(boundary_edges,me);
+        nbe++;
+      }
     }
   }
   mesh_info[6] = nbe;
@@ -459,7 +472,6 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   if(rank > 0) {
     for(i = 0; i < nbe; i++) {
       me = List_Entry(boundary_edges,i);
-      if(ME_GlobalID(me) > 0) continue;  /* if already assigned */
       edge_id[0] = MV_GlobalID(ME_Vertex(me,0));
       edge_id[1] = MV_GlobalID(ME_Vertex(me,1));
       for(j = 0; j < rank; j++) {
@@ -614,21 +626,28 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   */
   nbf = 0;  boundary_faces = List_New(10);
   for(i = 0; i < nf; i++) {
-    is_boundary = 1;       
     mf = MESH_Face(submesh,i);
-    mfverts = MF_Vertices(mf,1,0);
-    nfv = List_Num_Entries(mfverts);
-    for(j = 0; j < nfv; j++) {
-      mv = List_Entry(mfverts,j);
-      if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP)
-	is_boundary = 0;
-    }
-    if(is_boundary) {
-      MF_Flag_OnParBoundary(mf);
+    if (MF_OnParBoundary(mf)) {
       List_Add(boundary_faces,mf);
       nbf++;
+    } else {
+      is_boundary = 1;       
+      mfverts = MF_Vertices(mf,1,0);
+      nfv = List_Num_Entries(mfverts);
+      for(j = 0; j < nfv; j++) {
+        mv = List_Entry(mfverts,j);
+        if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP) {
+          is_boundary = 0;
+          break;
+        }
+      }
+      if(is_boundary) {
+        MF_Flag_OnParBoundary(mf);
+        List_Add(boundary_faces,mf);
+        nbf++;
+      }
+      List_Delete(mfverts);
     }
-    List_Delete(mfverts);
   }
   /* printf("num of boundary faces %d, on rank %d\n", nbf,rank); */
   mesh_info[6] = nbf;
@@ -671,7 +690,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   if(rank > 0) {
     for(i = 0; i < nbf; i++) {
       mf = List_Entry(boundary_faces,i);
-      if(MF_GlobalID(mf) > 0) continue;  /* if already assigned */
+
       mfverts = MF_Vertices(mf,1,0);
       nfv = List_Num_Entries(mfverts);
       face_id[0] = nfv;                           
