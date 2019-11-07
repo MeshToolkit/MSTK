@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr,"Importing mesh from ExodusII file...");
       opts[0] = (partition > 0) ? 1 : 0;
       opts[1] = (partition > 0) ? partition-1 : 0;
-      opts[2] = 1;
+      opts[2] = 1;  /* 1 layer of ghosts */
       opts[3] = partmethod;
 
       mesh = MESH_New(F1);
