@@ -51,6 +51,13 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 
+# Default INSTALL Directory
+
+if (NOT INSTALL_DIR)
+  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+endif (NOT INSTALL_DIR)
+
+
 ###############################################################################
 # include files and source files - have this upfront so that an MSTK.h from
 # any of the TPL installations doesn't get picked up first
@@ -254,39 +261,22 @@ if (ENABLE_Tests)
   # UnitTest++ - http://unittest-cpp.sourceforge.net/
   ##############################################################################
   
-  if (NOT DEFINED UnitTest_DIR)
+  if (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
     message(WARNING "No UnitTest++ directory defined. To compile the unit tests add:
- -D UnitTest_DIR::FILEPATH=<UnitTest++_install_prefix>")
-  else()
-    find_library(UNITTEST_LIBRARY 
-      NAMES UnitTest++ unittest++
-      HINTS ${UnitTest_DIR}
-      ${UnitTest_LIB_DIR}
-      ${UnitTest_DIR}/lib
-      )
-    if (NOT UNITTEST_LIBRARY)
-      message(FATAL_ERROR "Error: could not find unittest++ library")
-    endif()
-  
-    find_path(UNITTEST_INCLUDES "UnitTest++.h" 
-      HINTS ${UnitTest_INCLUDE_DIR}
-      ${UnitTest_DIR}
-      ${UnitTest_DIR}/include
-      ${UnitTest_DIR}/src 
-      ${UnitTest_DIR}/include/unittest++
-      ${UnitTest_DIR}/include/UnitTest++
-      )
-    if (NOT UNITTEST_INCLUDES)
-      message(FATAL_ERROR "Error: could not find UnitTest++ includes")
-    else()
-      include_directories(${UNITTEST_INCLUDES})
-    endif()
-    
-    set(BUILD_TESTS 1)
-    add_library(unittest++ STATIC IMPORTED)
-    set_property(TARGET unittest++ PROPERTY IMPORTED_LOCATION ${UNITTEST_LIBRARY})
+ -D UnitTest++_DIR::FILEPATH=<UnitTest++_install_prefix>")
+  else (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 
-  endif()
+    find_package(UnitTest++ PATHS ${UnitTest++_DIR} ${UnitTest_DIR})
+    if (UnitTest++-NOTFOUND)
+      set(BUILD_TESTS FALSE)
+    else (UnitTest++-NOTFOUND)
+      set(BUILD_TESTS TRUE)
+
+      # UnitTest++Config.cmake uses a weird name for storing it's include path
+      # and it's not even completely right
+      set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
+    endif()    
+  endif (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 endif()
 
 
@@ -357,12 +347,6 @@ add_subdirectory(example)
 ##########################################################
 # Configuration of installation options
 ##########################################################
-
-# Default INSTALL Directory
-
-if (NOT INSTALL_DIR)
-  set (INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-endif ()
 
 # where to install library
 if (INSTALL_PREFIX_ARCHOS) 

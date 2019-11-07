@@ -14,9 +14,6 @@ if (BUILD_TESTS)
       copy_directory ${PROJECT_SOURCE_DIR}/utils/exoatt/unittests ${PROJECT_BINARY_DIR}/utils/exoatt/unittests)
   endif ()
 
-  include_directories(${UnitTest_INCLUDE_DIRS})
-  include_directories(${PROJECT_BINARY_DIR}/include)
-
   file (GLOB FILES *.cc)
   foreach (FILE ${FILES})
     get_filename_component(RELFILE ${FILE} NAME) 
@@ -31,6 +28,9 @@ if (BUILD_TESTS)
 
   add_executable(exoatt_unit_tests ${testfiles})
 
+  target_include_directories(exoatt_unit_tests
+    PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
+
   target_link_libraries(exoatt_unit_tests 
     ${MSTKLIB} 
     ${METIS_LIBRARIES} 
@@ -38,7 +38,7 @@ if (BUILD_TESTS)
     ${ExodusII_LIBRARIES} 
     ${NetCDF_LIBRARIES}
     ${HDF5_LIBRARIES}
-    ${UNITTEST_LIBRARY})
+    UnitTest++)
 
   add_test(NAME exoatt_unittests COMMAND exoatt_unit_tests)
 
