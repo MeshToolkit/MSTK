@@ -31,6 +31,7 @@ set(MSTK_VERSION_PATCH 1)
 
 
 cmake_policy(SET CMP0017 NEW)
+cmake_policy(SET CMP0074 NEW)
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
@@ -79,12 +80,16 @@ message("--- Configuring MSTK with:")
 if (ENABLE_PARALLEL)
   find_package(MPI)
   if (MPI_FOUND)
-    message("PARALLELISM ON")
-#    add_definitions(-DMSTK_HAVE_MPI)
+    set(CMAKE_C_COMPILER ${MPI_C_COMPILER} CACHE FILEPATH "C compiler to use"
+      FORCE)
+    set(CMAKE_CXX_COMPILER ${MPI_C_COMPILER} CACHE FILEPATH "C compiler to use"
+      FORCE)
     set(MSTK_HAVE_MPI True CACHE BOOL "If MSTK is compiled with MPI on")
     message(STATUS "MPIEXEC is ${MPIEXEC}")
+    message(STATUS "CMAKE_C_COMPILER ${CMAKE_C_COMPILER}")
   else (MPI_FOUND)
-    message("PARALLELISM OFF")
+    message(STATUS "Could not find package MPI - build may fail")
+    message(STATUS "Try setting CMAKE_C_COMPILER/CMAKE_CXX_COMPILER to the mpi compiler wrappers")
   endif (MPI_FOUND)
 endif (ENABLE_PARALLEL)
 
@@ -318,9 +323,7 @@ endif ()
 add_library(${MSTKLIB} ${mstkfiles})
 message(STATUS "Building library " ${MSTKLIB})
 
-# Useful to define this particularly for shared libraries on OSX
-
-target_link_libraries(${MSTKLIB} ${MSTK_TPL_LIBRARIES})
+target_link_libraries(${MSTKLIB} PUBLIC ${MSTK_TPL_LIBRARIES})
 
 
 #############################################################################
