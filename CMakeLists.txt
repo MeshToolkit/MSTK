@@ -23,11 +23,11 @@
     
 project (MSTK)
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 
 set(MSTK_VERSION_MAJOR 3)
-set(MSTK_VERSION_MINOR 1)
-set(MSTK_VERSION_PATCH 1)
+set(MSTK_VERSION_MINOR 2)
+set(MSTK_VERSION_PATCH 0)
 
 
 cmake_policy(SET CMP0017 NEW)
@@ -59,14 +59,54 @@ if (NOT INSTALL_DIR)
 endif (NOT INSTALL_DIR)
 
 
-###############################################################################
-# include files and source files - have this upfront so that an MSTK.h from
-# any of the TPL installations doesn't get picked up first
-##############################################################################
+# Extra library suffix for Debug builds
 
-include_directories(${PROJECT_BINARY_DIR}/include)
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  if (INSTALL_ADD_DEBUG_SUFFIX)
+    set (CONFIG_SUFFIX -d)
+  endif ()
+endif ()
+
+
+# Add version number to library name if requested
+
+if (INSTALL_ADD_VERSION)
+  set (MSTKLIB mstk-${MSTK_VERSION_MAJOR}.${MSTK_VERSION_MINOR}${CONFIG_SUFFIX})
+else ()
+  set (MSTKLIB mstk${CONFIG_SUFFIX})
+endif ()
+
+
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  target_compile_definitions(${MSTKLIB} DEBUG)
+endif ()
+
+
+# Add the actual source directory - these will build up the list "mstkfiles"
 
 add_subdirectory(src)
+
+
+# The main mstk target
+
+add_library(${MSTKLIB} ${mstkfiles})
+message(STATUS "Building library " ${MSTKLIB})
+
+
+# include files and source files - have this upfront so that an MSTK.h from
+# any of the TPL installations doesn't get picked up first
+
+target_include_directories(${MSTKLIB} PUBLIC ${PROJECT_BINARY_DIR}/include)
+
+
+# If MSTK should enable and use markers to enable fast constant time searches
+# in list and set operations
+
+if (MSTK_USE_MARKERS)
+  target_compile_definitions($MSTKLIB} PUBLIC MSTK_USE_MARKERS)
+endif (MSTK_USE_MARKERS)
+
+
 ################################################################################
 # Discover TPLs (Third Party Libraries) based on configure options
 ################################################################################
@@ -95,56 +135,53 @@ endif (ENABLE_PARALLEL)
 
 
 ################################################################################
-# If MSTK should enable and use markers to enable fast constant time searches
-# in list and set operations
-################################################################################
-
-if (MSTK_USE_MARKERS)
-  add_definitions("-DMSTK_USE_MARKERS")
-endif (MSTK_USE_MARKERS)
-
-################################################################################
 # If user wants to read/write ExodusII files, we check if we can locate the
 # ExodusII and NetCDF include files and libraries
 ################################################################################
 if (ENABLE_ExodusII)
 
-  add_definitions("-DENABLE_ExodusII")
+  target_compile_definitions(${MSTKLIB} ENABLE_ExodusII)
 
   if (EXODUS_6_DEPRECATED)
-    add_definitions("-DEXODUS_6_DEPRECATED")
+    target_compile_definitions(${MSTKLIB} EXODUS_6_DEPRECATED)
   endif (EXODUS_6_DEPRECATED)
-
-  ##############################################################################
-  # HDF5 - 
-  ##############################################################################
-
-  message(STATUS "HDF5_ROOT ${HDF5_ROOT}")
-  find_package(HDF5 REQUIRED COMPONENTS C HL)
-
-  if(NOT HDF5_FOUND)
-    message(FATAL_ERROR "Error: could not find hdf5 library\n"
-      "Try defining HDF5_ROOT: (-D HDF5_ROOT:FILEPATH=<HDF5_install_prefix>)")
-  endif(NOT HDF5_FOUND)
-
-  set(HDF5_LIBRARIES ${HDF5_HL_LIBRARIES} ${HDF5_C_LIBRARIES} z m dl)
-
-
-  message("---- HDF5_LIBRARIES : " ${HDF5_LIBRARIES})
-  message("---- HDF5_IS_PARALLEL : " ${HDF5_IS_PARALLEL})
 
   ##############################################################################
   # NetCDF - http://www.unidata.ucar.edu/software/netcdf/
   ##############################################################################
 
-# Could replace with find_package(NetCDF REQUIRED)
-find_package(NetCDF REQUIRED)
-  if(NOT NetCDF_FOUND)
+  # Could replace with find_package(NetCDF REQUIRED)
+  find_package(netCDF REQUIRED)
+  if(NOT netCDF_FOUND)
     message(FATAL_ERROR "Error: could not find netcdf library\n"
-      "Try defining NetCDF_DIR: (-D NetCDF_DIR:FILEPATH=<NetCDF_install_prefix>)")
+      "Try defining netCDF_DIR: (-D netCDF_DIR:FILEPATH=<netCDF_install_prefix>)")
   endif()
 
-  message("---- NETCDF_LIBRARY : " ${NetCDF_LIBRARIES})
+  message("---- NETCDF_LIBRARY : " ${netCDF_LIBRARIES})
+  target_link_libraries(${MSTKLIB} PUBLIC ${netCDF_LIBRARIES})
+
+
+  ##############################################################################
+  # HDF5 - SHOULD JUST COME WITH the netCDF target
+  ##############################################################################
+
+  # message(STATUS "HDF5_ROOT ${HDF5_ROOT}")
+  # find_package(HDF5 REQUIRED NO_MODULE COMPONENTS C HL)
+
+  # if (HDF5_FOUND)
+  #   message("---- HDF5_LIBRARIES : " ${HDF5_LIBRARIES})
+  #   message("---- HDF5_IS_PARALLEL : " ${HDF5_IS_PARALLEL})
+  # else (HDF5_FOUND)
+  #   # Fallback to using the module
+  #   find_package(HDF5 REQUIRED MODULE COMPONENTS C HL)
+    
+  #   set(HDF5_LIBRARIES ${HDF5_HL_LIBRARIES} ${HDF5_C_LIBRARIES} z m dl)  
+  # endif (HDF5_FOUND)
+
+  # if (NOT HDF5_FOUND)
+  #   message(FATAL_ERROR "Error: could not find hdf5 library\n"
+  #     "Try defining HDF5_ROOT: (-D HDF5_ROOT:FILEPATH=<HDF5_install_prefix>)")
+  # endif(NOT HDF5_FOUND)
 
 
   ##############################################################################
@@ -209,45 +246,47 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_ZOLTAN) 
 
-    find_package(ZOLTAN REQUIRED)
-    if (NOT ZOLTAN_FOUND)
+    find_package(Zoltan REQUIRED
+      PATHS ${ZOLTAN_DIR})
+    if (Zoltan-NOTFOUND)
        message(FATAL_ERROR "Error: could not find Zoltan library\n"
 	  "Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
-     endif (NOT ZOLTAN_FOUND)
+     endif (Zoltan-NOTFOUND)
   
-     include_directories(${ZOLTAN_INCLUDE_DIRS})
+     target_include_directories(${MSTKLIB} PRIVATE ${ZOLTAN_INCLUDE_DIRS})
   
-     message("---- ZOLTAN_LIBRARY :" ${ZOLTAN_LIBRARY})
+     message("---- ZOLTAN_LIBRARY :" ${Zoltan_LIBRARIES})
 
-     add_definitions(-D_MSTK_HAVE_ZOLTAN)
+     target_compile_definitions(${MSTKLIB} MSTK_HAVE_ZOLTAN)
 
-     if (ZOLTAN_NEEDS_ParMETIS)
-       find_package(ParMETIS REQUIRED)
-       if (NOT ParMETIS_FOUND)
-         message(FATAL_ERROR  "Error: could not find ParMETIS library \
-	    needed by ZOLTAN\n \
-	   Try defining ParMETIS_DIR: \
-	   (-D ParMETIS_DIR:FILEPATH=<ParMETIS_install_prefix>)\n")
-       endif (NOT ParMETIS_FOUND)
+     # If we use targets we shouldn't have to do this manually
+     # if (ZOLTAN_NEEDS_ParMETIS)
+     #   find_package(ParMETIS REQUIRED)
+     #   if (NOT ParMETIS_FOUND)
+     #     message(FATAL_ERROR  "Error: could not find ParMETIS library \
+     # 	    needed by ZOLTAN\n \
+     # 	   Try defining ParMETIS_DIR: \
+     # 	   (-D ParMETIS_DIR:FILEPATH=<ParMETIS_install_prefix>)\n")
+     #   endif (NOT ParMETIS_FOUND)
 
-       list(APPEND ZOLTAN_LIBRARIES ${ParMETIS_LIBRARIES})
-       message("ParMETIS_LIBRARIES --- " ${ParMETIS_LIBRARIES})
-       message("ZOLTAN_LIBRARIES --- " ${ZOLTAN_LIBRARIES})
-     endif (ZOLTAN_NEEDS_ParMETIS)
+     #   list(APPEND ZOLTAN_LIBRARIES ${ParMETIS_LIBRARIES})
+     #   message("ParMETIS_LIBRARIES --- " ${ParMETIS_LIBRARIES})
+     #   message("ZOLTAN_LIBRARIES --- " ${Zoltan_LIBRARIES})
+     # endif (ZOLTAN_NEEDS_ParMETIS)
 
-     if (ZOLTAN_NEEDS_PTScotch)
-       find_package(PTScotch REQUIRED)
-       if (NOT PTScotch_FOUND)
-         message(FATAL_ERROR  "Error: could not find PTScotch library \
-	    needed by ZOLTAN\n \
-	   Try defining PTScotch_DIR: \
-	   (-D PTScotch_DIR:FILEPATH=<PTScotch_install_prefix>)\n")
-       endif (NOT PTScotch_FOUND)
+     # if (ZOLTAN_NEEDS_PTScotch)
+     #   find_package(PTScotch REQUIRED)
+     #   if (PTScotch-NOTFOUND)
+     #     message(FATAL_ERROR  "Error: could not find PTScotch library \
+     # 	    needed by ZOLTAN\n \
+     # 	   Try defining PTScotch_DIR: \
+     # 	   (-D PTScotch_DIR:FILEPATH=<PTScotch_install_prefix>)\n")
+     #   endif (PTScotch-NOTFOUND)
 
-       list(APPEND ZOLTAN_LIBRARIES ${PTScotch_LIBRARIES})
-       message("PTScotch_LIBRARIES --- " ${PTScotch_LIBRARIES})
-       message("ZOLTAN_LIBRARIES --- " ${ZOLTAN_LIBRARIES})
-     endif (ZOLTAN_NEEDS_PTScotch)
+     #   list(APPEND ZOLTAN_LIBRARIES ${PTScotch_LIBRARIES})
+     #   message("PTScotch_LIBRARIES --- " ${PTScotch_LIBRARIES})
+     #   message("ZOLTAN_LIBRARIES --- " ${Zoltan_LIBRARIES})
+     # endif (ZOLTAN_NEEDS_PTScotch)
 
   endif (ENABLE_ZOLTAN)
 
@@ -271,16 +310,53 @@ if (ENABLE_Tests)
  -D UnitTest++_DIR::FILEPATH=<UnitTest++_install_prefix>")
   else (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 
+    set(BUILD_TESTS TRUE)
+
     find_package(UnitTest++ PATHS ${UnitTest++_DIR} ${UnitTest_DIR})
-    if (UnitTest++-NOTFOUND)
-      set(BUILD_TESTS FALSE)
-    else (UnitTest++-NOTFOUND)
+
+    if (UnitTest++-FOUND)
       set(BUILD_TESTS TRUE)
 
       # UnitTest++Config.cmake uses a weird name for storing it's include path
       # and it's not even completely right
       set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
-    endif()    
+
+    else (UnitTest++-FOUND)
+
+      # Find things by hand
+      
+      find_library(UnitTest++_LIBRARIES 
+	NAMES UnitTest++ unittest++
+	PATHS
+	${UnitTest_DIR}
+	${UnitTest_LIB_DIR}
+	${UnitTest_DIR}/lib
+	)
+      if (NOT UnitTest++_LIBRARIES)
+	message(FATAL_ERROR "Error: could not find unittest++ library")
+      endif()
+  
+      find_path(UnitTest++_INCLUDE_DIRS "UnitTest++.h" 
+	PATHS 
+	${UnitTest_DIR}
+	${UnitTest_DIR}/include
+	${UnitTest_DIR}/src 
+	${UnitTest_DIR}/include/unittest++
+	${UnitTest_DIR}/include/UnitTest++
+	)
+      if (NOT UnitTest++_INCLUDE_DIRS)
+	message(FATAL_ERROR "Error: could not find UnitTest++ includes")
+      else()
+	target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
+      endif()
+    
+      add_library(UnitTest++ STATIC IMPORTED)
+      set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARIES})
+    endif(NOT UnitTest++-FOUND)
+
+    target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
+    target_link_libraries(${MSTKLIB} PRIVATE ${UnitTest++_LIBRARIES})
+  
   endif (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 endif()
 
@@ -298,30 +374,6 @@ set(MSTK_TPL_LIBRARIES_EXPORT ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES}
   ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES_EXPORT})
 
 
-##############################################################################
-# MSTK LIBRARY BUILD CONFIGURATION
-##############################################################################
-
-
-# Extra library suffix for Debug builds
-
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-  if (INSTALL_ADD_DEBUG_SUFFIX)
-    set (CONFIG_SUFFIX -d)
-  endif ()
-  add_definitions(-DDEBUG)
-endif ()
-
-# Add version number to library name
-
-if (INSTALL_ADD_VERSION)
-  set (MSTKLIB mstk-${MSTK_VERSION_MAJOR}.${MSTK_VERSION_MINOR}${CONFIG_SUFFIX})
-else ()
-  set (MSTKLIB mstk${CONFIG_SUFFIX})
-endif ()
-
-add_library(${MSTKLIB} ${mstkfiles})
-message(STATUS "Building library " ${MSTKLIB})
 
 target_link_libraries(${MSTKLIB} PUBLIC ${MSTK_TPL_LIBRARIES})
 
