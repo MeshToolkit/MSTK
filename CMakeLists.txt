@@ -31,6 +31,7 @@ set(MSTK_VERSION_PATCH 1)
 
 
 cmake_policy(SET CMP0017 NEW)
+cmake_policy(SET CMP0074 NEW)
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
@@ -79,12 +80,16 @@ message("--- Configuring MSTK with:")
 if (ENABLE_PARALLEL)
   find_package(MPI)
   if (MPI_FOUND)
-    message("PARALLELISM ON")
-#    add_definitions(-DMSTK_HAVE_MPI)
+    set(CMAKE_C_COMPILER ${MPI_C_COMPILER} CACHE FILEPATH "C compiler to use"
+      FORCE)
+    set(CMAKE_CXX_COMPILER ${MPI_C_COMPILER} CACHE FILEPATH "C compiler to use"
+      FORCE)
     set(MSTK_HAVE_MPI True CACHE BOOL "If MSTK is compiled with MPI on")
     message(STATUS "MPIEXEC is ${MPIEXEC}")
+    message(STATUS "CMAKE_C_COMPILER ${CMAKE_C_COMPILER}")
   else (MPI_FOUND)
-    message("PARALLELISM OFF")
+    message(STATUS "Could not find package MPI - build may fail")
+    message(STATUS "Try setting CMAKE_C_COMPILER/CMAKE_CXX_COMPILER to the mpi compiler wrappers")
   endif (MPI_FOUND)
 endif (ENABLE_PARALLEL)
 
@@ -261,39 +266,22 @@ if (ENABLE_Tests)
   # UnitTest++ - http://unittest-cpp.sourceforge.net/
   ##############################################################################
   
-  if (NOT DEFINED UnitTest_DIR)
+  if (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
     message(WARNING "No UnitTest++ directory defined. To compile the unit tests add:
- -D UnitTest_DIR::FILEPATH=<UnitTest++_install_prefix>")
-  else()
-    find_library(UNITTEST_LIBRARY 
-      NAMES UnitTest++ unittest++
-      HINTS ${UnitTest_DIR}
-      ${UnitTest_LIB_DIR}
-      ${UnitTest_DIR}/lib
-      )
-    if (NOT UNITTEST_LIBRARY)
-      message(FATAL_ERROR "Error: could not find unittest++ library")
-    endif()
-  
-    find_path(UNITTEST_INCLUDES "UnitTest++.h" 
-      HINTS ${UnitTest_INCLUDE_DIR}
-      ${UnitTest_DIR}
-      ${UnitTest_DIR}/include
-      ${UnitTest_DIR}/src 
-      ${UnitTest_DIR}/include/unittest++
-      ${UnitTest_DIR}/include/UnitTest++
-      )
-    if (NOT UNITTEST_INCLUDES)
-      message(FATAL_ERROR "Error: could not find UnitTest++ includes")
-    else()
-      include_directories(${UNITTEST_INCLUDES})
-    endif()
-    
-    set(BUILD_TESTS 1)
-    add_library(unittest++ STATIC IMPORTED)
-    set_property(TARGET unittest++ PROPERTY IMPORTED_LOCATION ${UNITTEST_LIBRARY})
+ -D UnitTest++_DIR::FILEPATH=<UnitTest++_install_prefix>")
+  else (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 
-  endif()
+    find_package(UnitTest++ PATHS ${UnitTest++_DIR} ${UnitTest_DIR})
+    if (UnitTest++-NOTFOUND)
+      set(BUILD_TESTS FALSE)
+    else (UnitTest++-NOTFOUND)
+      set(BUILD_TESTS TRUE)
+
+      # UnitTest++Config.cmake uses a weird name for storing it's include path
+      # and it's not even completely right
+      set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
+    endif()    
+  endif (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 endif()
 
 
@@ -335,9 +323,7 @@ endif ()
 add_library(${MSTKLIB} ${mstkfiles})
 message(STATUS "Building library " ${MSTKLIB})
 
-# Useful to define this particularly for shared libraries on OSX
-
-target_link_libraries(${MSTKLIB} ${MSTK_TPL_LIBRARIES})
+target_link_libraries(${MSTKLIB} PUBLIC ${MSTK_TPL_LIBRARIES})
 
 
 #############################################################################
