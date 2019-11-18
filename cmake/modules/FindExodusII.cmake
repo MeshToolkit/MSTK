@@ -166,7 +166,7 @@ else(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS)
     # Define prerequisite packages
     set(ExodusII_INCLUDE_DIRS ${ExodusII_INCLUDE_DIR})
     set(ExodusII_LIBRARIES    ${ExodusII_LIBRARY})
-    add_package_dependency(ExodusII DEPENDS_ON NetCDF)
+    add_package_dependency(ExodusII DEPENDS_ON netCDF)
 
    
 endif(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS )    
