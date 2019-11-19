@@ -21,9 +21,9 @@
 #
 
     
-project (MSTK)
+project (MSTK C CXX)
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 set(MSTK_VERSION_MAJOR 3)
 set(MSTK_VERSION_MINOR 2)
@@ -77,11 +77,6 @@ else ()
 endif ()
 
 
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-  target_compile_definitions(${MSTKLIB} DEBUG)
-endif ()
-
-
 # Add the actual source directory - these will build up the list "mstkfiles"
 
 add_subdirectory(src)
@@ -91,6 +86,13 @@ add_subdirectory(src)
 
 add_library(${MSTKLIB} ${mstkfiles})
 message(STATUS "Building library " ${MSTKLIB})
+
+
+# DEBUG FLAG
+
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  target_compile_definitions(${MSTKLIB} PUBLIC DEBUG)
+endif ()
 
 
 # include files and source files - have this upfront so that an MSTK.h from
@@ -122,7 +124,7 @@ if (ENABLE_PARALLEL)
   if (MPI_FOUND)
     set(CMAKE_C_COMPILER ${MPI_C_COMPILER} CACHE FILEPATH "C compiler to use"
       FORCE)
-    set(CMAKE_CXX_COMPILER ${MPI_C_COMPILER} CACHE FILEPATH "C compiler to use"
+    set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER} CACHE FILEPATH "C compiler to use"
       FORCE)
     set(MSTK_HAVE_MPI True CACHE BOOL "If MSTK is compiled with MPI on")
     message(STATUS "MPIEXEC is ${MPIEXEC}")
@@ -140,10 +142,10 @@ endif (ENABLE_PARALLEL)
 ################################################################################
 if (ENABLE_ExodusII)
 
-  target_compile_definitions(${MSTKLIB} ENABLE_ExodusII)
+  target_compile_definitions(${MSTKLIB} PUBLIC ENABLE_ExodusII)
 
   if (EXODUS_6_DEPRECATED)
-    target_compile_definitions(${MSTKLIB} EXODUS_6_DEPRECATED)
+    target_compile_definitions(${MSTKLIB} PRIVATE EXODUS_6_DEPRECATED)
   endif (EXODUS_6_DEPRECATED)
 
   ##############################################################################
@@ -151,7 +153,8 @@ if (ENABLE_ExodusII)
   ##############################################################################
 
   # Could replace with find_package(NetCDF REQUIRED)
-  find_package(netCDF REQUIRED)
+  find_package(netCDF REQUIRED
+    PATHS ${netCDF_DIR} ${NetCDF_DIR} ${NETCDF_DIR})
   if(NOT netCDF_FOUND)
     message(FATAL_ERROR "Error: could not find netcdf library\n"
       "Try defining netCDF_DIR: (-D netCDF_DIR:FILEPATH=<netCDF_install_prefix>)")
@@ -253,11 +256,11 @@ if (ENABLE_PARALLEL)
 	  "Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
      endif (Zoltan-NOTFOUND)
   
-     target_include_directories(${MSTKLIB} PRIVATE ${ZOLTAN_INCLUDE_DIRS})
+     target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
   
      message("---- ZOLTAN_LIBRARY :" ${Zoltan_LIBRARIES})
 
-     target_compile_definitions(${MSTKLIB} MSTK_HAVE_ZOLTAN)
+     target_compile_definitions(${MSTKLIB} PUBLIC MSTK_HAVE_ZOLTAN)
 
      # If we use targets we shouldn't have to do this manually
      # if (ZOLTAN_NEEDS_ParMETIS)
@@ -350,9 +353,8 @@ if (ENABLE_Tests)
 	target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
       endif()
     
-      add_library(UnitTest++ STATIC IMPORTED)
       set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARIES})
-    endif(NOT UnitTest++-FOUND)
+    endif(UnitTest++-FOUND)
 
     target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PRIVATE ${UnitTest++_LIBRARIES})
