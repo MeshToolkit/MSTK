@@ -144,10 +144,6 @@ if (ENABLE_ExodusII)
 
   target_compile_definitions(${MSTKLIB} PUBLIC ENABLE_ExodusII)
 
-  if (EXODUS_6_DEPRECATED)
-    target_compile_definitions(${MSTKLIB} PRIVATE EXODUS_6_DEPRECATED)
-  endif (EXODUS_6_DEPRECATED)
-
   ##############################################################################
   # NetCDF - http://www.unidata.ucar.edu/software/netcdf/
   ##############################################################################
@@ -198,10 +194,9 @@ if (ENABLE_ExodusII)
       "Try defining ExodusII_DIR: (-D ExodusII_DIR:FILEPATH=<ExodusII_install_prefix>)")
   endif()
   
-  include_directories(${ExodusII_INCLUDE_DIRS})
+  target_include_directories(${MSTKLIB} PUBLIC ${ExodusII_INCLUDE_DIRS})
+  target_link_libraries(${MSTKLIB} PUBLIC ${ExodusII_LIBRARIES})
  
-  message("---- EXODUSII_LIBRARY : " ${ExodusII_LIBRARIES})
-
 endif(ENABLE_ExodusII)
 
 
@@ -229,18 +224,17 @@ if (ENABLE_PARALLEL)
 
     endif (NOT METIS_FOUND)
 
-    include_directories(${METIS_INCLUDE_DIRS})
+    target_include_directories(${MSTKLIB} PUBLIC ${METIS_INCLUDE_DIRS})
   
-    message("---- METIS_LIBRARY :" ${METIS_LIBRARY})
-
-    add_definitions(-D_MSTK_HAVE_METIS)
+    target_compile_definitions(${MSTKLIB} PUBLIC _MSTK_HAVE_METIS)
 
     if (METIS_MAJOR_VER)
-      add_definitions(-DMETIS_${METIS_MAJOR_VER})
+      target_compile_definitions(${MSTKLIB} PUBLIC METIS_${METIS_MAJOR_VER})
     else (METIS_MAJOR_VER)
-      add_definitions(-DMETIS_5)
+      target_compile_definitions(${MSTKLIB} PUBLIC METIS_5)
     endif (METIS_MAJOR_VER)
 
+    target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
   endif (ENABLE_METIS)
 
   ##############################################################################
@@ -354,6 +348,7 @@ if (ENABLE_Tests)
       endif()
     
       set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARIES})
+      set(UnitTest++_LIBRARIES UnitTest++)
     endif(UnitTest++-FOUND)
 
     target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
