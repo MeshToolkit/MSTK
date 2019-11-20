@@ -55,8 +55,7 @@ cache:
   - ccache
 
 compiler:
-
-- gcc
+  - gcc
   - clang
 
 notifications:
