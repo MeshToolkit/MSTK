@@ -145,45 +145,6 @@ if (ENABLE_ExodusII)
   target_compile_definitions(${MSTKLIB} PUBLIC ENABLE_ExodusII)
 
   ##############################################################################
-  # NetCDF - http://www.unidata.ucar.edu/software/netcdf/
-  ##############################################################################
-
-  # Could replace with find_package(NetCDF REQUIRED)
-  find_package(netCDF REQUIRED
-    PATHS ${netCDF_DIR} ${NetCDF_DIR} ${NETCDF_DIR})
-  if(NOT netCDF_FOUND)
-    message(FATAL_ERROR "Error: could not find netcdf library\n"
-      "Try defining netCDF_DIR: (-D netCDF_DIR:FILEPATH=<netCDF_install_prefix>)")
-  endif()
-
-  message(STATUS "### netCDF library: ${netCDF_LIBRARIES}")
-  target_link_libraries(${MSTKLIB} PUBLIC ${netCDF_LIBRARIES})
-
-
-  ##############################################################################
-  # HDF5 - SHOULD JUST COME WITH the netCDF target
-  ##############################################################################
-
-  # message(STATUS "HDF5_ROOT ${HDF5_ROOT}")
-  # find_package(HDF5 REQUIRED NO_MODULE COMPONENTS C HL)
-
-  # if (HDF5_FOUND)
-  #   message("---- HDF5_LIBRARIES : " ${HDF5_LIBRARIES})
-  #   message("---- HDF5_IS_PARALLEL : " ${HDF5_IS_PARALLEL})
-  # else (HDF5_FOUND)
-  #   # Fallback to using the module
-  #   find_package(HDF5 REQUIRED MODULE COMPONENTS C HL)
-    
-  #   set(HDF5_LIBRARIES ${HDF5_HL_LIBRARIES} ${HDF5_C_LIBRARIES} z m dl)  
-  # endif (HDF5_FOUND)
-
-  # if (NOT HDF5_FOUND)
-  #   message(FATAL_ERROR "Error: could not find hdf5 library\n"
-  #     "Try defining HDF5_ROOT: (-D HDF5_ROOT:FILEPATH=<HDF5_install_prefix>)")
-  # endif(NOT HDF5_FOUND)
-
-
-  ##############################################################################
   # ExodusII - http://sourceforge.net/projects/exodusii/ or 
   # get it as part of Trilinos - http:://trilinos.sandia.gov
   ##############################################################################
@@ -356,9 +317,6 @@ if (ENABLE_Tests)
       set(UnitTest++_LIBRARIES UnitTest++)
     endif(UnitTest++-FOUND)
 
-    target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
-    target_link_libraries(${MSTKLIB} PRIVATE ${UnitTest++_LIBRARIES})
-
     message(STATUS "### UnitTest++ include dirs: ${UnitTest++_INCLUDE_DIRS}")
     message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
 
@@ -407,6 +365,7 @@ add_subdirectory(example)
 ##########################################################
 # Configuration of installation options
 ##########################################################
+
 
 # where to install library
 if (INSTALL_PREFIX_ARCHOS) 
