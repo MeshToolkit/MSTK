@@ -156,7 +156,7 @@ if (ENABLE_ExodusII)
       "Try defining netCDF_DIR: (-D netCDF_DIR:FILEPATH=<netCDF_install_prefix>)")
   endif()
 
-  message("---- NETCDF_LIBRARY : " ${netCDF_LIBRARIES})
+  message(STATUS "### netCDF library: ${netCDF_LIBRARIES}")
   target_link_libraries(${MSTKLIB} PUBLIC ${netCDF_LIBRARIES})
 
 
@@ -188,7 +188,7 @@ if (ENABLE_ExodusII)
   # get it as part of Trilinos - http:://trilinos.sandia.gov
   ##############################################################################
 
-  find_package(ExodusII REQUIRED)
+  find_package(ExodusII REQUIRED)  # Uses MSTK module
   if(NOT ExodusII_FOUND)
     message(FATAL_ERROR "Error: could not find ExodusII library\n"
       "Try defining ExodusII_DIR: (-D ExodusII_DIR:FILEPATH=<ExodusII_install_prefix>)")
@@ -196,6 +196,8 @@ if (ENABLE_ExodusII)
   
   target_include_directories(${MSTKLIB} PUBLIC ${ExodusII_INCLUDE_DIRS})
   target_link_libraries(${MSTKLIB} PUBLIC ${ExodusII_LIBRARIES})
+
+  message(STATUS "### Exodus II library: ${ExodusII_LIBRARIES}") 
  
 endif(ENABLE_ExodusII)
 
@@ -217,7 +219,7 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_METIS) 
 
-    find_package(METIS REQUIRED)
+    find_package(METIS REQUIRED)   # uses MSTK module
     if (NOT METIS_FOUND)
        message(FATAL_ERROR "Error: could not find Metis library\n"
 	  "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n")
@@ -225,7 +227,6 @@ if (ENABLE_PARALLEL)
     endif (NOT METIS_FOUND)
 
     target_include_directories(${MSTKLIB} PUBLIC ${METIS_INCLUDE_DIRS})
-  
     target_compile_definitions(${MSTKLIB} PUBLIC _MSTK_HAVE_METIS)
 
     if (METIS_MAJOR_VER)
@@ -235,6 +236,8 @@ if (ENABLE_PARALLEL)
     endif (METIS_MAJOR_VER)
 
     target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
+
+    message(STATUS "### Metis library: ${METIS_LIBRARIES}")
   endif (ENABLE_METIS)
 
   ##############################################################################
@@ -252,7 +255,7 @@ if (ENABLE_PARALLEL)
   
      target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
   
-     message("---- ZOLTAN_LIBRARY :" ${Zoltan_LIBRARIES})
+     message(STATUS "### Zoltan library:" ${Zoltan_LIBRARIES})
 
      target_compile_definitions(${MSTKLIB} PUBLIC MSTK_HAVE_ZOLTAN)
 
@@ -320,6 +323,7 @@ if (ENABLE_Tests)
 
     else (UnitTest++-FOUND)
 
+      message(STATUS "find_package did not find CMake config for UnitTest++. Find manually")
       # Find things by hand
       
       find_library(UnitTest++_LIBRARIES 
@@ -346,7 +350,8 @@ if (ENABLE_Tests)
       else()
 	target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
       endif()
-    
+
+      add_library(UnitTest++ UNKNOWN IMPORTED)
       set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARIES})
       set(UnitTest++_LIBRARIES UnitTest++)
     endif(UnitTest++-FOUND)
@@ -354,8 +359,8 @@ if (ENABLE_Tests)
     target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PRIVATE ${UnitTest++_LIBRARIES})
 
-    message(STATUS "UnitTest++_INCLUDE_DIRS ----> ${UnitTest++_INCLUDE_DIRS}")
-    message(STATUS "UnitTest++_LIBRARIES ----> ${UnitTest++_LIBRARIES}")
+    message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
+
   endif (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
 endif()
 
