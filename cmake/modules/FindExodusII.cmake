@@ -28,7 +28,6 @@ include(FindPackageHandleStandardArgs)
 
 # MSTK CMake functions see <root>/tools/cmake for source
 include(PrintVariable)
-include(AddPackageDependency)
 
 if ( ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS )
 
@@ -165,9 +164,14 @@ else(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS)
    
     # Define prerequisite packages
     set(ExodusII_INCLUDE_DIRS ${ExodusII_INCLUDE_DIR})
-    set(ExodusII_LIBRARIES    ${ExodusII_LIBRARY})
-    add_package_dependency(ExodusII DEPENDS_ON netCDF)
+    
+    set(ExodusII_LIBRARIES exodusii)
+    add_library(${ExodusII_LIBRARIES} UNKNOWN IMPORTED)
+    set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_LOCATION ${ExodusII_LIBRARY})
 
+
+    find_package(netCDF REQUIRED)
+    target_link_libraries(exodusii INTERFACE ${netCDF_LIBRARIES})
    
 endif(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS )    
 
