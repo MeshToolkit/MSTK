@@ -48,14 +48,8 @@ if (BUILD_TESTS)
 
   target_include_directories(mstk_serial_unit_tests
     PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
-  target_link_libraries(mstk_serial_unit_tests 
-    ${MSTKLIB} 
-    ${METIS_LIBRARIES} 
-    ${ZOLTAN_LIBRARIES} 
-    ${ExodusII_LIBRARIES} 
-    ${NetCDF_LIBRARIES}
-    ${HDF5_LIBRARIES}
-    ${UnitTest++_LIBRARIES})
+  target_link_libraries(mstk_serial_unit_tests
+    ${MSTKLIB}  ${UnitTest++_LIBRARIES})
 
   add_test(NAME serial_unittests COMMAND mstk_serial_unit_tests)
 
@@ -80,13 +74,7 @@ if (BUILD_TESTS)
     target_include_directories(mstk_parallel_4proc_unit_tests
       PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
     target_link_libraries(mstk_parallel_4proc_unit_tests 
-      ${MSTKLIB} 
-      ${METIS_LIBRARIES} 
-      ${ZOLTAN_LIBRARIES} 
-      ${ExodusII_LIBRARIES} 
-      ${NetCDF_LIBRARIES}
-      ${HDF5_LIBRARIES}
-      ${UnitTest++_LIBRARIES})
+      ${MSTKLIB} ${UnitTest++_LIBRARIES})
 
     add_test(NAME parallel_unittests_4proc 
       COMMAND ${MPIEXEC} -n 4 mstk_parallel_4proc_unit_tests)
@@ -110,13 +98,7 @@ if (BUILD_TESTS)
     target_include_directories(mstk_parallel_8proc_unit_tests
       PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
     target_link_libraries(mstk_parallel_8proc_unit_tests 
-      ${MSTKLIB} 
-      ${METIS_LIBRARIES} 
-      ${ZOLTAN_LIBRARIES} 
-      ${ExodusII_LIBRARIES} 
-      ${NetCDF_LIBRARIES}
-      ${HDF5_LIBRARIES}
-      ${UnitTest++_LIBRARIES})
+      ${MSTKLIB} ${UnitTest++_LIBRARIES})
 
     add_test(NAME parallel_unittests_8proc 
       COMMAND ${MPIEXEC} -n 8 mstk_parallel_8proc_unit_tests)
