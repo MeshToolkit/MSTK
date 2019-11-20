@@ -359,6 +359,7 @@ if (ENABLE_Tests)
     target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PRIVATE ${UnitTest++_LIBRARIES})
 
+    message(STATUS "### UnitTest++ include dirs: ${UnitTest++_INCLUDE_DIRS}")
     message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
 
   endif (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
