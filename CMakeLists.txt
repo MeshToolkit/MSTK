@@ -291,6 +291,9 @@ if (ENABLE_Tests)
       # and it's not even completely right
       set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
 
+      # Also it does not set this variable
+      set(UnitTest++_LIBRARIES UnitTest++)
+
     else (UnitTest++_FOUND)
 
       message(STATUS "find_package did not find CMake config for UnitTest++. Find manually")
