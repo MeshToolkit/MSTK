@@ -31,25 +31,12 @@ set(MSTK_VERSION_PATCH 0)
 
 
 cmake_policy(SET CMP0017 NEW)
-cmake_policy(SET CMP0074 NEW)
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-
-# This option may be needed for some HPC machines
-
-if (PREFER_STATIC_LIBRARIES)
-   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a; .so")
-endif()
-
-# Default build type is Release (Optimized)
-
-if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE Release)
-endif ()
 
 
 # Default INSTALL Directory
@@ -59,22 +46,7 @@ if (NOT INSTALL_DIR)
 endif (NOT INSTALL_DIR)
 
 
-# Extra library suffix for Debug builds
-
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-  if (INSTALL_ADD_DEBUG_SUFFIX)
-    set (CONFIG_SUFFIX -d)
-  endif ()
-endif ()
-
-
-# Add version number to library name if requested
-
-if (INSTALL_ADD_VERSION)
-  set (MSTKLIB mstk-${MSTK_VERSION_MAJOR}.${MSTK_VERSION_MINOR}${CONFIG_SUFFIX})
-else ()
-  set (MSTKLIB mstk${CONFIG_SUFFIX})
-endif ()
+set (MSTKLIB mstk)
 
 
 # Add the actual source directory - these will build up the list "mstkfiles"
@@ -378,23 +350,12 @@ add_subdirectory(example)
 
 
 # where to install library
-if (INSTALL_PREFIX_ARCHOS) 
-  install(TARGETS ${MSTKLIB}
-    EXPORT mstk
-    ARCHIVE DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
-    LIBRARY DESTINATION ${INSTALL_DIR}/lib/${ARCHOS}
-    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-  )
-else ()
-  install(TARGETS ${MSTKLIB}
-    EXPORT mstk
-    ARCHIVE DESTINATION ${INSTALL_DIR}/lib
-    LIBRARY DESTINATION ${INSTALL_DIR}/lib
-    CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-  )
-endif ()
-
-# where to install include files
+install(TARGETS ${MSTKLIB}
+  EXPORT mstk
+  ARCHIVE DESTINATION ${INSTALL_DIR}/lib
+  LIBRARY DESTINATION ${INSTALL_DIR}/lib
+  CONFIGURATIONS ${CMAKE_BUILD_TYPE}
+)
 
 
 #######################################################
