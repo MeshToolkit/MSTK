@@ -167,7 +167,7 @@ else(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS)
     
     set(ExodusII_LIBRARIES exodusii)
     add_library(${ExodusII_LIBRARIES} UNKNOWN IMPORTED)
-    set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_LOCATION ${ExodusII_LIBRARY})
+    set_target_properties(${ExodusII_LIBRARIES} PROPERTIES IMPORTED_LOCATION ${ExodusII_LIBRARY})
 
 
     if (NOT netCDF_FOUND)
