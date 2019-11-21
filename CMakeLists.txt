@@ -105,7 +105,7 @@ target_include_directories(${MSTKLIB} PUBLIC ${PROJECT_BINARY_DIR}/include)
 # in list and set operations
 
 if (MSTK_USE_MARKERS)
-  target_compile_definitions($MSTKLIB} PUBLIC MSTK_USE_MARKERS)
+  target_compile_definitions(${MSTKLIB} PUBLIC MSTK_USE_MARKERS)
 endif (MSTK_USE_MARKERS)
 
 
@@ -143,6 +143,15 @@ endif (ENABLE_PARALLEL)
 if (ENABLE_ExodusII)
 
   target_compile_definitions(${MSTKLIB} PUBLIC ENABLE_ExodusII)
+
+  # Before finding Exodus and netCDF make sure netCDF_DIR is set
+  if (NOT netCDF_DIR)
+    if (NetCDF_DIR)
+      set(netCDF_DIR ${NetCDF_DIR})
+    else (NetCDF_DIR)
+      message(WARNING "netCDF_DIR or NetCDF_DIR must be specified")
+    endif (NetCDF_DIR)
+  endif (NOT netCDF_DIR)
 
   ##############################################################################
   # ExodusII - http://sourceforge.net/projects/exodusii/ or 
@@ -275,29 +284,29 @@ if (ENABLE_Tests)
 
     find_package(UnitTest++ PATHS ${UnitTest++_DIR} ${UnitTest_DIR})
 
-    if (UnitTest++-FOUND)
+    if (UnitTest++_FOUND)
       set(BUILD_TESTS TRUE)
 
       # UnitTest++Config.cmake uses a weird name for storing it's include path
       # and it's not even completely right
       set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
 
-    else (UnitTest++-FOUND)
+    else (UnitTest++_FOUND)
 
       message(STATUS "find_package did not find CMake config for UnitTest++. Find manually")
       # Find things by hand
       
-      find_library(UnitTest++_LIBRARIES 
+      find_library(UnitTest++_LIBRARY
 	NAMES UnitTest++ unittest++
 	PATHS
 	${UnitTest_DIR}
 	${UnitTest_LIB_DIR}
 	${UnitTest_DIR}/lib
 	)
-      if (NOT UnitTest++_LIBRARIES)
+      if (NOT UnitTest++_LIBRARY)
 	message(FATAL_ERROR "Error: could not find unittest++ library")
-      endif()
-  
+      endif(NOT UnitTest++_LIBRARY)
+
       find_path(UnitTest++_INCLUDE_DIRS "UnitTest++.h" 
 	PATHS 
 	${UnitTest_DIR}
@@ -308,14 +317,12 @@ if (ENABLE_Tests)
 	)
       if (NOT UnitTest++_INCLUDE_DIRS)
 	message(FATAL_ERROR "Error: could not find UnitTest++ includes")
-      else()
-	target_include_directories(${MSTKLIB} PRIVATE ${UnitTest++_INCLUDE_DIRS})
-      endif()
+      endif(NOT UnitTest++_INCLUDE_DIRS)
 
       add_library(UnitTest++ UNKNOWN IMPORTED)
-      set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARIES})
+      set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARY})
       set(UnitTest++_LIBRARIES UnitTest++)
-    endif(UnitTest++-FOUND)
+    endif(UnitTest++_FOUND)
 
     message(STATUS "### UnitTest++ include dirs: ${UnitTest++_INCLUDE_DIRS}")
     message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
