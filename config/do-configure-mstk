@@ -12,20 +12,13 @@
 #
 # -D INSTALL_DIR:FILEPATH=/usr/local/packages
 #
-# Add version number to the library (libmstk-1.8.a instead of libmstk.a)
-#
-# -D INSTALL_ADD_VERSION=yes|no (default=no)
-#
-# Install libraries and binaries in a machine specific subdirectory
-# (typically given by ARCHOS or `uname -m`_`uname -s`
-# 
-# -D INSTALL_PREFIX_ARCHOS=yes|no (default=no)
-#
 # Use Metis or Zoltan as a partitioner (specify at least one)
 # If Metis is enabled, it will assume that the metis version is 5 or greater
 # If you want to link to an older version of Metis, you must also specify
 # -D METIS_MAJOR_VERSION=4 or whatever the major version is of the Metis
-# library you are linking to
+# library you are linking to. The path to METIS can be specified in
+# CMAKE_PREFIX_PATH or using METIS_DIR. The path to Zoltan can be specified
+# in CMAKE_PREFIX_PATH or using Zoltan_DIR
 #
 # -D ENABLE_METIS=yes|no  (default=no)
 # -D ENABLE_ZOLTAN=yes|no (default=no)
@@ -34,7 +27,8 @@
 #
 # -D ENABLE_ExodusII=yes|no (default=yes)
 #
-# Must define path to ExodusII and NetCDF packages
+# Must define path to ExodusII and NetCDF packages in CMAKE_PREFIX_PATH or 
+# in the following way
 # 
 # -D ExodusII_DIR:FILEPATH="/usr/packages/exodusii/"
 # -D NetCDF_DIR:FILEPATH="/usr/packages/netcdf-4.0/"
@@ -43,19 +37,6 @@
 # -D ENABLE_Tests=yes|no (default=yes)
 #
 # If tests are enabled then path to UnitTest++ has to be specified
-#
-# If cmake is unable to find an include file because it is in an unusual
-# place and not PKGNAME_DIR/include, then you can add a line to this
-# script specifying PKGNAME_INCLUDE_DIR like so
-#
-#  -D Curl_INCLUDE_DIR:FILEPATH=/usr/local/lib/cmcurl/src/incs
-#
-# You can similarly force it to find a library in a particular location
-# by specifying PKGNAME_LIBRARY_DIR
-#
-# Note that PKGNAME must be specified EXACTLY as it was specified for 
-# the PKGNAME_DIR variable, i.e, if the script uses Curl_DIR, then
-# the additional path has to be Curl_INCLUDE_DIR and not CURL_INCLUDE_DIR
 #
 # Rao Garimella (rao@lanl.gov)
 
@@ -89,23 +70,29 @@ rm -fr Makefile
 
 cmake \
   -D CMAKE_BUILD_TYPE:STRING=Debug \
-  -D CMAKE_C_COMPILER:FILEPATH=`which mpicc` \
-  -D CMAKE_CXX_COMPILER:FILEPATH=`which mpiCC` \
-  -D CMAKE_C_FLAGS:STRING="-g -Wall -Wno-unused" \
   -D ENABLE_PARALLEL=yes \
   -D ENABLE_ZOLTAN=yes \
   -D ENABLE_METIS=yes \
   -D ENABLE_ExodusII=yes \
   -D NetCDF_DIR:FILEPATH=/research/rao/ascem-tpl \
   -D ExodusII_DIR:FILEPATH=/research/rao/ascem-tpl \
-  -D HDF5_DIR:FILEPATH=/research/rao/ascem-tpl \
-  -D HDF5_NO_SYSTEM_PATHS=yes \
   -D METIS_DIR:FILEPATH=/research/rao/ascem-tpl/metis-4.0.3 \
   -D ZOLTAN_DIR:FILEPATH=/research/rao/ascem-tpl/trilinos-11.0.3 \
   -D ENABLE_Tests=yes \
   -D UnitTest_DIR:FILEPATH=/research/rao/ascem-tpl \
   -D INSTALL_DIR:FILEPATH=${SOURCE} \
-  -D INSTALL_ADD_VERSION=no \
-  -D INSTALL_PREFIX_ARCHOS=no \
   ${SOURCE} 
+
+# Alternate specification of cmake command
+
+cmake \
+  -D CMAKE_BUILD_TYPE:STRING=Debug \
+  -D CMAKE_PREFIX_PATH="/research/rao/ascem-tpl;/research/rao/ascem-tpl/metis-4.0.3;/research/rao/ascem-tpl/trilinos-11.0.3" \
+  -D ENABLE_PARALLEL=yes \
+  -D ENABLE_ZOLTAN=yes \
+  -D ENABLE_METIS=yes \
+  -D ENABLE_ExodusII=yes \
+  -D ENABLE_Tests=yes \
+  -D INSTALL_DIR:FILEPATH=${SOURCE} \
+  ${SOURCE}
 

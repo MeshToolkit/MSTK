@@ -1,7 +1,7 @@
 language: c
 
 sudo: required
-dist: xenial
+dist: bionic
 
 addons:
   apt:
@@ -45,9 +45,9 @@ script:
      -DHDF5_INCLUDE_DIRS=/usr/include/hdf5/openmpi
      -DENABLE_ExodusII=ON
      -DENABLE_Tests=yes
-     -DUnitTest_DIR:FILEPATH=/usr/include/unittest++
+     -DUnitTest_DIR:FILEPATH=/usr
      ..    && 
-     make -j2 &&
+     make VERBOSE=1 -j2 &&
      make test &&
      make install DESTDIR=$HOME
 
@@ -60,6 +60,6 @@ compiler:
 
 notifications:
   email:
-    - rao@lanl.gov
+    - raovgarimella@gmail.com
   on_success: never
   on_failure: always
