@@ -116,14 +116,10 @@ if (ENABLE_ExodusII)
 
   target_compile_definitions(${MSTKLIB} PUBLIC ENABLE_ExodusII)
 
-  # Before finding Exodus and netCDF make sure netCDF_DIR is set
-  if (NOT netCDF_DIR)
-    if (NetCDF_DIR)
-      set(netCDF_DIR ${NetCDF_DIR})
-    else (NetCDF_DIR)
-      message(WARNING "netCDF_DIR or NetCDF_DIR must be specified")
-    endif (NetCDF_DIR)
-  endif (NOT netCDF_DIR)
+  # For backward compatibility
+  if (NOT netCDF_DIR AND NetCDF_DIR)
+    set(netCDF_DIR ${NetCDF_DIR})
+  endif (NOT netCDF_DIR AND NetCDF_DIR)
 
   ##############################################################################
   # ExodusII - http://sourceforge.net/projects/exodusii/ or 
@@ -134,12 +130,21 @@ if (ENABLE_ExodusII)
   if(NOT ExodusII_FOUND)
     message(FATAL_ERROR "Error: could not find ExodusII library\n"
       "Try defining ExodusII_DIR: (-D ExodusII_DIR:FILEPATH=<ExodusII_install_prefix>)")
-  endif()
+  endif(NOT ExodusII_FOUND)
   
   target_include_directories(${MSTKLIB} PUBLIC ${ExodusII_INCLUDE_DIRS})
   target_link_libraries(${MSTKLIB} PUBLIC ${ExodusII_LIBRARIES})
 
-  message(STATUS "### Exodus II library: ${ExodusII_LIBRARIES}") 
+  message(STATUS "### Exodus II library: ${ExodusII_LIBRARIES}")
+
+  get_target_property(ExodusII_LOC ${ExodusII_LIBRARIES} IMPORTED_LOCATION)
+  if (ExodusII_LOC)
+    message(STATUS "### Exodus II location: ${ExodusII_LOC}")
+  else (ExodusII_LOC)
+    if (ExodusII_LIBRARY_DIRS)
+      message(STATUS "### Exodus II library dir: ${ExodusII_LIBRARY_DIRS}")
+    endif (ExodusII_LIBRARY_DIRS)
+  endif (ExodusII_LOC)
  
 endif(ENABLE_ExodusII)
 
@@ -180,6 +185,14 @@ if (ENABLE_PARALLEL)
     target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
 
     message(STATUS "### Metis library: ${METIS_LIBRARIES}")
+    get_target_property(METIS_LOC ${METIS_LIBRARIES} IMPORTED_LOCATION)
+    if (METIS_LOC)
+      message(STATUS "### METIS location: ${METIS_LOC}")
+    else (METIS_LOC)
+      if (METIS_LIBRARY_DIRS)
+	message(STATUS "### METIS library dir: ${METIS_LIBRARY_DIRS}")
+      endif (METIS_LIBRARY_DIRS)
+    endif (METIS_LOC)
   endif (ENABLE_METIS)
 
   ##############################################################################
@@ -190,49 +203,60 @@ if (ENABLE_PARALLEL)
 
     find_package(Zoltan REQUIRED HINTS ${ZOLTAN_DIR})
     if (Zoltan-NOTFOUND)
-       message(FATAL_ERROR "Error: could not find Zoltan library\n"
-	  "Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
-     endif (Zoltan-NOTFOUND)
+      message(FATAL_ERROR "Error: could not find Zoltan library\n"
+	"Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
+    endif (Zoltan-NOTFOUND)
   
-     target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
-  
-     message(STATUS "### Zoltan library:" ${Zoltan_LIBRARIES})
 
-     target_compile_definitions(${MSTKLIB} PUBLIC MSTK_HAVE_ZOLTAN)
+    target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
+    
+    message(STATUS "### Zoltan library:" ${Zoltan_LIBRARIES})
+    get_target_property(Zoltan_LOC ${Zoltan_LIBRARIES} IMPORTED_LOCATION)
+    if (Zoltan_LOC)
+      message(STATUS "### Zoltan location: ${Zoltan_LOC}")
+    else (Zoltan_LOC)
+      if (Zoltan_LIBRARY_DIRS)
+	message(STATUS "### Zoltan library dir: ${Zoltan_LIBRARY_DIRS}")
+      endif (Zoltan_LIBRARY_DIRS)
+    endif (Zoltan_LOC)
+    
+    target_compile_definitions(${MSTKLIB} PUBLIC MSTK_HAVE_ZOLTAN)
 
-     # Code we introduced for MSTK to work in XSDK
-     # If we use targets we shouldn't have to do this manually
-     # BUT KEEP COMMENTED OUT JUST IN CASE WE HAVE TO RESURRECT IT
-     # if (ZOLTAN_NEEDS_ParMETIS)
-     #   find_package(ParMETIS REQUIRED)
-     #   if (NOT ParMETIS_FOUND)
-     #     message(FATAL_ERROR  "Error: could not find ParMETIS library \
-     # 	    needed by ZOLTAN\n \
-     # 	   Try defining ParMETIS_DIR: \
-     # 	   (-D ParMETIS_DIR:FILEPATH=<ParMETIS_install_prefix>)\n")
-     #   endif (NOT ParMETIS_FOUND)
-
-     #   list(APPEND ZOLTAN_LIBRARIES ${ParMETIS_LIBRARIES})
-     #   message("ParMETIS_LIBRARIES --- " ${ParMETIS_LIBRARIES})
-     #   message("ZOLTAN_LIBRARIES --- " ${Zoltan_LIBRARIES})
-     # endif (ZOLTAN_NEEDS_ParMETIS)
-
-     # if (ZOLTAN_NEEDS_PTScotch)
-     #   find_package(PTScotch REQUIRED)
-     #   if (PTScotch-NOTFOUND)
-     #     message(FATAL_ERROR  "Error: could not find PTScotch library \
-     # 	    needed by ZOLTAN\n \
-     # 	   Try defining PTScotch_DIR: \
-     # 	   (-D PTScotch_DIR:FILEPATH=<PTScotch_install_prefix>)\n")
-     #   endif (PTScotch-NOTFOUND)
-
-     #   list(APPEND ZOLTAN_LIBRARIES ${PTScotch_LIBRARIES})
-     #   message("PTScotch_LIBRARIES --- " ${PTScotch_LIBRARIES})
-     #   message("ZOLTAN_LIBRARIES --- " ${Zoltan_LIBRARIES})
-     # endif (ZOLTAN_NEEDS_PTScotch)
-
+    target_link_libraries(${MSTKLIB} PUBLIC ${Zoltan_LIBRARIES})
+    
+    # Code we introduced for MSTK to work in XSDK
+    # If we use targets we shouldn't have to do this manually
+    # BUT KEEP COMMENTED OUT JUST IN CASE WE HAVE TO RESURRECT IT
+    # if (ZOLTAN_NEEDS_ParMETIS)
+    #   find_package(ParMETIS REQUIRED)
+    #   if (NOT ParMETIS_FOUND)
+    #     message(FATAL_ERROR  "Error: could not find ParMETIS library \
+    # 	    needed by ZOLTAN\n \
+    # 	   Try defining ParMETIS_DIR: \
+    # 	   (-D ParMETIS_DIR:FILEPATH=<ParMETIS_install_prefix>)\n")
+    #   endif (NOT ParMETIS_FOUND)
+    
+    #   list(APPEND ZOLTAN_LIBRARIES ${ParMETIS_LIBRARIES})
+    #   message("ParMETIS_LIBRARIES --- " ${ParMETIS_LIBRARIES})
+    #   message("ZOLTAN_LIBRARIES --- " ${Zoltan_LIBRARIES})
+    # endif (ZOLTAN_NEEDS_ParMETIS)
+    
+    # if (ZOLTAN_NEEDS_PTScotch)
+    #   find_package(PTScotch REQUIRED)
+    #   if (PTScotch-NOTFOUND)
+    #     message(FATAL_ERROR  "Error: could not find PTScotch library \
+    # 	    needed by ZOLTAN\n \
+    # 	   Try defining PTScotch_DIR: \
+    # 	   (-D PTScotch_DIR:FILEPATH=<PTScotch_install_prefix>)\n")
+    #   endif (PTScotch-NOTFOUND)
+    
+    #   list(APPEND ZOLTAN_LIBRARIES ${PTScotch_LIBRARIES})
+    #   message("PTScotch_LIBRARIES --- " ${PTScotch_LIBRARIES})
+    #   message("ZOLTAN_LIBRARIES --- " ${Zoltan_LIBRARIES})
+    # endif (ZOLTAN_NEEDS_PTScotch)
+    
   endif (ENABLE_ZOLTAN)
-
+  
 endif (ENABLE_PARALLEL) 
 
 
@@ -280,6 +304,7 @@ if (ENABLE_Tests)
     if (NOT UnitTest++_LIBRARY)
       message(FATAL_ERROR "Error: could not find unittest++ library")
     endif(NOT UnitTest++_LIBRARY)
+    get_filename_component(UnitTest++_LIBRARY_DIRS ${UnitTest++_LIBRARY} DIRECTORY)
     
     find_path(UnitTest++_INCLUDE_DIRS "UnitTest++.h" 
       HINTS 
@@ -296,13 +321,21 @@ if (ENABLE_Tests)
       message(FATAL_ERROR "Error: could not find UnitTest++ includes")
     endif(NOT UnitTest++_INCLUDE_DIRS)
     
-    add_library(UnitTest++ UNKNOWN IMPORTED)
-    set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARY})
     set(UnitTest++_LIBRARIES UnitTest++)
+
+    add_library(UnitTest++ UNKNOWN IMPORTED)
+    set_target_properties(UnitTest++ PROPERTIES IMPORTED_LOCATION ${UnitTest++_LIBRARY})
   endif(UnitTest++_FOUND)
-  
-  message(STATUS "### UnitTest++ include dirs: ${UnitTest++_INCLUDE_DIRS}")
+
   message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
+  get_target_property(UnitTest++_LOC UnitTest++ IMPORTED_LOCATION)
+  if (UnitTest++_LOC)
+    message(STATUS "### UnitTest++ location: ${UnitTest++_LOC}")
+  else (UnitTest++_LOC)
+    if (UnitTest++_LIBRARY_DIRS)
+      message(STATUS "### UnitTest++ library dir: ${UnitTest++_LIBRARY_DIRS}")
+    endif (UnitTest++_LIBRARY_DIRS)
+  endif (UnitTest++_LOC)
   
 endif()
 
@@ -320,8 +353,7 @@ set(MSTK_TPL_LIBRARIES_EXPORT ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES}
   ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES_EXPORT})
 
 
-
-target_link_libraries(${MSTKLIB} PUBLIC ${MSTK_TPL_LIBRARIES})
+#target_link_libraries(${MSTKLIB} PUBLIC ${MSTK_TPL_LIBRARIES})
 
 
 #############################################################################
