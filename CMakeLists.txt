@@ -188,8 +188,7 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_ZOLTAN) 
 
-    find_package(Zoltan REQUIRED
-      PATHS ${ZOLTAN_DIR})
+    find_package(Zoltan REQUIRED HINTS ${ZOLTAN_DIR})
     if (Zoltan-NOTFOUND)
        message(FATAL_ERROR "Error: could not find Zoltan library\n"
 	  "Try defining Zoltan_DIR: (-D Zoltan_DIR:FILEPATH=<Zoltan_install_prefix>)\n")
@@ -201,7 +200,9 @@ if (ENABLE_PARALLEL)
 
      target_compile_definitions(${MSTKLIB} PUBLIC MSTK_HAVE_ZOLTAN)
 
+     # Code we introduced for MSTK to work in XSDK
      # If we use targets we shouldn't have to do this manually
+     # BUT KEEP COMMENTED OUT JUST IN CASE WE HAVE TO RESURRECT IT
      # if (ZOLTAN_NEEDS_ParMETIS)
      #   find_package(ParMETIS REQUIRED)
      #   if (NOT ParMETIS_FOUND)
@@ -247,62 +248,62 @@ if (ENABLE_Tests)
   # UnitTest++ - http://unittest-cpp.sourceforge.net/
   ##############################################################################
   
-  if (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
-    message(WARNING "No UnitTest++ directory defined. To compile the unit tests add:
- -D UnitTest++_DIR::FILEPATH=<UnitTest++_install_prefix>")
-  else (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
+  set(BUILD_TESTS TRUE)
 
+  # For backward compatibility allow UnitTest_DIR for a bit more time
+  find_package(UnitTest++ HINTS ${UnitTest++_DIR} ${UnitTest_DIR})
+  
+  if (UnitTest++_FOUND)
     set(BUILD_TESTS TRUE)
+    
+    # UnitTest++Config.cmake uses a weird name for storing it's include path
+    # and it's not even completely right
+    set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
+    
+    # Also it does not set this variable
+    set(UnitTest++_LIBRARIES UnitTest++)
+    
+  else (UnitTest++_FOUND)
 
-    find_package(UnitTest++ PATHS ${UnitTest++_DIR} ${UnitTest_DIR})
-
-    if (UnitTest++_FOUND)
-      set(BUILD_TESTS TRUE)
-
-      # UnitTest++Config.cmake uses a weird name for storing it's include path
-      # and it's not even completely right
-      set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
-
-      # Also it does not set this variable
-      set(UnitTest++_LIBRARIES UnitTest++)
-
-    else (UnitTest++_FOUND)
-
-      message(STATUS "find_package did not find CMake config for UnitTest++. Find manually")
-      # Find things by hand
-      
-      find_library(UnitTest++_LIBRARY
-	NAMES UnitTest++ unittest++
-	PATHS
-	${UnitTest_DIR}
-	${UnitTest_LIB_DIR}
-	${UnitTest_DIR}/lib
-	)
-      if (NOT UnitTest++_LIBRARY)
-	message(FATAL_ERROR "Error: could not find unittest++ library")
-      endif(NOT UnitTest++_LIBRARY)
-
-      find_path(UnitTest++_INCLUDE_DIRS "UnitTest++.h" 
-	PATHS 
-	${UnitTest_DIR}
-	${UnitTest_DIR}/include
-	${UnitTest_DIR}/src 
-	${UnitTest_DIR}/include/unittest++
-	${UnitTest_DIR}/include/UnitTest++
-	)
-      if (NOT UnitTest++_INCLUDE_DIRS)
-	message(FATAL_ERROR "Error: could not find UnitTest++ includes")
-      endif(NOT UnitTest++_INCLUDE_DIRS)
-
-      add_library(UnitTest++ UNKNOWN IMPORTED)
-      set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARY})
-      set(UnitTest++_LIBRARIES UnitTest++)
-    endif(UnitTest++_FOUND)
-
-    message(STATUS "### UnitTest++ include dirs: ${UnitTest++_INCLUDE_DIRS}")
-    message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
-
-  endif (NOT DEFINED UnitTest_DIR AND NOT DEFINED UnitTest++_DIR)
+    # can happen if unittest is installed using a package manager like apt
+    message(STATUS "find_package did not find CMake config for UnitTest++. Find manually")
+    # Find things by hand
+    
+    find_library(UnitTest++_LIBRARY
+      NAMES UnitTest++ unittest++
+      HINTS
+      ${UnitTest++_DIR}
+      ${UnitTest++_LIBRARY_DIR}
+      ${UnitTest_DIR}
+      ${UnitTest_LIBRARY_DIR}
+      )
+    if (NOT UnitTest++_LIBRARY)
+      message(FATAL_ERROR "Error: could not find unittest++ library")
+    endif(NOT UnitTest++_LIBRARY)
+    
+    find_path(UnitTest++_INCLUDE_DIRS "UnitTest++.h" 
+      HINTS 
+      ${UnitTest++_DIR}
+      ${UnitTest++_DIR}/src 
+      ${UnitTest++_DIR}/include/unittest++
+      ${UnitTest++_DIR}/include/UnitTest++
+      ${UnitTest_DIR}
+      ${UnitTest_DIR}/src 
+      ${UnitTest_DIR}/include/unittest++
+      ${UnitTest_DIR}/include/UnitTest++
+      )
+    if (NOT UnitTest++_INCLUDE_DIRS)
+      message(FATAL_ERROR "Error: could not find UnitTest++ includes")
+    endif(NOT UnitTest++_INCLUDE_DIRS)
+    
+    add_library(UnitTest++ UNKNOWN IMPORTED)
+    set_property(TARGET UnitTest++ PROPERTY IMPORTED_LOCATION ${UnitTest++_LIBRARY})
+    set(UnitTest++_LIBRARIES UnitTest++)
+  endif(UnitTest++_FOUND)
+  
+  message(STATUS "### UnitTest++ include dirs: ${UnitTest++_INCLUDE_DIRS}")
+  message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
+  
 endif()
 
 
