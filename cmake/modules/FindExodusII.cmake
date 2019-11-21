@@ -170,9 +170,16 @@ else(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS)
     set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_LOCATION ${ExodusII_LIBRARY})
 
 
-    find_package(netCDF REQUIRED)
+    if (NOT netCDF_FOUND)
+      message(STATUS "#### netCDF_DIR: ${netCDF_DIR}")
+      find_package(netCDF REQUIRED HINTS ${netCDF_DIR})
+    endif (NOT netCDF_FOUND)
+
     target_link_libraries(exodusii INTERFACE ${netCDF_LIBRARIES})
-   
+    message(STATUS "#### netCDF library: ${netCDF_LIBRARIES}")
+    message(STATUS "#### netCDF include dir: ${netCDF_INCLUDE_DIR}")
+    message(STATUS "#### netCDF library_dir: ${netCDF_LIB_DIR}")
+    
 endif(ExodusII_LIBRARIES AND ExodusII_INCLUDE_DIRS )    
 
 # Send useful message if everything is found
