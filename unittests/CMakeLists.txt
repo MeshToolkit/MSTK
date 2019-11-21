@@ -22,9 +22,6 @@ if (BUILD_TESTS)
       copy_directory ${PROJECT_SOURCE_DIR}/unittests ${PROJECT_BINARY_DIR}/unittests)
   endif ()
 
-  include_directories(${UnitTest_INCLUDE_DIRS})
-  include_directories(${PROJECT_BINARY_DIR}/include)
-
   file (GLOB FILES serial/*.cc)
   foreach (FILE ${FILES})
     get_filename_component(RELFILE ${FILE} NAME) 
@@ -49,14 +46,10 @@ if (BUILD_TESTS)
 
   add_executable(mstk_serial_unit_tests ${serialtestfiles})
 
-  target_link_libraries(mstk_serial_unit_tests 
-    ${MSTKLIB} 
-    ${METIS_LIBRARIES} 
-    ${ZOLTAN_LIBRARIES} 
-    ${ExodusII_LIBRARIES} 
-    ${NetCDF_LIBRARIES}
-    ${HDF5_LIBRARIES}
-    ${UNITTEST_LIBRARY})
+  target_include_directories(mstk_serial_unit_tests
+    PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
+  target_link_libraries(mstk_serial_unit_tests
+    ${MSTKLIB}  ${UnitTest++_LIBRARIES})
 
   add_test(NAME serial_unittests COMMAND mstk_serial_unit_tests)
 
@@ -78,14 +71,10 @@ if (BUILD_TESTS)
 
     add_executable(mstk_parallel_4proc_unit_tests ${par4testfiles})
 
+    target_include_directories(mstk_parallel_4proc_unit_tests
+      PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
     target_link_libraries(mstk_parallel_4proc_unit_tests 
-      ${MSTKLIB} 
-      ${METIS_LIBRARIES} 
-      ${ZOLTAN_LIBRARIES} 
-      ${ExodusII_LIBRARIES} 
-      ${NetCDF_LIBRARIES}
-      ${HDF5_LIBRARIES}
-      ${UNITTEST_LIBRARY})
+      ${MSTKLIB} ${UnitTest++_LIBRARIES})
 
     add_test(NAME parallel_unittests_4proc 
       COMMAND ${MPIEXEC} -n 4 mstk_parallel_4proc_unit_tests)
@@ -106,14 +95,10 @@ if (BUILD_TESTS)
 
     add_executable(mstk_parallel_8proc_unit_tests ${par8testfiles})
 
+    target_include_directories(mstk_parallel_8proc_unit_tests
+      PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
     target_link_libraries(mstk_parallel_8proc_unit_tests 
-      ${MSTKLIB} 
-      ${METIS_LIBRARIES} 
-      ${ZOLTAN_LIBRARIES} 
-      ${ExodusII_LIBRARIES} 
-      ${NetCDF_LIBRARIES}
-      ${HDF5_LIBRARIES}
-      ${UNITTEST_LIBRARY})
+      ${MSTKLIB} ${UnitTest++_LIBRARIES})
 
     add_test(NAME parallel_unittests_8proc 
       COMMAND ${MPIEXEC} -n 8 mstk_parallel_8proc_unit_tests)

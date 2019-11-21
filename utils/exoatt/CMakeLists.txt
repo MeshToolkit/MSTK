@@ -5,9 +5,10 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
 
 add_executable(exoatt src/exoatt.c)
+
+target_include_directories(exoatt PRIVATE ${PROJECT_BINARY_DIR}/include)
 target_link_libraries(exoatt 
                       ${MSTKLIB} 
 		      ${MSTK_TPL_LIBRARIES}
