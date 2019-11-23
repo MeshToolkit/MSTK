@@ -1,188 +1,121 @@
-# -*- mode: cmake -*-
-
+# Copyright: 2019- Triad National Security, LLC
 #
-# ZOLTAN Find Module for MSTK
-# Shamelessly adapted from Amanzi open source code https://software.lanl.gov/ascem/trac
+# Zoltan Find Module for MSTK
 #
-# Usage:
-#    Control the search through ZOLTAN_DIR or setting environment variable
-#    ZOLTAN_ROOT to the ZOLTAN installation prefix.
+# Usage: To search a particular path you can specify the path in
+# CMAKE_PREFIX_PATH, in the CMake variable Zoltan_DIR or environment
+# variable Zoltan_ROOT
 #
-#    This module does not search default paths! 
-#
-#    Following variables are set:
-#    ZOLTAN_FOUND            (BOOL)       Flag indicating if ZOLTAN was found
-#    ZOLTAN_INCLUDE_DIR      (PATH)       Path to the ZOLTAN include file
-#    ZOLTAN_INCLUDE_DIRS     (LIST)       List of all required include files
-#    ZOLTAN_LIBRARY_DIR      (PATH)       Path to the ZOLTAN library
-#    ZOLTAN_LIBRARY          (FILE)       ZOLTAN library
-#    ZOLTAN_LIBRARIES        (LIST)       List of all required ZOLTAN libraries
+# Following variables are set:
+# Zoltan_FOUND          (BOOL)   Flag indicating if Zoltan was found
+# Zoltan_INCLUDE_DIRS   (PATH)   Path to Zoltan include files
+# Zoltan_LIBRARY        (FILE)   Zoltan library (libzoltan.a, libzoltan.so)
+# Zoltan_LIBRARIES      (LIST)   List of Zoltan targets (MSTK::Zoltan)
 #
 # #############################################################################
 
-# Standard CMake modules see CMAKE_ROOT/Modules
+# First use pkg-config to parse an installed .pc file to find the
+# library although we cannot rely on it
+
+find_package(PkgConfig)
+pkg_check_modules(PC_Zoltan Quiet zoltan)
+
+
+# Search for include files
+
+find_path(Zoltan_INCLUDE_DIR
+  NAMES zoltan.h
+  HINTS ${PC_Zoltan_INCLUDE_DIRS} ${Zoltan_DIR} $ENV{Zoltan_ROOT}
+  PATH_SUFFIXES zoltan)
+
+if (NOT Zoltan_INCLUDE_DIR)
+  if (Zoltan_FIND_REQUIRED)
+    message(FATAL "Cannot locate zoltan.h")
+  else (Zoltan_FIND_REQUIRED)
+    if (NOT Zoltan_FIND_QUIET)
+      message(WARNING "Cannot locate zoltan.h")
+    endif ()
+  endif ()
+endif ()
+
+set(Zoltan_INCLUDE_DIRS "${Zoltan_INCLUDE_DIR}")
+
+
+# Search for libraries
+
+find_library(Zoltan_LIBRARY
+  NAMES zoltan
+  HINTS ${PC_Zoltan_LIBRARY_DIRS} ${Zoltan_DIR} $ENV{Zoltan_ROOT})
+
+if (NOT Zoltan_LIBRARY)
+  if (Zoltan_FIND_REQUIRED)
+    message(FATAL "Can not locate Zoltan library")
+  else (Zoltan_FIND_REQUIRED)
+    if (NOT Zoltan_FIND_QUIET)
+      message(WARNING "Cannot locate Zoltan library")
+    endif ()
+  endif ()
+endif ()
+
+set(Zoltan_VERSION PC_Zoltan_VERSION})  # No guarantee
+
+
+# Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
-
-# Amanzi CMake functions see <root>/tools/cmake for source
-include(PrintVariable)
-
-if ( ZOLTAN_LIBRARIES AND ZOLTAN_INCLUDE_DIRS )
-
-    # Do nothing. Variables are set. No need to search again
-
-else(ZOLTAN_LIBRARIES AND ZOLTAN_INCLUDE_DIRS)
-
-    # Cache variables
-    if(ZOLTAN_DIR)
-        set(ZOLTAN_DIR "${ZOLTAN_DIR}" CACHE PATH "Path to search for ZOLTAN include and library files")
-    endif()
-
-    if(ZOLTAN_INCLUDE_DIR)
-        set(ZOLTAN_INCLUDE_DIR "${ZOLTAN_INCLUDE_DIR}" CACHE PATH "Path to search for ZOLTAN include files")
-    endif()
-
-    if(ZOLTAN_LIBRARY_DIR)
-        set(ZOLTAN_LIBRARY_DIR "${ZOLTAN_LIBRARY_DIR}" CACHE PATH "Path to search for ZOLTAN library files")
-    endif()
-
-    
-    # Search for include files
-    # Search order preference:
-    #  (1) ZOLTAN_INCLUDE_DIR - check existence of path AND if the include files exist
-    #  (2) ZOLTAN_DIR/<include>
-    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
-    #
-    set(zoltan_inc_names "zoltan.h")
-    if (ZOLTAN_INCLUDE_DIR)
-
-        if (EXISTS "${ZOLTAN_INCLUDE_DIR}")
-
-            find_path(zoltan_test_include_path
-                      NAMES ${zoltan_inc_names}
-                      HINTS ${ZOLTAN_INCLUDE_DIR}
-                      NO_DEFAULT_PATH)
-            if(NOT zoltan_test_include_path)
-                message(SEND_ERROR "Can not locate ${zoltan_inc_names} in ${ZOLTAN_INCLUDE_DIR}")
-            endif()
-            set(ZOLTAN_INCLUDE_DIR "${zoltan_test_include_path}")
-
-        else()
-            message(SEND_ERROR "ZOLTAN_INCLUDE_DIR=${ZOLTAN_INCLUDE_DIR} does not exist")
-            set(ZOLTAN_INCLUDE_DIR "ZOLTAN_INCLUDE_DIR-NOTFOUND")
-        endif()
-
-   else() 
-
-        set(zoltan_inc_suffixes "include")
-        if(ZOLTAN_DIR)
-
-            if (EXISTS "${ZOLTAN_DIR}" )
-
-                find_path(ZOLTAN_INCLUDE_DIR
-                          NAMES ${zoltan_inc_names}
-                          HINTS ${ZOLTAN_DIR}
-                          PATH_SUFFIXES ${zoltan_inc_suffixes}
-                          NO_DEFAULT_PATH)
-
-            else()
-                 message(SEND_ERROR "ZOLTAN_DIR=${ZOLTAN_DIR} does not exist")
-                 set(ZOLTAN_INCLUDE_DIR "ZOLTAN_INCLUDE_DIR-NOTFOUND")
-            endif()    
+find_package_handle_standard_args(Zoltan
+  FOUND_VAR Zoltan_FOUND
+  REQUIRED_VARS Zoltan_LIBRARY Zoltan_INCLUDE_DIR)
 
 
-        else()
+# Create Zoltan target
 
-            find_path(ZOLTAN_INCLUDE_DIR
-                      NAMES ${zoltan_inc_names}
-                      PATH_SUFFIXES ${zoltan_inc_suffixes})
-
-        endif()
-
-    endif()
-
-    if ( NOT ZOLTAN_INCLUDE_DIR )
-        message(SEND_ERROR "Can not locate ZOLTAN include directory")
-    endif()
-
-    # Search for libraries 
-    # Search order preference:
-    #  (1) ZOLTAN_LIBRARY_DIR - check existence of path AND if the library file exists
-    #  (2) ZOLTAN_DIR/<lib,Lib>
-    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
-    #
-    set(zoltan_lib_names "zoltan")
-    if (ZOLTAN_LIBRARY_DIR)
-
-        if (EXISTS "${ZOLTAN_LIBRARY_DIR}")
-
-            find_library(ZOLTAN_LIBRARY
-                         NAMES ${zoltan_lib_names}
-                         HINTS ${ZOLTAN_LIBRARY_DIR}
-                         NO_DEFAULT_PATH)
-        else()
-            message(SEND_ERROR "ZOLTAN_LIBRARY_DIR=${ZOLTAN_LIBRARY_DIR} does not exist")
-            set(ZOLTAN_LIBRARY "ZOLTAN_LIBRARY-NOTFOUND")
-        endif()
-
-    else() 
-
-        list(APPEND zoltan_lib_suffixes "lib" "Lib")
-        if(ZOLTAN_DIR)
-
-            if (EXISTS "${ZOLTAN_DIR}" )
-
-                find_library(ZOLTAN_LIBRARY
-                             NAMES ${zoltan_lib_names}
-                             HINTS ${ZOLTAN_DIR}
-                             PATH_SUFFIXES ${zoltan_lib_suffixes}
-                             NO_DEFAULT_PATH)
-
-            else()
-                 message(SEND_ERROR "ZOLTAN_DIR=${ZOLTAN_DIR} does not exist")
-                 set(ZOLTANLIBRARY "ZOLTAN_LIBRARY-NOTFOUND")
-            endif()    
+if (Zoltan_FOUND AND NOT TARGET MSTK::Zoltan)
+  set(Zoltan_LIBRARIES MSTK::Zoltan)
+  add_library(${Zoltan_LIBRARIES} UNKNOWN IMPORTED)
+  set_target_properties(${Zoltan_LIBRARIES} PROPERTIES
+    IMPORTED_LOCATION "${Zoltan_LIBRARY}"
+    INTERFACE_COMPILE_OPTIONS "${PC_Zoltan_CFLAGS_OTHER}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Zoltan_INCLUDE_DIR}")
+endif ()
 
 
-        else()
+# Don't know how to automatically determine if Zoltan needs ParMETIS
+# or PTScotch So, these are controlled by the variables
+# Zoltan_NEEDS_ParMETIS and Zoltan_NEEDS_PTSCOTCH
 
-            find_library(ZOLTAN_LIBRARY
-                         NAMES ${zoltan_lib_names}
-                         PATH_SUFFIXES ${zoltan_lib_suffixes})
+if (Zoltan_NEEDS_ParMETIS)
+  # ParMETIS does not (and likely will not) have a CMake config file
+  # but one can dream
 
-        endif()
+  find_package(ParMETIS CONFIG)
+  if (NOT ParMETIS_FOUND)
+    find_package(ParMETIS REQUIRED MODULE)
+  endif ()
 
-    endif()
+  # Add MSTK::ParMETIS as a dependency of Zoltan
+  target_link_libraries(${Zoltan_LIBRARIES} INTERFACE ${ParMETIS_LIBRARIES})
+  target_include_directories(${Zoltan_LIBRARIES} INTERFACE ${ParMETIS_INCLUDE_DIRS})
+endif (Zoltan_NEEDS_ParMETIS)
 
-    if ( NOT ZOLTAN_LIBRARY )
-        message(SEND_ERROR "Can not locate ZOLTAN library")
-    endif()    
 
-   
-    # Define prerequisite packages
-    set(ZOLTAN_INCLUDE_DIRS ${ZOLTAN_INCLUDE_DIR})
-    set(ZOLTAN_LIBRARIES    ${ZOLTAN_LIBRARY})
+if (Zoltan_NEEDS_PTScotch)
+  # PTScotch does not have a CMake config file but one can dream
 
-   
-endif(ZOLTAN_LIBRARIES AND ZOLTAN_INCLUDE_DIRS )    
+  find_package(PTScotch CONFIG)
+  if (NOT PTScotch_FOUND)
+    find_package(PTScotch REQUIRED MODULE)
+  endif ()
 
-# Send useful message if everything is found
-find_package_handle_standard_args(ZOLTAN DEFAULT_MSG
-                                  ZOLTAN_LIBRARIES
-                                  ZOLTAN_INCLUDE_DIRS)
+  # Add MSTK::PTScotch as a dependency of Zoltan
+  target_link_libraries(${Zoltan_LIBRARIES} INTERFACE ${PTScotch_LIBRARIES})
+  target_include_directories(${Zoltan_LIBRARIES} INTERFACE ${PTScotch_INCLUDE_DIRS})
+endif (Zoltan_NEEDS_PTScotch)
 
-# find_package_handle_standard_args should set ZOLTAN_FOUND but it does not!
-if ( ZOLTAN_LIBRARIES AND ZOLTAN_INCLUDE_DIRS)
-    set(ZOLTAN_FOUND TRUE)
-else()
-    set(ZOLTAN_FOUND FALSE)
-endif()
 
-# Define the version
-
+# Hide these variables from the cache
 mark_as_advanced(
-  ZOLTAN_INCLUDE_DIR
-  ZOLTAN_INCLUDE_DIRS
-  ZOLTAN_LIBRARY
-  ZOLTAN_LIBRARIES
-  ZOLTAN_LIBRARY_DIR
-)
+  Zoltan_INCLUDE_DIR
+  Zoltan_INCLUDE_DIRS
+  Zoltan_LIBRARY
+  Zoltan_LIBRARIES
+  )

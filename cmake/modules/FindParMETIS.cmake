@@ -1,320 +1,106 @@
-# -*- mode: cmake -*-
-
+# Copyright: 2019- Triad National Security, LLC
 #
 # ParMETIS Find Module for MSTK
-# Adapted from FindMETIS module that was shamelessly stolen from Amanzi
-# open source code https://software.lanl.gov/ascem/trac
 #
-# ParMETIS needs METIS; This module assumes that the two are to be found in
-# the same place
+# ParMETIS needs METIS; This module will try to find METIS as well and add it
+# as a dependency
 #
-# Usage:
-#    Control the search through ParMETIS_DIR or setting environment variable
-#    ParMETIS_ROOT to the ParMETIS installation prefix.
+# Usage: To search a particular path you can specify the path in
+# CMAKE_PREFIX_PATH, in the CMake variable ParMETIS_DIR or environment
+# variable ParMETIS_ROOT
 #
-#    This module does not search default paths! 
-#
-#    Following variables are set:
-#    ParMETIS_FOUND            (BOOL)    Flag indicating if ParMETIS was found
-#    ParMETIS_INCLUDE_DIR      (PATH)    Path to the ParMETIS include file
-#    ParMETIS_INCLUDE_DIRS     (LIST)    List of all required include files
-#    ParMETIS_LIBRARY_DIR      (PATH)    Path to the ParMETIS library
-#    ParMETIS_LIBRARY          (FILE)    ParMETIS library
-#    ParMETIS_LIBRARIES        (LIST)    List of all required ParMETIS libraries
+# Following variables are set:
+# ParMETIS_FOUND          (BOOL)   Flag indicating if ParMETIS was found
+# ParMETIS_INCLUDE_DIRS   (PATH)   Path to ParMETIS include files
+# ParMETIS_LIBRARY        (FILE)   ParMETIS library (libzoltan.a, libzoltan.so)
+# ParMETIS_LIBRARIES      (LIST)   List of ParMETIS targets (MSTK::ParMETIS)
 #
 # #############################################################################
 
-# Standard CMake modules see CMAKE_ROOT/Modules
+# First use pkg-config to parse an installed .pc file to find the
+# library although we cannot rely on it
+
+find_package(PkgConfig)
+pkg_check_modules(PC_ParMETIS Quiet parmetis)
+
+
+# Search for include files
+
+find_path(ParMETIS_INCLUDE_DIR
+  NAMES parmetis.h
+  HINTS ${PC_ParMETIS_INCLUDE_DIRS}
+  PATH_SUFFIXES parmetis)
+
+if (NOT ParMETIS_INCLUDE_DIR)
+  if (ParMETIS_FIND_REQUIRED)
+    message(FATAL "Cannot locate parmetis.h")
+  else (ParMETIS_FIND_REQUIRED)
+    if (NOT ParMETIS_FIND_QUIET)
+      message(WARNING "Cannot locate parmetis.h")
+    endif ()
+  endif ()
+endif ()
+
+set(ParMETIS_INCLUDE_DIRS "${ParMETIS_INCLUDE_DIR}")
+
+
+# Search for libraries
+
+find_library(ParMETIS_LIBRARY
+  NAMES parmetis
+  HINTS ${PC_ParMETIS_LIBRARY_DIRS})
+
+if (NOT ParMETIS_LIBRARY)
+  if (ParMETIS_FIND_REQUIRED)
+    message(FATAL "Can not locate ParMETIS library")
+  else (ParMETIS_FIND_REQUIRED)
+    if (NOT ParMETIS_FIND_QUIET)
+      message(WARNING "Cannot locate ParMETIS library")
+    endif ()
+  endif ()
+endif ()
+
+set(ParMETIS_VERSION ${PC_ParMETIS_VERSION})  # No guarantee
+
+
+# Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(ParMETIS
+  FOUND_VAR ParMETIS_FOUND
+  REQUIRED_VARS ParMETIS_LIBRARY ParMETIS_INCLUDE_DIR)
 
-# Amanzi CMake functions see <root>/tools/cmake for source
-include(PrintVariable)
 
-if (ParMETIS_LIBRARIES AND ParMETIS_INCLUDE_DIRS)
+# Create ParMETIS target
 
-    # Do nothing. Variables are set. No need to search again
+if (ParMETIS_FOUND AND NOT TARGET MSTK::ParMETIS)
+  set(ParMETIS_LIBRARIES MSTK::ParMETIS)
+  add_library(${ParMETIS_LIBRARIES} UNKNOWN IMPORTED)
+  set_target_properties(${ParMETIS_LIBRARIES} PROPERTIES
+    IMPORTED_LOCATION "${ParMETIS_LIBRARY}"
+    INTERFACE_COMPILE_OPTIONS "${PC_ParMETIS_CFLAGS_OTHER}"
+    INTERFACE_INCLUDE_DIRECTORIES "${ParMETIS_INCLUDE_DIR}")
+endif ()
 
-else(ParMETIS_LIBRARIES AND ParMETIS_INCLUDE_DIRS)
 
-    # Cache variables
-    if(ParMETIS_DIR)
-        set(ParMETIS_DIR "${ParMETIS_DIR}" CACHE PATH "Path to search for ParMETIS include and library files")
-        set(METIS_DIR "${ParMETIS_DIR}" CACHE PATH "Path to search for METIS include and library files")
-    endif()
+# ParMETIS depends on METIS. Attempt to find it
 
-    if(ParMETIS_INCLUDE_DIR)
-        set(ParMETIS_INCLUDE_DIR "${ParMETIS_INCLUDE_DIR}" CACHE PATH "Path to search for ParMETIS include files")
-        set(METIS_INCLUDE_DIR "${ParMETIS_INCLUDE_DIR}" CACHE PATH "Path to search for ParMETIS include files")
-    endif()
+# METIS does not (and likely will not) have a CMake config file but
+# one can dream
 
-    if(ParMETIS_LIBRARY_DIR)
-        set(ParMETIS_LIBRARY_DIR "${ParMETIS_LIBRARY_DIR}" CACHE PATH "Path to search for ParMETIS library files")
-        set(METIS_LIBRARY_DIR "${ParMETIS_LIBRARY_DIR}" CACHE PATH "Path to search for ParMETIS library files")
-    endif()
+find_package(METIS CONFIG)
+if (NOT METIS_FOUND)
+  find_package(METIS REQUIRED MODULE)
+endif ()
 
-    
-    # Search for ParMETIS include files
-    # Search order preference:
-    #  (1) ParMETIS_INCLUDE_DIR - check existence of path AND if the include files exist
-    #  (2) ParMETIS_DIR/<include>
-    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
-    #
-    set(parmetis_inc_names "parmetis.h")
-    if (ParMETIS_INCLUDE_DIR)
+# Add METIS::METIS as a dependency of ParMETIS
+target_link_libraries(${ParMETIS_LIBRARIES} INTERFACE ${METIS_LIBRARIES})
+target_include_directories(${ParMETIS_LIBRARIES} INTERFACE ${METIS_INCLUDE_DIRS})
 
-        if (EXISTS "${ParMETIS_INCLUDE_DIR}")
 
-            find_path(parmetis_test_include_path
-                      NAMES ${parmetis_inc_names}
-                      HINTS ${ParMETIS_INCLUDE_DIR}
-                      NO_DEFAULT_PATH)
-            if(NOT parmetis_test_include_path)
-                message(SEND_ERROR "Can not locate ${parmetis_inc_names} in ${ParMETIS_INCLUDE_DIR}")
-            endif()
-            set(ParMETIS_INCLUDE_DIR "${parmetis_test_include_path}")
-
-        else()
-            message(SEND_ERROR "ParMETIS_INCLUDE_DIR=${ParMETIS_INCLUDE_DIR} does not exist")
-            set(ParMETIS_INCLUDE_DIR "ParMETIS_INCLUDE_DIR-NOTFOUND")
-        endif()
-
-   else() 
-
-# ParMetis sometimes puts the include files in a subdir called Lib
-
-        set(parmetis_inc_suffixes "include" "Lib")
-        if(ParMETIS_DIR)
-
-            if (EXISTS "${ParMETIS_DIR}" )
-
-                find_path(ParMETIS_INCLUDE_DIR
-                          NAMES ${parmetis_inc_names}
-                          HINTS ${ParMETIS_DIR}
-                          PATH_SUFFIXES ${parmetis_inc_suffixes}
-                          NO_DEFAULT_PATH)
-
-            else()
-                 message(SEND_ERROR "ParMETIS_DIR=${ParMETIS_DIR} does not exist")
-                 set(ParMETIS_INCLUDE_DIR "ParMETIS_INCLUDE_DIR-NOTFOUND")
-            endif()    
-
-
-        else()
-
-            find_path(ParMETIS_INCLUDE_DIR
-                      NAMES ${parmetis_inc_names}
-                      PATH_SUFFIXES ${parmetis_inc_suffixes})
-
-        endif()
-
-    endif()
-
-    if ( NOT ParMETIS_INCLUDE_DIR )
-        message(SEND_ERROR "Can not locate ParMETIS include directory")
-    endif()
-
-
-    # Search for METIS include files
-    # Search order preference:
-    #  (1) METIS_INCLUDE_DIR - check existence of path AND if the include files exist
-    #  (2) METIS_DIR/<include>
-    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
-    #
-
-    set(metis_inc_names "metis.h")
-    if (METIS_INCLUDE_DIR)
-
-        if (EXISTS "${METIS_INCLUDE_DIR}")
-
-            find_path(metis_test_include_path
-                      NAMES ${metis_inc_names}
-                      HINTS ${METIS_INCLUDE_DIR}
-                      NO_DEFAULT_PATH)
-            if(NOT metis_test_include_path)
-                message(SEND_ERROR "Can not locate ${metis_inc_names} in ${METIS_INCLUDE_DIR}")
-            endif()
-            set(METIS_INCLUDE_DIR "${metis_test_include_path}")
-
-        else()
-            message(SEND_ERROR "METIS_INCLUDE_DIR=${METIS_INCLUDE_DIR} does not exist")
-            set(METIS_INCLUDE_DIR "METIS_INCLUDE_DIR-NOTFOUND")
-        endif()
-
-   else() 
-
-# Metis sometimes puts the include files in a subdir called Lib
-
-        set(metis_inc_suffixes "include" "Lib")
-        if(METIS_DIR)
-
-            if (EXISTS "${METIS_DIR}" )
-
-                find_path(METIS_INCLUDE_DIR
-                          NAMES ${metis_inc_names}
-                          HINTS ${METIS_DIR}
-                          PATH_SUFFIXES ${metis_inc_suffixes}
-                          NO_DEFAULT_PATH)
-
-            else()
-                 message(SEND_ERROR "METIS_DIR=${METIS_DIR} does not exist")
-                 set(METIS_INCLUDE_DIR "METIS_INCLUDE_DIR-NOTFOUND")
-            endif()    
-
-
-        else()
-
-            find_path(METIS_INCLUDE_DIR
-                      NAMES ${metis_inc_names}
-                      PATH_SUFFIXES ${metis_inc_suffixes})
-
-        endif()
-
-    endif()
-
-    if ( NOT METIS_INCLUDE_DIR )
-        message(SEND_ERROR "Can not locate METIS include directory")
-    endif()
-
-    # Search for ParMETIS libraries 
-    # Search order preference:
-    #  (1) ParMETIS_LIBRARY_DIR - check existence of path AND if the library file exists
-    #  (2) ParMETIS_DIR/<lib,Lib>
-    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
-    #
-    set(parmetis_lib_names "parmetis")
-    if (ParMETIS_LIBRARY_DIR)
-
-        if (EXISTS "${ParMETIS_LIBRARY_DIR}")
-
-            find_library(ParMETIS_LIBRARY
-                         NAMES ${parmetis_lib_names}
-                         HINTS ${ParMETIS_LIBRARY_DIR}
-                         NO_DEFAULT_PATH)
-        else()
-            message(SEND_ERROR "ParMETIS_LIBRARY_DIR=${ParMETIS_LIBRARY_DIR} does not exist")
-            set(ParMETIS_LIBRARY "ParMETIS_LIBRARY-NOTFOUND")
-        endif()
-
-    else() 
-
-        list(APPEND parmetis_lib_suffixes "lib" "Lib")
-        if(ParMETIS_DIR)
-
-            if (EXISTS "${ParMETIS_DIR}" )
-
-                find_library(ParMETIS_LIBRARY
-                             NAMES ${parmetis_lib_names}
-                             HINTS ${ParMETIS_DIR}
-                             PATH_SUFFIXES ${metis_lib_suffixes}
-                             NO_DEFAULT_PATH)
-
-            else()
-                 message(SEND_ERROR "ParMETIS_DIR=${ParMETIS_DIR} does not exist")
-                 set(ParMETISLIBRARY "ParMETIS_LIBRARY-NOTFOUND")
-            endif()    
-
-
-        else()
-
-            find_library(ParMETIS_LIBRARY
-                         NAMES ${parmetis_lib_names}
-                         PATH_SUFFIXES ${parmetis_lib_suffixes})
-
-        endif()
-
-    endif()
-
-    if ( NOT ParMETIS_LIBRARY )
-        message(SEND_ERROR "Can not locate ParMETIS library")
-    endif()    
-
-   
-    # Define prerequisite packages
-    set(ParMETIS_INCLUDE_DIRS ${ParMETIS_INCLUDE_DIR})
-    set(ParMETIS_LIBRARIES    ${ParMETIS_LIBRARY})
-
-
-    # Search for METIS libraries 
-    # Search order preference:
-    #  (1) METIS_LIBRARY_DIR - check existence of path AND if the library file exists
-    #  (2) METIS_DIR/<lib,Lib>
-    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
-    #
-    set(metis_lib_names "metis")
-    if (METIS_LIBRARY_DIR)
-
-        if (EXISTS "${METIS_LIBRARY_DIR}")
-
-            find_library(METIS_LIBRARY
-                         NAMES ${metis_lib_names}
-                         HINTS ${METIS_LIBRARY_DIR}
-                         NO_DEFAULT_PATH)
-        else()
-            message(SEND_ERROR "METIS_LIBRARY_DIR=${METIS_LIBRARY_DIR} does not exist")
-            set(ParMETIS_LIBRARY "METIS_LIBRARY-NOTFOUND")
-        endif()
-
-    else() 
-
-        list(APPEND parmetis_lib_suffixes "lib" "Lib")
-        if(ParMETIS_DIR)
-
-            if (EXISTS "${METIS_DIR}" )
-
-                find_library(METIS_LIBRARY
-                             NAMES ${metis_lib_names}
-                             HINTS ${METIS_DIR}
-                             PATH_SUFFIXES ${metis_lib_suffixes}
-                             NO_DEFAULT_PATH)
-
-            else()
-                 message(SEND_ERROR "METIS_DIR=${METIS_DIR} does not exist")
-                 set(ParMETISLIBRARY "METIS_LIBRARY-NOTFOUND")
-            endif()    
-
-
-        else()
-
-            find_library(METIS_LIBRARY
-                         NAMES ${metis_lib_names}
-                         PATH_SUFFIXES ${metis_lib_suffixes})
-
-        endif()
-
-    endif()
-
-    if ( NOT METIS_LIBRARY )
-        message(SEND_ERROR "Can not locate METIS library")
-    endif()    
-
-   
-    # Define prerequisite packages
-    set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
-    set(METIS_LIBRARIES    ${METIS_LIBRARY})
-
-    # Linking with ParMETIS requires linking with METIS
-    list(APPEND ParMETIS_LIBRARIES ${METIS_LIBRARIES})
-   
-endif(ParMETIS_LIBRARIES AND ParMETIS_INCLUDE_DIRS)
-
-# Send useful message if everything is found
-find_package_handle_standard_args(ParMETIS DEFAULT_MSG
-                                  ParMETIS_LIBRARIES
-                                  ParMETIS_INCLUDE_DIRS)
-
-# find_package_handle_standard_args should set ParMETIS_FOUND but it does not!
-if ( ParMETIS_LIBRARIES AND ParMETIS_INCLUDE_DIRS)
-    set(ParMETIS_FOUND TRUE)
-else()
-    set(ParMETIS_FOUND FALSE)
-endif()
-
-# Define the version
-
+# Hide these variables from the cache
 mark_as_advanced(
   ParMETIS_INCLUDE_DIR
   ParMETIS_INCLUDE_DIRS
   ParMETIS_LIBRARY
   ParMETIS_LIBRARIES
-  ParMETIS_LIBRARY_DIR
-)
+  )
