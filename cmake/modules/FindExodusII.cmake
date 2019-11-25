@@ -13,7 +13,7 @@
 # ExodusII_FOUND          (BOOL)   Flag indicating if ExodusII was found
 # ExodusII_INCLUDE_DIRS   (PATH)   Path to ExodusII include files
 # ExodusII_LIBRARY        (FILE)   ExodusII library (libzoltan.a, libzoltan.so)
-# ExodusII_LIBRARIES      (LIST)   List of ExodusII targets (MSTK::ExodusII)
+# ExodusII_LIBRARIES      (LIST)   List of ExodusII targets (ExodusII::ExodusII)
 #
 #
 # Additional variables
@@ -21,30 +21,26 @@
 #
 # #############################################################################
 
-set(exodus_inc_names "exodusII.h")
-set(exodus_inc_suffixes "include" "cbind/include")
-set(exodus_lib_names "exodus" "exoIIv2c")
-list(APPEND exodus_lib_suffixes "lib" "Lib")
-
 # First use pkg-config to parse an installed .pc file to find the
 # library although we cannot rely on it
 
 find_package(PkgConfig)
-pkg_check_modules(PC_ExodusII Quiet parmetis)
+pkg_check_modules(PC_ExodusII QUIET exodusII)
 
 
 # Search for include files
-
 find_path(ExodusII_INCLUDE_DIR
   NAMES exodusII.h
   HINTS ${PC_ExodusII_INCLUDE_DIRS}
+  PATHS ${ExodusII_DIR}
+  PATH_SUFFIXES include
   )
 
 if (NOT ExodusII_INCLUDE_DIR)
   if (ExodusII_FIND_REQUIRED)
     message(FATAL "Cannot locate exodusII.h")
-  else (ExodusII_FIND_REQUIRED)
-    if (NOT ExodusII_FIND_QUIET)
+  else ()
+    if (NOT ExodusII_FIND_QUIETLY)
       message(WARNING "Cannot locate exodusII.h")
     endif ()
   endif ()
@@ -56,14 +52,16 @@ set(ExodusII_INCLUDE_DIRS "${ExodusII_INCLUDE_DIR}")
 # Search for libraries
 
 find_library(ExodusII_LIBRARY
-  NAMES "exodus" "exoIIv2c" 
-  HINTS ${PC_ExodusII_LIBRARY_DIRS})
+  NAMES exodus
+  HINTS ${PC_ExodusII_LIBRARY_DIRS}
+  PATHS ${ExodusII_DIR}
+  PATH_SUFFIXES lib)
 
 if (NOT ExodusII_LIBRARY)
   if (ExodusII_FIND_REQUIRED)
     message(FATAL "Can not locate ExodusII library")
   else (ExodusII_FIND_REQUIRED)
-    if (NOT ExodusII_FIND_QUIET)
+    if (NOT ExodusII_FIND_QUIETLY)
       message(WARNING "Cannot locate ExodusII library")
     endif ()
   endif ()
@@ -84,34 +82,34 @@ endif ()
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ExodusII
-  FOUND_VAR ExodusII_FOUND
-  REQUIRED_VARS ExodusII_LIBRARY ExodusII_INCLUDE_DIR)
+  DEFAULT_MSG
+  ExodusII_LIBRARY ExodusII_INCLUDE_DIR)
 
 
 # Create ExodusII target
 
-if (ExodusII_FOUND AND NOT TARGET MSTK::ExodusII)
-  set(ExodusII_LIBRARIES MSTK::ExodusII)
+if (ExodusII_FOUND AND NOT TARGET ExodusII::ExodusII)
+  set(ExodusII_LIBRARIES ExodusII::ExodusII)
   add_library(${ExodusII_LIBRARIES} UNKNOWN IMPORTED)
   set_target_properties(${ExodusII_LIBRARIES} PROPERTIES
     IMPORTED_LOCATION "${ExodusII_LIBRARY}"
     INTERFACE_COMPILE_OPTIONS "${PC_ExodusII_CFLAGS_OTHER}"
     INTERFACE_INCLUDE_DIRECTORIES "${ExodusII_INCLUDE_DIR}")
-endif ()
 
-
-# ExodusII depends on netCDF. Attempt to find it
-
-find_package(netCDF CONFIG)
-if (NOT netCDF_FOUND)
-  find_package(netCDF REQUIRED MODULE)
-endif ()
-
-# Add MSTK::netCDF as a dependency of ExodusII
-target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
-target_include_directories(${ExodusII_LIBRARIES} INTERFACE ${netCDF_INCLUDE_DIRS})
-
-
+  # ExodusII depends on netCDF. Attempt to find it
+  
+  # Try to discover through cmake config file (usually named
+  # netcdf-config.cmake netCDFConfig.cmake)
+  find_package(netCDF NAMES netcdf netCDF CONFIG HINTS ${netCDF_DIR})
+  if (NOT netCDF_FOUND)
+    # Fallback to MSTK module named FindNetCDF.cmake
+    find_package(netCDF QUIET REQUIRED MODULE)
+  endif ()
+  
+  # Add netCDF as a dependency of ExodusII
+  target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
+endif()
+  
 # Hide these variables from the cache
 mark_as_advanced(
   ExodusII_INCLUDE_DIR

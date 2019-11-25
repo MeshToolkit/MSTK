@@ -10,7 +10,7 @@
 # METIS_FOUND          (BOOL)   Flag indicating if METIS was found
 # METIS_INCLUDE_DIRS   (PATH)   Path to METIS include files
 # METIS_LIBRARY        (FILE)   METIS library (libzoltan.a, libzoltan.so)
-# METIS_LIBRARIES      (LIST)   List of METIS targets (MSTK::METIS)
+# METIS_LIBRARIES      (LIST)   List of METIS targets (METIS::METIS)
 #
 # #############################################################################
 
@@ -18,7 +18,7 @@
 # library although we cannot rely on it
 
 find_package(PkgConfig)
-pkg_check_modules(PC_METIS Quiet zoltan)
+pkg_check_modules(PC_METIS QUIET metis)
 
 
 # Search for include files
@@ -26,14 +26,15 @@ pkg_check_modules(PC_METIS Quiet zoltan)
 find_path(METIS_INCLUDE_DIR
   NAMES metis.h
   HINTS ${PC_METIS_INCLUDE_DIRS}
-  PATH_SUFFIXES zoltan)
+  PATHS ${METIS_DIR}
+  PATH_SUFFIXES include)
 
 if (NOT METIS_INCLUDE_DIR)
   if (METIS_FIND_REQUIRED)
-    message(FATAL "Cannot locate zoltan.h")
+    message(FATAL "Cannot locate metis.h")
   else (METIS_FIND_REQUIRED)
-    if (NOT METIS_FIND_QUIET)
-      message(WARNING "Cannot locate zoltan.h")
+    if (NOT METIS_FIND_QUIETLY)
+      message(WARNING "Cannot locate metis.h")
     endif ()
   endif ()
 endif ()
@@ -45,13 +46,15 @@ set(METIS_INCLUDE_DIRS "${METIS_INCLUDE_DIR}")
 
 find_library(METIS_LIBRARY
   NAMES metis
-  HINTS ${PC_METIS_LIBRARY_DIRS})
+  HINTS ${PC_METIS_LIBRARY_DIRS}
+  PATHS ${METIS_DIR}
+  PATH_SUFFIXES lib)
 
 if (NOT METIS_LIBRARY)
   if (METIS_FIND_REQUIRED)
     message(FATAL "Can not locate METIS library")
   else (METIS_FIND_REQUIRED)
-    if (NOT METIS_FIND_QUIET)
+    if (NOT METIS_FIND_QUIETLY)
       message(WARNING "Cannot locate METIS library")
     endif ()
   endif ()
@@ -63,14 +66,14 @@ set(METIS_VERSION PC_METIS_VERSION})  # No guarantee
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(METIS
-  FOUND_VAR METIS_FOUND
-  REQUIRED_VARS METIS_LIBRARY METIS_INCLUDE_DIR)
+  DEFAULT_MSG
+  METIS_LIBRARY METIS_INCLUDE_DIR)
 
 
 # Create METIS target
 
-if (METIS_FOUND AND NOT TARGET MSTK::METIS)
-  set(METIS_LIBRARIES MSTK::METIS)
+if (METIS_FOUND AND NOT TARGET METIS::METIS)
+  set(METIS_LIBRARIES METIS::METIS)
   add_library(${METIS_LIBRARIES} UNKNOWN IMPORTED)
   set_target_properties(${METIS_LIBRARIES} PROPERTIES
     IMPORTED_LOCATION "${METIS_LIBRARY}"
