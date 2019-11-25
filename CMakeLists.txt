@@ -70,7 +70,11 @@ endif ()
 # include files and source files - have this upfront so that an MSTK.h from
 # any of the TPL installations doesn't get picked up first
 
-target_include_directories(${MSTKLIB} PUBLIC ${PROJECT_BINARY_DIR}/include)
+target_include_directories(${MSTKLIB} PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
 
 
 # If MSTK should enable and use markers to enable fast constant time searches
@@ -171,12 +175,7 @@ if (ENABLE_PARALLEL)
     target_include_directories(${MSTKLIB} PUBLIC ${METIS_INCLUDE_DIRS})
     target_compile_definitions(${MSTKLIB} PUBLIC _MSTK_HAVE_METIS)
 
-    if (METIS_MAJOR_VER)
-      target_compile_definitions(${MSTKLIB} PUBLIC METIS_${METIS_MAJOR_VER})
-    else ()
-      target_compile_definitions(${MSTKLIB} PUBLIC METIS_5)
-    endif ()
-
+    target_compile_definitions(${MSTKLIB} PUBLIC METIS_5)
     target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
 
     message(STATUS "Found Metis library: ${METIS_LIBRARY}")
@@ -292,30 +291,49 @@ add_subdirectory(example)
 
 
 ##########################################################
-# Configuration of installation options
+# Export targets
 ##########################################################
-
 
 # where to install library
 install(TARGETS ${MSTKLIB}
-  EXPORT mstk
-  ARCHIVE DESTINATION ${INSTALL_DIR}/lib
-  LIBRARY DESTINATION ${INSTALL_DIR}/lib
+  EXPORT MSTKTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+  INCLUDES DESTINATION include
   CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-)
+  )
+install(EXPORT MSTKTargets
+  FILE MSTKTargets.cmake
+  NAMESPACE mstk::
+  DESTINATION lib/cmake/mstk
+  )
 
 
 #######################################################
 # Write a configuration file from template replacing only variables
 # enclosed by the @ sign. This will let other programs build on MSTK
-# discover how MSTK was built and which TPLs it used. Also put in some
-# information into MSTK.h header file
+# discover how MSTK was built and which TPLs it used. This will also
+# include the MSTK targets which can be imported into another project
 #######################################################
 
 configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in 
-               ${PROJECT_BINARY_DIR}/MSTKConfig.cmake @ONLY)
+  ${PROJECT_BINARY_DIR}/MSTKConfig.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
-        DESTINATION ${INSTALL_DIR}/share/cmake/)
+  DESTINATION lib/cmake/mstk)
+
+#######################################################
+# Also write out a version file      
+#######################################################
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("MSTKConfigVersion.cmake"
+  VERSION "${MSTK_MAJOR_VERSION}.${MSTK_MINOR_VERSION}.${MSTK_PATCH_VERSION}"
+  COMPATIBILITY SameMajorVersion
+  )
+      
+#######################################################
+# Also put in some information into MSTK.h header file
+#######################################################
 
 file(GLOB ALL_HEADERS ${PROJECT_SOURCE_DIR}/include/*.h)
 foreach (HEADER_FILE ${ALL_HEADERS})

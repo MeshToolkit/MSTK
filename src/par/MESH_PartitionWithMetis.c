@@ -30,17 +30,11 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   List_ptr fedges, efaces, rfaces, fregions;
   int  i, ncells, ipos;
   int  nv, ne, nf, nr, nfe, nef, nfr, nrf, idx, idx2;
-#ifdef METIS_5
   idx_t ngraphvtx, numflag, nedgecut, numparts, ncons;
   idx_t wtflag, metisopts[METIS_NOPTIONS];
   idx_t *vsize, *idxpart;
   idx_t  *xadj, *adjncy, *vwgt, *adjwgt;
   real_t *tpwgts, *ubvec;
-#else
-  idxtype ngraphvtx, numflag, nedgecut, numparts;
-  idxtype  wtflag, metisopts[5] = {0,0,0,0,0};
-  idxtype  *xadj, *adjncy, *vwgt, *adjwgt, *idxpart;
-#endif
   
 
   /* First build a nodal graph of the mesh in the format required by
@@ -60,13 +54,8 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
       exit(-1);
     }
 
-#ifdef METIS_5
     xadj = (idx_t *) malloc((nf+1)*sizeof(idx_t));
     adjncy = (idx_t *) malloc(2*ne*sizeof(idx_t));
-#else    
-    xadj = (idxtype *) malloc((nf+1)*sizeof(idxtype));
-    adjncy = (idxtype *) malloc(2*ne*sizeof(idxtype));
-#endif
     ncells = nf;
 
     /* Surface mesh */
@@ -111,13 +100,8 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   }
   else {
 
-#ifdef METIS_5
     xadj = (idx_t *) malloc((nr+1)*sizeof(idx_t));
     adjncy = (idx_t *) malloc(2*nf*sizeof(idx_t));
-#else
-    xadj = (idxtype *) malloc((nr+1)*sizeof(idxtype));
-    adjncy = (idxtype *) malloc(2*nf*sizeof(idxtype));
-#endif
     ncells = nr;
 
     /* Volume mesh */
@@ -166,7 +150,6 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
   ngraphvtx = ncells; /* we want the variable to be of type idxtype or idx_t */
   numparts = nparts;  /* we want the variable to be of type idxtype or idx_t */
 
-#ifdef METIS_5
   idxpart = (idx_t *) malloc(ncells*sizeof(idx_t));
 
   ncons = 1;  /* Number of constraints */
@@ -185,17 +168,6 @@ int MESH_PartitionWithMetis(Mesh_ptr mesh, int nparts, int **part) {
     METIS_PartGraphKway(&ngraphvtx,&ncons,xadj,adjncy,vwgt,vsize,adjwgt,
                         &numparts,tpwgts,ubvec,metisopts,&nedgecut,idxpart);
 
-#else
-
-  idxpart = (idxtype *) malloc(ncells*sizeof(idxtype));
-
-  if (nparts <= 8)
-    METIS_PartGraphRecursive(&ngraphvtx,xadj,adjncy,vwgt,adjwgt,&wtflag,
-			     &numflag,&numparts,metisopts,&nedgecut,idxpart);
-  else
-    METIS_PartGraphKway(&ngraphvtx,xadj,adjncy,vwgt,adjwgt,&wtflag,&numflag,
-			&numparts,metisopts,&nedgecut,idxpart);
-#endif
 
   free(xadj);
   free(adjncy);

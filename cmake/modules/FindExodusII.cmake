@@ -56,7 +56,7 @@ find_library(ExodusII_LIBRARY
   NAMES exodus exoIIv2c
   HINTS ${PC_ExodusII_LIBRARY_DIRS}
   PATHS ${ExodusII_DIR}
-  PATH_SUFFIXES lib)
+  PATH_SUFFIXES lib lib64)
 
 if (NOT ExodusII_LIBRARY)
   if (ExodusII_FIND_REQUIRED)

@@ -48,7 +48,7 @@ find_library(Zoltan_LIBRARY
   NAMES zoltan
   HINTS ${PC_Zoltan_LIBRARY_DIRS}
   PATHS ${Zoltan_DIR}
-  PATH_SUFFIXES lib)
+  PATH_SUFFIXES lib lib64)
 
 if (NOT Zoltan_LIBRARY)
   if (Zoltan_FIND_REQUIRED)

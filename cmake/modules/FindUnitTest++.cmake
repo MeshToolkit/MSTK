@@ -46,7 +46,7 @@ set(UnitTest++_INCLUDE_DIRS "${UnitTest++_INCLUDE_DIR}")
 find_library(UnitTest++_LIBRARY
   NAMES unittest++ UnitTest++
   HINTS ${PC_UnitTest++_LIBRARY_DIRS} ${UnitTest++_DIR}
-  PATH_SUFFIXES lib)
+  PATH_SUFFIXES lib lib64)
 
 if (NOT UnitTest++_LIBRARY)
   if (UnitTest++_FIND_REQUIRED)

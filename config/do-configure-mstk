@@ -10,15 +10,22 @@
 #
 # Top-level directory in which to install library and include files e.g.
 #
-# -D INSTALL_DIR:FILEPATH=/usr/local/packages
+# -D CMAKE_INSTALL_PREFIX=/path/to/install/into
 #
-# Use Metis or Zoltan as a partitioner (specify at least one)
-# If Metis is enabled, it will assume that the metis version is 5 or greater
-# If you want to link to an older version of Metis, you must also specify
-# -D METIS_MAJOR_VERSION=4 or whatever the major version is of the Metis
-# library you are linking to. The path to METIS can be specified in
-# CMAKE_PREFIX_PATH or using METIS_DIR. The path to Zoltan can be specified
-# in CMAKE_PREFIX_PATH or using Zoltan_DIR
+# The easiest way to specify paths to TPLs (Third-party libraries) used by
+# MSTK is to use
+#
+# -D CMAKE_PREFIX_PATH="path/to/dir1;path/to/dir2;path/to/dir3"
+#
+# If you want much more fine grained control on where packages are picked up
+# from, each dependency has a PkgName_DIR variable that can be specified
+#
+# If Parallelism is enabled, you must use Metis or Zoltan as a
+# partitioner (specify at least one) If Metis is enabled, it will
+# assume that the metis version is 5 or greater library you are
+# linking to. The path to METIS can be specified in CMAKE_PREFIX_PATH
+# or using METIS_DIR. The path to Zoltan can be specified in
+# CMAKE_PREFIX_PATH or using Zoltan_DIR
 #
 # -D ENABLE_METIS=yes|no  (default=no)
 # -D ENABLE_ZOLTAN=yes|no (default=no)
@@ -41,58 +48,44 @@
 # Rao Garimella (rao@lanl.gov)
 
 
-
-# Define platform 
-
-ARCH=`uname -m`
-OS=`uname -s`
-ARCHOS=${ARCH}_${OS}
-
-
 # Top level directory where the code lives
 
 SOURCE=$HOME/develop/mstk/dev
 
-
-
 # Clear out old junk
 
-rm -f CMakeCache.txt
-rm -f cmake_install.cmake
-rm -fr CMakefiles/
-rm -f CTestTestfile.cmake
-rm -f MSTKConfig.cmake
-rm -fr Makefile
+rm -fr CMake* *.cmake Make*
 
-
-# modify the paths that point to the location of the
-# installation directories below
+# Simple specification of cmake command
 
 cmake \
-  -D CMAKE_BUILD_TYPE:STRING=Debug \
-  -D ENABLE_PARALLEL=yes \
-  -D ENABLE_ZOLTAN=yes \
-  -D ENABLE_METIS=yes \
-  -D ENABLE_ExodusII=yes \
-  -D NetCDF_DIR:FILEPATH=/research/rao/ascem-tpl \
-  -D ExodusII_DIR:FILEPATH=/research/rao/ascem-tpl \
-  -D METIS_DIR:FILEPATH=/research/rao/ascem-tpl/metis-4.0.3 \
-  -D ZOLTAN_DIR:FILEPATH=/research/rao/ascem-tpl/trilinos-11.0.3 \
-  -D ENABLE_Tests=yes \
-  -D UnitTest_DIR:FILEPATH=/research/rao/ascem-tpl \
-  -D INSTALL_DIR:FILEPATH=${SOURCE} \
-  ${SOURCE} 
+    -D CMAKE_BUILD_TYPE:STRING=Debug \
+    -D CMAKE_PREFIX_PATH="/path/to/tpl/dir1;/path/to/tpl/dir2;/path/to/tpl/dir3" \
+    -D CMAKE_INSTALL_PREFIX:FILEPATH=/where/you/want/to/install/mstk \
+    -D ENABLE_PARALLEL=yes \
+    -D ENABLE_ZOLTAN=yes \
+    -D ENABLE_METIS=yes \
+    -D ENABLE_ExodusII=yes \
+    -D ENABLE_Tests=yes \
+    ${SOURCE}
 
-# Alternate specification of cmake command
+
+# Alternate fine-grained command that controls the paths to individual libs
 
 cmake \
-  -D CMAKE_BUILD_TYPE:STRING=Debug \
-  -D CMAKE_PREFIX_PATH="/research/rao/ascem-tpl;/research/rao/ascem-tpl/metis-4.0.3;/research/rao/ascem-tpl/trilinos-11.0.3" \
-  -D ENABLE_PARALLEL=yes \
-  -D ENABLE_ZOLTAN=yes \
-  -D ENABLE_METIS=yes \
-  -D ENABLE_ExodusII=yes \
-  -D ENABLE_Tests=yes \
-  -D INSTALL_DIR:FILEPATH=${SOURCE} \
-  ${SOURCE}
+    -D CMAKE_BUILD_TYPE:STRING=Debug \
+    -D CMAKE_INSTALL_PREFIX=/where/you/want/to/install/mstk \
+    -D ENABLE_PARALLEL=yes \
+    -D ENABLE_ZOLTAN=yes \
+    -D ENABLE_METIS=yes \
+    -D ENABLE_ExodusII=yes \
+    -D NetCDF_DIR:FILEPATH=/path/to/netCDF/dir \
+    -D ExodusII_DIR:FILEPATH=/path/to/ExodusII/dir \
+    -D METIS_DIR:FILEPATH=/path/to/METIS/dir \
+    -D ZOLTAN_DIR:FILEPATH=/path/to/Zoltan/dir \
+    -D ParMETIS_DIR:FILEPATH=/path/to/parmetis/dir/if/zoltan/needs/it \
+    -D PTScotch_DIR:FILEPATH=/path/to/ptscotch/dir/if/zoltan/needs/it \
+    -D ENABLE_Tests=yes \
+    -D UnitTest_DIR:FILEPATH=/path/to/UnitTest++/dir \
+    ${SOURCE} 
 

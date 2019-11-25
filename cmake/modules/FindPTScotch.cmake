@@ -51,8 +51,7 @@ find_library(Scotch_LIBRARY
   NAMES scotch
   HINTS ${PC_PTScotch_LIBRARY_DIRS}
   PATHS ${PTScotch_DIR}
-  PATH_SUFFIXES lib
-  )
+  PATH_SUFFIXES lib lib64)
 
 if (NOT Scotch_LIBRARY)
   if (PTScotch_FIND_REQUIRED)
@@ -68,8 +67,7 @@ find_library(PTScotch_LIBRARY
   NAMES ptscotch
   HINTS ${PC_PTScotch_LIBRARY_DIRS}
   PATHS ${PTScotch_DIR}
-  PATH_SUFFIXES lib
-  )
+  PATH_SUFFIXES lib lib64)
 
 if (NOT PTScotch_LIBRARY)
   if (PTScotch_FIND_REQUIRED)
@@ -85,7 +83,7 @@ find_library(PTScotcherr_LIBRARY
   NAMES ptscotcherr
   HINTS ${PC_PTScotch_LIBRARY_DIRS}
   PATHS ${PTScotch_DIR}
-  PATH_SUFFIXES lib)
+  PATH_SUFFIXES lib lib64)
 
 if (NOT PTScotcherr_LIBRARY)
   if (PTScotch_FIND_REQUIRED)
