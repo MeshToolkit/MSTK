@@ -175,12 +175,7 @@ if (ENABLE_PARALLEL)
     target_include_directories(${MSTKLIB} PUBLIC ${METIS_INCLUDE_DIRS})
     target_compile_definitions(${MSTKLIB} PUBLIC _MSTK_HAVE_METIS)
 
-    if (METIS_MAJOR_VER)
-      target_compile_definitions(${MSTKLIB} PUBLIC METIS_${METIS_MAJOR_VER})
-    else ()
-      target_compile_definitions(${MSTKLIB} PUBLIC METIS_5)
-    endif ()
-
+    target_compile_definitions(${MSTKLIB} PUBLIC METIS_5)
     target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
 
     message(STATUS "Found Metis library: ${METIS_LIBRARY}")
@@ -299,7 +294,6 @@ add_subdirectory(example)
 # Export targets
 ##########################################################
 
-
 # where to install library
 install(TARGETS ${MSTKLIB}
   EXPORT MSTKTargets
@@ -311,7 +305,7 @@ install(TARGETS ${MSTKLIB}
   )
 install(EXPORT MSTKTargets
   FILE MSTKTargets.cmake
-  NAMESPACE mstk
+  NAMESPACE mstk::
   DESTINATION lib/cmake/mstk
   )
 
@@ -326,7 +320,7 @@ install(EXPORT MSTKTargets
 configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in 
   ${PROJECT_BINARY_DIR}/MSTKConfig.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
-  DESTINATION ${INSTALL_DIR}/lib/cmake/)
+  DESTINATION lib/cmake/mstk)
 
 #######################################################
 # Also write out a version file      
