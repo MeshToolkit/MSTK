@@ -126,22 +126,22 @@ if (ENABLE_ExodusII)
   # get it as part of Trilinos - http:://trilinos.sandia.gov
   ##############################################################################
 
-  find_package(ExodusII REQUIRED)  # Uses MSTK module
-  
-  target_include_directories(${MSTKLIB} PUBLIC ${ExodusII_INCLUDE_DIRS})
-  target_link_libraries(${MSTKLIB} PUBLIC ${ExodusII_LIBRARIES})
+  # First seee if a config file got installed as part of the SEACAS project
+  # NOTE: NOT ABLE TO PROCESS THIS CORRECTLY
+#  find_package(SEACASExodus QUIET CONFIG PATHS ${ExodusII_DIR})
 
-  message(STATUS "### Exodus II library: ${ExodusII_LIBRARIES}")
+#  if (SEACASExodus_FOUND)
+#    target_include_directories(${MSTKLIB} PUBLIC ${ExodusII_INCLUDE_DIRS})
+#    target_link_libraries(${MSTKLIB} PUBLIC ${ExodusII_LIBRARIES})
+#    message(STATUS "Found Exodus II library (from SEACAS): ${SEACAS_LIBRARIES}")
+#  else ()  
+    find_package(ExodusII QUIET REQUIRED)  # Uses MSTK module
+    
+    target_include_directories(${MSTKLIB} PUBLIC ${ExodusII_INCLUDE_DIRS})
+    target_link_libraries(${MSTKLIB} PUBLIC ${ExodusII_LIBRARIES})
+    message(STATUS "Found Exodus II library: ${ExodusII_LIBRARY}")
+#  endif ()
 
-  get_target_property(ExodusII_LOC ${ExodusII_LIBRARIES} IMPORTED_LOCATION)
-  if (ExodusII_LOC)
-    message(STATUS "### Exodus II location: ${ExodusII_LOC}")
-  else ()
-    if (ExodusII_LIBRARY_DIRS)
-      message(STATUS "### Exodus II library dir: ${ExodusII_LIBRARY_DIRS}")
-    endif ()
-  endif ()
- 
 endif ()
 
 
@@ -162,7 +162,7 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_METIS) 
 
-    find_package(METIS REQUIRED)   # uses MSTK module
+    find_package(METIS QUIET REQUIRED)   # uses MSTK module
     if (NOT METIS_FOUND)
        message(FATAL_ERROR "Error: could not find Metis library\n"
 	  "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n")
@@ -179,15 +179,7 @@ if (ENABLE_PARALLEL)
 
     target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
 
-    message(STATUS "### Metis library: ${METIS_LIBRARIES}")
-    get_target_property(METIS_LOC ${METIS_LIBRARIES} IMPORTED_LOCATION)
-    if (METIS_LOC)
-      message(STATUS "### METIS location: ${METIS_LOC}")
-    else ()
-      if (METIS_LIBRARY_DIRS)
-	message(STATUS "### METIS library dir: ${METIS_LIBRARY_DIRS}")
-      endif ()
-    endif ()
+    message(STATUS "Found Metis library: ${METIS_LIBRARY}")
   endif ()
 
   ##############################################################################
@@ -196,34 +188,26 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_ZOLTAN)
 
-    find_package(Zoltan CONFIG)  # try to find thru CMake config file
+    if (ZOLTAN_DIR AND NOT Zoltan_DIR)
+      set(Zoltan_DIR ${ZOLTAN_DIR})
+    endif()
+
+    # if find_package fails in config mode it will set Zoltan_DIR to
+    # Zoltan_DIR-NOTFOUND; so save Zoltan_DIR
+    set(zoltan_dir_save ${Zoltan_DIR})
+    
+    find_package(Zoltan QUIET CONFIG PATHS ${Zoltan_dir})  # try to find thru CMake config file
 
     if (NOT Zoltan_FOUND)
-      # Since the module has no way of discovering whether Zoltan is
-      # built with ParMETIS or PTScotch support, we will always enable
-      # it through some flags so that the module always tags ParMETIS
-      # and PTScotch as dependencies of Zoltan
-
-      set(Zoltan_NEEDS_PARMETIS True)
-      set(Zoltan_NEEDS_PTScotch True)
-
-      find_package(Zoltan REQUIRED MODULE)  # fallback to module
+      set(Zoltan_DIR ${zoltan_dir_save})
+      find_package(Zoltan QUIET REQUIRED MODULE)  # fallback to module
     endif ()
   
     target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PUBLIC ${Zoltan_LIBRARIES})
     target_compile_definitions(${MSTKLIB} PRIVATE _MSTK_HAVE_ZOLTAN)        
     
-    message(STATUS "### Zoltan library:" ${Zoltan_LIBRARIES})
-    get_target_property(Zoltan_LOC ${Zoltan_LIBRARIES} IMPORTED_LOCATION)
-    if (Zoltan_LOC)
-      message(STATUS "### Zoltan location: ${Zoltan_LOC}")
-    else ()
-      if (Zoltan_LIBRARY_DIRS)
-	message(STATUS "### Zoltan library dir: ${Zoltan_LIBRARY_DIRS}")
-      endif ()
-    endif ()
-    
+    message(STATUS "Found Zoltan library:" ${Zoltan_LIBRARY})
   endif ()
   
 endif ()
@@ -247,71 +231,26 @@ if (ENABLE_Tests)
   if (NOT UnitTest++_DIR AND UnitTest_DIR)
     set(UnitTest++_DIR ${UnitTest_DIR})
   endif ()
-  
-  find_package(UnitTest++ CONFIG)  # Try to discover thru cmake config file
+
+  set(unittest_dir_save ${UnitTest++_DIR})
+  find_package(UnitTest++ QUIET CONFIG PATHS ${UnitTest++_DIR})  # Try to discover thru cmake config file
+
   if (UnitTest++_FOUND)
+    # UnitTest++ sets a weird path for it's includes
     set(UnitTest++_INCLUDE_DIRS ${UTPP_INCLUDE_DIRS}/UnitTest++)
+
+    # Also it sets the target name as UnitTest++ but does not set the
+    # LIBRARIES variable
+    set(UnitTest++_LIBRARIES UnitTest++)
   else ()
-    find_package(UnitTest++ REQUIRED MODULE)  # fallback to MSTK module
+    set(UnitTest++_DIR ${unittest_dir_save})
+    find_package(UnitTest++ QUIET REQUIRED MODULE)  # fallback to MSTK module
   endif ()
+
+  message(STATUS "Found UnitTest++: ${UnitTest++_LIBRARY}")
+
   set(BUILD_TESTS TRUE)
     
-    # UnitTest++Config.cmake uses a weird name for storing it's include path
-    # and it's not even completely right
-    
-    # Also it does not set this variable
-    set(UnitTest++_LIBRARIES UnitTest++)
-    
-  else ()
-
-    # can happen if unittest is installed using a package manager like apt
-    message(STATUS "find_package did not find CMake config for UnitTest++. Find manually")
-    # Find things by hand
-    
-    find_library(UnitTest++_LIBRARY
-      NAMES UnitTest++ unittest++
-      HINTS
-      ${UnitTest++_DIR}
-      ${UnitTest++_LIBRARY_DIR}
-      ${UnitTest_DIR}
-      ${UnitTest_LIBRARY_DIR}
-      )
-    if (NOT UnitTest++_LIBRARY)
-      message(FATAL_ERROR "Error: could not find unittest++ library")
-    endif()
-    get_filename_component(UnitTest++_LIBRARY_DIRS ${UnitTest++_LIBRARY} DIRECTORY)
-    
-    find_path(UnitTest++_INCLUDE_DIRS "UnitTest++.h" 
-      HINTS 
-      ${UnitTest++_DIR}
-      ${UnitTest++_DIR}/src 
-      ${UnitTest++_DIR}/include/unittest++
-      ${UnitTest++_DIR}/include/UnitTest++
-      ${UnitTest_DIR}
-      ${UnitTest_DIR}/src 
-      ${UnitTest_DIR}/include/unittest++
-      ${UnitTest_DIR}/include/UnitTest++
-      )
-    if (NOT UnitTest++_INCLUDE_DIRS)
-      message(FATAL_ERROR "Error: could not find UnitTest++ includes")
-    endif(NOT UnitTest++_INCLUDE_DIRS)
-    
-    set(UnitTest++_LIBRARIES UnitTest++)
-
-    add_library(UnitTest++ UNKNOWN IMPORTED)
-    set_target_properties(UnitTest++ PROPERTIES IMPORTED_LOCATION ${UnitTest++_LIBRARY})
-  endif ()
-
-  message(STATUS "### UnitTest++ library: ${UnitTest++_LIBRARIES}")
-  get_target_property(UnitTest++_LOC UnitTest++ IMPORTED_LOCATION)
-  if (UnitTest++_LOC)
-    message(STATUS "### UnitTest++ location: ${UnitTest++_LOC}")
-  else ()
-    if (UnitTest++_LIBRARY_DIRS)
-      message(STATUS "### UnitTest++ library dir: ${UnitTest++_LIBRARY_DIRS}")
-    endif ()
-  endif ()
-  
 endif()
 
 
