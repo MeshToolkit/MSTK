@@ -5,18 +5,12 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
-
 add_executable(mkstruc src/mkstruc.c src/transform_xyz.c)
-target_link_libraries(mkstruc 
-                      ${MSTKLIB} 
-		      ${MSTK_TPL_LIBRARIES}
-		      m)
+target_link_libraries(mkstruc ${MSTKLIB})
+target_include_directories(mkstruc PRIVATE ${PROJECT_BINARY_DIR}/include)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS mkstruc DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS mkstruc DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+
+install(TARGETS mkstruc DESTINATION bin)
+
 
 
