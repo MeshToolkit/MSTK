@@ -7,18 +7,10 @@
 
 
 add_executable(exoatt src/exoatt.c)
-
+target_link_libraries(exoatt ${MSTKLIB})
 target_include_directories(exoatt PRIVATE ${PROJECT_BINARY_DIR}/include)
-target_link_libraries(exoatt 
-                      ${MSTKLIB} 
-		      ${MSTK_TPL_LIBRARIES}
-		      m)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS exoatt DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS exoatt DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+install(TARGETS exoatt DESTINATION bin)
 
 # Unittests
 

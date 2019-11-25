@@ -5,18 +5,12 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
 
 add_executable(tri2quad src/tri2quad.c)
-target_link_libraries(tri2quad
-                      ${MSTKLIB} 
-		      ${MSTK_TPL_LIBRARIES}
-		      m)
+target_link_libraries(tri2quad ${MSTKLIB})
+target_include_directories(tri2quad PRIVATE ${PROJECT_BINARY_DIR}/include)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS tri2quad DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS tri2quad DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+install(TARGETS tri2quad DESTINATION bin)
+
 
 

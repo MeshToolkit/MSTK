@@ -5,19 +5,11 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
-
-
 add_executable(chkmesh src/chkmesh.c src/geom.c)
-target_link_libraries(chkmesh 
-                      ${MSTKLIB} 
-                      ${MSTK_TPL_LIBRARIES} 
-                      m)
+target_link_libraries(chkmesh ${MSTKLIB})
+target_include_directories(chkmesh PRIVATE ${PROJECT_BINARY_DIR}/include)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS chkmesh DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS chkmesh DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+install(TARGETS chkmesh DESTINATION bin)
+
 
 

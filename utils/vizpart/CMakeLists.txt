@@ -5,18 +5,10 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
-
-
 add_executable(vizpart src/vizpart.c)
-target_link_libraries(vizpart 
-                      ${MSTKLIB} 
-                      ${MSTK_TPL_LIBRARIES} 
-                      m)
+target_link_libraries(vizpart ${MSTKLIB})
+target_include_directories(vizpart PRIVATE ${PROJECT_BINARY_DIR}/include)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS vizpart DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS vizpart DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+install(TARGETS vizpart DESTINATION bin)
+
 

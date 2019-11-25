@@ -5,18 +5,11 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
-
 add_executable(tet2hex src/tet2hex.c)
-target_link_libraries(tet2hex
-                      ${MSTKLIB} 
-		      ${MSTK_TPL_LIBRARIES}
-		      m)
+target_link_libraries(tet2hex ${MSTKLIB})
+target_include_directories(tet2hex PRIVATE ${PROJECT_BINARY_DIR}/include)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS tet2hex DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS tet2hex DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+
+install(TARGETS tet2hex DESTINATION bin)
 
 

@@ -5,18 +5,10 @@
 # https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 
-include_directories(${PROJECT_BINARY_DIR}/include)
-
 add_executable(meshconvert src/meshconvert.c)
-target_link_libraries(meshconvert 
-                      ${MSTKLIB} 
-		      ${MSTK_TPL_LIBRARIES}
-		      m)
+target_link_libraries(meshconvert ${MSTKLIB})
+target_include_directories(meshconvert PRIVATE ${PROJECT_BINARY_DIR}/include)
 
-if (INSTALL_PREFIX_ARCHOS)
-  install(TARGETS meshconvert DESTINATION ${INSTALL_DIR}/bin/${ARCHOS})
-else ()
-  install(TARGETS meshconvert DESTINATION ${INSTALL_DIR}/bin)
-endif ()
+install(TARGETS meshconvert DESTINATION bin)
 
 

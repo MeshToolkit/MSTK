@@ -40,6 +40,10 @@
 # -D ExodusII_DIR:FILEPATH="/usr/packages/exodusii/"
 # -D NetCDF_DIR:FILEPATH="/usr/packages/netcdf-4.0/"
 #
+# If ENABLE_PARALLEL is OFF and ENABLE_ExodusII is ON, ExodusII must
+# obviously be built in serial mode (along with serial versions of
+# netCDF and HDF5)
+#
 #
 # -D ENABLE_Tests=yes|no (default=yes)
 #

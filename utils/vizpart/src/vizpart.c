@@ -9,6 +9,7 @@ https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #ifdef MSTK_HAVE_MPI
 #include "mpi.h"
