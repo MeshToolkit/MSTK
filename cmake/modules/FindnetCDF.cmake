@@ -46,7 +46,7 @@ set(netCDF_INCLUDE_DIRS "${netCDF_INCLUDE_DIR}")
 find_library(netCDF_LIBRARY
   NAMES netcdf
   HINTS ${PC_netCDF_LIBRARY_DIRS} ${netCDF_DIR}
-  PATH_SUFFIXES lib)
+  PATH_SUFFIXES lib lib64)
 
 if (NOT netCDF_LIBRARY)
   if (netCDF_FIND_REQUIRED)
