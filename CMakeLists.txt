@@ -253,6 +253,11 @@ if (ENABLE_Tests)
 endif()
 
 
+# Finally make the math library a dependency of MSTK
+target_link_libraries(${MSTKLIB} PUBLIC m)
+
+
+
 # What are all the TPLs that codes linking to MSTK have to link to
 
 set(MSTK_TPL_LIBRARIES ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} 
@@ -265,8 +270,6 @@ set(MSTK_TPL_LIBRARIES ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES}
 set(MSTK_TPL_LIBRARIES_EXPORT ${METIS_LIBRARIES} ${ZOLTAN_LIBRARIES} 
   ${ExodusII_LIBRARIES} ${NetCDF_LIBRARIES} ${HDF5_LIBRARIES_EXPORT})
 
-
-#target_link_libraries(${MSTKLIB} PUBLIC ${MSTK_TPL_LIBRARIES})
 
 
 #############################################################################
