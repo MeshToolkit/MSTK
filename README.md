@@ -74,9 +74,7 @@ The following are the steps for build and installing MSTK using cmake
 3. Choose a build directory. This could be a subdirectory named build in
    the mstk source tree or some other directory. If you want to build both
    debug and optimized targets you have to run cmake and build in separate
-   subdirectories or one build will clobber the other. I like to create 
-   subdirectories build/Debug and build/Release in the mstk directory and
-   build the different versions there.
+   subdirectories or one build will clobber the other.
 
 4. cd to the build directory and run the do-configure-mstk script there.
    This will create the appropriate Makefiles.
@@ -127,7 +125,8 @@ Rao V Garimella, T-5, MS B284, Los Alamos National Laboratory
 Los Alamos, NM 87544 USA  
 Tel: (505) 665-2928  
 Email: rao@lanl.gov  
-http://math.lanl.gov/~rao  	
+http://math.lanl.gov/~rao
+http://github.com/MeshToolkit/MSTK.git
 
 
 
