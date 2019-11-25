@@ -49,10 +49,11 @@ endif ()
 set(ExodusII_INCLUDE_DIRS "${ExodusII_INCLUDE_DIR}")
 
 
-# Search for libraries
+# Search for libraries (on ubuntu, installing exodus ii using apt
+# gives us libexoIIv2c.a)
 
 find_library(ExodusII_LIBRARY
-  NAMES exodus
+  NAMES exodus exoIIv2c
   HINTS ${PC_ExodusII_LIBRARY_DIRS}
   PATHS ${ExodusII_DIR}
   PATH_SUFFIXES lib)
