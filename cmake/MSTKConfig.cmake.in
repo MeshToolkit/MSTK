@@ -91,20 +91,20 @@ set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "All third party
 include(CMakeFindDependencyMacro)
 if (ENABLE_PARALLEL)
   if (ENABLE_METIS)
-    find_dependency(@METIS_LIBRARIES@)
+    find_dependency(@METIS_LIBRARY@)
   endif ()
   if (ENABLE_Zoltan)
-    find_dependency(@Zoltan_LIBRARIES@)
+    find_dependency(@Zoltan_LIBRARY@)
   endif ()
 endif ()
 
 if (ENABLE_ExodusII)
-  find_dependency(@ExodusII_LIBRARIES@)
+  find_dependency(@ExodusII_LIBRARY@)
 endif ()
 
 
 # include MSTK targets (See Daniel Pfeifer, Effective CMake)
-include ("${CMAKE_CURRENT_LIST_DIR}/mstkTargets.cmake")
+include ("${CMAKE_CURRENT_LIST_DIR}/MSTKTargets.cmake")
 
 
 
