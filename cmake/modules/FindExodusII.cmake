@@ -49,8 +49,7 @@ endif ()
 set(ExodusII_INCLUDE_DIRS "${ExodusII_INCLUDE_DIR}")
 
 
-# Search for libraries (on ubuntu, installing exodus ii using apt
-# gives us libexoIIv2c.a)
+# Search for libraries
 
 find_library(ExodusII_LIBRARY
   NAMES exodus exoIIv2c
@@ -79,13 +78,16 @@ if (NOT ExodusII_VERSION AND ExodusII_INCLUDE_DIR)
   set(ExodusII_VERSION "${exodus_version}")
 endif ()
 
-
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ExodusII
   DEFAULT_MSG
   ExodusII_LIBRARY ExodusII_INCLUDE_DIR)
 
+# For some reason EXODUSII_FOUND is being set to True instead of ExodusII_FOUND
+if (NOT ExodusII_FOUND AND EXODUSII_FOUND)
+  set(ExodusII_FOUND ${EXODUSII_FOUND})
+endif ()
 
 # Create ExodusII target
 
@@ -110,6 +112,7 @@ if (ExodusII_FOUND AND NOT TARGET ExodusII::ExodusII)
   # Add netCDF as a dependency of ExodusII
   target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
 endif()
+
   
 # Hide these variables from the cache
 mark_as_advanced(
