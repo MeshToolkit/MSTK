@@ -72,6 +72,10 @@ find_package_handle_standard_args(ParMETIS
   DEFAULT_MSG
   ParMETIS_LIBRARY ParMETIS_INCLUDE_DIR)
 
+# find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
+if (NOT ParMETIS_FOUND AND PARMETIS_FOUND)
+  set(ParMETIS_FOUND ${PARMETIS_FOUND})
+endif ()
 
 # Create ParMETIS target
 

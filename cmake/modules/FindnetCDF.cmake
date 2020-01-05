@@ -67,6 +67,10 @@ find_package_handle_standard_args(netCDF
   FOUND_VAR netCDF_FOUND
   REQUIRED_VARS netCDF_LIBRARY netCDF_INCLUDE_DIR)
 
+# find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
+if (NOT netCDF_FOUND AND NETCDF_FOUND)
+  set(netCDF_FOUND ${NETCDF_FOUND})
+endif ()
 
 # Create netCDF target
 

@@ -104,6 +104,10 @@ find_package_handle_standard_args(PTScotch
   Scotch_LIBRARY PTScotch_LIBRARY PTScotcherr_LIBRARY
   PTScotch_INCLUDE_DIR)
 
+# find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
+if (NOT PTScotch_FOUND AND PTSCOTCH_FOUND)
+  set(PTScotch_FOUND ${PTSCOTCH_FOUND})
+endif ()
 
 # Create PTScotch target and label scotch and ptscotcherr as dependencies
 

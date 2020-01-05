@@ -84,7 +84,7 @@ find_package_handle_standard_args(ExodusII
   DEFAULT_MSG
   ExodusII_LIBRARY ExodusII_INCLUDE_DIR)
 
-# For some reason EXODUSII_FOUND is being set to True instead of ExodusII_FOUND
+# find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT ExodusII_FOUND AND EXODUSII_FOUND)
   set(ExodusII_FOUND ${EXODUSII_FOUND})
 endif ()
