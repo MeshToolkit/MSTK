@@ -309,6 +309,7 @@ install(TARGETS ${MSTKLIB}
 install(EXPORT MSTKTargets
   FILE MSTKTargets.cmake
   NAMESPACE mstk::
+  EXPORT_LINK_INTERFACE_LIBRARIES
   DESTINATION lib/cmake/mstk
   )
 
@@ -324,6 +325,17 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in
   ${PROJECT_BINARY_DIR}/MSTKConfig.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
   DESTINATION lib/cmake/mstk)
+
+#########################################################
+# Also install any module files used for finding the dependencies
+#########################################################
+
+install(FILES
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindMETIS.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindZoltan.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindExodusII.cmake
+  DESTINATION lib/cmake/mstk/modules)
+
 
 #######################################################
 # Also write out a version file      
