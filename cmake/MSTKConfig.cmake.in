@@ -88,18 +88,22 @@ set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "All third party
 #-------------------------------
 
 # Find target dependencies (See Daniel Pfeifer, Effective CMake)
+# If you wish to use the modules MSTK used to find its dependencies
+# include
+# @PROJECT_BINARY_DIR@/cmake/mstk/modules
+# in the cmake module path
 include(CMakeFindDependencyMacro)
 if (ENABLE_PARALLEL)
   if (ENABLE_METIS)
-    find_dependency(@METIS_LIBRARY@)
+    find_dependency(METIS)
   endif ()
   if (ENABLE_Zoltan)
-    find_dependency(@Zoltan_LIBRARY@)
+    find_dependency(Zoltan)
   endif ()
 endif ()
 
 if (ENABLE_ExodusII)
-  find_dependency(@ExodusII_LIBRARY@)
+  find_dependency(ExodusII)
 endif ()
 
 
