@@ -79,11 +79,13 @@ extern "C" {
 
     MESH_LabelPType(mesh, topodim, comm);
 
-    if (num_ghost_layers) {
+    if (num_ghost_layers)  /* num_ghost_layers = 0 not well tested */
       MESH_Parallel_AddGhost(mesh, topodim, comm);
 
-      MESH_Build_GhostLists(mesh, topodim);
-    }
+    /* Even with no ghost layer of elements, lower dimensional ghosts
+     * can exist */
+    MESH_Build_GhostLists(mesh, topodim);
+                                             
 
     MESH_Update_ParallelAdj(mesh, comm);
     return 1;
