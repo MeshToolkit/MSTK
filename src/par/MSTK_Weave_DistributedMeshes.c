@@ -79,9 +79,11 @@ extern "C" {
 
     MESH_LabelPType(mesh, topodim, comm);
 
-    MESH_Parallel_AddGhost(mesh, topodim, comm);
+    if (num_ghost_layers) {
+      MESH_Parallel_AddGhost(mesh, topodim, comm);
 
-    MESH_Build_GhostLists(mesh, topodim);
+      MESH_Build_GhostLists(mesh, topodim);
+    }
 
     MESH_Update_ParallelAdj(mesh, comm);
     return 1;
