@@ -98,7 +98,7 @@ set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "DEPRECATED: All
 # Find target dependencies (See Daniel Pfeifer, Effective CMake)
 # If you wish to use the modules MSTK used to find its dependencies
 # include
-# @PROJECT_BINARY_DIR@/cmake/mstk/modules
+# @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules
 # in the cmake module path
 include(CMakeFindDependencyMacro)
 if (ENABLE_PARALLEL)
