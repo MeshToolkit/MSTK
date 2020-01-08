@@ -301,6 +301,16 @@ add_subdirectory(example)
 # set up headers that will get installed, including a configured MSTK_defines.h
 #######################################################
 
+# Copy all the headers into the PROJECT_BINARY_DIR/include so that
+# they are found before the originals in the PROJECT_SOURCE_DIR. The
+# problem with finding the ones in the PROJECT_SOURCE_DIR is that a
+# header file from there automatically pulls in the unconfigured
+# MSTK_defines.h from there as well leading to a compilation error
+
+file(GLOB ALL_HEADERS ${PROJECT_SOURCE_DIR}/include/*.h)
+foreach (HEADER_FILE ${ALL_HEADERS})
+  file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_BINARY_DIR}/include)
+endforeach(HEADER_FILE)
 configure_file(${PROJECT_SOURCE_DIR}/include/MSTK_defines.h 
                ${PROJECT_BINARY_DIR}/include/MSTK_defines.h @ONLY)
 
