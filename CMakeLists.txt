@@ -59,6 +59,11 @@ add_subdirectory(src)
 add_library(${MSTKLIB} ${mstkfiles})
 message(STATUS "Building library " ${MSTKLIB})
 
+# Alias (Daniel Pfeiffer, Effective CMake) - this allows other
+# projects that use MSTK as a subproject to find_package(mstk::mstk)
+# which does nothing because mstk is already part of the project
+
+add_library(mstk::${MSTKLIB} ALIAS ${MSTKLIB})  # we can use mstk::mstk to refere to mstk
 
 # DEBUG FLAG
 
@@ -292,6 +297,23 @@ add_subdirectory(utils)
 
 add_subdirectory(example)
 
+#######################################################
+# set up headers that will get installed, including a configured MSTK_defines.h
+#######################################################
+
+configure_file(${PROJECT_SOURCE_DIR}/include/MSTK_defines.h 
+               ${PROJECT_BINARY_DIR}/include/MSTK_defines.h @ONLY)
+
+set(mstk_public_headers 
+  ${PROJECT_SOURCE_DIR}/include/MSTK.h
+  ${PROJECT_SOURCE_DIR}/include/MSTK_types.h
+  ${PROJECT_SOURCE_DIR}/include/MSTK_externs.h
+  ${PROJECT_SOURCE_DIR}/include/MSTK_util.h
+  ${PROJECT_BINARY_DIR}/include/MSTK_defines.h)  # Note the PROJECT_BINARY_DIR
+
+set_target_properties(${MSTKLIB} PROPERTIES PUBLIC_HEADER "${mstk_public_headers}")
+
+
 
 ##########################################################
 # Export targets
@@ -303,6 +325,7 @@ install(TARGETS ${MSTKLIB}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+  PUBLIC_HEADER DESTINATION include
   INCLUDES DESTINATION include
   )
 install(EXPORT MSTKTargets
@@ -345,27 +368,5 @@ write_basic_package_version_file("MSTKConfigVersion.cmake"
   COMPATIBILITY SameMajorVersion
   )
       
-#######################################################
-# Also put in some information into MSTK.h header file
-#######################################################
-
-file(GLOB ALL_HEADERS ${PROJECT_SOURCE_DIR}/include/*.h)
-foreach (HEADER_FILE ${ALL_HEADERS})
-  file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_BINARY_DIR}/include)
-endforeach(HEADER_FILE)
-configure_file(${PROJECT_SOURCE_DIR}/include/MSTK_defines.h 
-               ${PROJECT_BINARY_DIR}/include/MSTK_defines.h @ONLY)
-
-if (${INSTALL_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
-else ()
-INSTALL(FILES 
-	${PROJECT_BINARY_DIR}/include/MSTK.h
-	${PROJECT_BINARY_DIR}/include/MSTK_defines.h
-	${PROJECT_BINARY_DIR}/include/MSTK_types.h
-	${PROJECT_BINARY_DIR}/include/MSTK_externs.h
-	${PROJECT_BINARY_DIR}/include/MSTK_util.h
-        DESTINATION ${INSTALL_DIR}/include)
-endif ()
-
 
 
