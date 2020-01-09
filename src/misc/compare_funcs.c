@@ -128,8 +128,16 @@ extern "C" {
     List_ptr mfverts1 = MF_Vertices(mf1,1,0), mfverts2 = MF_Vertices(mf2,1,0);
     int nfv1 = List_Num_Entries(mfverts1), nfv2 = List_Num_Entries(mfverts2);
     int i;
-    if( nfv1 > nfv2 ) return 1;
-    if( nfv1 < nfv2 ) return -1;
+    if( nfv1 > nfv2 ) {
+      List_Delete(mfverts1);
+      List_Delete(mfverts2);
+      return 1;
+    }
+    if( nfv1 < nfv2 ) {
+      List_Delete(mfverts1);
+      List_Delete(mfverts2);
+      return -1;
+    }
     List_Sort(mfverts1,nfv1,sizeof(MFace_ptr),compareGlobalID);
     List_Sort(mfverts2,nfv2,sizeof(MFace_ptr),compareGlobalID);
     for(i = 0; i < nfv1; i++) {
