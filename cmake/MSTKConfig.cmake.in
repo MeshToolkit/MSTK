@@ -55,13 +55,25 @@ set(ENABLE_PARALLEL @ENABLE_PARALLEL@ CACHE BOOL "Enable parallel mesh managemen
 # -------------------------
 if (ENABLE_PARALLEL)
   set(ENABLE_METIS @ENABLE_METIS@ CACHE BOOL "Enable use of METIS as a partitioner")
-  set(METIS_DIR @METIS_DIR@ CACHE PATH "DEPRECATE?: Path to top level METIS installation dir")
+  if (ENABLE_METIS)
+    # CMake <= 3.11
+    set(METIS_DIR @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+    # CMake > 3.11
+    set(METIS_ROOT @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+  endif ()
+  
   set(METIS_INCLUDE_DIRS @METIS_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to METIS include files")
   set(METIS_LIBRARY_DIR @METIS_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to METIS library")
   set(METIS_LIBRARIES @METIS_LIBRARIES@ CACHE STRING "DEPRECATED: METIS library names")
 
   set(ENABLE_ZOLTAN @ENABLE_ZOLTAN@ CACHE BOOL "Enable use of ZOLTAN as a partitioner")
-  set(ZOLTAN_DIR @ZOLTAN_DIR@ CACHE PATH "DEPRECATE?: Path to top level ZOLTAN installation dir")
+  if (ENABLE_ZOLTAN)
+    # CMake <= 3.11
+    set(Zoltan_DIR @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    # CMake > 3.11
+    set(Zoltan_ROOT @ZOLTAN_DIR@ CACHE PATH "DEPRECATE?: Path to top level ZOLTAN installation dir")
+  endif ()
+  
   set(ZOLTAN_INCLUDE_DIRS @ZOLTAN_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to ZOLTAN include files")
   set(ZOLTAN_LIBRARY_DIR @ZOLTAN_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to ZOLTAN library")
   set(ZOLTAN_LIBRARIES @ZOLTAN_LIBRARIES@ CACHE STRING "DEPRECATED: ZOLTAN library names")
@@ -70,7 +82,11 @@ endif()
 set(ENABLE_ExodusII @ENABLE_ExodusII@ CACHE BOOL "Enable use of Exodus II libraries")
 
 if (ENABLE_ExodusII)
-  set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "DEPRECATE?: Path to top level ExodusII installation dir")
+  # CMake <= 3.11
+  set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
+  # CMake > 3.11
+  set(ExodusII_ROOT @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
+  
   set(ExodusII_INCLUDE_DIRS @ExodusII_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to ExodusII include files")
   set(ExodusII_LIBRARY_DIR @ExodusII_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to ExodusII library")
   set(ExodusII_LIBRARIES @ExodusII_LIBRARIES@ CACHE STRING "DEPRECATED: ExodusII library names")
@@ -91,16 +107,33 @@ if (ENABLE_ExodusII)
   set(HDF5_LIBRARIES @HDF5_LIBRARIES_EXPORT@ CACHE STRING "DEPRECATED: HDF5 libraries and other necessary link libraries")
 endif()
 
+
 # Since we switched to a target based system, this may not have the right values
 set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "DEPRECATED: All third party libraries MSTK is built with")
 #-------------------------------
 
-# Find target dependencies (See Daniel Pfeifer, Effective CMake)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+  cmake_policy(SET CMP0074 NEW)
+endif ()
+
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+endif ()
+
+# Find target dependencies
 # If you wish to use the modules MSTK used to find its dependencies
 # include
 # @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules
 # in the cmake module path
+
 include(CMakeFindDependencyMacro)
+
+# Temporarily modify CMAKE module path so we can find our custom
+# modules for packages that don't have config files
+
+set(SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules)
+ 
 if (ENABLE_PARALLEL)
   if (ENABLE_METIS)
     find_dependency(METIS)
@@ -113,6 +146,9 @@ endif ()
 if (ENABLE_ExodusII)
   find_dependency(ExodusII)
 endif ()
+
+# Restore original CMAKE_MODULE_PATH
+set(CMAKE_MODULE_PATH ${SAVED_CMAKE_MODULE_PATH})
 
 
 # include MSTK targets (See Daniel Pfeifer, Effective CMake)
