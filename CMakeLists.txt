@@ -26,7 +26,7 @@ project (MSTK C CXX)
 cmake_minimum_required(VERSION 3.11)
 
 set(MSTK_VERSION_MAJOR 3)
-set(MSTK_VERSION_MINOR 2)
+set(MSTK_VERSION_MINOR 3)
 set(MSTK_VERSION_PATCH 0)
 
 
