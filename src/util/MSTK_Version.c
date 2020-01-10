@@ -22,7 +22,7 @@ extern "C" {
     *major_version = MSTK_VERSION_MAJOR;
     *minor_version = MSTK_VERSION_MINOR;
     *patch_version = MSTK_VERSION_PATCH;
-    sprintf(*version_string,"%s.%s.%s",*major_version, *minor_version, *patch_version);
+    sprintf(*version_string,"%d.%d.%d",*major_version, *minor_version, *patch_version);
   }
 
 #ifdef __cplusplus
