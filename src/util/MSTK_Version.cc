@@ -6,21 +6,25 @@ the root of this repository or at
 https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 */
 
-#ifndef _H_MSTKUTIL
-#define _H_MSTKUTIL
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
+#include "MSTK.h"
+#include "MSTK_util.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
-
-  typedef enum ErrType {MSTK_MESG=0, MSTK_WARN, MSTK_ERROR, MSTK_FATAL} ErrType;
-  
-  void MSTK_Report(const char *, const char *, ErrType);
-  void MSTK_Version(int *major_version, int *minor_version, int *patch_version,
-                    char **version_string);
-  
-#ifdef __cplusplus
-}
 #endif
 
+  void MSTK_Version(int *major_version, int *minor_version, int *patch_version,
+                  char **version_string) {
+    *major_version = MSTK_VERSION_MAJOR;
+    *minor_version = MSTK_VERSION_MINOR;
+    *patch_version = MSTK_VERSION_PATCH;
+    sprintf(*version_string,"%s.%s.%s",*major_version, *minor_version, *patch_version);
+  }
+
+#ifdef __cplusplus
+}
 #endif
