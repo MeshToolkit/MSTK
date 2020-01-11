@@ -36,12 +36,12 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
 endif ()
 
 
-# Once CMake 3.13 is the minimum version, we can use Pkg_ROOT
-# to find packages
 #
-# Also when CMake 3.15 is the minimum version we can ask for
-# find_package to prefer config files and fall back to module
-# files
+# Also when CMake 3.15 is the minimum version we can find_package to
+# prefer config files and fall back to module files
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+endif ()
     
 
 
@@ -205,20 +205,13 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_ZOLTAN)
 
-    if (ZOLTAN_DIR AND NOT Zoltan_DIR)
+    if (NOT Zoltan_DIR AND ZOLTAN_DIR)
       set(Zoltan_DIR ${ZOLTAN_DIR})
-    endif()
-    
-    # if find_package fails in config mode it will set Zoltan_DIR to
-    # Zoltan_DIR-NOTFOUND; so save Zoltan_DIR
-    set(zoltan_dir_save ${Zoltan_DIR})
-
-    find_package(Zoltan QUIET CONFIG PATHS ${Zoltan_DIR})  # try to find thru CMake config file
-    
-    if (NOT Zoltan_FOUND)
-      set(Zoltan_DIR ${zoltan_dir_save})
-      find_package(Zoltan QUIET REQUIRED MODULE)  # fallback to module
     endif ()
+    
+    # will use module for now - with cmake 3.15 onwards it will use
+    # config if available
+    find_package(Zoltan QUIET REQUIRED)
   
     target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PUBLIC ${Zoltan_LIBRARIES})
