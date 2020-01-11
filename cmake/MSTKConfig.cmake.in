@@ -137,21 +137,24 @@ list(APPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules)
 if (ENABLE_PARALLEL)
   if (ENABLE_METIS)
     find_dependency(METIS)
+    set_property(TARGET ${METIS_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
   endif ()
   if (ENABLE_ZOLTAN)
     find_dependency(Zoltan)
+    set_property(TARGET ${Zoltan_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
   endif ()
 endif ()
 
 if (ENABLE_ExodusII)
   find_dependency(ExodusII)
+  set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
 endif ()
 
 # Restore original CMAKE_MODULE_PATH
 set(CMAKE_MODULE_PATH ${SAVED_CMAKE_MODULE_PATH})
 
 
-# include MSTK targets (See Daniel Pfeifer, Effective CMake)
+# include MSTK targets
 include ("${CMAKE_CURRENT_LIST_DIR}/MSTKTargets.cmake")
 
 
