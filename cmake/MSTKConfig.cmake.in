@@ -6,35 +6,43 @@
 
 set(MSTK_VERSION_MAJOR @MSTK_VERSION_MAJOR@ CACHE STRING "Major version of MSTK")
 set(MSTK_VERSION_MINOR @MSTK_VERSION_MINOR@ CACHE STRING "Minor version of MSTK")
+set(MSTK_VERSION_PATCH @MSTK_VERSION_PATCH@ CACHE STRING "Patch version of MSTK")
+set(MSTK_VERSION "@MSTK_VERSION_MAJOR@.@MSTK_VERSION_MINOR@.@MSTK_VERSION_PATCH@" CACHE STRING "MSTK Version")
 
 
 # Compiler Definitions
-set(CMAKE_C_COMPILER @CMAKE_C_COMPILER@ CACHE FILEPATH "C Compiler used for compiling MSTK")
-set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@ CACHE FILEPATH "CXX Compiler used for compiling MSTK")
+set(CMAKE_C_COMPILER @CMAKE_C_COMPILER@ CACHE FILEPATH "DEPRECATED: C Compiler used for compiling MSTK")
+set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@ CACHE FILEPATH "DEPRECATED: CXX Compiler used for compiling MSTK")
 
 
 # Compiler Flags
-set(CMAKE_C_FLAGS "@CMAKE_C_FLAGS@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_C_FLAGS_DEBUG "@CMAKE_C_FLAGS_DEBUG@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_C_FLAGS_RELEASE "@CMAKE_C_FLAGS_RELEASE@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_C_FLAGS_MINSIZEREL "@CMAKE_C_FLAGS_MINSIZEREL@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "@CMAKE_C_FLAGS_RELWITHDEBINFO@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_C_FLAGS "@CMAKE_C_FLAGS@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+set(CMAKE_C_FLAGS_DEBUG "@CMAKE_C_FLAGS_DEBUG@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+set(CMAKE_C_FLAGS_RELEASE "@CMAKE_C_FLAGS_RELEASE@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+set(CMAKE_C_FLAGS_MINSIZEREL "@CMAKE_C_FLAGS_MINSIZEREL@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "@CMAKE_C_FLAGS_RELWITHDEBINFO@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
 
-set(CMAKE_CXX_FLAGS "@CMAKE_CXX_FLAGS@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS "@CMAKE_CXX_FLAGS@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@" CACHE STRING "MSTK C compiler flags")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
+
+
+# MSTK Library target name
+set(MSTK_LIBRARIES "mstk::@MSTKLIB@")
 
 # MSTK Build info
-set(MSTK_BUILD_TYPE @CMAKE_BUILD_TYPE@ CACHE STRING "MSTK build type")
+set(MSTK_BUILD_TYPE @CMAKE_BUILD_TYPE@ CACHE STRING "DEPRECATED: MSTK build type")
 
 # MSTK library 
-set(MSTK_LIBRARY_DIR @INSTALL_DIR@/lib/ CACHE PATH "MSTK library location")
-set(MSTK_LIBRARY_NAME @MSTKLIB@ CACHE STRING "MSTK library name")
+set(MSTK_LIBRARY_DIR @INSTALL_DIR@/lib/ CACHE PATH "DEPRECATED: MSTK library location")
+set(MSTK_LIBRARY_NAME @MSTKLIB@ CACHE STRING "DEPRECATED: MSTK library name")
 
 # MSTK includes
-set(MSTK_INCLUDE_DIR @INSTALL_DIR@/include CACHE PATH "MSTK include file locations")
+set(MSTK_INCLUDE_DIR @INSTALL_DIR@/include CACHE PATH "DEPRECATED: MSTK include file locations")
+
+
 
 # MSTK options and explicit variables (if someone wanted to use them directly)
 
@@ -42,18 +50,30 @@ set(ENABLE_PARALLEL @ENABLE_PARALLEL@ CACHE BOOL "Enable parallel mesh managemen
 
 #-------------------------
 # The following section is Deprecated and will probably disappear in
-# the coming releases. Import the MSTK targets and set it as a
+# the coming releases. Import the MSTK target and set it as a
 # dependency for your system
 # -------------------------
 if (ENABLE_PARALLEL)
   set(ENABLE_METIS @ENABLE_METIS@ CACHE BOOL "Enable use of METIS as a partitioner")
-  set(METIS_DIR @METIS_DIR@ CACHE PATH "DEPRECATED: Path to top level METIS installation dir")
+  if (ENABLE_METIS)
+    # CMake <= 3.11
+    set(METIS_DIR @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+    # CMake > 3.11
+    set(METIS_ROOT @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+  endif ()
+  
   set(METIS_INCLUDE_DIRS @METIS_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to METIS include files")
   set(METIS_LIBRARY_DIR @METIS_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to METIS library")
   set(METIS_LIBRARIES @METIS_LIBRARIES@ CACHE STRING "DEPRECATED: METIS library names")
 
   set(ENABLE_ZOLTAN @ENABLE_ZOLTAN@ CACHE BOOL "Enable use of ZOLTAN as a partitioner")
-  set(ZOLTAN_DIR @ZOLTAN_DIR@ CACHE PATH "DEPRECATED: Path to top level ZOLTAN installation dir")
+  if (ENABLE_ZOLTAN)
+    # CMake <= 3.11
+    set(Zoltan_DIR @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    # CMake > 3.11
+    set(Zoltan_ROOT @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+  endif ()
+  
   set(ZOLTAN_INCLUDE_DIRS @ZOLTAN_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to ZOLTAN include files")
   set(ZOLTAN_LIBRARY_DIR @ZOLTAN_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to ZOLTAN library")
   set(ZOLTAN_LIBRARIES @ZOLTAN_LIBRARIES@ CACHE STRING "DEPRECATED: ZOLTAN library names")
@@ -62,7 +82,11 @@ endif()
 set(ENABLE_ExodusII @ENABLE_ExodusII@ CACHE BOOL "Enable use of Exodus II libraries")
 
 if (ENABLE_ExodusII)
-  set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "DEPRECATED: Path to top level ExodusII installation dir")
+  # CMake <= 3.11
+  set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
+  # CMake > 3.11
+  set(ExodusII_ROOT @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
+  
   set(ExodusII_INCLUDE_DIRS @ExodusII_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to ExodusII include files")
   set(ExodusII_LIBRARY_DIR @ExodusII_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to ExodusII library")
   set(ExodusII_LIBRARIES @ExodusII_LIBRARIES@ CACHE STRING "DEPRECATED: ExodusII library names")
@@ -71,40 +95,69 @@ if (ENABLE_ExodusII)
   # secondary dependency (MSTK->ExodusII->netCDF), this may not have
   # the right values
   set(NetCDF_DIR @NetCDF_DIR@ CACHE STRING "DEPRECATED: Path to top level NetCDF installation dir")
-  set(NetCDF_INCLUDE_DIRS @NetCDF_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to NetCDF include files")
+  set(NetCDF_INCLUDE_DIRS @NetCDF_INCLUDE_DIRS@ CACHE PATH "DEPRECATE?: Path to NetCDF include files")
   set(NetCDF_LIBRARY_DIR @NetCDF_LIBRARY_DIR@ CACHE PATH "DEPRECATED: Path to NetCDF library")
   set(NetCDF_LIBRARIES @NetCDF_LIBRARIES@ CACHE STRING "DEPRECATED: NetCDF library names")
 
   # Since we switched to a target based system and HDF5 is a tertiary
   # dependency (MSTK-ExodusII->netCDF->HDF5), this may not have the
   # right values
-  set(HDF5_ROOT @HDF5_ROOT@ CACHE STRING "DEPRECATED: Path to top level HDF5 installation dir")
+  set(HDF5_ROOT @HDF5_ROOT@ CACHE STRING "DEPRECATE?: Path to top level HDF5 installation dir")
   set(HDF5_INCLUDE_DIRS @HDF5_INCLUDE_DIRS@ CACHE PATH "DEPRECATED: Path to HDF5 include files")
   set(HDF5_LIBRARIES @HDF5_LIBRARIES_EXPORT@ CACHE STRING "DEPRECATED: HDF5 libraries and other necessary link libraries")
 endif()
 
+
 # Since we switched to a target based system, this may not have the right values
-set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "All third party libraries MSTK is built with")
+set(MSTK_TPL_LIBRARIES @MSTK_TPL_LIBRARIES_EXPORT@ CACHE STRING "DEPRECATED: All third party libraries MSTK is built with")
 #-------------------------------
 
-# Find target dependencies (See Daniel Pfeifer, Effective CMake)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+  cmake_policy(SET CMP0074 NEW)
+endif ()
+
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+endif ()
+
+# Find target dependencies
+
 include(CMakeFindDependencyMacro)
+
+# Temporarily modify CMAKE module path so we can find our custom
+# modules for packages that don't have config files
+
+set(SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules)
+
 if (ENABLE_PARALLEL)
   if (ENABLE_METIS)
-    find_dependency(@METIS_LIBRARIES@)
+    find_dependency(METIS)
+    if (TARGET ${METIS_LIBRARIES})
+      set_property(TARGET ${METIS_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+    endif ()
   endif ()
-  if (ENABLE_Zoltan)
-    find_dependency(@Zoltan_LIBRARIES@)
+  if (ENABLE_ZOLTAN)
+    find_dependency(Zoltan)
+    if (TARGET ${Zoltan_LIBRARIES})
+      set_property(TARGET ${Zoltan_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+    endif ()
   endif ()
 endif ()
 
 if (ENABLE_ExodusII)
-  find_dependency(@ExodusII_LIBRARIES@)
+  find_dependency(ExodusII)
+  if (TARGET ${ExodusII_LIBRARIES})
+    set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+  endif ()
 endif ()
 
+# Restore original CMAKE_MODULE_PATH
+set(CMAKE_MODULE_PATH ${SAVED_CMAKE_MODULE_PATH})
 
-# include MSTK targets (See Daniel Pfeifer, Effective CMake)
-include ("${CMAKE_CURRENT_LIST_DIR}/mstkTargets.cmake")
+
+# include MSTK targets
+include ("${CMAKE_CURRENT_LIST_DIR}/MSTKTargets.cmake")
 
 
 

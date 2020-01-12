@@ -45,12 +45,17 @@ https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 extern "C" {
 #endif
 
-/*******************************************************************/
-void MSTK_Init(void);
+  /* Retrieve version info                                           */
+  void MSTK_Version(int *major_version, int *minor_version, int *patch_version,
+                    char **version_string);
 
-/********************************************************************/
-/*        MESH OBJECT OPERATORS                                     */
-/********************************************************************/  
+  
+  /*******************************************************************/
+  void MSTK_Init(void);
+
+  /********************************************************************/
+  /*        MESH OBJECT OPERATORS                                     */
+  /********************************************************************/  
 
   Mesh_ptr    MESH_New(RepType type);
   void        MESH_Delete(Mesh_ptr mesh);

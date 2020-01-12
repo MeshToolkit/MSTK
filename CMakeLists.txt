@@ -26,11 +26,24 @@ project (MSTK C CXX)
 cmake_minimum_required(VERSION 3.11)
 
 set(MSTK_VERSION_MAJOR 3)
-set(MSTK_VERSION_MINOR 2)
+set(MSTK_VERSION_MINOR 3)
 set(MSTK_VERSION_PATCH 0)
 
 
 cmake_policy(SET CMP0017 NEW)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+  cmake_policy(SET CMP0074 NEW)            # Don't ignore Pkg_ROOT vars
+endif ()
+
+
+#
+# Also when CMake 3.15 is the minimum version we can find_package to
+# prefer config files and fall back to module files
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+endif ()
+    
+
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
@@ -59,6 +72,11 @@ add_subdirectory(src)
 add_library(${MSTKLIB} ${mstkfiles})
 message(STATUS "Building library " ${MSTKLIB})
 
+# Alias (Daniel Pfeiffer, Effective CMake) - this allows other
+# projects that use MSTK as a subproject to find_package(mstk::mstk)
+# which does nothing because mstk is already part of the project
+
+add_library(mstk::${MSTKLIB} ALIAS ${MSTKLIB})  # we can use mstk::mstk to refere to mstk
 
 # DEBUG FLAG
 
@@ -169,7 +187,7 @@ if (ENABLE_PARALLEL)
     find_package(METIS QUIET REQUIRED)   # uses MSTK module
     if (NOT METIS_FOUND)
        message(FATAL_ERROR "Error: could not find Metis library\n"
-	  "Try defining Metis_DIR: (-D Metis_DIR:FILEPATH=<Metis_install_prefix>)\n")
+	  "Try defining Metis_DIR or METIS_ROOT or adding location of METIS to CMAKE_PREFIX_PATH \n")
     endif ()
 
     target_include_directories(${MSTKLIB} PUBLIC ${METIS_INCLUDE_DIRS})
@@ -187,20 +205,13 @@ if (ENABLE_PARALLEL)
 
   if (ENABLE_ZOLTAN)
 
-    if (ZOLTAN_DIR AND NOT Zoltan_DIR)
+    if (NOT Zoltan_DIR AND ZOLTAN_DIR)
       set(Zoltan_DIR ${ZOLTAN_DIR})
-    endif()
-
-    # if find_package fails in config mode it will set Zoltan_DIR to
-    # Zoltan_DIR-NOTFOUND; so save Zoltan_DIR
-    set(zoltan_dir_save ${Zoltan_DIR})
-    
-    find_package(Zoltan QUIET CONFIG PATHS ${Zoltan_dir})  # try to find thru CMake config file
-
-    if (NOT Zoltan_FOUND)
-      set(Zoltan_DIR ${zoltan_dir_save})
-      find_package(Zoltan QUIET REQUIRED MODULE)  # fallback to module
     endif ()
+    
+    # will use module for now - with cmake 3.15 onwards it will use
+    # config if available
+    find_package(Zoltan QUIET REQUIRED)
   
     target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PUBLIC ${Zoltan_LIBRARIES})
@@ -292,6 +303,33 @@ add_subdirectory(utils)
 
 add_subdirectory(example)
 
+#######################################################
+# set up headers that will get installed, including a configured MSTK_defines.h
+#######################################################
+
+# Copy all the headers into the PROJECT_BINARY_DIR/include so that
+# they are found before the originals in the PROJECT_SOURCE_DIR. The
+# problem with finding the ones in the PROJECT_SOURCE_DIR is that a
+# header file from there automatically pulls in the unconfigured
+# MSTK_defines.h from there as well leading to a compilation error
+
+file(GLOB ALL_HEADERS ${PROJECT_SOURCE_DIR}/include/*.h)
+foreach (HEADER_FILE ${ALL_HEADERS})
+  file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_BINARY_DIR}/include)
+endforeach(HEADER_FILE)
+configure_file(${PROJECT_SOURCE_DIR}/include/MSTK_defines.h 
+               ${PROJECT_BINARY_DIR}/include/MSTK_defines.h @ONLY)
+
+set(mstk_public_headers 
+  ${PROJECT_SOURCE_DIR}/include/MSTK.h
+  ${PROJECT_SOURCE_DIR}/include/MSTK_types.h
+  ${PROJECT_SOURCE_DIR}/include/MSTK_externs.h
+  ${PROJECT_SOURCE_DIR}/include/MSTK_util.h
+  ${PROJECT_BINARY_DIR}/include/MSTK_defines.h)  # Note the PROJECT_BINARY_DIR
+
+set_target_properties(${MSTKLIB} PROPERTIES PUBLIC_HEADER "${mstk_public_headers}")
+
+
 
 ##########################################################
 # Export targets
@@ -302,13 +340,14 @@ install(TARGETS ${MSTKLIB}
   EXPORT MSTKTargets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib
+  RUNTIME DESTINATION bin
+  PUBLIC_HEADER DESTINATION include
   INCLUDES DESTINATION include
-  CONFIGURATIONS ${CMAKE_BUILD_TYPE}
   )
 install(EXPORT MSTKTargets
   FILE MSTKTargets.cmake
   NAMESPACE mstk::
+  EXPORT_LINK_INTERFACE_LIBRARIES
   DESTINATION lib/cmake/mstk
   )
 
@@ -325,6 +364,17 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake/MSTKConfig.cmake.in
 install(FILES ${PROJECT_BINARY_DIR}/MSTKConfig.cmake 
   DESTINATION lib/cmake/mstk)
 
+#########################################################
+# Also install any module files used for finding the dependencies
+#########################################################
+
+install(FILES
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindMETIS.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindZoltan.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindExodusII.cmake
+  DESTINATION lib/cmake/mstk/modules)
+
+
 #######################################################
 # Also write out a version file      
 #######################################################
@@ -334,27 +384,5 @@ write_basic_package_version_file("MSTKConfigVersion.cmake"
   COMPATIBILITY SameMajorVersion
   )
       
-#######################################################
-# Also put in some information into MSTK.h header file
-#######################################################
-
-file(GLOB ALL_HEADERS ${PROJECT_SOURCE_DIR}/include/*.h)
-foreach (HEADER_FILE ${ALL_HEADERS})
-  file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_BINARY_DIR}/include)
-endforeach(HEADER_FILE)
-configure_file(${PROJECT_SOURCE_DIR}/include/MSTK_defines.h 
-               ${PROJECT_BINARY_DIR}/include/MSTK_defines.h @ONLY)
-
-if (${INSTALL_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
-else ()
-INSTALL(FILES 
-	${PROJECT_BINARY_DIR}/include/MSTK.h
-	${PROJECT_BINARY_DIR}/include/MSTK_defines.h
-	${PROJECT_BINARY_DIR}/include/MSTK_types.h
-	${PROJECT_BINARY_DIR}/include/MSTK_externs.h
-	${PROJECT_BINARY_DIR}/include/MSTK_util.h
-        DESTINATION ${INSTALL_DIR}/include)
-endif ()
-
 
 

@@ -67,6 +67,10 @@ find_package_handle_standard_args(UnitTest++
   DEFAULT_MSG
   UnitTest++_LIBRARY UnitTest++_INCLUDE_DIR)
 
+# find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
+if (NOT UnitTest++_FOUND AND UNITTEST++_FOUND)
+  set(UnitTest++_FOUND ${UNITTEST++_FOUND})
+endif ()
 
 # Create UnitTest++ target
 

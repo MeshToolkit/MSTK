@@ -69,6 +69,10 @@ find_package_handle_standard_args(Zoltan
   DEFAULT_MSG
   Zoltan_LIBRARY Zoltan_INCLUDE_DIR)
 
+# find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
+if (NOT Zoltan_FOUND AND ZOLTAN_FOUND)
+  set(Zoltan_FOUND ${ZOLTAN_FOUND})
+endif ()
 
 # Create Zoltan target
 
