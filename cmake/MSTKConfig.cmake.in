@@ -121,10 +121,6 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
 endif ()
 
 # Find target dependencies
-# If you wish to use the modules MSTK used to find its dependencies
-# include
-# @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules
-# in the cmake module path
 
 include(CMakeFindDependencyMacro)
 
@@ -133,21 +129,27 @@ include(CMakeFindDependencyMacro)
 
 set(SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules)
- 
+
 if (ENABLE_PARALLEL)
   if (ENABLE_METIS)
     find_dependency(METIS)
-    set_property(TARGET ${METIS_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+    if (TARGET ${METIS_LIBRARIES})
+      set_property(TARGET ${METIS_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+    endif ()
   endif ()
   if (ENABLE_ZOLTAN)
     find_dependency(Zoltan)
-    set_property(TARGET ${Zoltan_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+    if (TARGET ${Zoltan_LIBRARIES})
+      set_property(TARGET ${Zoltan_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+    endif ()
   endif ()
 endif ()
 
 if (ENABLE_ExodusII)
   find_dependency(ExodusII)
-  set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+  if (TARGET ${ExodusII_LIBRARIES})
+    set_property(TARGET ${ExodusII_LIBRARIES} PROPERTY IMPORTED_GLOBAL TRUE)
+  endif ()
 endif ()
 
 # Restore original CMAKE_MODULE_PATH
