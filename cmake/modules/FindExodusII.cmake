@@ -14,6 +14,8 @@
 # ExodusII_INCLUDE_DIRS   (PATH)   Path to ExodusII include files
 # ExodusII_LIBRARY        (FILE)   ExodusII library (libzoltan.a, libzoltan.so)
 # ExodusII_LIBRARIES      (LIST)   List of ExodusII targets (ExodusII::ExodusII)
+# ExodusII_ROOT           (PATH)   Top level directory where Exodus is installed
+# ExodusII_DIR            (PATH)   Top level directory where Exodus is installed
 #
 #
 # Additional variables
@@ -48,7 +50,6 @@ endif ()
 
 set(ExodusII_INCLUDE_DIRS "${ExodusII_INCLUDE_DIR}")
 
-
 # Search for libraries
 
 find_library(ExodusII_LIBRARY
@@ -78,11 +79,18 @@ if (NOT ExodusII_VERSION AND ExodusII_INCLUDE_DIR)
   set(ExodusII_VERSION "${exodus_version}")
 endif ()
 
+
+if (NOT ExodusII_ROOT)
+  set(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
+  set(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
+endif ()
+
+
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ExodusII
   DEFAULT_MSG
-  ExodusII_LIBRARY ExodusII_INCLUDE_DIR)
+  ExodusII_LIBRARY ExodusII_INCLUDE_DIR ExodusII_ROOT)
 
 # find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT ExodusII_FOUND AND EXODUSII_FOUND)

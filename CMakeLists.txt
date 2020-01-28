@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.11)
 
 set(MSTK_VERSION_MAJOR 3)
 set(MSTK_VERSION_MINOR 3)
-set(MSTK_VERSION_PATCH 0)
+set(MSTK_VERSION_PATCH 2)
 
 
 cmake_policy(SET CMP0017 NEW)
@@ -383,10 +383,12 @@ install(FILES
 # Also write out a version file      
 #######################################################
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file("MSTKConfigVersion.cmake"
-  VERSION "${MSTK_MAJOR_VERSION}.${MSTK_MINOR_VERSION}.${MSTK_PATCH_VERSION}"
+write_basic_package_version_file(MSTKConfigVersion.cmake
+  VERSION "${MSTK_VERSION_MAJOR}.${MSTK_VERSION_MINOR}.${MSTK_VERSION_PATCH}"
   COMPATIBILITY SameMajorVersion
   )
+install(FILES ${PROJECT_BINARY_DIR}/MSTKConfigVersion.cmake
+  DESTINATION lib/cmake/mstk)
       
 
 
