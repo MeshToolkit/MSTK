@@ -11,6 +11,8 @@
 # METIS_INCLUDE_DIRS   (PATH)   Path to METIS include files
 # METIS_LIBRARY        (FILE)   METIS library (libzoltan.a, libzoltan.so)
 # METIS_LIBRARIES      (LIST)   List of METIS targets (METIS::METIS)
+# METIS_ROOT           (PATH)   Top level directory where METIS is installed
+# METIS_DIR            (PATH)   Top level directory where METIS is installed
 #
 # #############################################################################
 
@@ -62,12 +64,16 @@ endif ()
 
 set(METIS_VERSION PC_METIS_VERSION})  # No guarantee
 
+if (NOT METIS_ROOT)
+  set(METIS_DIR "${METIS_INCLUDE_DIR}/.." CACHE PATH "Top level dir of METIS installation" FORCE)
+  set(METIS_ROOT "${METIS_INCLUDE_DIR}/.." CACHE PATH "Top level dir of METIS installation" FORCE)
+endif ()
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(METIS
   DEFAULT_MSG
-  METIS_LIBRARY METIS_INCLUDE_DIR)
+  METIS_LIBRARY METIS_INCLUDE_DIR METIS_ROOT)
 
 
 # Create METIS target

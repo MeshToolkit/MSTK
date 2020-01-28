@@ -11,6 +11,8 @@
 # Zoltan_INCLUDE_DIRS   (PATH)   Path to Zoltan include files
 # Zoltan_LIBRARY        (FILE)   Zoltan library (libzoltan.a, libzoltan.so)
 # Zoltan_LIBRARIES      (LIST)   List of Zoltan targets (Zoltan::Zoltan)
+# Zoltan_ROOT           (PATH)   Top level directory where Zoltan is installed
+# Zoltan_DIR            (PATH)   Top level directory where Zoltan is installed
 #
 # #############################################################################
 
@@ -62,12 +64,17 @@ endif ()
 
 set(Zoltan_VERSION PC_Zoltan_VERSION})  # No guarantee
 
+if (NOT Zoltan_ROOT)
+  set(Zoltan_DIR "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
+  set(Zoltan_ROOT "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Zoltan
   DEFAULT_MSG
-  Zoltan_LIBRARY Zoltan_INCLUDE_DIR)
+  Zoltan_LIBRARY Zoltan_INCLUDE_DIR Zoltan_ROOT)
 
 # find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT Zoltan_FOUND AND ZOLTAN_FOUND)

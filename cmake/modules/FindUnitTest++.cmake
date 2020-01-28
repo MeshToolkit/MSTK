@@ -11,6 +11,9 @@
 # UnitTest++_INCLUDE_DIRS   (PATH)   Path to UnitTest++ include files
 # UnitTest++_LIBRARY        (FILE)   UnitTest++ library (libzoltan.a, libzoltan.so)
 # UnitTest++_LIBRARIES      (LIST)   List of UnitTest++ targets (MSTK::UnitTest++)
+# UnitTest++_ROOT           (PATH)   Top level directory where UnitTest++ is installed
+# UnitTest++_DIR            (PATH)   Top level directory where UnitTest++ is installed
+#
 #
 # #############################################################################
 
@@ -60,12 +63,17 @@ endif ()
 
 set(UnitTest++_VERSION PC_UnitTest++_VERSION})  # No guarantee
 
+if (NOT UnitTest++_ROOT)
+  set(UnitTest++_DIR "${UnitTest++_INCLUDE_DIR}/.." CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
+  set(UnitTest++_ROOT "${UnitTest++_INCLUDE_DIR}/.." CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(UnitTest++
   DEFAULT_MSG
-  UnitTest++_LIBRARY UnitTest++_INCLUDE_DIR)
+  UnitTest++_LIBRARY UnitTest++_INCLUDE_DIR UnitTest++_ROOT)
 
 # find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT UnitTest++_FOUND AND UNITTEST++_FOUND)
