@@ -65,9 +65,9 @@ if (ENABLE_PARALLEL)
   set(ENABLE_ZOLTAN @ENABLE_ZOLTAN@ CACHE BOOL "Enable use of ZOLTAN as a partitioner")
   if (ENABLE_ZOLTAN)
     # CMake <= 3.11
-    set(Zoltan_DIR @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    set(Zoltan_DIR @Zoltan_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
     # CMake > 3.11
-    set(Zoltan_ROOT @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    set(Zoltan_ROOT @Zoltan_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
   endif ()
   
 endif()
@@ -79,17 +79,6 @@ if (ENABLE_ExodusII)
   set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
   # CMake > 3.11
   set(ExodusII_ROOT @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
-  
-  # Since we switched to a target based system and netCDF is a
-  # secondary dependency (MSTK->ExodusII->netCDF), this may not have
-  # the right values
-  set(NetCDF_ROOT @NetCDF_DIR@ CACHE STRING "DEPRECATED: Path to top level NetCDF installation dir")
-  set(NetCDF_DIR @NetCDF_DIR@ CACHE STRING "DEPRECATED: Path to top level NetCDF installation dir")
-
-  # Since we switched to a target based system and HDF5 is a tertiary
-  # dependency (MSTK-ExodusII->netCDF->HDF5), this may not have the
-  # right values
-  set(HDF5_ROOT @HDF5_ROOT@ CACHE STRING "DEPRECATE?: Path to top level HDF5 installation dir")
 endif()
 
 
