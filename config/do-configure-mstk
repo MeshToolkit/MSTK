@@ -24,8 +24,8 @@
 # partitioner (specify at least one) If Metis is enabled, it will
 # assume that the metis version is 5 or greater library you are
 # linking to. The path to METIS can be specified in CMAKE_PREFIX_PATH
-# or using METIS_DIR. The path to Zoltan can be specified in
-# CMAKE_PREFIX_PATH or using Zoltan_DIR
+# or using METIS_ROOT. The path to Zoltan can be specified in
+# CMAKE_PREFIX_PATH or using Zoltan_ROOT
 #
 # -D ENABLE_METIS=yes|no  (default=no)
 # -D ENABLE_ZOLTAN=yes|no (default=no)
@@ -83,13 +83,13 @@ cmake \
     -D ENABLE_ZOLTAN=yes \
     -D ENABLE_METIS=yes \
     -D ENABLE_ExodusII=yes \
-    -D NetCDF_DIR:FILEPATH=/path/to/netCDF/dir \
-    -D ExodusII_DIR:FILEPATH=/path/to/ExodusII/dir \
-    -D METIS_DIR:FILEPATH=/path/to/METIS/dir \
-    -D ZOLTAN_DIR:FILEPATH=/path/to/Zoltan/dir \
-    -D ParMETIS_DIR:FILEPATH=/path/to/parmetis/dir/if/zoltan/needs/it \
-    -D PTScotch_DIR:FILEPATH=/path/to/ptscotch/dir/if/zoltan/needs/it \
+    -D netCDF_ROOT:FILEPATH=/path/to/netCDF/dir \
+    -D ExodusII_ROOT:FILEPATH=/path/to/ExodusII/dir \
+    -D METIS_ROOT:FILEPATH=/path/to/METIS/dir \
+    -D ZOLTAN_ROOT:FILEPATH=/path/to/Zoltan/dir \
+    -D ParMETIS_ROOT:FILEPATH=/path/to/parmetis/dir/if/zoltan/needs/it \
+    -D PTScotch_ROOT:FILEPATH=/path/to/ptscotch/dir/if/zoltan/needs/it \
     -D ENABLE_Tests=yes \
-    -D UnitTest_DIR:FILEPATH=/path/to/UnitTest++/dir \
+    -D UnitTest++_ROOT:FILEPATH=/path/to/UnitTest++/dir \
     ${SOURCE} 
 
