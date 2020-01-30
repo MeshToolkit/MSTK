@@ -120,6 +120,12 @@ if (ExodusII_FOUND AND NOT TARGET ExodusII::ExodusII)
     find_package(netCDF QUIET REQUIRED MODULE)
   endif ()
 
+  # If the package was found using the config file, only netCDF_DIR
+  # may be set not netCDF_ROOT.
+  if (netCDF_DIR AND NOT netCDF_ROOT)
+    set(netCDF_ROOT ${netCDF_DIR} CACHE PATH "Top level installation dir of netCDF")
+  endif ()
+
   # Add netCDF as a dependency of ExodusII
   target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
 endif()
