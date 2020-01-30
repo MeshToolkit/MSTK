@@ -48,11 +48,6 @@ set(MSTK_INCLUDE_DIR @INSTALL_DIR@/include CACHE PATH "DEPRECATED: MSTK include 
 
 set(ENABLE_PARALLEL @ENABLE_PARALLEL@ CACHE BOOL "Enable parallel mesh management")
 
-#-------------------------
-# The following section is Deprecated and will probably disappear in
-# the coming releases. Import the MSTK target and set it as a
-# dependency for your system
-# -------------------------
 if (ENABLE_PARALLEL)
   set(ENABLE_METIS @ENABLE_METIS@ CACHE BOOL "Enable use of METIS as a partitioner")
   if (ENABLE_METIS)
@@ -81,7 +76,7 @@ if (ENABLE_ExodusII)
   set(ExodusII_ROOT @ExodusII_ROOT@ CACHE PATH "Path to top level ExodusII installation dir")
 
   # CMake <= 3.11 (using netCDF_ROOT here as netCDF_DIR is picking up the wrong path)
-  set(netCDF_DIR @netCDF_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
+  set(netCDF_DIR @netCDF_DIR@ CACHE PATH "Path to top level netCDF installation dir")
   # CMake > 3.11
   set(netCDF_ROOT @netCDF_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
 endif()
