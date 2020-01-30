@@ -59,7 +59,7 @@ if (ENABLE_PARALLEL)
     # CMake <= 3.11
     set(METIS_DIR @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
     # CMake > 3.11
-    set(METIS_ROOT @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+    set(METIS_ROOT @METIS_ROOT@ CACHE PATH "Path to top level METIS installation dir")
   endif ()
   
   set(ENABLE_ZOLTAN @ENABLE_ZOLTAN@ CACHE BOOL "Enable use of ZOLTAN as a partitioner")
@@ -67,7 +67,7 @@ if (ENABLE_PARALLEL)
     # CMake <= 3.11
     set(Zoltan_DIR @Zoltan_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
     # CMake > 3.11
-    set(Zoltan_ROOT @Zoltan_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    set(Zoltan_ROOT @Zoltan_ROOT@ CACHE PATH "Path to top level ZOLTAN installation dir")
   endif ()
   
 endif()
@@ -78,7 +78,12 @@ if (ENABLE_ExodusII)
   # CMake <= 3.11
   set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
   # CMake > 3.11
-  set(ExodusII_ROOT @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
+  set(ExodusII_ROOT @ExodusII_ROOT@ CACHE PATH "Path to top level ExodusII installation dir")
+
+  # CMake <= 3.11
+  set(netCDF_DIR @netCDF_DIR@ CACHE PATH "Path to top level netCDF installation dir")
+  # CMake > 3.11
+  set(netCDF_ROOT @ExodusII_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
 endif()
 
 
