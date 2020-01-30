@@ -80,10 +80,10 @@ if (ENABLE_ExodusII)
   # CMake > 3.11
   set(ExodusII_ROOT @ExodusII_ROOT@ CACHE PATH "Path to top level ExodusII installation dir")
 
-  # CMake <= 3.11
-  set(netCDF_DIR @netCDF_DIR@ CACHE PATH "Path to top level netCDF installation dir")
+  # CMake <= 3.11 (using netCDF_ROOT here as netCDF_DIR is picking up the wrong path)
+  set(netCDF_DIR @netCDF_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
   # CMake > 3.11
-  set(netCDF_ROOT @ExodusII_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
+  set(netCDF_ROOT @netCDF_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
 endif()
 
 
