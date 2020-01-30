@@ -9,8 +9,9 @@
 # Following variables are set:
 # netCDF_FOUND          (BOOL)   Flag indicating if netCDF was found
 # netCDF_INCLUDE_DIRS   (PATH)   Path to netCDF include files
-# netCDF_LIBRARY        (FILE)   netCDF library (libzoltan.a, libzoltan.so)
-# netCDF_LIBRARIES      (LIST)   List of netCDF targets (MSTK::netCDF)
+# netCDF_LIBRARY        (FILE)   netCDF library (libnetcdf.a, libnetcdf.so)
+# netCDF_LIBRARIES      (LIST)   List of netCDF targets (netCDF::netCDF)
+# netCDF_ROOT           (PATH)   Top level directory where netCDF is installed
 #
 # #############################################################################
 
@@ -64,6 +65,7 @@ set(netCDF_VERSION PC_netCDF_VERSION})  # No guarantee
 # other upstream packages that attempt to find the netCDF package
 # due to transitive dependencies
 if (not netCDF_ROOT)
+  set(netCDF_Dir "${netCDF_INCLUDE_DIR}/.." CACHE PATH "Top level dir of netCDF installation" FORCE)  # can delete for cmake version >= 3.12
   set(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." CACHE PATH "Top level dir of netCDF installation" FORCE)
 endif ()
 

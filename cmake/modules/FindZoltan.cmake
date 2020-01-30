@@ -12,7 +12,6 @@
 # Zoltan_LIBRARY        (FILE)   Zoltan library (libzoltan.a, libzoltan.so)
 # Zoltan_LIBRARIES      (LIST)   List of Zoltan targets (Zoltan::Zoltan)
 # Zoltan_ROOT           (PATH)   Top level directory where Zoltan is installed
-# Zoltan_DIR            (PATH)   Top level directory where Zoltan is installed
 #
 # #############################################################################
 
@@ -68,6 +67,7 @@ set(Zoltan_VERSION PC_Zoltan_VERSION})  # No guarantee
 # other upstream packages that attempt to find the Zoltan package
 # due to transitive dependencies
 if (NOT Zoltan_ROOT)
+  set(Zoltan_DIR "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)  # Can be deleted for cmake version >= 3.12
   set(Zoltan_ROOT "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
 endif ()
 

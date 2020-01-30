@@ -15,7 +15,6 @@
 # ExodusII_LIBRARY        (FILE)   ExodusII library (libzoltan.a, libzoltan.so)
 # ExodusII_LIBRARIES      (LIST)   List of ExodusII targets (ExodusII::ExodusII)
 # ExodusII_ROOT           (PATH)   Top level directory where Exodus is installed
-# ExodusII_DIR            (PATH)   Top level directory where Exodus is installed
 #
 #
 # Additional variables
@@ -83,6 +82,7 @@ endif ()
 # other upstream packages that attempt to find the ExodusII package
 # due to transitive dependencies
 if (NOT ExodusII_ROOT)
+  set(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)  # can be deleted for cmake version >= 3.12
   set(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
 endif ()
 
