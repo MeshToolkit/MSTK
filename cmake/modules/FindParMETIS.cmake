@@ -65,6 +65,13 @@ endif ()
 
 set(ParMETIS_VERSION ${PC_ParMETIS_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the ParMETIS package
+# due to transitive dependencies
+if (NOT ParMETIS_ROOT)
+  set(ParMETIS_ROOT "${ParMETIS_INCLUDE_DIR}/.." CACHE PATH "Top level installation dir of ParMETIS" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)

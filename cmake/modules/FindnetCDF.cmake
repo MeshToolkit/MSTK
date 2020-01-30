@@ -60,12 +60,18 @@ endif ()
 
 set(netCDF_VERSION PC_netCDF_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the netCDF package
+# due to transitive dependencies
+if (not netCDF_ROOT)
+  set(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." CACHE PATH "Top level dir of netCDF installation" FORCE)
+endif ()
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(netCDF
   FOUND_VAR netCDF_FOUND
-  REQUIRED_VARS netCDF_LIBRARY netCDF_INCLUDE_DIR)
+  REQUIRED_VARS netCDF_LIBRARY netCDF_INCLUDE_DIR netCDF_ROOT)
 
 # find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT netCDF_FOUND AND NETCDF_FOUND)

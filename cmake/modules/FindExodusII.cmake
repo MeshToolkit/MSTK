@@ -79,9 +79,10 @@ if (NOT ExodusII_VERSION AND ExodusII_INCLUDE_DIR)
   set(ExodusII_VERSION "${exodus_version}")
 endif ()
 
-
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the ExodusII package
+# due to transitive dependencies
 if (NOT ExodusII_ROOT)
-  set(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
   set(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
 endif ()
 

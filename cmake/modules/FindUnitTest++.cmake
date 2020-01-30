@@ -63,8 +63,10 @@ endif ()
 
 set(UnitTest++_VERSION PC_UnitTest++_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the UnitTest++ package
+# due to transitive dependencies
 if (NOT UnitTest++_ROOT)
-  set(UnitTest++_DIR "${UnitTest++_INCLUDE_DIR}/.." CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
   set(UnitTest++_ROOT "${UnitTest++_INCLUDE_DIR}/.." CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
 endif ()
 

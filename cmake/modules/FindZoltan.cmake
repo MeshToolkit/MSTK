@@ -64,8 +64,10 @@ endif ()
 
 set(Zoltan_VERSION PC_Zoltan_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the Zoltan package
+# due to transitive dependencies
 if (NOT Zoltan_ROOT)
-  set(Zoltan_DIR "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
   set(Zoltan_ROOT "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
 endif ()
 
