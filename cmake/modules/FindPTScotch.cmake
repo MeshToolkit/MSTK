@@ -97,6 +97,15 @@ endif ()
 
 set(PTScotch_VERSION ${PC_PTScotch_VERSION})  # No guarantee
 
+
+if (NOT PTScotch_ROOT)
+  get_filename_component(PTScotch_ROOT "${PTScotch_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of PTScotch installation" FORCE)
+endif ()
+if (NOT PTScotch_DIR)
+  get_filename_component(PTScotch_DIR "${PTScotch_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of PTScotch installation" FORCE)
+endif ()
+
+
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PTScotch

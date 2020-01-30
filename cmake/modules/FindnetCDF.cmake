@@ -64,10 +64,13 @@ set(netCDF_VERSION PC_netCDF_VERSION})  # No guarantee
 # Not sure if this is the right way to do it, but this is to help
 # other upstream packages that attempt to find the netCDF package
 # due to transitive dependencies
-if (not netCDF_ROOT)
-  set(netCDF_Dir "${netCDF_INCLUDE_DIR}/.." CACHE PATH "Top level dir of netCDF installation" FORCE)  # can delete for cmake version >= 3.12
-  set(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." CACHE PATH "Top level dir of netCDF installation" FORCE)
+if (NOT netCDF_ROOT)
+  get_filename_component(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of netCDF installation" FORCE)
 endif ()
+if (NOT netCDF_DIR)
+  get_filename_component(netCDF_DIR "${netCDF_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of netCDF installation" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)

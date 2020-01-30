@@ -82,8 +82,10 @@ endif ()
 # other upstream packages that attempt to find the ExodusII package
 # due to transitive dependencies
 if (NOT ExodusII_ROOT)
-  set(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)  # can be deleted for cmake version >= 3.12
-  set(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
+  get_filename_component(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of ExodusII installation" FORCE)
+endif ()
+if (NOT ExodusII_DIR)
+  get_filename_component(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of ExodusII installation" FORCE)
 endif ()
 
 
@@ -117,7 +119,7 @@ if (ExodusII_FOUND AND NOT TARGET ExodusII::ExodusII)
     # Fallback to MSTK module named FindNetCDF.cmake
     find_package(netCDF QUIET REQUIRED MODULE)
   endif ()
-  
+
   # Add netCDF as a dependency of ExodusII
   target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
 endif()
