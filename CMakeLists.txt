@@ -141,6 +141,7 @@ if (ENABLE_ExodusII)
   # For backward compatibility
   if (NOT netCDF_DIR AND NetCDF_DIR)
     set(netCDF_DIR ${NetCDF_DIR})
+    set(netCDF_ROOT ${netCDF_DIR})
   endif ()
 
   ##############################################################################
@@ -148,6 +149,10 @@ if (ENABLE_ExodusII)
   # get it as part of Trilinos - http:://trilinos.sandia.gov
   ##############################################################################
 
+  if (ExodusII_DIR AND NOT ExodusII_ROOT)
+    set(ExodusII_ROOT ${ExodusII_DIR})
+  endif ()
+  
   # First seee if a config file got installed as part of the SEACAS project
   # NOTE: NOT ABLE TO PROCESS THIS CORRECTLY
 #  find_package(SEACASExodus QUIET CONFIG PATHS ${ExodusII_DIR})
@@ -197,6 +202,10 @@ if (ENABLE_PARALLEL)
     target_link_libraries(${MSTKLIB} PUBLIC ${METIS_LIBRARIES})
 
     message(STATUS "Found Metis library: ${METIS_LIBRARY}")
+
+    if (METIS_DIR AND NOT METIS_ROOT)
+      set(METIS_ROOT ${METIS_DIR})
+    endif ()
   endif ()
 
   ##############################################################################
@@ -207,6 +216,7 @@ if (ENABLE_PARALLEL)
 
     if (NOT Zoltan_DIR AND ZOLTAN_DIR)
       set(Zoltan_DIR ${ZOLTAN_DIR})
+      set(Zoltan_ROOT ${Zoltan_DIR})
     endif ()
     
     # will use module for now - with cmake 3.15 onwards it will use
