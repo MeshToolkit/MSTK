@@ -70,9 +70,12 @@ set(ParMETIS_VERSION ${PC_ParMETIS_VERSION})  # No guarantee
 # other upstream packages that attempt to find the ParMETIS package
 # due to transitive dependencies
 if (NOT ParMETIS_ROOT)
-  set(ParMETIS_DIR "${ParMETIS_INCLUDE_DIR}/.." CACHE PATH "Top level installation dir of ParMETIS" FORCE)  # Can be deleted for cmake version >= 3.12
-  set(ParMETIS_ROOT "${ParMETIS_INCLUDE_DIR}/.." CACHE PATH "Top level installation dir of ParMETIS" FORCE)
+  get_filename_component(ParMETIS_ROOT "${ParMETIS_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of ParMETIS installation" FORCE)
 endif ()
+if (NOT ParMETIS_DIR)
+  get_filename_component(ParMETIS_DIR "${ParMETIS_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of ParMETIS installation" FORCE)
+endif ()
+
 
 
 # Finish setting standard variables if everything is found

@@ -67,9 +67,12 @@ set(METIS_VERSION PC_METIS_VERSION})  # No guarantee
 # other upstream packages that attempt to find the METIS package
 # due to transitive dependencies
 if (NOT METIS_ROOT)
-  set(METIS_DIR "${METIS_INCLUDE_DIR}/.." CACHE PATH "Top level dir of METIS installation" FORCE)  # Can be eliminated for cmake version >= 3.12
-  set(METIS_ROOT "${METIS_INCLUDE_DIR}/.." CACHE PATH "Top level dir of METIS installation" FORCE)
+  get_filename_component(METIS_ROOT "${METIS_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of METIS installation" FORCE)
 endif ()
+if (NOT METIS_DIR)
+  get_filename_component(METIS_DIR "${METIS_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of METIS installation" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
