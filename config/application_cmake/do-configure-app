@@ -8,9 +8,10 @@
 # Run this script as ./do_configure and then run 'make install'
 # or 'make' followed by 'make install'
 #
-# If you compiled MSTK with parallel support, use mpicc and mpiCC as
-# your C and C++ compilers so that the right MPI includes and libraries
-# are found
+# If you compiled MSTK with parallel support, find_package(MPI) and
+# use mpicc and mpiCC as your C and C++ compilers within your
+# CMakeLists.txt so that the right MPI includes and libraries are
+# found
 #
 # Unless your MSTK installation specifically excluded ExodusII support,
 # you must specify where the ExodusII and NetCDF packages are installed
@@ -22,20 +23,10 @@
 #                            ="RelWithDebugInfo" for optimized code with debug symbols
 #                            ="MinSizeRel" for min size optimized library
 #
-# Set "USE_DEBUG_MSTK_LIBS" to "yes" along with "CMAKE_BUILD_TYPE" to "Debug"
-# to debug both the project and the underlying MSTK libraries. If you use this
-# option, you must build MSTK with "CMAKE_BUILD_TYPE" equal to "Debug"
-# If this parameter is not specified, the optimized MSTK libraries are used
-# Similarly, set "USE_DEBUG_MCGEOM_LIBS" to "yes" to debug the underlying
-# MCGeom libraries.
-#
-#
+
 # CMAKE_INSTALL_PREFIX indicates the top level directory for the installation
 # the project executable or library and include files
 #
-# if APPEND_ARCHOS_TO_INSTALLPATH=yes, then ARCHOS will be appended to 
-# install paths of libraries and executables (e.g. executables will be
-# installed in $CMAKE_INSTALL_PREFIX/bin/i686_linux) 
 #
 
 
@@ -43,13 +34,10 @@ rm -f CMakeCache.txt
 
 SOURCE=path_to_my_app_source
 
-export ARCHOS="`uname -m`_`uname -s`"
-
 /usr/bin/cmake \
-  -D CMAKE_C_COMPILER:FILEPATH="mpicc" \
+  -D CMAKE_PREFIX_PATH:FILEPATH="semicolon/separated;list/of;directories/where/tpls/are;located" \
+  -D CMAKE_C_COMPILER:FILEPATH="mpicc" \  
   -D CMAKE_BUILD_TYPE:STRING="Debug" \
   -D CMAKE_INSTALL_PREFIX:FILEPATH=$SOURCE \
-  -D CMAKE_C_FLAGS:STRING="-g" \
-  -D APPEND_ARCHOS_TO_INSTALLPATH=yes \
-  -D MSTK_DIR:FILEPATH=path_to_mstk_installation \
+  -D MSTK_ROOT:FILEPATH=path_to_mstk_installation \
   $SOURCE

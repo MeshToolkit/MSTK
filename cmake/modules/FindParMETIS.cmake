@@ -12,8 +12,9 @@
 # Following variables are set:
 # ParMETIS_FOUND          (BOOL)   Flag indicating if ParMETIS was found
 # ParMETIS_INCLUDE_DIRS   (PATH)   Path to ParMETIS include files
-# ParMETIS_LIBRARY        (FILE)   ParMETIS library (libzoltan.a, libzoltan.so)
+# ParMETIS_LIBRARY        (FILE)   ParMETIS library (libparmetis.a, libparmetis.so)
 # ParMETIS_LIBRARIES      (LIST)   List of ParMETIS targets (ParMETIS::ParMETIS)
+# ParMETIS_ROOT           (PATH)   Top level directory where ParMETIS is installed
 #
 # #############################################################################
 
@@ -65,12 +66,20 @@ endif ()
 
 set(ParMETIS_VERSION ${PC_ParMETIS_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the ParMETIS package
+# due to transitive dependencies
+if (NOT ParMETIS_ROOT)
+  set(ParMETIS_DIR "${ParMETIS_INCLUDE_DIR}/.." CACHE PATH "Top level installation dir of ParMETIS" FORCE)  # Can be deleted for cmake version >= 3.12
+  set(ParMETIS_ROOT "${ParMETIS_INCLUDE_DIR}/.." CACHE PATH "Top level installation dir of ParMETIS" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ParMETIS
   DEFAULT_MSG
-  ParMETIS_LIBRARY ParMETIS_INCLUDE_DIR)
+  ParMETIS_LIBRARY ParMETIS_INCLUDE_DIR ParMETIS_ROOT)
 
 # find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT ParMETIS_FOUND AND PARMETIS_FOUND)
