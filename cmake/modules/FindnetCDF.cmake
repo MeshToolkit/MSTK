@@ -65,10 +65,12 @@ set(netCDF_VERSION PC_netCDF_VERSION})  # No guarantee
 # other upstream packages that attempt to find the netCDF package
 # due to transitive dependencies
 if (NOT netCDF_ROOT)
-  get_filename_component(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of netCDF installation" FORCE)
+  get_filename_component(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." ABSOLUTE)
+  set(netCDF_ROOT ${netCDF_ROOT} CACHE STRING "Top level dir of netCDF installation" FORCE)
 endif ()
 if (NOT netCDF_DIR)
-  get_filename_component(netCDF_DIR "${netCDF_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of netCDF installation" FORCE)
+  get_filename_component(netCDF_DIR "${netCDF_INCLUDE_DIR}/.." ABSOLUTE)
+  set(netCDF_DIR ${netCDF_DIR} CACHE STRING "Top level dir of netCDF installation" FORCE)
 endif ()
 
 

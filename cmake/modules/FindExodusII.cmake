@@ -82,10 +82,12 @@ endif ()
 # other upstream packages that attempt to find the ExodusII package
 # due to transitive dependencies
 if (NOT ExodusII_ROOT)
-  get_filename_component(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of ExodusII installation" FORCE)
+  get_filename_component(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE)
+  set(ExodusII_ROOT ${ExodusII_ROOT} CACHE STRING "Top level dir of ExodusII installation" FORCE)
 endif ()
 if (NOT ExodusII_DIR)
-  get_filename_component(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of ExodusII installation" FORCE)
+  get_filename_component(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE)
+  set(ExodusII_DIR ${ExodusII_DIR} CACHE STRING "Top level dir of ExodusII installation" FORCE)
 endif ()
 
 
