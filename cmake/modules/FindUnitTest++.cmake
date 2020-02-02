@@ -66,10 +66,12 @@ set(UnitTest++_VERSION PC_UnitTest++_VERSION})  # No guarantee
 # other upstream packages that attempt to find the UnitTest++ package
 # due to transitive dependencies
 if (NOT UnitTest++_ROOT)
-  get_filename_component(UnitTest++_ROOT "${UnitTest++_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of UnitTest++ installation" FORCE)
+  get_filename_component(UnitTest++_ROOT "${UnitTest++_INCLUDE_DIR}/.." ABSOLUTE)
+  set(UnitTest++_ROOT ${UnitTest++_ROOT} CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
 endif ()
 if (NOT UnitTest++_DIR)
-  get_filename_component(UnitTest++_DIR "${UnitTest++_INCLUDE_DIR}/.." ABSOLUTE CACHE "Top level dir of UnitTest++ installation" FORCE)
+  get_filename_component(UnitTest++_DIR "${UnitTest++_INCLUDE_DIR}/.." ABSOLUTE)
+  set(UnitTest++_DIR ${UnitTest++_DIR} CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
 endif ()
 
 
