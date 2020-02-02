@@ -71,11 +71,11 @@ set(ParMETIS_VERSION ${PC_ParMETIS_VERSION})  # No guarantee
 # due to transitive dependencies
 if (NOT ParMETIS_ROOT)
   get_filename_component(ParMETIS_ROOT "${ParMETIS_INCLUDE_DIR}/.." ABSOLUTE)
-  set(ParMETIS_ROOT ${ParMETIS_ROOT} CACHE STRING "Top level dir of ParMETIS installation" FORCE)
+  set(ParMETIS_ROOT ${ParMETIS_ROOT} CACHE PATH "Top level dir of ParMETIS installation" FORCE)
 endif ()
 if (NOT ParMETIS_DIR)
   get_filename_component(ParMETIS_DIR "${ParMETIS_INCLUDE_DIR}/.." ABSOLUTE)
-  set(ParMETIS_DIR ${ParMETIS_DIR} CACHE STRING "Top level dir of ParMETIS installation" FORCE)
+  set(ParMETIS_DIR ${ParMETIS_DIR} CACHE PATH "Top level dir of ParMETIS installation" FORCE)
 endif ()
 
 

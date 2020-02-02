@@ -68,11 +68,11 @@ set(METIS_VERSION PC_METIS_VERSION})  # No guarantee
 # due to transitive dependencies
 if (NOT METIS_ROOT)
   get_filename_component(METIS_ROOT "${METIS_INCLUDE_DIR}/.." ABSOLUTE)
-  set(METIS_ROOT ${METIS_ROOT} CACHE STRING "Top level dir of METIS installation" FORCE)
+  set(METIS_ROOT ${METIS_ROOT} CACHE PATH "Top level dir of METIS installation" FORCE)
 endif ()
 if (NOT METIS_DIR)
   get_filename_component(METIS_DIR "${METIS_INCLUDE_DIR}/.." ABSOLUTE)
-  set(METIS_DIR ${METIS_DIR} CACHE STRING "Top level dir of METIS installation" FORCE)
+  set(METIS_DIR ${METIS_DIR} CACHE PATH "Top level dir of METIS installation" FORCE)
 endif ()
 
 

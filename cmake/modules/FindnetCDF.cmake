@@ -66,11 +66,11 @@ set(netCDF_VERSION PC_netCDF_VERSION})  # No guarantee
 # due to transitive dependencies
 if (NOT netCDF_ROOT)
   get_filename_component(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." ABSOLUTE)
-  set(netCDF_ROOT ${netCDF_ROOT} CACHE STRING "Top level dir of netCDF installation" FORCE)
+  set(netCDF_ROOT ${netCDF_ROOT} CACHE PATH "Top level dir of netCDF installation" FORCE)
 endif ()
 if (NOT netCDF_DIR)
   get_filename_component(netCDF_DIR "${netCDF_INCLUDE_DIR}/.." ABSOLUTE)
-  set(netCDF_DIR ${netCDF_DIR} CACHE STRING "Top level dir of netCDF installation" FORCE)
+  set(netCDF_DIR ${netCDF_DIR} CACHE PATH "Top level dir of netCDF installation" FORCE)
 endif ()
 
 

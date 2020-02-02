@@ -68,11 +68,11 @@ set(Zoltan_VERSION PC_Zoltan_VERSION})  # No guarantee
 # due to transitive dependencies
 if (NOT Zoltan_ROOT)
   get_filename_component(Zoltan_ROOT "${Zoltan_INCLUDE_DIR}/.." ABSOLUTE)
-  set(Zoltan_ROOT ${Zoltan_ROOT} CACHE STRING "Top level dir of Zoltan installation" FORCE)
+  set(Zoltan_ROOT ${Zoltan_ROOT} CACHE PATH "Top level dir of Zoltan installation" FORCE)
 endif ()
 if (NOT Zoltan_DIR)
   get_filename_component(Zoltan_DIR "${Zoltan_INCLUDE_DIR}/.." ABSOLUTE)
-  set(Zoltan_DIR ${Zoltan_DIR} CACHE STRING "Top level dir of Zoltan installation" FORCE)
+  set(Zoltan_DIR ${Zoltan_DIR} CACHE PATH "Top level dir of Zoltan installation" FORCE)
 endif ()
 
 
