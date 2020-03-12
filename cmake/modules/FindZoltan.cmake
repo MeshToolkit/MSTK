@@ -32,7 +32,7 @@ find_path(Zoltan_INCLUDE_DIR
 
 if (NOT Zoltan_INCLUDE_DIR)
   if (Zoltan_FIND_REQUIRED)
-    message(FATAL "Cannot locate zoltan.h")
+      message(FATAL_ERROR "Cannot locate zoltan.h")
   else (Zoltan_FIND_REQUIRED)
     if (NOT Zoltan_FIND_QUIETLY)
       message(WARNING "Cannot locate zoltan.h")
@@ -46,14 +46,14 @@ set(Zoltan_INCLUDE_DIRS "${Zoltan_INCLUDE_DIR}")
 # Search for libraries
 
 find_library(Zoltan_LIBRARY
-  NAMES zoltan
+  NAMES zoltan trilinos_zoltan
   HINTS ${PC_Zoltan_LIBRARY_DIRS}
   PATHS ${Zoltan_DIR}
   PATH_SUFFIXES lib lib64)
 
 if (NOT Zoltan_LIBRARY)
   if (Zoltan_FIND_REQUIRED)
-    message(FATAL "Can not locate Zoltan library")
+      message(FATAL_ERROR "Can not locate Zoltan library")
   else (Zoltan_FIND_REQUIRED)
     if (NOT Zoltan_FIND_QUIETLY)
       message(WARNING "Cannot locate Zoltan library")
