@@ -341,17 +341,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   MPI_Allreduce(MPI_IN_PLACE,vertex_ov_label,num*max_nbv,MPI_INT,MPI_LOR,comm);    
 
   /* calculate starting global id number for vertices*/
-  if (!have_GIDs) {
-    global_id = 1;
-    for(i = 0; i < rank; i++) 
-      global_id = global_id + global_mesh_info[10*i+1] - global_mesh_info[10*i+9];
-    for(i = 0; i < nv; i++) {
-      mv = MESH_Vertex(submesh,i);
-      if (MV_PType(mv) == PGHOST)
-        continue;
-      MV_Set_GlobalID(mv,global_id++);
-      MV_Set_MasterParID(mv,rank);
-    }
+  global_id = 1;
+  for(i = 0; i < rank; i++) 
+    global_id = global_id + global_mesh_info[10*i+1] - global_mesh_info[10*i+9];
+  for(i = 0; i < nv; i++) {
+    mv = MESH_Vertex(submesh,i);
+    if (MV_PType(mv) == PGHOST)
+      continue;
+    if (!MV_GlobalID(mv)) MV_Set_GlobalID(mv,global_id++);
+    MV_Set_MasterParID(mv,rank);
   }
 
       
