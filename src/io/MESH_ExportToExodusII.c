@@ -1050,18 +1050,13 @@ extern "C" {
 
     for (i = 0; i < num_side_set_glob; i++) {
 
-      int nsides = MSet_Num_Entries(side_sets_glob[i]);
-#ifdef EXODUS_6_DEPRECATED
-      ex_put_side_set_param(exoid, side_set_ids_glob[i], nsides, 0);
-#else
-      ex_put_set_param(exoid, EX_SIDE_SET, side_set_ids_glob[i], nsides, 0);
-#endif
+      int maxsides = MSet_Num_Entries(side_sets_glob[i]);
+      int *elem_list = (int *) malloc(maxsides*sizeof(int));
+      int *side_list = (int *) malloc(maxsides*sizeof(int));
 
-      int *elem_list = (int *) malloc(nsides*sizeof(int));
-      int *side_list = (int *) malloc(nsides*sizeof(int));
-
-      if (nrowned) {
-	idx = 0; j = 0;
+      int nsides = 0;
+      if (nrowned) {        
+	idx = 0;
 	while ((mf = MSet_Next_Entry(side_sets_glob[i],&idx))) {
           if (MF_PType(mf) == PGHOST &&  !MF_OnParBoundary(mf)) continue;
 
@@ -1082,8 +1077,8 @@ extern "C" {
           }
 #endif
 
-          elem_list[j] = elem_id[MR_ID(mr)-1];
-          if (elem_list[j] == 0)
+          elem_list[nsides] = elem_id[MR_ID(mr)-1];
+          if (elem_list[nsides] == 0)
             MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 
 	  
@@ -1092,13 +1087,12 @@ extern "C" {
              Exodus II file */
 
           MRType mrtype;
-
           MEnt_Get_AttVal(mr,block_type_att,&mrtype,NULL,NULL);
 
           int lid;
           if (mrtype == TET || mrtype == PRISM || mrtype == HEX) {
             lid = MF_LocalID_in_Region(mf,mr);
-            side_list[j] = mstk2exo_facemap[mrtype][lid];
+            side_list[nsides] = mstk2exo_facemap[mrtype][lid];
           }
           else { 
             List_ptr rfaces = MR_Faces(mr);
@@ -1111,24 +1105,17 @@ extern "C" {
               "Messed up mesh. Face not found in region connected to face",
                           MSTK_FATAL);
               
-            side_list[j] = lid+1;
+            side_list[nsides] = lid+1;
           }
 
 	  List_Delete(fregs);
-	  j++;
+	  nsides++;
 	}
-
-#ifdef EXODUS_6_DEPRECATED        
-	ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
-#else
-        ex_put_set(exoid, EX_SIDE_SET, side_set_ids_glob[i], elem_list,
-                   side_list);
-#endif
 
       }
       else {
 
-	idx = 0; j = 0;
+	idx = 0;
 	while ((me = MSet_Next_Entry(side_sets_glob[i],&idx))) {
 	  List_ptr efaces = ME_Faces(me);
 
@@ -1148,28 +1135,30 @@ extern "C" {
 	     hoops to determine what the element number will be when
 	     it is read */
 
-          elem_list[j] = elem_id[MF_ID(mf)-1];
-          if (elem_list[j] == 0)
+          elem_list[nsides] = elem_id[MF_ID(mf)-1];
+          if (elem_list[nsides] == 0)
             MSTK_Report("MESH_ExportToExodusII","Invalid Exodus II element ID",MSTK_ERROR);
 	  
           int lid = ME_LocalID_in_Face(me,mf);
-          side_list[j] = lid+1;
+          side_list[nsides] = lid+1;
 
 	  List_Delete(efaces);
-	  j++;
+	  nsides++;
 	}
+      }
+
 
 #ifdef EXODUS_6_DEPRECATED
-	ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
+      ex_put_side_set_param(exoid, side_set_ids_glob[i], nsides, 0);
+      ex_put_side_set(exoid, side_set_ids_glob[i], elem_list, side_list);
 #else
-        ex_put_set(exoid, EX_SIDE_SET, side_set_ids_glob[i], elem_list,
+      ex_put_set_param(exoid, EX_SIDE_SET, side_set_ids_glob[i], nsides, 0);
+      ex_put_set(exoid, EX_SIDE_SET, side_set_ids_glob[i], elem_list,
                    side_list);
 #endif
-      }
 
       free(elem_list);
       free(side_list);
-
     }
 
     if (verbose)
