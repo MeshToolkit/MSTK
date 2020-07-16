@@ -62,6 +62,20 @@ endif (NOT INSTALL_DIR)
 set (MSTKLIB mstk)
 
 
+# shared libraries tweaks; enforcing absolute path
+if (BUILD_SHARED_LIBS)
+  set(CMAKE_SKIP_BUILD_RPATH FALSE)
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_RPATH}")
+else()
+  SET(CMAKE_SKIP_INSTALL_RPATH ON CACHE BOOL "Turn off for static install." FORCE)
+  SET(CMAKE_SKIP_RPATH ON CACHE BOOL "Turn off for static install." FORCE)
+endif()
+
+
 # Add the actual source directory - these will build up the list "mstkfiles"
 
 add_subdirectory(src)
