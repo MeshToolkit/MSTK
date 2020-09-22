@@ -400,6 +400,7 @@ install(FILES
   ${PROJECT_SOURCE_DIR}/cmake/modules/FindMETIS.cmake
   ${PROJECT_SOURCE_DIR}/cmake/modules/FindZoltan.cmake
   ${PROJECT_SOURCE_DIR}/cmake/modules/FindExodusII.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/modules/FindnetCDF.cmake
   DESTINATION lib/cmake/mstk/modules)
 
 
