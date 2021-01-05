@@ -130,6 +130,7 @@ if (ExodusII_FOUND AND NOT TARGET ExodusII::ExodusII)
 
   # Add netCDF as a dependency of ExodusII
   target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
+  message(DEBUG "Including netcdf: ${netCDF_LIBRARIES}")
 endif()
 
   

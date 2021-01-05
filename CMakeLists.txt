@@ -62,7 +62,7 @@ endif (NOT INSTALL_DIR)
 set (MSTKLIB mstk)
 
 
-# shared libraries tweaks; enforcing absolute path
+# shared libraries tweaks: enforcing absolute path
 if (BUILD_SHARED_LIBS)
   set(CMAKE_SKIP_BUILD_RPATH FALSE)
   set(CMAKE_SKIP_INSTALL_RPATH FALSE)
