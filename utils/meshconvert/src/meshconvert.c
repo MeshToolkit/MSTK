@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"partition-method = 0, METIS\n");
     fprintf(stderr,"                 = 1, ZOLTAN with GRAPH partioning\n");
     fprintf(stderr,"                 = 2, ZOLTAN with RCB partitioning\n");
-    fprintf(stderr,"                 = 3, read partitioning from coloring.txt file\n");
+    fprintf(stderr,"                 = 3, read partitioning from coloring.bin file\n");
     fprintf(stderr,"Choose 2 if you want to avoid partitioning models\n");
     fprintf(stderr,"with high aspect ratio along the short directions\n");
     fprintf(stderr,"\n");
