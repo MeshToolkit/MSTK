@@ -42,3 +42,7 @@ int MESH_PartitionWithColoringFile(Mesh_ptr mesh, int nparts, int **part) {
   fclose(fid);
   return 1;
 }
+
+#ifdef __cplusplus
+  }
+#endif
