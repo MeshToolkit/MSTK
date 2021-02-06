@@ -112,6 +112,14 @@ int MESH_Get_Partitioning(Mesh_ptr mesh, int method, int **part, MSTK_Comm comm)
 
     break;
   }
+  case 3: {
+    /* This reads a coloring file */
+    if (rank == 0) {
+      ok = MESH_PartitionWithColoringFile(mesh, num, part);
+    }
+
+    break;
+  }
   default:
     MSTK_Report("MESH_Get_Partition","Unknown partitioning method",MSTK_FATAL);
   }
