@@ -141,7 +141,6 @@ int main(int argc, char *argv[]) {
       else if (strncmp(argv[i],"--partition-method",18) == 0 ||
                strncmp(argv[i],"--partition_method",18) == 0) {
         sscanf(argv[i]+19,"%d",&partmethod);
-        partition = 1;
       }
       else if (strncmp(argv[i],"--parallel-check",16) == 0 ||
                strncmp(argv[i],"--parallel_check",16) == 0) {
@@ -488,12 +487,12 @@ int main(int argc, char *argv[]) {
     case GMV:
       if (rank == 0)
         fprintf(stderr,"Exporting mesh to GMV format...");
-      ok = MESH_ExportToFile(mesh,outfname,"gmv",-1,NULL,NULL,comm);
+      ok = MESH_ExportToFile(mesh,outfname,"gmv",0,NULL,NULL,comm);
       break;
     case EXODUSII:case NEMESISI:
       if (rank == 0)
         fprintf(stderr,"Exporting mesh to ExodusII/NemesisI format...");
-      ok = MESH_ExportToFile(mesh,outfname,"exodusii",-1,NULL,NULL,comm);
+      ok = MESH_ExportToFile(mesh,outfname,"exodusii",0,NULL,NULL,comm);
       break;
     case CGNS:
       if (rank == 0)
@@ -510,12 +509,12 @@ int main(int argc, char *argv[]) {
     case X3D:
       if (rank == 0)
         fprintf(stderr,"Exporting mesh to FLAG/X3D format...");
-      ok = MESH_ExportToFile(mesh,outfname,"x3d",-1,NULL,NULL,comm);
+      ok = MESH_ExportToFile(mesh,outfname,"x3d",0,NULL,NULL,comm);
       break;
     case STL:
       if (rank == 0)
         fprintf(stderr,"Exporting mesh to STL format...");
-      ok = MESH_ExportToFile(mesh, outfname,"stl",-1,NULL,NULL,comm);
+      ok = MESH_ExportToFile(mesh, outfname,"stl",0,NULL,NULL,comm);
       break;
     case DX:
       if (rank == 0)
