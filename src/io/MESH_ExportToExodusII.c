@@ -1283,7 +1283,9 @@ extern "C" {
     char veckey[16] = "_veccomp";
     int keylen = strlen(veckey);
     
-    if (num_node_atts_glob) {
+    if (natt >= 0 && num_node_atts_glob) {
+      /* TODO: if natt > 0, we have to look in attnames and filter out
+       * unneeded ones */
 
       /* If there are some vector/tensor attributes, each of their
          components has to be written out separately by suffixing the
@@ -1412,7 +1414,10 @@ extern "C" {
 
 
 
-    if (num_element_atts_glob) {
+    if (natt >= 0 && num_element_atts_glob) {
+      /* TODO: if natt > 0, we have to look in attnames and filter out
+       * unneeded ones */
+
       /* If there are some vector/tensor attributes, each of their
          components has to be written out separately by suffixing the
          attribute name with a keyword and component index */
