@@ -526,7 +526,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   
   /* must write out matid and partelm and then add additional cell data */
   /* Apparently writing out non-standard node data is causing problems - so write out only matid and partelm data */
-  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
+  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt);
   
   /* End of header information */
   fprintf(fp,"end_header\n");
@@ -1156,7 +1156,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     atttype = MAttrib_Get_Type(attrib);
     
     MAttrib_Get_Name(attrib,attname);
-    fprintf(fp,"%s ",attname);
+    fprintf(fp,"%s\n",attname);
     
     if (nr) {
       idx = 0;
