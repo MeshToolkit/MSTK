@@ -521,12 +521,11 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     }
   }
 
-  /* Apparently writing out non-standard node data is causing problems in FLAG - so skip */
+  /* Writing out non-standard node data is causing problems in FLAG */
   fprintf(fp,"   %-22s %10d\n","node_data_fields",nnodatt);
   
   /* must write out matid and partelm and then add additional cell data */
-  /* Apparently writing out non-standard node data is causing problems - so write out only matid and partelm data */
-  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt);
+  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
   
   /* End of header information */
   fprintf(fp,"end_header\n");
