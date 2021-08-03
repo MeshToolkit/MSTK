@@ -285,7 +285,8 @@ extern "C" {
 	
 	/* find a contiguous range of elem_ids starting from ibeg */
 	int iend = ibeg;
-	while (elem_ids[iend+1] == elem_ids[iend]+1) iend++;
+	while ((iend < nelems-1) && (elem_ids[iend+1] == elem_ids[iend]+1))
+          iend++;
 
 	int begel = elem_ids[ibeg];
 	int endel = elem_ids[iend];
@@ -1779,8 +1780,8 @@ extern "C" {
 	    int ibeg = 0;
 	    while (ibeg < nelems) {
 	      int iend = ibeg;
-	      while (elem_ids[iend+1] == elem_ids[iend]+1) iend++;
-	      int nelems_cur = iend - ibeg + 1;
+	      while ((iend < nelems-1) && (elem_ids[iend+1] == elem_ids[iend]+1))
+                iend++;
 
 	      int begel = elem_ids[ibeg];
 	      
@@ -1802,7 +1803,7 @@ extern "C" {
 		    status = ex_get_partial_var(exoid, time_step, EX_ELEM_BLOCK,
 						varindex2+1, elblock_ids[b],
 						jbeg+1, nelems_cur,
-						elem_var_vals[k]+jbeg);
+						elem_var_vals[k]+ibeg);
 		    if (status < 0) {
 		      sprintf(mesg,
 			      "Error reading element variables in Exodus II file %s\n",
@@ -1814,7 +1815,7 @@ extern "C" {
 		  for (int j = 0; j < nelems_cur; j++) {
 		    double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_Delete
 		    for (int k = 0; k < ncomp; k++)
-		      pval[k] = elem_var_vals[k][jbeg+j];
+		      pval[k] = elem_var_vals[k][ibeg+j];
 
 		    int localid = global2local_elem_map[begel+j];
 		    MEntity_ptr ment = (mstk_elem_type == MREGION) ?
@@ -1844,8 +1845,8 @@ extern "C" {
 	  int ibeg = 0;
 	  while (ibeg < nelems) {
 	    int iend = ibeg;
-	    while (elem_ids[iend+1] == elem_ids[iend]+1) iend++;
-	    int nelems_cur = iend - ibeg + 1;
+	    while ((iend < nelems-1) && (elem_ids[iend+1] == elem_ids[iend]+1))
+              iend++;
 	    
 	    int begel = elem_ids[ibeg];
 	    
@@ -1863,7 +1864,7 @@ extern "C" {
 		/* ex_get_partial_var is using indices starting from 1 */
 		status = ex_get_partial_var(exoid, time_step, EX_ELEM_BLOCK,
 					    varindex+1, elblock_ids[b], jbeg+1,
-					    nelems_cur, elem_var_vals+jbeg);
+					    nelems_cur, elem_var_vals+ibeg);
 		if (status < 0) {
 		  sprintf(mesg,
 			  "Error reading element variables in Exodus II file %s\n",
@@ -1877,7 +1878,7 @@ extern "C" {
                       MESH_RegionFromID(mesh,localid) :
                       MESH_FaceFromID(mesh,localid);
 		  
-		  MEnt_Set_AttVal(ment,mattrib,0,elem_var_vals[jbeg+j],NULL);
+		  MEnt_Set_AttVal(ment,mattrib,0,elem_var_vals[ibeg+j],NULL);
 		}
 	      }
 	    }
