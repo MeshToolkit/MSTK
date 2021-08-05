@@ -48,15 +48,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   char                  modfilename[256];
   int                   jv, je, jr, jf;
   int                   nv, ne, nf, nr, nrf, nfv, nef, nfe, nfr, nvout;
-  int			i, found, k, nmeshatt, ival;
+  int			i, found, k, nmeshatt, ival=0;
   int                   nalloc, ngent;
   int                   attentdim, j, idx;
   int                   ndup, max_nrf, max_nfe;
   int                   oppfid, oppeid, nf2, ne2;
   int                   nnodatt, ncellatt;
   int                   vid, eid, fid, rid;
-  double		vxyz[3], rval;
-  void                 *pval;
+  double		vxyz[3], rval=0.0;
+  void                 *pval=NULL;
   FILE		        *fp;
 
   int                   pid = 0, numprocs = 1;
@@ -521,19 +521,11 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     }
   }
 
-  /* Apparently writing out non-standard node data is causing problems - so skip */
-  /*
-    fprintf(fp,"   %-22s %10d\n","node_data_fields",nnodatt);
-  */
-  fprintf(fp,"   %-22s %10d\n","node_data_fields",0);
+  /* Writing out non-standard node data is causing problems in FLAG */
+  fprintf(fp,"   %-22s %10d\n","node_data_fields",nnodatt);
   
   /* must write out matid and partelm and then add additional cell data */
-  /* Apparently writing out non-standard node data is causing problems - so write out only matid and partelm data */
-  /*
-    fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
-  */
-  fprintf(fp,"   %-22s %10d\n","cell_data_fields",2);
-  
+  fprintf(fp,"   %-22s %10d\n","cell_data_fields",ncellatt+2);
   
   /* End of header information */
   fprintf(fp,"end_header\n");
@@ -974,9 +966,12 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     }
 
     idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx)))
+    while ((face = MESH_Next_Face(mesh,&idx))) {
       MEnt_Rem_AttVal(face,oppatt);
+      MEnt_Rem_AttVal(face,opppidatt);
+    }
     MAttrib_Delete(oppatt);
+    MAttrib_Delete(opppidatt);
   }
   else {
 
@@ -1030,9 +1025,12 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     }
 
     idx = 0;
-    while ((edge = MESH_Next_Edge(mesh,&idx)))
+    while ((edge = MESH_Next_Edge(mesh,&idx))) {
       MEnt_Rem_AttVal(edge,oppatt);
+      MEnt_Rem_AttVal(edge,opppidatt);
+    }
     MAttrib_Delete(oppatt);
+    MAttrib_Delete(opppidatt);
 
   }
 
@@ -1150,48 +1148,46 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /* Write out any other cell based attributes, if requested */
 
-  /* Apparently these are causing problems so we will comment it out */
+  /* Apparently these are causing problems in FLAG so we will comment it out */
 
-  /*
-    for (i = 0; i < ncellatt; i++) {
+  for (i = 0; i < ncellatt; i++) {
     attrib = cellatts[i];
     atttype = MAttrib_Get_Type(attrib);
     
     MAttrib_Get_Name(attrib,attname);
-    fprintf(fp,"%s ",attname);
+    fprintf(fp,"%s\n",attname);
     
     if (nr) {
-    idx = 0;
-    while ((region = MESH_Next_Region(mesh,&idx))) {
-    if (MR_PType(region) == PGHOST) continue;
-
-    MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
+      idx = 0;
+      while ((region = MESH_Next_Region(mesh,&idx))) {
+        if (MR_PType(region) == PGHOST) continue;
+        
+        MEnt_Get_AttVal(region,attrib,&ival,&rval,&pval);
 	
-    if (atttype == INT)
-    fprintf(fp,"% 20.12E\n",(double)ival);
-    else if (atttype == DOUBLE)
-    fprintf(fp,"% 20.12E\n", rval);
-    }
+        if (atttype == INT)
+          fprintf(fp,"% 20.12E\n",(double)ival);
+        else if (atttype == DOUBLE)
+          fprintf(fp,"% 20.12E\n", rval);
+      }
     }
     else {
-    idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {
-    if (MF_PType(face) == PGHOST) continue;
-
-    MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
+      idx = 0;
+      while ((face = MESH_Next_Face(mesh,&idx))) {
+        if (MF_PType(face) == PGHOST) continue;
+        
+        MEnt_Get_AttVal(face,attrib,&ival,&rval,&pval);
 	
-    if (atttype == INT)
-    fprintf(fp,"% 20.12E\n",(double)ival);
-    else if (atttype == DOUBLE)
-    fprintf(fp,"% 20.12E\n", rval);
+        if (atttype == INT)
+          fprintf(fp,"% 20.12E\n",(double)ival);
+        else if (atttype == DOUBLE)
+          fprintf(fp,"% 20.12E\n", rval);
+      }
     }
-    }
-
+    
     strcpy(tmpstr,"end_");
     strcat(tmpstr,attname);
     fprintf(fp,"%s\n",tmpstr);
-    }
-  */
+  }
 
   if (cellatts) free(cellatts);
   
@@ -1204,32 +1200,30 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   fprintf(fp,"node_data\n");
 
-  /*
-    for (i = 0; i < ncellatt; i++) {
+  for (i = 0; i < nnodatt; i++) {
     attrib = nodatts[i];
     atttype = MAttrib_Get_Type(attrib);
 
     MAttrib_Get_Name(attrib,attname);
-    fprintf(fp,"%s ",attname);
+    fprintf(fp,"%s\n",attname);
     
     idx = 0;
     while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
-    \/\* have to check that this is not a pure ghost node surrounded by only ghost elements \*\/
-    MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
+      /* have to check that this is not a pure ghost node surrounded by only ghost elements */
+      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
       
-    if (atttype == INT)
-    fprintf(fp,"% 20.12E\n",(double)ival);
-    else if (atttype == DOUBLE)
-    fprintf(fp,"% 20.12E\n", rval);
+      if (atttype == INT)
+        fprintf(fp,"% 20.12E\n",(double)ival);
+      else if (atttype == DOUBLE)
+        fprintf(fp,"% 20.12E\n", rval);
     }  
-
+    
     strcpy(tmpstr,"end_");
     strcat(tmpstr,attname);
     fprintf(fp,"%s\n",tmpstr);
-    }
-
-    if (nodatts) free(nodatts);
-  */
+  }
+  
+  if (nodatts) free(nodatts);
   
   fprintf(fp,"end_node_data\n");
 
@@ -1380,20 +1374,6 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MAttrib_Delete(eidatt_tmp);
   MAttrib_Delete(fidatt_tmp);
   MAttrib_Delete(ridatt_tmp);
-  
-  if (nr) {
-    idx = 0;
-    while ((face = MESH_Next_Face(mesh,&idx))) {
-      MEnt_Rem_AttVal(face,oppatt);
-      MEnt_Rem_AttVal(face,opppidatt);
-    }
-  } else {
-    idx = 0;
-    while ((edge = MESH_Next_Edge(mesh,&idx))) {
-      MEnt_Rem_AttVal(edge,oppatt);
-      MEnt_Rem_AttVal(edge,opppidatt);
-    }
-  }
   
   return 1;
 }
