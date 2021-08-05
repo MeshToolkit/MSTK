@@ -1518,7 +1518,9 @@ extern "C" {
       
       for (int i = 0; i < nsidesets_total; i++) {
 
-	sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
+        status = ex_get_name(exoid, EX_SIDE_SET, sideset_ids[i], sidesetname);
+        if (status != 0 || strlen(sidesetname) == 0)  // No name assigned - make up one
+          sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
 	sidesetatt = MAttrib_New(mesh,sidesetname,INT,mstk_elem_type-1);
 	sideset = MSet_New(mesh,sidesetname,mstk_elem_type-1);
