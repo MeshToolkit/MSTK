@@ -496,7 +496,6 @@ extern "C" {
 	MR_Set_MasterParID(gmr,part_no);
         if (!MR_GlobalID(gmr)) MR_Set_GlobalID(gmr,grid++);
 	MR_Set_GlobalID(lmr,MR_GlobalID(gmr));
-        grid++;
 	MR_Set_Faces(lmr,nrf,lrfaces,lrfdirs);
 
 	lmrlist = List_New(0);
