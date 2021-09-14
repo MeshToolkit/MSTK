@@ -15,7 +15,6 @@
 # ExodusII_LIBRARY        (FILE)   ExodusII library (libzoltan.a, libzoltan.so)
 # ExodusII_LIBRARIES      (LIST)   List of ExodusII targets (ExodusII::ExodusII)
 # ExodusII_ROOT           (PATH)   Top level directory where Exodus is installed
-# ExodusII_DIR            (PATH)   Top level directory where Exodus is installed
 #
 #
 # Additional variables
@@ -79,10 +78,16 @@ if (NOT ExodusII_VERSION AND ExodusII_INCLUDE_DIR)
   set(ExodusII_VERSION "${exodus_version}")
 endif ()
 
-
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the ExodusII package
+# due to transitive dependencies
 if (NOT ExodusII_ROOT)
-  set(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
-  set(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Exodus II installation" FORCE)
+  get_filename_component(ExodusII_ROOT "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE)
+  set(ExodusII_ROOT ${ExodusII_ROOT} CACHE PATH "Top level dir of ExodusII installation" FORCE)
+endif ()
+if (NOT ExodusII_DIR)
+  get_filename_component(ExodusII_DIR "${ExodusII_INCLUDE_DIR}/.." ABSOLUTE)
+  set(ExodusII_DIR ${ExodusII_DIR} CACHE PATH "Top level dir of ExodusII installation" FORCE)
 endif ()
 
 
@@ -116,7 +121,13 @@ if (ExodusII_FOUND AND NOT TARGET ExodusII::ExodusII)
     # Fallback to MSTK module named FindNetCDF.cmake
     find_package(netCDF QUIET REQUIRED MODULE)
   endif ()
-  
+
+  # If the package was found using the config file, only netCDF_DIR
+  # may be set not netCDF_ROOT.
+  if (netCDF_DIR AND NOT netCDF_ROOT)
+    set(netCDF_ROOT ${netCDF_DIR} CACHE PATH "Top level installation dir of netCDF")
+  endif ()
+
   # Add netCDF as a dependency of ExodusII
   target_link_libraries(${ExodusII_LIBRARIES} INTERFACE ${netCDF_LIBRARIES})
 endif()

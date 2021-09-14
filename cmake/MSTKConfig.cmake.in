@@ -10,23 +10,8 @@ set(MSTK_VERSION_PATCH @MSTK_VERSION_PATCH@ CACHE STRING "Patch version of MSTK"
 set(MSTK_VERSION "@MSTK_VERSION_MAJOR@.@MSTK_VERSION_MINOR@.@MSTK_VERSION_PATCH@" CACHE STRING "MSTK Version")
 
 
-# Compiler Definitions
 set(CMAKE_C_COMPILER @CMAKE_C_COMPILER@ CACHE FILEPATH "DEPRECATED: C Compiler used for compiling MSTK")
 set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@ CACHE FILEPATH "DEPRECATED: CXX Compiler used for compiling MSTK")
-
-
-# Compiler Flags
-set(CMAKE_C_FLAGS "@CMAKE_C_FLAGS@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_C_FLAGS_DEBUG "@CMAKE_C_FLAGS_DEBUG@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_C_FLAGS_RELEASE "@CMAKE_C_FLAGS_RELEASE@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_C_FLAGS_MINSIZEREL "@CMAKE_C_FLAGS_MINSIZEREL@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "@CMAKE_C_FLAGS_RELWITHDEBINFO@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-
-set(CMAKE_CXX_FLAGS "@CMAKE_CXX_FLAGS@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@" CACHE STRING "MSTK C compiler flags")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@" CACHE STRING "DEPRECATED: MSTK C compiler flags")
 
 
 # MSTK Library target name
@@ -48,26 +33,21 @@ set(MSTK_INCLUDE_DIR @INSTALL_DIR@/include CACHE PATH "DEPRECATED: MSTK include 
 
 set(ENABLE_PARALLEL @ENABLE_PARALLEL@ CACHE BOOL "Enable parallel mesh management")
 
-#-------------------------
-# The following section is Deprecated and will probably disappear in
-# the coming releases. Import the MSTK target and set it as a
-# dependency for your system
-# -------------------------
 if (ENABLE_PARALLEL)
   set(ENABLE_METIS @ENABLE_METIS@ CACHE BOOL "Enable use of METIS as a partitioner")
   if (ENABLE_METIS)
     # CMake <= 3.11
     set(METIS_DIR @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
     # CMake > 3.11
-    set(METIS_ROOT @METIS_DIR@ CACHE PATH "Path to top level METIS installation dir")
+    set(METIS_ROOT @METIS_ROOT@ CACHE PATH "Path to top level METIS installation dir")
   endif ()
   
   set(ENABLE_ZOLTAN @ENABLE_ZOLTAN@ CACHE BOOL "Enable use of ZOLTAN as a partitioner")
   if (ENABLE_ZOLTAN)
     # CMake <= 3.11
-    set(Zoltan_DIR @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    set(Zoltan_DIR @Zoltan_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
     # CMake > 3.11
-    set(Zoltan_ROOT @ZOLTAN_DIR@ CACHE PATH "Path to top level ZOLTAN installation dir")
+    set(Zoltan_ROOT @Zoltan_ROOT@ CACHE PATH "Path to top level ZOLTAN installation dir")
   endif ()
   
 endif()
@@ -78,18 +58,12 @@ if (ENABLE_ExodusII)
   # CMake <= 3.11
   set(ExodusII_DIR @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
   # CMake > 3.11
-  set(ExodusII_ROOT @ExodusII_DIR@ CACHE PATH "Path to top level ExodusII installation dir")
-  
-  # Since we switched to a target based system and netCDF is a
-  # secondary dependency (MSTK->ExodusII->netCDF), this may not have
-  # the right values
-  set(NetCDF_ROOT @NetCDF_DIR@ CACHE STRING "DEPRECATED: Path to top level NetCDF installation dir")
-  set(NetCDF_DIR @NetCDF_DIR@ CACHE STRING "DEPRECATED: Path to top level NetCDF installation dir")
+  set(ExodusII_ROOT @ExodusII_ROOT@ CACHE PATH "Path to top level ExodusII installation dir")
 
-  # Since we switched to a target based system and HDF5 is a tertiary
-  # dependency (MSTK-ExodusII->netCDF->HDF5), this may not have the
-  # right values
-  set(HDF5_ROOT @HDF5_ROOT@ CACHE STRING "DEPRECATE?: Path to top level HDF5 installation dir")
+  # CMake <= 3.11 (using netCDF_ROOT here as netCDF_DIR is picking up the wrong path)
+  set(netCDF_DIR @netCDF_DIR@ CACHE PATH "Path to top level netCDF installation dir")
+  # CMake > 3.11
+  set(netCDF_ROOT @netCDF_ROOT@ CACHE PATH "Path to top level netCDF installation dir")
 endif()
 
 
@@ -111,9 +85,9 @@ include(CMakeFindDependencyMacro)
 
 set(SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
-  list(PREPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules)
+  list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules)
 else ()
-  set(CMAKE_MODULE_PATH "@CMAKE_INSTALL_PREFIX@/lib/cmake/mstk/modules;${CMAKE_MODULE_PATH}")
+  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules;${CMAKE_MODULE_PATH}")
 endif ()
 
 if (ENABLE_PARALLEL)

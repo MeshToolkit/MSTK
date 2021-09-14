@@ -9,8 +9,9 @@
 # Following variables are set:
 # netCDF_FOUND          (BOOL)   Flag indicating if netCDF was found
 # netCDF_INCLUDE_DIRS   (PATH)   Path to netCDF include files
-# netCDF_LIBRARY        (FILE)   netCDF library (libzoltan.a, libzoltan.so)
-# netCDF_LIBRARIES      (LIST)   List of netCDF targets (MSTK::netCDF)
+# netCDF_LIBRARY        (FILE)   netCDF library (libnetcdf.a, libnetcdf.so)
+# netCDF_LIBRARIES      (LIST)   List of netCDF targets (netCDF::netCDF)
+# netCDF_ROOT           (PATH)   Top level directory where netCDF is installed
 #
 # #############################################################################
 
@@ -60,12 +61,24 @@ endif ()
 
 set(netCDF_VERSION PC_netCDF_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the netCDF package
+# due to transitive dependencies
+if (NOT netCDF_ROOT)
+  get_filename_component(netCDF_ROOT "${netCDF_INCLUDE_DIR}/.." ABSOLUTE)
+  set(netCDF_ROOT ${netCDF_ROOT} CACHE PATH "Top level dir of netCDF installation" FORCE)
+endif ()
+if (NOT netCDF_DIR)
+  get_filename_component(netCDF_DIR "${netCDF_INCLUDE_DIR}/.." ABSOLUTE)
+  set(netCDF_DIR ${netCDF_DIR} CACHE PATH "Top level dir of netCDF installation" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(netCDF
   FOUND_VAR netCDF_FOUND
-  REQUIRED_VARS netCDF_LIBRARY netCDF_INCLUDE_DIR)
+  REQUIRED_VARS netCDF_LIBRARY netCDF_INCLUDE_DIR netCDF_ROOT)
 
 # find_package_handle_standard_args ignores case and sets PACKAGE_FOUND
 if (NOT netCDF_FOUND AND NETCDF_FOUND)

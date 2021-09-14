@@ -544,7 +544,9 @@ extern "C" {
       
         for (i = 0; i < nsidesets; i++) {
 
-          sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
+          status = ex_get_name(exoid, EX_SIDE_SET, sideset_ids[i], sidesetname);
+          if (status != 0 || strlen(sidesetname) == 0)  // No name assigned - make up one
+            sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
           sidesetatt = MAttrib_New(mesh,sidesetname,INT,MEDGE);
           sideset = MSet_New(mesh,sidesetname,MEDGE);
@@ -1616,7 +1618,9 @@ extern "C" {
       
         for (i = 0; i < nsidesets; i++) {
 
-          sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
+          status = ex_get_name(exoid, EX_SIDE_SET, sideset_ids[i], sidesetname);
+          if (status != 0 || strlen(sidesetname) == 0)  // No name assigned - make up one
+            sprintf(sidesetname,"sideset_%-d",sideset_ids[i]);
 	
 #ifdef EXODUS_6_DEPRECATED
           status = ex_get_side_set_param(exoid,sideset_ids[i],&num_sides_in_set,

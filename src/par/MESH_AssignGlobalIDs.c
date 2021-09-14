@@ -341,17 +341,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   MPI_Allreduce(MPI_IN_PLACE,vertex_ov_label,num*max_nbv,MPI_INT,MPI_LOR,comm);    
 
   /* calculate starting global id number for vertices*/
-  if (!have_GIDs) {
-    global_id = 1;
-    for(i = 0; i < rank; i++) 
-      global_id = global_id + global_mesh_info[10*i+1] - global_mesh_info[10*i+9];
-    for(i = 0; i < nv; i++) {
-      mv = MESH_Vertex(submesh,i);
-      if (MV_PType(mv) == PGHOST)
-        continue;
-      MV_Set_GlobalID(mv,global_id++);
-      MV_Set_MasterParID(mv,rank);
-    }
+  global_id = 1;
+  for(i = 0; i < rank; i++) 
+    global_id = global_id + global_mesh_info[10*i+1] - global_mesh_info[10*i+9];
+  for(i = 0; i < nv; i++) {
+    mv = MESH_Vertex(submesh,i);
+    if (MV_PType(mv) == PGHOST)
+      continue;
+    if (!MV_GlobalID(mv)) MV_Set_GlobalID(mv,global_id++);
+    MV_Set_MasterParID(mv,rank);
   }
 
       
@@ -399,7 +397,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   MVertex_ptr mv;
   MEdge_ptr me;
   List_ptr boundary_edges;
-  int *loc, edge_id[2], max_nbe, index_nbe, iloc, is_boundary;
+  int *loc, edge_id[2], max_nbe, index_nbe, iloc, all_boundary_verts;
   int *global_mesh_info, *list_edge, *recv_list_edge, *edge_ov_label, *id_on_ov_list;
   
   int rank, num;
@@ -411,8 +409,9 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   mesh_info[2] = ne;
 
   /* 
-     collect 'boundary' edges
-     if endpoints are either GHOST or OVERLAP, then it is a boundary edge 
+     collect 'boundary' edges (Can have false positives if both
+     vertices are on the boundary but the edge itself is in the
+     interior or there is no match on another processor)
   */
   nbe = 0;  boundary_edges = List_New(10);
   for(i = 0; i < ne; i++) {
@@ -421,16 +420,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       List_Add(boundary_edges,me);
       nbe++;
     } else {
-      is_boundary = 1;       
+      all_boundary_verts = 1;       
       for( k = 0; k < 2; k++) {
         mv = ME_Vertex(me,k);
         if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP) {
-          is_boundary = 0;
+          all_boundary_verts = 0;
           break;
         }
       }
-      if(is_boundary) {
-        ME_Flag_OnParBoundary(me);
+      if(all_boundary_verts) {
         List_Add(boundary_edges,me);
         nbe++;
       }
@@ -448,6 +446,9 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     if(max_nbe < global_mesh_info[10*i+6])
       max_nbe = global_mesh_info[10*i+6];
 
+  /* Echange boundary edges (described by global IDs of their
+   * vertices) across all ranks */
+  
   list_edge = (int *)malloc(max_nbe*2*sizeof(int));
   recv_list_edge = (int *)malloc(num*max_nbe*2*sizeof(int));
 
@@ -468,28 +469,37 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   MPI_Allgather(list_edge,2*max_nbe,MPI_INT,recv_list_edge,2*max_nbe,MPI_INT,comm);
 
   nge = 0;
-  /* for processor other than 0 */
+  /* for processor other than 0 (because there are no ghost entities
+   * on rank 0 by convention) */
   if(rank > 0) {
     for(i = 0; i < nbe; i++) {
       me = List_Entry(boundary_edges,i);
       edge_id[0] = MV_GlobalID(ME_Vertex(me,0));
       edge_id[1] = MV_GlobalID(ME_Vertex(me,1));
-      for(j = 0; j < rank; j++) {
+
+      int found_match = 0;
+      for(j = 0; j < num; j++) {
+        if (j == rank) continue;
 	loc = (int *)bsearch(&edge_id,
 			     &recv_list_edge[2*max_nbe*j],
 			     global_mesh_info[10*j+6],
 			     2*sizeof(int),
 			     compareEdgeINT);
 	if(loc) {
-	  iloc = (int)(loc - &recv_list_edge[2*max_nbe*j])/2;
-	  ME_Set_PType(me,PGHOST);
-	  ME_Set_MasterParID(me,j);
-	  edge_ov_label[max_nbe*j+iloc] |= 1;
-	  id_on_ov_list[i] = iloc;
-	  nge++;
+          if (j < rank) {
+            iloc = (int)(loc - &recv_list_edge[2*max_nbe*j])/2;
+            ME_Set_PType(me,PGHOST);
+            ME_Set_MasterParID(me,j);
+            edge_ov_label[max_nbe*j+iloc] |= 1;
+            id_on_ov_list[i] = iloc;
+            nge++;
+          }
+          found_match = 1;
 	  break;
 	}
       }
+      if (found_match)
+        ME_Flag_OnParBoundary(me);
     }
   }
 
@@ -554,9 +564,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 }
 
  /* 
-    Assign face global ID for both 2D meshes
-    Assume there are no overlapped faces
-    Assume each processor knowns its overlap and ghost vertices 
+    Assign face global ID for 2D meshes ONLY
+
+    Assume that ghost faces have not been created as yet
+    Assume there are no overlapped faces (?? old comment - need clarification)
  */
 
   int MESH_AssignGlobalIDs_Face(Mesh_ptr submesh, MSTK_Comm comm) {
@@ -595,10 +606,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 }
 
  /* 
-    Assign region global ID for both 3D meshes
-    Main work is to assign global ID for faces
+    Assign global IDs for regions and faces in 3D meshes ONLY
+    Assume that ghost regions have not been created yet
 
-    Assume there are no overlapped regions
+    Assume there are no overlapped regions (old comment - clarify ??)
     Assume each processor knowns its overlap and ghost vertices 
  */
      
@@ -608,7 +619,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   MFace_ptr mf;
   MRegion_ptr mr;
   List_ptr boundary_faces, mfverts;
-  int *loc, face_id[MAXPV2+3],index_nbf, max_nbf, iloc, is_boundary;
+  int *loc, face_id[MAXPV2+3],index_nbf, max_nbf, iloc, all_boundary_verts;
   int *global_mesh_info, *list_face, *recv_list_face, *face_ov_label, *id_on_ov_list;
 
   int rank, num;
@@ -620,36 +631,37 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   nr = MESH_Num_Regions(submesh);
   mesh_info[3] = nf;
   mesh_info[4] = nr;
+
   /* 
-     collect 'boundary' faces
-     if endpoints are either GHOST or OVERLAP, then it is a boundary face 
+     collect 'boundary' faces (could have false positives when all of
+     the vertices of the face are on the boundary but the face itself is
+     interior or there is no match on another processor)
   */
+
   nbf = 0;  boundary_faces = List_New(10);
   for(i = 0; i < nf; i++) {
     mf = MESH_Face(submesh,i);
-    if (MF_OnParBoundary(mf)) {
+    if (MF_OnParBoundary(mf)) {  /* prior knowledge */
       List_Add(boundary_faces,mf);
       nbf++;
     } else {
-      is_boundary = 1;       
+      all_boundary_verts = 1;       
       mfverts = MF_Vertices(mf,1,0);
       nfv = List_Num_Entries(mfverts);
       for(j = 0; j < nfv; j++) {
         mv = List_Entry(mfverts,j);
         if(MV_PType(mv)!=PGHOST && MV_PType(mv)!=POVERLAP) {
-          is_boundary = 0;
+          all_boundary_verts = 0;
           break;
         }
       }
-      if(is_boundary) {
-        MF_Flag_OnParBoundary(mf);
+      if(all_boundary_verts) {
         List_Add(boundary_faces,mf);
         nbf++;
       }
       List_Delete(mfverts);
     }
   }
-  /* printf("num of boundary faces %d, on rank %d\n", nbf,rank); */
   mesh_info[6] = nbf;
 
   List_Sort(boundary_faces,nbf,sizeof(MFace_ptr),compareFaceID);
@@ -662,6 +674,9 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     if(max_nbf < global_mesh_info[10*i+6])
       max_nbf = global_mesh_info[10*i+6];
 
+  /* Exchange boundary faces (described by the global IDs of their
+   * vertices) across all ranks */
+  
   list_face = (int *)malloc(max_nbf*(MAXPV2+1)*sizeof(int));
   recv_list_face = (int *)malloc(num*max_nbf*(MAXPV2+1)*sizeof(int));
 
@@ -685,8 +700,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 
   MPI_Allgather(list_face,(MAXPV2+1)*max_nbf,MPI_INT,recv_list_face,(MAXPV2+1)*max_nbf,MPI_INT,comm);
 
+
+  /* Look for matching boundary faces from other ranks. If a match is
+   * found and the other rank is lower, then the face on this rank is
+   * the ghost and on the other rank is the original. If no match is
+   * found on any rank, then it is not a parallel boundary face */
+  
   ngf = 0;
-  /* for processor other than 0 */
+  /* for processor other than 0 (because there are no ghost entities
+   * on rank 0 by convention )*/
   if(rank > 0) {
     for(i = 0; i < nbf; i++) {
       mf = List_Entry(boundary_faces,i);
@@ -697,22 +719,30 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       for(k = 0; k < nfv; k++) 
 	face_id[k+1] = MV_GlobalID(List_Entry(mfverts,k));
       List_Delete(mfverts);
-      for(j = 0; j < rank; j++) {
+
+      int found_match = 0;
+      for(j = 0; j < num; j++) {
+        if (j == rank) continue;
 	loc = (int *)bsearch(&face_id,
 			     &recv_list_face[(MAXPV2+1)*max_nbf*j],
 			     global_mesh_info[10*j+6],
 			     (MAXPV2+1)*sizeof(int),
 			     compareFaceINT);
 	if(loc) {
-	  iloc = (int)(loc - &recv_list_face[(MAXPV2+1)*max_nbf*j])/(MAXPV2+1);
-	  MF_Set_PType(mf,PGHOST);
-	  MF_Set_MasterParID(mf,j);
-	  face_ov_label[max_nbf*j+iloc] |= 1;
-	  id_on_ov_list[i] = iloc;
-	  ngf++;
+          if (j < rank) { /* match on lower rank; this face is a COPY/GHOST */
+            iloc = (int)(loc - &recv_list_face[(MAXPV2+1)*max_nbf*j])/(MAXPV2+1);
+            MF_Set_PType(mf,PGHOST);
+            MF_Set_MasterParID(mf,j);
+            face_ov_label[max_nbf*j+iloc] |= 1;  /* face on other proc is OVERLAP or original face */
+            id_on_ov_list[i] = iloc;
+            ngf++;
+          }
+          found_match = 1;
 	  break;
 	}
       }
+      if (found_match)
+        MF_Flag_OnParBoundary(mf);
     }
   }
 
@@ -742,7 +772,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       MF_Set_PType(mf,POVERLAP);
       nof++;
   }
-  /* printf("num of ghost faces %d, overlap faces %d on rank %d\n", ngf, nof, rank);  */
+
 
   /* this time only global id are sent */
   for(i = 0; i < nbf; i++) {

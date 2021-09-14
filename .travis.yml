@@ -15,6 +15,7 @@ addons:
       - libexodusii5
       - libnemesis3
       - libunittest++-dev
+      - libtrilinos-zoltan-dev
 env:
   global:
     - CCACHE_CPP2=yes
@@ -35,21 +36,18 @@ script:
      mkdir build &&
      cd build &&
      cmake 
-     -DCMAKE_C_COMPILER:FILEPATH=`which mpicc`
-     -DCMAKE_CXX_COMPILER:FILEPATH=`which mpiCC`
      -DCMAKE_BUILD_TYPE=Release
-     -DINSTALL_ADD_VERSION=no
+     -DCMAKE_INSTALL_PREFIX=$HOME
+     -DCMAKE_PREFIX_PATH=/usr/include/trilinos
      -DENABLE_PARALLEL=$PARALLEL
      -DENABLE_METIS=yes
-     -DMETIS_INCLUDE_DIR=/usr/include
-     -DHDF5_INCLUDE_DIRS=/usr/include/hdf5/openmpi
-     -DENABLE_ExodusII=ON
+     -DENABLE_ZOLTAN=yes
+     -DENABLE_ExodusII=yes
      -DENABLE_Tests=yes
-     -DUnitTest_DIR:FILEPATH=/usr
      ..    && 
      make VERBOSE=1 -j2 &&
      make test &&
-     make install DESTDIR=$HOME
+     make install
 
 cache:
   - ccache

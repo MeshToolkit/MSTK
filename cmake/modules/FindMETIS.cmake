@@ -12,7 +12,6 @@
 # METIS_LIBRARY        (FILE)   METIS library (libzoltan.a, libzoltan.so)
 # METIS_LIBRARIES      (LIST)   List of METIS targets (METIS::METIS)
 # METIS_ROOT           (PATH)   Top level directory where METIS is installed
-# METIS_DIR            (PATH)   Top level directory where METIS is installed
 #
 # #############################################################################
 
@@ -64,10 +63,18 @@ endif ()
 
 set(METIS_VERSION PC_METIS_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the METIS package
+# due to transitive dependencies
 if (NOT METIS_ROOT)
-  set(METIS_DIR "${METIS_INCLUDE_DIR}/.." CACHE PATH "Top level dir of METIS installation" FORCE)
-  set(METIS_ROOT "${METIS_INCLUDE_DIR}/.." CACHE PATH "Top level dir of METIS installation" FORCE)
+  get_filename_component(METIS_ROOT "${METIS_INCLUDE_DIR}/.." ABSOLUTE)
+  set(METIS_ROOT ${METIS_ROOT} CACHE PATH "Top level dir of METIS installation" FORCE)
 endif ()
+if (NOT METIS_DIR)
+  get_filename_component(METIS_DIR "${METIS_INCLUDE_DIR}/.." ABSOLUTE)
+  set(METIS_DIR ${METIS_DIR} CACHE PATH "Top level dir of METIS installation" FORCE)
+endif ()
+
 
 # Finish setting standard variables if everything is found
 include(FindPackageHandleStandardArgs)

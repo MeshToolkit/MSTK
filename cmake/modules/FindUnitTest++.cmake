@@ -12,7 +12,6 @@
 # UnitTest++_LIBRARY        (FILE)   UnitTest++ library (libzoltan.a, libzoltan.so)
 # UnitTest++_LIBRARIES      (LIST)   List of UnitTest++ targets (MSTK::UnitTest++)
 # UnitTest++_ROOT           (PATH)   Top level directory where UnitTest++ is installed
-# UnitTest++_DIR            (PATH)   Top level directory where UnitTest++ is installed
 #
 #
 # #############################################################################
@@ -63,9 +62,16 @@ endif ()
 
 set(UnitTest++_VERSION PC_UnitTest++_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the UnitTest++ package
+# due to transitive dependencies
 if (NOT UnitTest++_ROOT)
-  set(UnitTest++_DIR "${UnitTest++_INCLUDE_DIR}/.." CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
-  set(UnitTest++_ROOT "${UnitTest++_INCLUDE_DIR}/.." CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
+  get_filename_component(UnitTest++_ROOT "${UnitTest++_INCLUDE_DIR}/.." ABSOLUTE)
+  set(UnitTest++_ROOT ${UnitTest++_ROOT} CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
+endif ()
+if (NOT UnitTest++_DIR)
+  get_filename_component(UnitTest++_DIR "${UnitTest++_INCLUDE_DIR}/.." ABSOLUTE)
+  set(UnitTest++_DIR ${UnitTest++_DIR} CACHE PATH "Top level dir of UnitTest++ installation" FORCE)
 endif ()
 
 

@@ -12,7 +12,6 @@
 # Zoltan_LIBRARY        (FILE)   Zoltan library (libzoltan.a, libzoltan.so)
 # Zoltan_LIBRARIES      (LIST)   List of Zoltan targets (Zoltan::Zoltan)
 # Zoltan_ROOT           (PATH)   Top level directory where Zoltan is installed
-# Zoltan_DIR            (PATH)   Top level directory where Zoltan is installed
 #
 # #############################################################################
 
@@ -33,7 +32,7 @@ find_path(Zoltan_INCLUDE_DIR
 
 if (NOT Zoltan_INCLUDE_DIR)
   if (Zoltan_FIND_REQUIRED)
-    message(FATAL "Cannot locate zoltan.h")
+      message(FATAL_ERROR "Cannot locate zoltan.h")
   else (Zoltan_FIND_REQUIRED)
     if (NOT Zoltan_FIND_QUIETLY)
       message(WARNING "Cannot locate zoltan.h")
@@ -47,14 +46,14 @@ set(Zoltan_INCLUDE_DIRS "${Zoltan_INCLUDE_DIR}")
 # Search for libraries
 
 find_library(Zoltan_LIBRARY
-  NAMES zoltan
+  NAMES zoltan trilinos_zoltan
   HINTS ${PC_Zoltan_LIBRARY_DIRS}
   PATHS ${Zoltan_DIR}
   PATH_SUFFIXES lib lib64)
 
 if (NOT Zoltan_LIBRARY)
   if (Zoltan_FIND_REQUIRED)
-    message(FATAL "Can not locate Zoltan library")
+      message(FATAL_ERROR "Can not locate Zoltan library")
   else (Zoltan_FIND_REQUIRED)
     if (NOT Zoltan_FIND_QUIETLY)
       message(WARNING "Cannot locate Zoltan library")
@@ -64,9 +63,16 @@ endif ()
 
 set(Zoltan_VERSION PC_Zoltan_VERSION})  # No guarantee
 
+# Not sure if this is the right way to do it, but this is to help
+# other upstream packages that attempt to find the Zoltan package
+# due to transitive dependencies
 if (NOT Zoltan_ROOT)
-  set(Zoltan_DIR "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
-  set(Zoltan_ROOT "${Zoltan_INCLUDE_DIR}/.." CACHE PATH "Top level dir of Zoltan installation" FORCE)
+  get_filename_component(Zoltan_ROOT "${Zoltan_INCLUDE_DIR}/.." ABSOLUTE)
+  set(Zoltan_ROOT ${Zoltan_ROOT} CACHE PATH "Top level dir of Zoltan installation" FORCE)
+endif ()
+if (NOT Zoltan_DIR)
+  get_filename_component(Zoltan_DIR "${Zoltan_INCLUDE_DIR}/.." ABSOLUTE)
+  set(Zoltan_DIR ${Zoltan_DIR} CACHE PATH "Top level dir of Zoltan installation" FORCE)
 endif ()
 
 
