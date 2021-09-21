@@ -53,7 +53,7 @@ TEST(RenumberGIDs_Dist) {
   method = 1;
 #else
   fprintf(stderr,"Cannot find partitioner\n");
-  status = 0;
+  int status = 0;
   CHECK(status);
 #endif
 
