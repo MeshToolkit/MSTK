@@ -707,43 +707,39 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
    * found on any rank, then it is not a parallel boundary face */
   
   ngf = 0;
-  /* for processor other than 0 (because there are no ghost entities
-   * on rank 0 by convention )*/
-  if(rank > 0) {
-    for(i = 0; i < nbf; i++) {
-      mf = List_Entry(boundary_faces,i);
-
-      mfverts = MF_Vertices(mf,1,0);
-      nfv = List_Num_Entries(mfverts);
-      face_id[0] = nfv;                           
-      for(k = 0; k < nfv; k++) 
-	face_id[k+1] = MV_GlobalID(List_Entry(mfverts,k));
-      List_Delete(mfverts);
-
-      int found_match = 0;
-      for(j = 0; j < num; j++) {
-        if (j == rank) continue;
-	loc = (int *)bsearch(&face_id,
-			     &recv_list_face[(MAXPV2+1)*max_nbf*j],
-			     global_mesh_info[10*j+6],
-			     (MAXPV2+1)*sizeof(int),
-			     compareFaceINT);
-	if(loc) {
-          if (j < rank) { /* match on lower rank; this face is a COPY/GHOST */
-            iloc = (int)(loc - &recv_list_face[(MAXPV2+1)*max_nbf*j])/(MAXPV2+1);
-            MF_Set_PType(mf,PGHOST);
-            MF_Set_MasterParID(mf,j);
-            face_ov_label[max_nbf*j+iloc] |= 1;  /* face on other proc is OVERLAP or original face */
-            id_on_ov_list[i] = iloc;
-            ngf++;
-          }
-          found_match = 1;
-	  break;
-	}
+  for(i = 0; i < nbf; i++) {
+    mf = List_Entry(boundary_faces,i);
+    
+    mfverts = MF_Vertices(mf,1,0);
+    nfv = List_Num_Entries(mfverts);
+    face_id[0] = nfv;                           
+    for(k = 0; k < nfv; k++) 
+      face_id[k+1] = MV_GlobalID(List_Entry(mfverts,k));
+    List_Delete(mfverts);
+    
+    int found_match = 0;
+    for(j = 0; j < num; j++) {
+      if (j == rank) continue;
+      loc = (int *)bsearch(&face_id,
+                           &recv_list_face[(MAXPV2+1)*max_nbf*j],
+                           global_mesh_info[10*j+6],
+                           (MAXPV2+1)*sizeof(int),
+                           compareFaceINT);
+      if(loc) {
+        if (j < rank) { /* match on lower rank; this face is a COPY/GHOST */
+          iloc = (int)(loc - &recv_list_face[(MAXPV2+1)*max_nbf*j])/(MAXPV2+1);
+          MF_Set_PType(mf,PGHOST);
+          MF_Set_MasterParID(mf,j);
+          face_ov_label[max_nbf*j+iloc] |= 1;  /* face on other proc is OVERLAP or original face */
+          id_on_ov_list[i] = iloc;
+          ngf++;
+        }
+        found_match = 1;
+        break;
       }
-      if (found_match)
-        MF_Flag_OnParBoundary(mf);
     }
+    if (found_match)
+      MF_Flag_OnParBoundary(mf);
   }
 
  
