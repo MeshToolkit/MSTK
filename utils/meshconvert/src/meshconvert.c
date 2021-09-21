@@ -39,9 +39,12 @@ MshFmt getFormat(char *filename) {
     return VTK;
   else if (len > 5 && strncmp(&(filename[len-5]),".cgns",5) == 0)
     return CGNS;
+  else if (len > 4 && strncmp(&(filename[len-4]),".off",4) == 0)
+    return OFF;
   else {
     fprintf(stderr,"Unrecognized mesh format\n");
-    fprintf(stderr,"Recognized mesh formats: MSTK, GMV, ExodusII, NemesisI, AVS/UCD, VTK, CGNS\n");
+    fprintf(stderr,"Recognized mesh formats for import: MSTK, GMV, ExodusII, NemesisI\n");
+    fprintf(stderr,"Recognized mesh formats for export: MSTK, GMV, ExodusII, NemesisI, VTK, STL, OFF, DX\n");
     exit(-1);
   }
 }
@@ -515,6 +518,11 @@ int main(int argc, char *argv[]) {
       if (rank == 0)
         fprintf(stderr,"Exporting mesh to STL format...");
       ok = MESH_ExportToFile(mesh, outfname,"stl",0,NULL,NULL,comm);
+      break;
+    case OFF:
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to OFF format...");
+      ok = MESH_ExportToFile(mesh, outfname,"off",0,NULL,NULL,comm);
       break;
     case DX:
       if (rank == 0)
