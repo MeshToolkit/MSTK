@@ -1209,7 +1209,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     
     idx = 0;
     while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
-      /* have to check that this is not a pure ghost node surrounded by only ghost elements */
+      if (MV_PType(vertex) == PGHOST && !MV_OnParBoundary(vertex)) continue;
       MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
       
       if (atttype == INT)
