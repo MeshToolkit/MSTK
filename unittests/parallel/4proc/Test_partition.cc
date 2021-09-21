@@ -10,6 +10,7 @@ https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 
 #include "MSTK.h"
 
+#if defined(_MSTK_HAVE_METIS) || defined(_MSTK_HAVE_ZOLTAN)
 SUITE(Parallel) {
 TEST(Partition2D_0ring) {
 
@@ -431,3 +432,5 @@ TEST(Partition2D_1ring) {
 }
 
 }
+
+#endif
