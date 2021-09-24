@@ -2047,6 +2047,7 @@ extern "C" {
 
             for (int j = 0; j < nnodes_cur; j++) {
               int localid = global2local_node_map[begnode+j]-1;
+              MEntity_ptr ment = MESH_Vertex(mesh, localid);
               MEnt_Set_AttVal(ment,mattrib,0,node_var_vals[ibeg+j],NULL);
             }
             
