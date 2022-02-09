@@ -26,7 +26,16 @@ extern "C" {
    master in the FLAG X3D file will remain the master. Rather, the
    vertex on the lowest rank processor will be tagged as the master */
 
-  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
+  /* The input arguments parallel_opts indicate if we should build
+     parallel adjacencies and some options for controlling that 
+     
+     parallel_opts[0] = 1/0  ---- Weave/Don't weave the distributed meshes
+                                  together to form parallel connections
+     parallel_opts[1] = N    ---- Number of ghost layers around mesh
+  */                            
+
+
+  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
   char funcname[32] = "MESH_ImportFromFLAGX3D";
   char mesg[256], temp_str[1028], keyword[1028], modfilename[256];
@@ -59,31 +68,14 @@ extern "C" {
   MPI_Comm_rank(comm,&rank);
 
   if (numprocs > 1) {
-
     distributed = 1;
-    sprintf(modfilename,"%s.%05d",filename,rank+1);
-
-    if (!(fp = fopen(modfilename,"r"))) {      
-
-      distributed = 0;
-
-      if (rank == 0) {
-
-        if (!(fp = fopen(filename,"r"))) {
-          sprintf(mesg,"Cannot open parallel file %s or serial file %s",
-                  modfilename,filename);
-          MSTK_Report(funcname,mesg,MSTK_FATAL);
-        }
-
-      }
-      else
-        return 1;
-
+    if (!(fp = fopen(filename,"r"))) {
+      sprintf(mesg,"Cannot open parallel file %s", filename);
+      MSTK_Report(funcname,mesg,MSTK_FATAL);
     }
 
     MESH_Set_Prtn(mesh,rank,numprocs); /* necessary for allocation of 
                                           parallel adjacency arrays */
-
   }
   else {
     distributed = 0;
@@ -461,20 +453,27 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI  
 
-  if (numprocs > 1) {
+  if (numprocs > 1 && parallel_opts && parallel_opts[0]) {
     /* Must weave distributed meshes to create correct ghost links */
   
-    int num_ghost_layers = 1;
+    int num_ghost_layers = parallel_opts[1];
     int input_type = 2;
     int topodim = ndim;
   
-    status = MSTK_Weave_DistributedMeshes(mesh, topodim,
+    int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
                                           num_ghost_layers, input_type, comm);
   
-    if (!status)
+    if (!weavestatus)
       MSTK_Report(funcname,
                   "Could not weave distributed meshes together correctly",
                   MSTK_FATAL);
+
+    /* Run a parallel check to make sure all connectivity is consistent */
+
+    int parallel_check = MESH_Parallel_Check(mesh,comm);        
+    
+    if (!parallel_check)
+      MSTK_Report(funcname, "Parallel mesh checks failed", MSTK_FATAL);
   }
 
 #endif

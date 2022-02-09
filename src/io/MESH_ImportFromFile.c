@@ -75,9 +75,7 @@ extern "C" {
 #endif
       } 
       else if (strcmp(format,"x3d") == 0) {
-        int rank = 0;
-        int numprocs = 1;
-        return MESH_ImportFromFLAGX3D(mesh,infilename,comm);
+        return MESH_ImportFromFLAGX3D(mesh,infilename,opts,comm);
       }
     }
     
