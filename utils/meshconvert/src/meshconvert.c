@@ -207,9 +207,11 @@ int main(int argc, char *argv[]) {
 
     int filecount = 0;
     for (int r = 0; r < numprocs; r++) {
-      char tmpfname[256];
-      sprintf(tmpfname,"%s.%-d.%-d",infname,numprocs,r);
-      if ((fp = fopen(tmpfname,"r"))) {
+      char tmpfname1[256], tmpfname2[256], tmpfname3[256];
+      sprintf(tmpfname1,"%s.%-d.%-d",infname,numprocs,r);
+      sprintf(tmpfname2,"%s.%05d",infname,r);
+      sprintf(tmpfname3,"%s.%05d",infname,r+1);  // X3D
+      if ((fp = fopen(tmpfname1,"r")) || (fp = fopen(tmpfname2,"r")) || (fp = fopen(tmpfname3,"r"))) {
 	filecount++;
 	fclose(fp);
       }
