@@ -141,7 +141,7 @@ extern "C" {
 
 
 
-  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
+  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, int *opts, MSTK_Comm comm);
   
 
   /* Write mesh data into a file in the native MSTK format. 'comm' can
