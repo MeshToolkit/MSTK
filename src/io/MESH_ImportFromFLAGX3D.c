@@ -425,12 +425,87 @@ extern "C" {
 
     }
     else if (strncmp(keyword,"cell_data",9) == 0) {
+      /* In X3D files, cell data is always a scalar */
+      int cellvarsdone = 0;
+      while (!cellvarsdone) {
+        status = fscanf(fp,"%s",temp_str);
+        if (status == EOF) {
+          MSTK_Report("MESH_ImportFromFLAGX3D",
+                      "Premature end of file while reading cell data",MSTK_ERROR);
+          return 0;
+        }
 
+        if (strncmp(temp_str,"end_cell_data",13) == 0)
+          cellvarsdone = 1;
+        else {
+          MAttrib_ptr matt;
+          double rval;
+          if (ndim == 2) {
+            matt = MAttrib_New(mesh, temp_str, DOUBLE, MFACE);
+            int idx = 0;
+            MFace_ptr mf;
+            while ((mf = MESH_Next_Face(mesh, &idx))) {
+              status = fscanf(fp,"%lf",&rval);
+              if (status == EOF) {
+                MSTK_Report("MESH_ImportFromFLAGX3D",
+                            "Premature end of file while reading cell data",
+                            MSTK_ERROR);
+                return 0;
+              }
+              MEnt_Set_AttVal(mf,matt,0,rval,NULL);
+            }
+          }
+          else if (ndim == 3) {
+            matt = MAttrib_New(mesh, temp_str, DOUBLE, MREGION);
+            int idx = 0;
+            MRegion_ptr mr;
+            while ((mr = MESH_Next_Region(mesh, &idx))) {
+              status = fscanf(fp,"%lf",&rval);
+              if (status == EOF) {
+                MSTK_Report("MESH_ImportFromFLAGX3D",
+                            "Premature end of file while reading cell data",
+                            MSTK_ERROR);
+                return 0;
+              }
+              MEnt_Set_AttVal(mr,matt,0,rval,NULL);
+            }
+          }
+        }
+      }
     }
     else if (strncmp(keyword,"end_cell_data",13) == 0) {
     }
     else if (strncmp(keyword,"node_data",9) == 0) {
+      /* In X3D files, node data is always a vector */
+      int nodevarsdone = 0;
+      while (!nodevarsdone) {
+        status = fscanf(fp,"%s",temp_str);
+        if (status == EOF) {
+          MSTK_Report("MESH_ImportFromFLAGX3D",
+                      "Premature end of file while reading cell data",MSTK_ERROR);
+          return 0;
+        }
 
+        if (strncmp(temp_str,"end_node_data",13) == 0)
+          nodevarsdone = 1;
+        else {
+          MAttrib_ptr matt;
+          matt = MAttrib_New(mesh, temp_str, VECTOR, MVERTEX, 3);
+          double vec[3];
+          int idx = 0;
+          MVertex_ptr mv;
+          while ((mv = MESH_Next_Vertex(mesh, &idx))) {
+            status = fscanf(fp,"%lf %lf %lf",&(vec[0]), &(vec[1]), &(vec[2]));
+            if (status == EOF) {
+              MSTK_Report("MESH_ImportFromFLAGX3D",
+                          "Premature end of file while reading cell data",
+                          MSTK_ERROR);
+              return 0;
+            }
+            MEnt_Set_AttVal(mv,matt,0,0.0,vec);
+          }
+        }
+      }
     }
     else if (strncmp(keyword,"end_node_data",13) == 0) {
     }
