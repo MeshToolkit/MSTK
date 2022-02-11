@@ -203,46 +203,80 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   ngv = 0; nov = 0;
   /* label ghost and overlap vertex */
   for (i = 0; i < num; i++) {
-    for(j = 0; j < max_nbv; j++) mv_ov_label[j] = 0;
-    if(i == rank) continue;
-    if(i < rank) {     
-      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
-	MPI_Recv(recv_list_coor,3*max_nbv,MPI_DOUBLE,i,rank,comm,&status);
-	MPI_Get_count(&status,MPI_DOUBLE,&count);
-	for(j = 0; j < nbv; j++) {
-	  mv = List_Entry(boundary_verts,j);
-	  if(MV_PType(mv) == PGHOST) continue;
-	  MV_Coords(mv,coor);
-	  loc = (double *)bsearch(&coor,
-				  recv_list_coor,
-				  count/3,
-				  3*sizeof(double),
-				  compareCoorDouble);
-	  if(loc) {
-	    iloc = (int)(loc - recv_list_coor)/3;
-	    MV_Set_PType(mv,PGHOST);
-	    MV_Set_MasterParID(mv,i);
-	    ngv++;
-	    mv_remote_info[j] = iloc;
-	    mv_ov_label[iloc] = 1;
-	  }
-	}
-	MPI_Send(mv_ov_label,count/3,MPI_INT,i,i,comm);
+    for (j = 0; j < max_nbv; j++) mv_ov_label[j] = 0;
+    if (i < rank) {
+      if (MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+        MPI_Recv(recv_list_coor,3*max_nbv,MPI_DOUBLE,i,rank,comm,&status);
+        MPI_Get_count(&status,MPI_DOUBLE,&count);
+        for (j = 0; j < nbv; j++) {
+          mv = List_Entry(boundary_verts,j);
+          if (MV_PType(mv) == PGHOST) continue;
+          MV_Coords(mv,coor);
+          loc = (double *)bsearch(&coor,
+                                  recv_list_coor,
+                                  count/3,
+                                  3*sizeof(double),
+                                  compareCoorDouble);
+          if (loc) {
+            iloc = (int)(loc - recv_list_coor)/3;
+            MV_Set_PType(mv,PGHOST);
+            MV_Set_MasterParID(mv,i);
+            ngv++;
+            mv_remote_info[j] = iloc;
+            mv_ov_label[iloc] = 1;
+          }
+        }
+        MPI_Send(mv_ov_label,count/3,MPI_INT,i,i,comm);
       }
-    }
-    if(i > rank) {     
-      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
-	MPI_Send(list_coor,3*nbv,MPI_DOUBLE,i,i,comm);
-	MPI_Recv(mv_ov_label,nbv,MPI_INT,i,rank,comm,&status);
-	/* label overlap vertex */
-	for(j = 0; j < nbv; j++) {
-	  mv = List_Entry(boundary_verts,j);
-	  if(mv_ov_label[j] && MV_PType(mv) != POVERLAP && MV_PType(mv) != PGHOST) {
-	    nov++;
-	    MV_Set_PType(mv,POVERLAP);
-	    MV_Set_MasterParID(mv,rank);
-	  }
-	}
+      if (MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+        MPI_Send(list_coor,3*nbv,MPI_DOUBLE,i,i,comm);
+        MPI_Recv(mv_ov_label,nbv,MPI_INT,i,rank,comm,&status);
+        /* label overlap vertex */
+        for (j = 0; j < nbv; j++) {
+          mv = List_Entry(boundary_verts,j);
+          if (mv_ov_label[j] && MV_PType(mv) != POVERLAP && MV_PType(mv) != PGHOST) {
+            nov++;
+            MV_Set_PType(mv,POVERLAP);
+            MV_Set_MasterParID(mv,rank);
+          }
+        }
+      }
+    } else if (i > rank) {
+      if (MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+        MPI_Send(list_coor,3*nbv,MPI_DOUBLE,i,i,comm);
+        MPI_Recv(mv_ov_label,nbv,MPI_INT,i,rank,comm,&status);
+        /* label overlap vertex */
+        for (j = 0; j < nbv; j++) {
+          mv = List_Entry(boundary_verts,j);
+          if (mv_ov_label[j] && MV_PType(mv) != POVERLAP && MV_PType(mv) != PGHOST) {
+            nov++;
+            MV_Set_PType(mv,POVERLAP);
+            MV_Set_MasterParID(mv,rank);
+          }
+        }
+      }
+      if (MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+        MPI_Recv(recv_list_coor,3*max_nbv,MPI_DOUBLE,i,rank,comm,&status);
+        MPI_Get_count(&status,MPI_DOUBLE,&count);
+        for (j = 0; j < nbv; j++) {
+          mv = List_Entry(boundary_verts,j);
+          if (MV_PType(mv) == PGHOST) continue;
+          MV_Coords(mv,coor);
+          loc = (double *)bsearch(&coor,
+                                  recv_list_coor,
+                                  count/3,
+                                  3*sizeof(double),
+                                  compareCoorDouble);
+          if (loc) {
+            iloc = (int)(loc - recv_list_coor)/3;
+            MV_Set_PType(mv,PGHOST);
+            MV_Set_MasterParID(mv,i);
+            ngv++;
+            mv_remote_info[j] = iloc;
+            mv_ov_label[iloc] = 1;
+          }
+        }
+        MPI_Send(mv_ov_label,count/3,MPI_INT,i,i,comm);
       }
     }
   }
