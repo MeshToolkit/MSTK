@@ -88,7 +88,6 @@ extern "C" {
     int i, k=0;
     unsigned int R = 1234567891;
 
-    /* fprintf(stderr, "New hash - hash_table_size %d\n",hash_table_size); */
     unsigned int h = 1;
     unsigned int min = 1e+9;
     for (i = 0; i < n; i++)
@@ -99,26 +98,20 @@ extern "C" {
     if (nums[(k+1)%n] < nums[(k-1+n)%n]) {
       for (i = 0; i < n; i++) {
         h *= R + 2*nums[(k+i)%n];
-	/* fprintf(stderr," %d %d ",nums[(k+i)%n],h); */
       }
     }
     else {
       for (i = 0; i < n; i++) {
         h *= R + 2*nums[(k-i+n)%n];
-	/* fprintf(stderr," %d %d ",nums[(k-i+n)%n],h); */
       }
     }
     h /= 2;
-    /* fprintf(stderr,"h/2 %d\n",h); */
-
-    /* fprintf(stderr,"final hash h %% hash_table_size  %d\n\n",h % hash_table_size); */
-
 
     return h % hash_table_size;
   }
 
 
-#define MAX_COLLISIONS 3
+#define MAX_COLLISIONS 100
   
   typedef struct {
     int mykey;     /* hash key from sorted list of vertices*/ 
