@@ -476,7 +476,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       attrib = MESH_Attrib(mesh,i);
 
       /* No need to write out the temporary array we created in this routine */
-      if (attrib == oppatt)
+      if (attrib == oppatt || attrib == vidatt_tmp || attrib == eidatt_tmp || attrib == fidatt_tmp || attrib == ridatt_tmp)
         continue;
       
       /* If the attribute is not a INT or a DOUBLE we cannot write it out */
@@ -1155,6 +1155,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     atttype = MAttrib_Get_Type(attrib);
     
     MAttrib_Get_Name(attrib,attname);
+    if (strcmp("_tmp",attname-4) == 0)
+      continue;
+
     fprintf(fp,"%s\n",attname);
     
     if (nr) {
@@ -1203,8 +1206,12 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   for (i = 0; i < nnodatt; i++) {
     attrib = nodatts[i];
     atttype = MAttrib_Get_Type(attrib);
+    if (atttype != VECTOR) continue;  /* X3D only supports vector attributes for nodes */
 
     MAttrib_Get_Name(attrib,attname);
+    if (strcmp("_tmp",attname-4) == 0)
+      continue;
+
     fprintf(fp,"%s\n",attname);
     
     idx = 0;
