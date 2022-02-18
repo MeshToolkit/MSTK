@@ -40,6 +40,8 @@ extern "C" {
           strcpy(format,"exodusii");
         else if (strcmp(ext,"par") == 0)
           strcpy(format,"nemesisi");
+        else if (strcmp(ext,"x3d") == 0)
+          strcpy(format,"x3d");
         else {
           fprintf(stderr,"Unknown file format\n");
           return -1;
