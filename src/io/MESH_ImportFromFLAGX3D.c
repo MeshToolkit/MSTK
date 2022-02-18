@@ -57,46 +57,38 @@ extern "C" {
   int rank, numprocs;
   int distributed = 0;
 
+  numprocs = 1;
+  rank = 0;
+
+#ifdef MSTK_HAVE_MPI
+  MPI_Comm_size(comm,&numprocs);
+  MPI_Comm_rank(comm,&rank);
+#endif
+
   char *ext = strstr(filename,".x3d"); /* Search for the x3d extension */
   if (!ext)
     MSTK_Report(funcname,"FLAG X3D files must have .x3d extension",MSTK_FATAL);
 
 
-#ifdef MSTK_HAVE_MPI
-
-  MPI_Comm_size(comm,&numprocs);
-  MPI_Comm_rank(comm,&rank);
-
-  if (numprocs > 1) {
-    distributed = 1;
-    if (!(fp = fopen(filename,"r"))) {
-      sprintf(mesg,"Cannot open parallel file %s", filename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);
-    }
-
-    MESH_Set_Prtn(mesh,rank,numprocs); /* necessary for allocation of 
-                                          parallel adjacency arrays */
-  }
-  else {
-    distributed = 0;
-
-    if (!(fp = fopen(filename,"r"))) {
-      sprintf(mesg,"Cannot open file %s for reading\n",filename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);
-    }
-  }
-
-#else
-
-  numprocs = 1;
-  rank = 0;
-
   if (!(fp = fopen(filename,"r"))) {
-    sprintf(mesg,"Cannot open file %s for reading\n",filename);
+    sprintf(mesg,"Cannot open file %s for reading", filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
 
-#endif /* MSTK_HAVE_MPI */
+#ifdef MSTK_HAVE_MPI
+  /* Also figure out if we are really doing a parallel read */
+
+  if (numprocs > 1) {
+    char rankext[6];
+    sprintf(rankext,"%05d",rank+1);
+    if (strstr(filename,rankext))  /* does the filename have the rank in it? */
+      distributed = 1;
+  }
+
+  if (distributed)
+    MESH_Set_Prtn(mesh,rank,numprocs); /* necessary for allocation of 
+                                          parallel adjacency arrays */
+#endif
 
 
   /* Confirm identifying string */
@@ -406,21 +398,23 @@ extern "C" {
 	pid--;
 
 #ifdef MSTK_HAVE_MPI
-
-	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
-	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
-	if(ndim == 3) {
-	  MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
-	}
-
+        if (pid != rank) {
+          MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
+          MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
+          if(ndim == 3) {
+            MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
+          }
+        }
 #endif
 
       }
 
 #ifdef MSTK_HAVE_MPI
-      /* Compute which processors must receive overlap info from this
-       * processor from the reverse info */
-      MESH_Get_OverlapAdj_From_GhostAdj(mesh,comm);
+      if (distributed) {
+        /* Compute which processors must receive overlap info from this
+         * processor from the reverse info */
+        MESH_Get_OverlapAdj_From_GhostAdj(mesh,comm);
+      }
 #endif
 
     }
@@ -470,6 +464,21 @@ extern "C" {
               MEnt_Set_AttVal(mr,matt,0,rval,NULL);
             }
           }
+          char temp_str1[256], temp_str2[256];
+          strcpy(temp_str1, "end_");
+          strcat(temp_str1, temp_str);
+          status = fscanf(fp,"%s",temp_str2);
+          if (status == EOF) {
+            MSTK_Report("MESH_ImportFromFLAGX3D",
+                        "Premature end of file while reading cell data",
+                        MSTK_ERROR);
+            return 0;
+          } else if (strcmp(temp_str1, temp_str2) != 0) {
+            char temp_str3[256];
+            sprintf(temp_str3,"Expected %s but got %s while reading cell data",
+                    temp_str1, temp_str2);
+            MSTK_Report("MESH_ImportFromFLAGX3D", temp_str3, MSTK_FATAL);
+          }
         }
       }
     }
@@ -504,6 +513,21 @@ extern "C" {
             }
             MEnt_Set_AttVal(mv,matt,0,0.0,vec);
           }
+          char temp_str1[256], temp_str2[256];
+          strcpy(temp_str1, "end_");
+          strcat(temp_str1, temp_str);
+          status = fscanf(fp,"%s",temp_str2);
+          if (status == EOF) {
+            MSTK_Report("MESH_ImportFromFLAGX3D",
+                        "Premature end of file while reading cell data",
+                        MSTK_ERROR);
+            return 0;
+          } else if (strcmp(temp_str1, temp_str2) != 0) {
+            char temp_str3[256];
+            sprintf(temp_str3,"Expected %s but got %s while reading node data",
+                    temp_str1, temp_str2);
+            MSTK_Report("MESH_ImportFromFLAGX3D", temp_str3, MSTK_FATAL);
+          }
         }
       }
     }
@@ -528,7 +552,7 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI  
 
-  if (numprocs > 1 && parallel_opts && parallel_opts[0]) {
+  if (distributed && parallel_opts && parallel_opts[0]) {
     /* Must weave distributed meshes to create correct ghost links */
   
     int num_ghost_layers = parallel_opts[1];
