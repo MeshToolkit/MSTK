@@ -206,11 +206,12 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     for (j = 0; j < max_nbv; j++) mv_ov_label[j] = 0;
     if (i < rank) {
       if (MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+        /* Get ALL boundary vertices from rank 'i' */
         MPI_Recv(recv_list_coor,3*max_nbv,MPI_DOUBLE,i,rank,comm,&status);
         MPI_Get_count(&status,MPI_DOUBLE,&count);
         for (j = 0; j < nbv; j++) {
           mv = List_Entry(boundary_verts,j);
-          if (MV_PType(mv) == PGHOST) continue;
+          if (MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) continue;
           MV_Coords(mv,coor);
           loc = (double *)bsearch(&coor,
                                   recv_list_coor,
@@ -226,10 +227,14 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
             mv_ov_label[iloc] = 1;
           }
         }
+        /* Tell rank 'i' which of its boundary vertices are ghosts on this rank */
         MPI_Send(mv_ov_label,count/3,MPI_INT,i,i,comm);
       }
       if (MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+        /* Send rank 'i' a list of all this rank's boundary vertices */
         MPI_Send(list_coor,3*nbv,MPI_DOUBLE,i,i,comm);
+
+        /* Receive list of vertices that were identified as ghosts on rank 'i' */
         MPI_Recv(mv_ov_label,nbv,MPI_INT,i,rank,comm,&status);
         /* label overlap vertex */
         for (j = 0; j < nbv; j++) {
@@ -243,7 +248,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       }
     } else if (i > rank) {
       if (MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) ) {
+        /* Send rank 'i' a list of all this rank's boundary vertices */
         MPI_Send(list_coor,3*nbv,MPI_DOUBLE,i,i,comm);
+
+        /* Receive a list of vertices that were identified as ghosts on rank 'i' */
         MPI_Recv(mv_ov_label,nbv,MPI_INT,i,rank,comm,&status);
         /* label overlap vertex */
         for (j = 0; j < nbv; j++) {
@@ -256,11 +264,12 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
         }
       }
       if (MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+        /* Get ALL boundary vertices from rank 'i' */
         MPI_Recv(recv_list_coor,3*max_nbv,MPI_DOUBLE,i,rank,comm,&status);
         MPI_Get_count(&status,MPI_DOUBLE,&count);
         for (j = 0; j < nbv; j++) {
           mv = List_Entry(boundary_verts,j);
-          if (MV_PType(mv) == PGHOST) continue;
+          if (MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) continue;
           MV_Coords(mv,coor);
           loc = (double *)bsearch(&coor,
                                   recv_list_coor,
@@ -276,11 +285,12 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
             mv_ov_label[iloc] = 1;
           }
         }
+        /* Tell rank 'i' which of its boundary vertices are ghosts on this rank */
         MPI_Send(mv_ov_label,count/3,MPI_INT,i,i,comm);
       }
     }
   }
-  /* printf("num of ghost vertices %d, overlap vertices %d on rank %d\n", ngv, nov, rank); */
+
   mesh_info[9] = ngv;
   global_mesh_info = (int *)malloc(10*num*sizeof(int));
   MPI_Allgather(mesh_info,10,MPI_INT,global_mesh_info,10,MPI_INT,comm);
