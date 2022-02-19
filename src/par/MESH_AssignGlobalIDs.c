@@ -355,9 +355,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       
 
   /* store overlapped vertices IDs and broadast */
-  vertex_ov_global_id = (int *)malloc(num*max_nbv*sizeof(int));
-  for(i = 0; i < num*max_nbv; i++) 
-    vertex_ov_global_id[i] = 0;
+  vertex_ov_global_id = (int *)calloc(num*max_nbv,sizeof(int));
   for(i = 0; i < nbv; i++) {
     if(vertex_ov_label[rank*max_nbv+i]) {
       mv = List_Entry(boundary_verts,i);
