@@ -389,21 +389,27 @@ extern "C" {
 
     }
     else if (strncmp(keyword,"ghost_nodes",11) == 0) {
-      int dum, pid;
+      int dum, vid, pid, gvid;
       status = fscanf(fp,"%d",&dum);
       for (i = 0; i < num_ghost_nodes; i++) {
-	status = fscanf(fp,"%d %d %d %d",&dum, &pid, &dum, &dum);
+	status = fscanf(fp,"%d %d %d %d",&vid, &pid, &dum, &dum);
         if (status == EOF)
           MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
 	pid--;
 
 #ifdef MSTK_HAVE_MPI
+        MVertex_ptr mv = MESH_Vertex(mesh,vid-1);
         if (pid != rank) {
+          MV_Set_PType(mv, PGHOST);
+          MV_Set_MasterParID(mv, pid);
           MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
           MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
           if(ndim == 3) {
             MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
           }
+        } else {
+          MV_Set_PType(mv, POVERLAP);
+          MV_Set_MasterParID(mv, rank);
         }
 #endif
 
