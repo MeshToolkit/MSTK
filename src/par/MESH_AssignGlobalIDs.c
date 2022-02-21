@@ -211,7 +211,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     MPI_Allgather(list_boundary_vertex_gid,max_nbv,MPI_INT,recv_list_vertex_gid,max_nbv,MPI_INT,comm);
     
     /* indicate if a vertex is overlapped */
-    vertex_ov_label = (int *)malloc(num*max_nbv*sizeof(int));
+    vertex_ov_label = (int *)calloc(num*max_nbv, sizeof(int));
     
     /* 
        store the local boundary id on ov processor
@@ -220,8 +220,6 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     */
     id_on_ov_list = (int *)malloc(max_nbv*sizeof(int));
 
-    for (i = 0; i < num*max_nbv; i++)
-      vertex_ov_label[i] = 0;
     num_ghost_verts = 0;
     /* for processor other than 0 */
     if(rank > 0) {
@@ -284,7 +282,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     MPI_Allgather(list_boundary_coor,3*max_nbv,MPI_DOUBLE,recv_list_coor,3*max_nbv,MPI_DOUBLE,comm);
     
     /* indicate if a vertex is overlapped */
-    vertex_ov_label = (int *)malloc(num*max_nbv*sizeof(int));
+    vertex_ov_label = (int *)calloc(num*max_nbv,sizeof(int));
     
     /* 
        store the local boundary id on ov processor
@@ -293,8 +291,6 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     */
     id_on_ov_list = (int *)malloc(max_nbv*sizeof(int));
 
-    for (i = 0; i < num*max_nbv; i++)
-      vertex_ov_label[i] = 0;
     num_ghost_verts = 0;
     /* for processor other than 0 */
     if(rank > 0) {
