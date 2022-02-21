@@ -30,7 +30,7 @@ extern "C" {
 
 
   int compareCoorDouble(const void * a, const void * b) {
-    double tol = 1e-8;
+    double tol = 1e-12;
     int i;
     double *coor1 = (double *)a;
     double *coor2 = (double *)b;
@@ -45,18 +45,11 @@ extern "C" {
   
   int compareVertexCoor(const void *a, const void *b) {
     double coor1[3], coor2[3];
-    double tol = 1e-8;
-    int i;
-    MV_Coords(*(MVertex_ptr*)a,coor1);
-    MV_Coords(*(MVertex_ptr*)b,coor2);
-    for(i = 0; i < 3; i++) {
-      if ( (coor1[i] - coor2[i]) > tol )
-	return 1;
-      if ( (coor2[i] - coor1[i]) > tol )
-	return -1;
-    }
-    return 0;
+    MV_Coords(*(MVertex_ptr*)a, coor1);
+    MV_Coords(*(MVertex_ptr*)b, coor2);
+    return compareCoorDouble(coor1, coor2);
   }
+
   /* compare endpoint global id of an edge */
   int compareEdgeINT(const void *a, const void *b) {
     int *edge1_id = (int*)a; 
