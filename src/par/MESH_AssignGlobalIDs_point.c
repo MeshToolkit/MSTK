@@ -120,7 +120,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
   RepType rtype;
   double coor[3], *loc;
   int max_nbv, index_nbv, iloc, global_id, mesh_info[10];
-  int *global_mesh_info, *list_vertex, *recv_list_vertex, *mv_remote_info, *mv_ov_label;
+  int *global_mesh_info, *list_vertex, *recv_list_vertex, *id_in_recvd_list, *vertex_ov_label;
   double *list_coor, *recv_list_coor;
 
   int rank, num;
@@ -196,7 +196,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
      used to store list id on incoming buffer of ghost vertex 
      No need to store processor id, already stored in master partition id
   */
-  mv_remote_info = (int *)malloc(nbv*sizeof(int));
+  id_in_recvd_list = (int *)malloc(nbv*sizeof(int));
   /* lable if a vertex is overlap */
   mv_ov_label = (int *)malloc(max_nbv*sizeof(int));
 
@@ -211,7 +211,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
         MPI_Get_count(&status,MPI_DOUBLE,&count);
         for (j = 0; j < nbv; j++) {
           mv = List_Entry(boundary_verts,j);
-          if (MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) continue;
+          if (MV_PType(mv) == POVERLAP) continue;
           MV_Coords(mv,coor);
           loc = (double *)bsearch(&coor,
                                   recv_list_coor,
@@ -223,8 +223,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
             MV_Set_PType(mv,PGHOST);
             MV_Set_MasterParID(mv,i);
             ngv++;
-            mv_remote_info[j] = iloc;
-            mv_ov_label[iloc] = 1;
+
+            /* store index of matched vertex for use when
+             * communicating global IDs a bit later */
+            id_in_recvd_list[j] = iloc;
+
+            /* Note that vertex 'iloc' in boundary vertex list from
+             * rank 'i' is an overlap vertex (master of this ghost)
+             * and communicate it back to sending processor */
+            vertex_ov_label[iloc] = 1;
           }
         }
         /* Tell rank 'i' which of its boundary vertices are ghosts on this rank */
@@ -239,7 +246,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
         /* label overlap vertex */
         for (j = 0; j < nbv; j++) {
           mv = List_Entry(boundary_verts,j);
-          if (mv_ov_label[j] && MV_PType(mv) != POVERLAP && MV_PType(mv) != PGHOST) {
+          if (vertex_ov_label[j] && MV_PType(mv) != PGHOST) {
             nov++;
             MV_Set_PType(mv,POVERLAP);
             MV_Set_MasterParID(mv,rank);
@@ -256,7 +263,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
         /* label overlap vertex */
         for (j = 0; j < nbv; j++) {
           mv = List_Entry(boundary_verts,j);
-          if (mv_ov_label[j] && MV_PType(mv) != POVERLAP && MV_PType(mv) != PGHOST) {
+          if (vertex_ov_label[j] && MV_PType(mv) != PGHOST) {
             nov++;
             MV_Set_PType(mv,POVERLAP);
             MV_Set_MasterParID(mv,rank);
@@ -269,7 +276,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
         MPI_Get_count(&status,MPI_DOUBLE,&count);
         for (j = 0; j < nbv; j++) {
           mv = List_Entry(boundary_verts,j);
-          if (MV_PType(mv) == PGHOST || MV_PType(mv) == POVERLAP) continue;
+          if (MV_PType(mv) == POVERLAP) continue;
           MV_Coords(mv,coor);
           loc = (double *)bsearch(&coor,
                                   recv_list_coor,
@@ -281,8 +288,15 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
             MV_Set_PType(mv,PGHOST);
             MV_Set_MasterParID(mv,i);
             ngv++;
-            mv_remote_info[j] = iloc;
-            mv_ov_label[iloc] = 1;
+
+            /* store index of matched vertex for use when
+             * communicating global IDs a bit later */
+            id_in_recvd_list[j] = iloc;
+
+            /* Note that vertex 'iloc' in boundary vertex list from
+             * rank 'i' is an overlap vertex (master of this ghost)
+             * and communicate it back to sending processor */
+            vertex_ov_label[iloc] = 1;
           }
         }
         /* Tell rank 'i' which of its boundary vertices are ghosts on this rank */
@@ -306,7 +320,7 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     MV_Set_MasterParID(mv,rank);
   }
   
-  /* this time only global id are sent */
+  /* Prepare list of global IDs of boundary vertices */
   index_nbv = 0;
   for(i = 0; i < nbv; i++) {
     mv = List_Entry(boundary_verts,i);
@@ -314,7 +328,10 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
     index_nbv++;
   }
 
-  /* Assign ghost vertex global ID */
+  /* Receive global IDs of boundary vertices from lower ranked
+   * processors and set the Global IDs of any matching ghosts on this
+   * processors. Also, send global IDs of boundary vertices to higher
+   * ranked processors */
   for (i = 0; i < num; i++) {
     if(i == rank) continue;
     if(i < rank) {     
@@ -324,15 +341,27 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
 	for(j = 0; j < nbv; j++) {
 	  mv = List_Entry(boundary_verts,j);
 	  if(MV_MasterParID(mv) != i) continue;
-	  MV_Set_GlobalID(mv,recv_list_vertex[mv_remote_info[j]]);
+	  MV_Set_GlobalID(mv,recv_list_vertex[id_in_recvd_list[j]]);
 	}
       }
+      if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) )
+	MPI_Send(list_vertex,nbv,MPI_INT,i,i,comm);
     }
     if(i > rank) {     
       if( MESH_Has_Overlaps_On_Prtn(submesh,i,MVERTEX) )
 	MPI_Send(list_vertex,nbv,MPI_INT,i,i,comm);
+      if( MESH_Has_Ghosts_From_Prtn(submesh,i,MVERTEX) ) {
+	MPI_Recv(recv_list_vertex,max_nbv,MPI_INT,i,rank,comm,&status);
+	MPI_Get_count(&status,MPI_INT,&count);
+	for(j = 0; j < nbv; j++) {
+	  mv = List_Entry(boundary_verts,j);
+	  if(MV_MasterParID(mv) != i) continue;
+	  MV_Set_GlobalID(mv,recv_list_vertex[id_in_recvd_list[j]]);
+	}
+      }
     }
   }
+
 
   /* We marked all boundary vertices as potentially being on a
      parallel boundary.  Now, unflag/unmark the vertices that DID NOT
@@ -345,10 +374,16 @@ static int vertex_on_boundary3D(MVertex_ptr mv) {
       MV_Unflag_OnParBoundary(mv);
   }
 
+  for (i = 0; i < nbv; i++) {
+    mv = List_Entry(boundary_verts,i);
+    if (MV_GlobalID(mv) == 0)
+      MSTK_Report("MESH_AssignGlobalIDs_point.c","Vertex has global ID 0",MSTK_ERROR);
+  }
+
   List_Delete(boundary_verts);
   free(global_mesh_info);
-  free(mv_remote_info);
-  free(mv_ov_label);
+  free(id_in_recvd_list);
+  free(vertex_ov_label);
   free(list_vertex);
   free(list_coor);
   free(recv_list_vertex);
