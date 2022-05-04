@@ -504,9 +504,13 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       
       
       attentdim = MAttrib_Get_EntDim(attrib);
-      if ((attentdim == MVERTEX) || (attentdim == MALLTYPE))
-        nodatts[nnodatt++] = attrib;
-      
+      if ((attentdim == MVERTEX) || (attentdim == MALLTYPE)) {
+        if (atttype == VECTOR) {
+          int ncomps = MAttrib_Get_NumComps(attrib);
+          if (ncomps == 3)
+            nodatts[nnodatt++] = attrib;
+        }
+      }
       
       if (nr) {
         if ((attentdim == MREGION) || (attentdim == MALLTYPE)) {
@@ -1207,6 +1211,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     attrib = nodatts[i];
     atttype = MAttrib_Get_Type(attrib);
     if (atttype != VECTOR) continue;  /* X3D only supports vector attributes for nodes */
+    int ncomps = MAttrib_Get_NumComps(attrib);
+    if (ncomps != 3) continue;
 
     MAttrib_Get_Name(attrib,attname);
     if (strcmp("_tmp",attname-4) == 0)
@@ -1217,13 +1223,14 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     idx = 0;
     while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
       if (MV_PType(vertex) == PGHOST && !MV_OnParBoundary(vertex)) continue;
-      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
+
+      double *vval;
+      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&vval);
       
-      if (atttype == INT)
-        fprintf(fp,"% 20.12E\n",(double)ival);
-      else if (atttype == DOUBLE)
-        fprintf(fp,"% 20.12E\n", rval);
-    }  
+      for (k = 0; k < ncomps; k++)
+        fprintf(fp,"% 20.12E", vval[k]);
+      fprintf(fp,"\n");
+    }
     
     strcpy(tmpstr,"end_");
     strcat(tmpstr,attname);
