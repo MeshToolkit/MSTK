@@ -26,7 +26,16 @@ extern "C" {
    master in the FLAG X3D file will remain the master. Rather, the
    vertex on the lowest rank processor will be tagged as the master */
 
-  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm) {
+  /* The input arguments parallel_opts indicate if we should build
+     parallel adjacencies and some options for controlling that 
+     
+     parallel_opts[0] = 1/0  ---- Weave/Don't weave the distributed meshes
+                                  together to form parallel connections
+     parallel_opts[1] = N    ---- Number of ghost layers around mesh
+  */                            
+
+
+  int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
   char funcname[32] = "MESH_ImportFromFLAGX3D";
   char mesg[256], temp_str[1028], keyword[1028], modfilename[256];
@@ -48,63 +57,38 @@ extern "C" {
   int rank, numprocs;
   int distributed = 0;
 
+  numprocs = 1;
+  rank = 0;
+
+#ifdef MSTK_HAVE_MPI
+  MPI_Comm_size(comm,&numprocs);
+  MPI_Comm_rank(comm,&rank);
+#endif
+
   char *ext = strstr(filename,".x3d"); /* Search for the x3d extension */
   if (!ext)
     MSTK_Report(funcname,"FLAG X3D files must have .x3d extension",MSTK_FATAL);
 
 
-#ifdef MSTK_HAVE_MPI
-
-  MPI_Comm_size(comm,&numprocs);
-  MPI_Comm_rank(comm,&rank);
-
-  if (numprocs > 1) {
-
-    distributed = 1;
-    sprintf(modfilename,"%s.%05d",filename,rank+1);
-
-    if (!(fp = fopen(modfilename,"r"))) {      
-
-      distributed = 0;
-
-      if (rank == 0) {
-
-        if (!(fp = fopen(filename,"r"))) {
-          sprintf(mesg,"Cannot open parallel file %s or serial file %s",
-                  modfilename,filename);
-          MSTK_Report(funcname,mesg,MSTK_FATAL);
-        }
-
-      }
-      else
-        return 1;
-
-    }
-
-    MESH_Set_Prtn(mesh,rank,numprocs); /* necessary for allocation of 
-                                          parallel adjacency arrays */
-
-  }
-  else {
-    distributed = 0;
-
-    if (!(fp = fopen(filename,"r"))) {
-      sprintf(mesg,"Cannot open file %s for reading\n",filename);
-      MSTK_Report(funcname,mesg,MSTK_FATAL);
-    }
-  }
-
-#else
-
-  numprocs = 1;
-  rank = 0;
-
   if (!(fp = fopen(filename,"r"))) {
-    sprintf(mesg,"Cannot open file %s for reading\n",filename);
+    sprintf(mesg,"Cannot open file %s for reading", filename);
     MSTK_Report(funcname,mesg,MSTK_FATAL);
   }
 
-#endif /* MSTK_HAVE_MPI */
+#ifdef MSTK_HAVE_MPI
+  /* Also figure out if we are really doing a parallel read */
+
+  if (numprocs > 1) {
+    char rankext[6];
+    sprintf(rankext,"%05d",rank+1);
+    if (strstr(filename,rankext))  /* does the filename have the rank in it? */
+      distributed = 1;
+  }
+
+  if (distributed)
+    MESH_Set_Prtn(mesh,rank,numprocs); /* necessary for allocation of 
+                                          parallel adjacency arrays */
+#endif
 
 
   /* Confirm identifying string */
@@ -405,40 +389,153 @@ extern "C" {
 
     }
     else if (strncmp(keyword,"ghost_nodes",11) == 0) {
-      int dum, pid;
+      int dum, vid, pid, gvid;
       status = fscanf(fp,"%d",&dum);
       for (i = 0; i < num_ghost_nodes; i++) {
-	status = fscanf(fp,"%d %d %d %d",&dum, &pid, &dum, &dum);
+	status = fscanf(fp,"%d %d %d %d",&vid, &pid, &dum, &dum);
         if (status == EOF)
           MSTK_Report(funcname,"Premature end of file",MSTK_FATAL);
 	pid--;
 
 #ifdef MSTK_HAVE_MPI
-
-	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
-	MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
-	if(ndim == 3) {
-	  MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
-	}
-
+        MVertex_ptr mv = MESH_Vertex(mesh,vid-1);
+        if (pid != rank) {
+          MV_Set_PType(mv, PGHOST);
+          MV_Set_MasterParID(mv, pid);
+          MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MVERTEX);
+          MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MEDGE);
+          if(ndim == 3) {
+            MESH_Flag_Has_Ghosts_From_Prtn(mesh,pid,MFACE);
+          }
+        } else {
+          MV_Set_PType(mv, POVERLAP);
+          MV_Set_MasterParID(mv, rank);
+        }
 #endif
 
       }
 
 #ifdef MSTK_HAVE_MPI
-      /* Compute which processors must receive overlap info from this
-       * processor from the reverse info */
-      MESH_Get_OverlapAdj_From_GhostAdj(mesh,comm);
+      if (distributed) {
+        /* Compute which processors must receive overlap info from this
+         * processor from the reverse info */
+        MESH_Get_OverlapAdj_From_GhostAdj(mesh,comm);
+      }
 #endif
 
     }
     else if (strncmp(keyword,"cell_data",9) == 0) {
+      /* In X3D files, cell data is always a scalar */
+      int cellvarsdone = 0;
+      while (!cellvarsdone) {
+        status = fscanf(fp,"%s",temp_str);
+        if (status == EOF) {
+          MSTK_Report("MESH_ImportFromFLAGX3D",
+                      "Premature end of file while reading cell data",MSTK_ERROR);
+          return 0;
+        }
 
+        if (strncmp(temp_str,"end_cell_data",13) == 0)
+          cellvarsdone = 1;
+        else {
+          MAttrib_ptr matt;
+          double rval;
+          if (ndim == 2) {
+            matt = MAttrib_New(mesh, temp_str, DOUBLE, MFACE);
+            int idx = 0;
+            MFace_ptr mf;
+            while ((mf = MESH_Next_Face(mesh, &idx))) {
+              status = fscanf(fp,"%lf",&rval);
+              if (status == EOF) {
+                MSTK_Report("MESH_ImportFromFLAGX3D",
+                            "Premature end of file while reading cell data",
+                            MSTK_ERROR);
+                return 0;
+              }
+              MEnt_Set_AttVal(mf,matt,0,rval,NULL);
+            }
+          }
+          else if (ndim == 3) {
+            matt = MAttrib_New(mesh, temp_str, DOUBLE, MREGION);
+            int idx = 0;
+            MRegion_ptr mr;
+            while ((mr = MESH_Next_Region(mesh, &idx))) {
+              status = fscanf(fp,"%lf",&rval);
+              if (status == EOF) {
+                MSTK_Report("MESH_ImportFromFLAGX3D",
+                            "Premature end of file while reading cell data",
+                            MSTK_ERROR);
+                return 0;
+              }
+              MEnt_Set_AttVal(mr,matt,0,rval,NULL);
+            }
+          }
+          char temp_str1[256], temp_str2[256];
+          strcpy(temp_str1, "end_");
+          strcat(temp_str1, temp_str);
+          status = fscanf(fp,"%s",temp_str2);
+          if (status == EOF) {
+            MSTK_Report("MESH_ImportFromFLAGX3D",
+                        "Premature end of file while reading cell data",
+                        MSTK_ERROR);
+            return 0;
+          } else if (strcmp(temp_str1, temp_str2) != 0) {
+            char temp_str3[256];
+            sprintf(temp_str3,"Expected %s but got %s while reading cell data",
+                    temp_str1, temp_str2);
+            MSTK_Report("MESH_ImportFromFLAGX3D", temp_str3, MSTK_FATAL);
+          }
+        }
+      }
     }
     else if (strncmp(keyword,"end_cell_data",13) == 0) {
     }
     else if (strncmp(keyword,"node_data",9) == 0) {
+      /* In X3D files, node data is always a vector */
+      int nodevarsdone = 0;
+      while (!nodevarsdone) {
+        status = fscanf(fp,"%s",temp_str);
+        if (status == EOF) {
+          MSTK_Report("MESH_ImportFromFLAGX3D",
+                      "Premature end of file while reading cell data",MSTK_ERROR);
+          return 0;
+        }
 
+        if (strncmp(temp_str,"end_node_data",13) == 0)
+          nodevarsdone = 1;
+        else {
+          MAttrib_ptr matt;
+          matt = MAttrib_New(mesh, temp_str, VECTOR, MVERTEX, 3);
+          double vec[3];
+          int idx = 0;
+          MVertex_ptr mv;
+          while ((mv = MESH_Next_Vertex(mesh, &idx))) {
+            status = fscanf(fp,"%lf %lf %lf",&(vec[0]), &(vec[1]), &(vec[2]));
+            if (status == EOF) {
+              MSTK_Report("MESH_ImportFromFLAGX3D",
+                          "Premature end of file while reading cell data",
+                          MSTK_ERROR);
+              return 0;
+            }
+            MEnt_Set_AttVal(mv,matt,0,0.0,vec);
+          }
+          char temp_str1[256], temp_str2[256];
+          strcpy(temp_str1, "end_");
+          strcat(temp_str1, temp_str);
+          status = fscanf(fp,"%s",temp_str2);
+          if (status == EOF) {
+            MSTK_Report("MESH_ImportFromFLAGX3D",
+                        "Premature end of file while reading cell data",
+                        MSTK_ERROR);
+            return 0;
+          } else if (strcmp(temp_str1, temp_str2) != 0) {
+            char temp_str3[256];
+            sprintf(temp_str3,"Expected %s but got %s while reading node data",
+                    temp_str1, temp_str2);
+            MSTK_Report("MESH_ImportFromFLAGX3D", temp_str3, MSTK_FATAL);
+          }
+        }
+      }
     }
     else if (strncmp(keyword,"end_node_data",13) == 0) {
     }
@@ -461,20 +558,27 @@ extern "C" {
 
 #ifdef MSTK_HAVE_MPI  
 
-  if (numprocs > 1) {
+  if (distributed && parallel_opts && parallel_opts[0]) {
     /* Must weave distributed meshes to create correct ghost links */
   
-    int num_ghost_layers = 1;
+    int num_ghost_layers = parallel_opts[1];
     int input_type = 2;
     int topodim = ndim;
   
-    status = MSTK_Weave_DistributedMeshes(mesh, topodim,
+    int weavestatus = MSTK_Weave_DistributedMeshes(mesh, topodim,
                                           num_ghost_layers, input_type, comm);
   
-    if (!status)
+    if (!weavestatus)
       MSTK_Report(funcname,
                   "Could not weave distributed meshes together correctly",
                   MSTK_FATAL);
+
+    /* Run a parallel check to make sure all connectivity is consistent */
+
+    int parallel_check = MESH_Parallel_Check(mesh,comm);        
+    
+    if (!parallel_check)
+      MSTK_Report(funcname, "Parallel mesh checks failed", MSTK_FATAL);
   }
 
 #endif

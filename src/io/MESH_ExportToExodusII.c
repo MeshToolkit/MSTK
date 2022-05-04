@@ -1191,7 +1191,12 @@ extern "C" {
 
     if (numprocs > 1) {
 
-      /* Write out node map (global IDs of nodes) */
+      /* Write out node map (global IDs of nodes). We have to account
+       * for the fact that the node IDs may have been reordered to be
+       * different from the sequence of vertices in the mesh and that
+       * coordinates are also written out according to the reordered
+       * IDs */
+
 
       int *node_map = (int *) malloc(nvowned*sizeof(int));
       
@@ -1203,8 +1208,10 @@ extern "C" {
 #else
         MEnt_Get_AttVal(mv, ownedatt, &vowned, &rval, &pval);
 #endif
-        if (vowned)
-          node_map[i++] = MV_GlobalID(mv);
+        if (!vowned) continue;
+
+        MEnt_Get_AttVal(mv, vidatt, &vid, &rval, &pval);
+        node_map[vid-1] = MV_GlobalID(mv);
       }
 
 #ifdef EXODUS_6_DEPRECATED

@@ -1985,12 +1985,14 @@ extern "C" {
 	      while (nodes2read[iend+1] == nodes2read[iend]+1) iend++;
 	      int nnodes_cur = iend - ibeg + 1;
 
+              int begnode = nodes2read[ibeg];
+	    
 	      for (int k = 0; k < ncomp; k++) {
 		varindex2 = varindex + k;
 		
 		/* ex_get_partial_var is using indices starting from 1 */
 		status = ex_get_partial_var(exoid, time_step, EX_NODAL,
-					    varindex2+1, 1, ibeg+1, nnodes_cur,
+					    varindex2+1, 1, begnode, nnodes_cur,
 					    node_var_vals[k]+ibeg);
 		if (status < 0) {
 		  sprintf(mesg,
@@ -1999,15 +2001,17 @@ extern "C" {
 		  MSTK_Report(funcname,mesg,MSTK_FATAL);
 		}
 	      }
-              ibeg = iend+1;
-	    }
 
-	    for (int j = 0; j < nnodes2read; j++) {
-	      double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_DELETE
-	      for (int k = 0; k < ncomp; k++)
-		pval[k] = node_var_vals[k][j];
-	      MEntity_ptr ment = MESH_Vertex(mesh,j);
-	      MEnt_Set_AttVal(ment,mattrib,0,0.0,pval);
+              for (int j = 0; j < nnodes_cur; j++) {
+                int localid = global2local_node_map[begnode+j]-1;
+                double *pval = malloc(ncomp*sizeof(double)); // freed by MESH_DELETE
+                for (int k = 0; k < ncomp; k++)
+                  pval[k] = node_var_vals[k][ibeg+j];
+                MEntity_ptr ment = MESH_Vertex(mesh, localid);
+                MEnt_Set_AttVal(ment,mattrib,0,0.0,pval);
+              }
+
+              ibeg = iend+1;
 	    }
 
 	    for (int k = 0; k < ncomp; k++)
@@ -2028,10 +2032,12 @@ extern "C" {
 	    int iend = ibeg;
 	    while (nodes2read[iend+1] == nodes2read[iend]+1) iend++;
 	    int nnodes_cur = iend - ibeg + 1;
+
+            int begnode = nodes2read[ibeg];
 	    
 	    /* ex_get_partial_conn is using indices starting from 1 */
 	    status = ex_get_partial_var(exoid, time_step, EX_NODAL,
-					varindex+1, 1, ibeg+1, nnodes_cur,
+					varindex+1, 1, begnode, nnodes_cur,
 					node_var_vals+ibeg);
             if (status < 0) {
               sprintf(mesg, "Error reading node variables in Exodus II file %s\n",
@@ -2039,9 +2045,10 @@ extern "C" {
               MSTK_Report(funcname,mesg,MSTK_FATAL);
             }
 
-            for (int j = 0; j < nnodes2read; j++) {
-              MEntity_ptr ment = MESH_Vertex(mesh,j);
-              MEnt_Set_AttVal(ment,mattrib,0,node_var_vals[j],NULL);
+            for (int j = 0; j < nnodes_cur; j++) {
+              int localid = global2local_node_map[begnode+j]-1;
+              MEntity_ptr ment = MESH_Vertex(mesh, localid);
+              MEnt_Set_AttVal(ment,mattrib,0,node_var_vals[ibeg+j],NULL);
             }
             
             ibeg = iend+1;

@@ -237,13 +237,17 @@ if (ENABLE_PARALLEL)
     # config if available
     find_package(Zoltan QUIET REQUIRED)
   
-    target_include_directories(${MSTKLIB} PRIVATE ${Zoltan_INCLUDE_DIRS})
+    target_include_directories(${MSTKLIB} PUBLIC ${Zoltan_INCLUDE_DIRS})
     target_link_libraries(${MSTKLIB} PUBLIC ${Zoltan_LIBRARIES})
-    target_compile_definitions(${MSTKLIB} PRIVATE _MSTK_HAVE_ZOLTAN)        
+    target_compile_definitions(${MSTKLIB} PUBLIC _MSTK_HAVE_ZOLTAN)        
     
     message(STATUS "Found Zoltan library:" ${Zoltan_LIBRARY})
   endif ()
   
+endif ()
+
+if (NOT METIS_FOUND AND NOT Zoltan_FOUND)
+   message(FATAL "Neither Zoltan not METIS found for partitioning")
 endif ()
 
 

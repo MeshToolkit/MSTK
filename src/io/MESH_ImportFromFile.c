@@ -40,6 +40,8 @@ extern "C" {
           strcpy(format,"exodusii");
         else if (strcmp(ext,"par") == 0)
           strcpy(format,"nemesisi");
+        else if (strcmp(ext,"x3d") == 0)
+          strcpy(format,"x3d");
         else {
           fprintf(stderr,"Unknown file format\n");
           return -1;
@@ -75,9 +77,7 @@ extern "C" {
 #endif
       } 
       else if (strcmp(format,"x3d") == 0) {
-        int rank = 0;
-        int numprocs = 1;
-        return MESH_ImportFromFLAGX3D(mesh,infilename,comm);
+        return MESH_ImportFromFLAGX3D(mesh,infilename,opts,comm);
       }
     }
     

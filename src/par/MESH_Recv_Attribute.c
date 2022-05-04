@@ -134,16 +134,12 @@ extern "C" {
       if (rval != 0.0) nullval = 0;
     }
     else {
-      if(ncomp > 1)
-	{
-          for (k = 0; k < ncomp; k++)
-            if (list_value_double[j*ncomp+k] != 0) nullval = 0;
-          if (!nullval) {
-            rval_arr = (double *) malloc(ncomp*sizeof(double));
-            for(k = 0; k < ncomp; k++)
-              rval_arr[k] = list_value_double[j*ncomp+k];
-          }
-        }
+      if (ncomp > 1) {
+        nullval = 0;  /* always add vectors */
+        rval_arr = (double *) malloc(ncomp*sizeof(double));
+        for(k = 0; k < ncomp; k++)
+          rval_arr[k] = list_value_double[j*ncomp+k];
+      }
     }
     if (nullval) continue; /* Don't waste time initializing to zero */
 

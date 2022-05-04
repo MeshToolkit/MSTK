@@ -39,9 +39,12 @@ MshFmt getFormat(char *filename) {
     return VTK;
   else if (len > 5 && strncmp(&(filename[len-5]),".cgns",5) == 0)
     return CGNS;
+  else if (len > 4 && strncmp(&(filename[len-4]),".off",4) == 0)
+    return OFF;
   else {
     fprintf(stderr,"Unrecognized mesh format\n");
-    fprintf(stderr,"Recognized mesh formats: MSTK, GMV, ExodusII, NemesisI, AVS/UCD, VTK, CGNS\n");
+    fprintf(stderr,"Recognized mesh formats for import: MSTK, GMV, ExodusII, NemesisI\n");
+    fprintf(stderr,"Recognized mesh formats for export: MSTK, GMV, ExodusII, NemesisI, VTK, STL, OFF, DX\n");
     exit(-1);
   }
 }
@@ -204,9 +207,11 @@ int main(int argc, char *argv[]) {
 
     int filecount = 0;
     for (int r = 0; r < numprocs; r++) {
-      char tmpfname[256];
-      sprintf(tmpfname,"%s.%-d.%-d",infname,numprocs,r);
-      if ((fp = fopen(tmpfname,"r"))) {
+      char tmpfname1[256], tmpfname2[256], tmpfname3[256];
+      sprintf(tmpfname1,"%s.%-d.%-d",infname,numprocs,r);
+      sprintf(tmpfname2,"%s.%05d",infname,r);
+      sprintf(tmpfname3,"%s.%05d",infname,r+1);  // X3D
+      if ((fp = fopen(tmpfname1,"r")) || (fp = fopen(tmpfname2,"r")) || (fp = fopen(tmpfname3,"r"))) {
 	filecount++;
 	fclose(fp);
       }
@@ -515,6 +520,11 @@ int main(int argc, char *argv[]) {
       if (rank == 0)
         fprintf(stderr,"Exporting mesh to STL format...");
       ok = MESH_ExportToFile(mesh, outfname,"stl",0,NULL,NULL,comm);
+      break;
+    case OFF:
+      if (rank == 0)
+        fprintf(stderr,"Exporting mesh to OFF format...");
+      ok = MESH_ExportToFile(mesh, outfname,"off",0,NULL,NULL,comm);
       break;
     case DX:
       if (rank == 0)

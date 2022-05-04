@@ -141,7 +141,7 @@ extern "C" {
 
 
 
-  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, MSTK_Comm comm);
+  int         MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, int *opts, MSTK_Comm comm);
   
 
   /* Write mesh data into a file in the native MSTK format. 'comm' can
@@ -158,10 +158,10 @@ extern "C" {
      Viewer format (http://www.generalmeshviewer.com), 'exo' for the
      SEACAS/ExodusII format from Sandia National Laboratories
      (https://github.com/gsjaardema/seacas), 'x3d' for the FLAG X3D
-     format, 'stl' for the STL format. If the number of ranks is
-     greater than 1, selecting the 'exo' format will write out
-     parallel Exodus files (or in other words Nemesis I files) with
-     the extension .par.N.n */
+     format, 'stl' for the STL format, 'off' for the OFF format. If
+     the number of ranks is greater than 1, selecting the 'exo' format
+     will write out parallel Exodus files (or in other words Nemesis I
+     files) with the extension .par.N.n */
 
   int         MESH_ExportToFile(Mesh_ptr mesh, const char *filename,
                                 const char *format, const int natt, 
@@ -177,6 +177,7 @@ extern "C" {
                                     const int *opts, MSTK_Comm comm);
 
   int         MESH_ExportToSTL(Mesh_ptr mesh, const char *filename);
+  int         MESH_ExportToOFF(Mesh_ptr mesh, const char *filename);
   int         MESH_ExportToDX(Mesh_ptr mesh, const char *filename, int binary);
 
   int         MESH_BuildClassfn(Mesh_ptr mesh, int use_geometry);

@@ -476,7 +476,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       attrib = MESH_Attrib(mesh,i);
 
       /* No need to write out the temporary array we created in this routine */
-      if (attrib == oppatt)
+      if (attrib == oppatt || attrib == vidatt_tmp || attrib == eidatt_tmp || attrib == fidatt_tmp || attrib == ridatt_tmp)
         continue;
       
       /* If the attribute is not a INT or a DOUBLE we cannot write it out */
@@ -504,9 +504,13 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       
       
       attentdim = MAttrib_Get_EntDim(attrib);
-      if ((attentdim == MVERTEX) || (attentdim == MALLTYPE))
-        nodatts[nnodatt++] = attrib;
-      
+      if ((attentdim == MVERTEX) || (attentdim == MALLTYPE)) {
+        if (atttype == VECTOR) {
+          int ncomps = MAttrib_Get_NumComps(attrib);
+          if (ncomps == 3)
+            nodatts[nnodatt++] = attrib;
+        }
+      }
       
       if (nr) {
         if ((attentdim == MREGION) || (attentdim == MALLTYPE)) {
@@ -1155,6 +1159,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     atttype = MAttrib_Get_Type(attrib);
     
     MAttrib_Get_Name(attrib,attname);
+    if (strcmp("_tmp",attname-4) == 0)
+      continue;
+
     fprintf(fp,"%s\n",attname);
     
     if (nr) {
@@ -1203,20 +1210,27 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   for (i = 0; i < nnodatt; i++) {
     attrib = nodatts[i];
     atttype = MAttrib_Get_Type(attrib);
+    if (atttype != VECTOR) continue;  /* X3D only supports vector attributes for nodes */
+    int ncomps = MAttrib_Get_NumComps(attrib);
+    if (ncomps != 3) continue;
 
     MAttrib_Get_Name(attrib,attname);
+    if (strcmp("_tmp",attname-4) == 0)
+      continue;
+
     fprintf(fp,"%s\n",attname);
     
     idx = 0;
     while ((vertex = MESH_Next_Vertex(mesh,&idx))) {
-      /* have to check that this is not a pure ghost node surrounded by only ghost elements */
-      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&pval);
+      if (MV_PType(vertex) == PGHOST && !MV_OnParBoundary(vertex)) continue;
+
+      double *vval;
+      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&vval);
       
-      if (atttype == INT)
-        fprintf(fp,"% 20.12E\n",(double)ival);
-      else if (atttype == DOUBLE)
-        fprintf(fp,"% 20.12E\n", rval);
-    }  
+      for (k = 0; k < ncomps; k++)
+        fprintf(fp,"% 20.12E", vval[k]);
+      fprintf(fp,"\n");
+    }
     
     strcpy(tmpstr,"end_");
     strcat(tmpstr,attname);

@@ -52,6 +52,8 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *outfilename, const char *outfor
         strcpy(format,"gmv");
       else if (strcmp(ext,"exo") == 0)
         strcpy(format,"exodusii");
+      else if (strcmp(ext,"off") == 0)
+        strcpy(format,"off");
       else {
         fprintf(stderr,"Unknown file format\n");
         return -1;
@@ -79,6 +81,8 @@ int MESH_ExportToFile(Mesh_ptr mesh, const char *outfilename, const char *outfor
   } 
   else if (strncmp(format, "stl", 3) == 0)
     return MESH_ExportToSTL(mesh,outfilename);
+  else if (strncmp(format, "off", 3) == 0)
+    return MESH_ExportToOFF(mesh,outfilename);
   else if (strncmp(format, "dx", 3) == 0)
     return MESH_ExportToDX(mesh,outfilename,1); /* binary export */
 

@@ -158,7 +158,8 @@ extern "C" {
 	
 	if (part_method == 0) {
 	  if (rank == 0) {
-	    
+
+#if _MSTK_HAVE_METIS	    
 	    ExodusII_GetElementGraph(filename, &dim, &nelems, &elemgraphoff,
 				     &elemgraphadj, get_coords, NULL);
 	    
@@ -250,6 +251,11 @@ extern "C" {
 	    free(part_elem_gids);
 	    free(part_num_elems);
 	    free(requests);
+
+#else
+            fprintf(stderr, "MSTK not compiled with METIS. Should not be at this code line\n");
+            exit(-1);
+#endif
 	  
 	  } else {
 	    // Get partiton info from rank 0

@@ -62,7 +62,7 @@ if (BUILD_TESTS)
 
   target_include_directories(mstk_serial_unit_tests
     PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
-  target_link_libraries(mstk_serial_unit_tests
+  target_link_libraries(mstk_serial_unit_tests PRIVATE
     ${MSTKLIB}  ${UnitTest++_LIBRARIES})
 
   add_test(NAME serial_unittests COMMAND mstk_serial_unit_tests)
@@ -90,7 +90,7 @@ if (BUILD_TESTS)
 
     target_include_directories(mstk_parallel_4proc_unit_tests
       PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
-    target_link_libraries(mstk_parallel_4proc_unit_tests 
+    target_link_libraries(mstk_parallel_4proc_unit_tests PRIVATE
       ${MSTKLIB} ${UnitTest++_LIBRARIES})
 
     add_test(NAME parallel_unittests_4proc 
@@ -112,7 +112,7 @@ if (BUILD_TESTS)
 
     target_include_directories(mstk_parallel_8proc_unit_tests
       PRIVATE ${UnitTest++_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include)
-    target_link_libraries(mstk_parallel_8proc_unit_tests 
+    target_link_libraries(mstk_parallel_8proc_unit_tests PRIVATE
       ${MSTKLIB} ${UnitTest++_LIBRARIES})
 
     add_test(NAME parallel_unittests_8proc 
