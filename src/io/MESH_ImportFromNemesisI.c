@@ -9,6 +9,7 @@ https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "MSTK.h"
 #include "MSTK_private.h"
@@ -49,14 +50,13 @@ extern "C" {
      - Should we pick one of the first two? */
 
   int MESH_ImportFromNemesisI(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
-
   char mesg[256], funcname[32]="MESH_ImportFromNemesisI";
   int distributed=0;
   
   ex_init_params exopar;
 
   FILE *fp;
-  char basename[256], modfilename[256], *ext;
+  char basename[256], modfilename[256], modfilename_alt[256], *ext;
 
 #ifdef MSTK_HAVE_MPI
 
@@ -67,9 +67,8 @@ extern "C" {
 
   if (numprocs > 1) {
 
-    int ndigits = 0;
-    int div = 1;
-    while (numprocs/div) {div *= 10; ndigits++;}
+    int ndigits = (int)(floor(log10(numprocs))+1);
+    fprintf(stderr,"NUM DIGITS %d\n",ndigits);
       
     strcpy(basename,filename);
     ext = strstr(basename,".exo"); /* Search for the Exodus extension */
@@ -80,6 +79,9 @@ extern "C" {
       /* Try opening the file with .par.N.n extension */
 
       sprintf(modfilename,"%s.par.%-d.%0*d",basename,numprocs,ndigits,rank);
+      sprintf(modfilename_alt,"%s.par.%-d.%-d",basename,numprocs,ndigits,rank);
+
+      fprintf(stderr,"Rank %d filename %s\n",rank,modfilename);
       
       
       if ((fp = fopen(modfilename,"r"))) {
@@ -87,15 +89,28 @@ extern "C" {
         
         distributed = 1;
       }
+      else if ((fp = fopen(modfilename_alt,"r"))) {
+        fclose(fp);
+
+        distributed = 1;
+        strcpy(modfilename, modfilename_alt);
+      }
       else {
         /* Perhaps the files have a .exo.N.n extension? */
 
         sprintf(modfilename,"%s.exo.%-d.%0*d",basename,numprocs,ndigits,rank);
+        sprintf(modfilename_alt,"%s.exo.%-d.%d",basename,numprocs,ndigits,rank);
       
         if ((fp = fopen(modfilename,"r"))) {
           fclose(fp);
         
           distributed = 1;
+        }
+        else if ((fp = fopen(modfilename_alt,"r"))) {
+          fclose(fp);
+
+          distributed = 1;
+          strcpy(modfilename, modfilename_alt);
         }
         else {
         
@@ -124,11 +139,17 @@ extern "C" {
         ext[0] = '\0'; /* Truncate the basename string at the extension */
 
       sprintf(modfilename,"%s.par.%-d.%0*d",basename,numprocs,ndigits,rank);
+      sprintf(modfilename_alt,"%s.par.%-d.%-d",basename,numprocs,ndigits,rank);
       
       if ((fp = fopen(modfilename,"r"))) {
         fclose(fp);
         
         distributed = 1;
+      } else if ((fp = fopen(modfilename_alt,"r"))) {
+        fclose(fp);
+        
+        distributed = 1;
+        strcpy(modfilename, modfilename_alt);
       }
     }
 
