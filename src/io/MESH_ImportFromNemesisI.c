@@ -68,7 +68,6 @@ extern "C" {
   if (numprocs > 1) {
 
     int ndigits = (int)(floor(log10(numprocs))+1);
-    fprintf(stderr,"NUM DIGITS %d\n",ndigits);
       
     strcpy(basename,filename);
     ext = strstr(basename,".exo"); /* Search for the Exodus extension */
