@@ -35,6 +35,16 @@ extern "C" {
   */                            
 
 
+  void trimLeadingWhiteSpace(char *string) {
+    int b = 0, l = strlen(string);
+    while (b < l && string[b] == ' ')
+      b++;
+
+    int lnew = l-b;
+    memcpy(string, string+b, lnew);
+    string[lnew] = '\0';
+  }
+
   int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
   char funcname[32] = "MESH_ImportFromFLAGX3D";
@@ -437,6 +447,89 @@ extern "C" {
 
         if (strncmp(temp_str,"end_cell_data",13) == 0)
           cellvarsdone = 1;
+        else if (strncmp(temp_str,"matid",5) == 0) {
+          /* matids are special cell data */
+          /* there are 10 strings in a row, each taking up 10
+           * characters, except in the last row where there are as
+           * many as needed to complete the count. So we have to use
+           * fgets instead of fscanf */
+          int matids_done = 0;
+          while (!matids_done) {
+            if (ndim == 2) {
+              int idx = 0;
+              MFace_ptr mf;
+              while ((mf = MESH_Next_Face(mesh, &idx))) {
+                if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                  MSTK_Report("MESH_ImportFromFLAGX3D",
+                              "Premature end of file while reading matids",MSTK_ERROR);
+                  return 0;
+                }
+                if (strlen(temp_str) == 1 && temp_str[0] == '\n') {
+                  /* ignore newline and read again */
+                  if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                    MSTK_Report("MESH_ImportFromFLAGX3D",
+                                "Premature end of file while reading matids",MSTK_ERROR);
+                    return 0;
+                  }
+                }
+
+                
+                trimLeadingWhiteSpace(temp_str);
+                
+                /* Linear search but hopefully nmats is small */
+                for (i = 0; i < nmats; i++)
+                  if (strcmp(matnames[i],temp_str) == 0) {
+                    MF_Set_GEntDim(mf, 2);
+                    MF_Set_GEntID(mf, i+1);
+                    break;
+                  }
+              }
+            } else if (ndim == 3) {
+              int idx = 0;
+              MRegion_ptr mr;
+              while ((mr = MESH_Next_Region(mesh, &idx))) {              
+                if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                  MSTK_Report("MESH_ImportFromFLAGX3D",
+                              "Premature end of file while reading matids",MSTK_ERROR);
+                  return 0;
+                }
+                if (strlen(temp_str) == 1 && temp_str[0] == '\n') {
+                  /* ignore newline and read again */
+                  if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                    MSTK_Report("MESH_ImportFromFLAGX3D",
+                                "Premature end of file while reading matids",MSTK_ERROR);
+                    return 0;
+                  }
+                }
+                                
+                trimLeadingWhiteSpace(temp_str);
+                
+                /* Linear search but hopefully nmats is small */
+                for (i = 0; i < nmats; i++)
+                  if (strcmp(matnames[i],temp_str) == 0) {
+                    MR_Set_GEntDim(mr, 3);
+                    MR_Set_GEntID(mr, i+1);
+                    break;
+                  }
+              }
+            }
+            status = fscanf(fp,"%s",temp_str);
+            if (status == EOF) {
+              MSTK_Report("MESH_ImportFromFLAGX3D",
+                          "Premature end of file while reading matids",MSTK_ERROR);
+              return 0;
+            }
+            
+            if (strncmp(temp_str,"end_matid",9) == 0)
+              matids_done = 1;
+            else {
+              char temp_str2[256];
+              sprintf(temp_str2, "Expected end_matid but got %s", temp_str);
+              MSTK_Report("MESH_ImportFromFLAGX3D",
+                          temp_str2, MSTK_ERROR);
+            }
+          }
+        }
         else {
           MAttrib_ptr matt;
           double rval;
