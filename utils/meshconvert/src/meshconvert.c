@@ -11,6 +11,7 @@ https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef _MSTK_HAVE_MPI
 #include <mpi.h>
@@ -206,9 +207,10 @@ int main(int argc, char *argv[]) {
        "base.ext.numprocs.rank" or "base.ext.rank"*/
 
     int filecount = 0;
+    int ndigits = (int)(floor(log10(numprocs))+1);
     for (int r = 0; r < numprocs; r++) {
       char tmpfname1[256], tmpfname2[256], tmpfname3[256];
-      sprintf(tmpfname1,"%s.%-d.%-d",infname,numprocs,r);
+      sprintf(tmpfname1,"%s.%0*d.%0*d",infname,ndigits,numprocs,ndigits,r);
       sprintf(tmpfname2,"%s.%05d",infname,r);
       sprintf(tmpfname3,"%s.%05d",infname,r+1);  // X3D
       if ((fp = fopen(tmpfname1,"r")) || (fp = fopen(tmpfname2,"r")) || (fp = fopen(tmpfname3,"r"))) {
