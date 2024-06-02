@@ -97,14 +97,18 @@ extern "C" {
         continue;
 
       if (numprocs > 1) {
+	/* If it is a parallel run, we may be reading a partitioned
+	   file (in which case the rank string has to match this rank)
+	   or we may be reading a serial file to partition (in which
+	   case there won't be a rank string)
+	 */
         char *filerankstr = (char *) strtok(NULL, ".");
         int filerank = 0;
         if (filerankstr) {
           sscanf(filerankstr, "%d", &filerank);
           if (filerank != rank+1)
             continue;
-        } else
-          continue;
+        }
       }
 
       /* can't use fname because we used strtok on it and it only
