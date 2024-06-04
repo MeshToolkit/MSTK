@@ -190,13 +190,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   }
 #ifdef MSTK_HAVE_MPI
   /* make sure each processor sees all materials even if it does not
-   * contain elements of that material */
+   * contain elements of that material. Also, in the concatenated
+   * list, we may end up with maxngent*numprocs entries if every rank
+   * has a unique set of materials */
 
   int maxngent;
   MPI_Allreduce(&ngent, &maxngent, 1, MPI_INT, MPI_MAX, comm);
 
   if (nalloc < maxngent) {
-    nalloc *= 2;
+    nalloc = maxngent;
     gentities = (int *) realloc(gentities,nalloc*sizeof(int));
   }
   for (i = ngent; i < maxngent; i++) gentities[i] = -1;
@@ -205,7 +207,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MPI_Allgather(gentities, maxngent, MPI_INT, allgentities, maxngent, MPI_INT,
                 comm);
 
-  for (i = 0; i < maxngent; i++) gentities[i] = 0;
+  
+  nalloc = maxngent*numprocs;
+  gentities = (int *) realloc(gentities,nalloc*sizeof(int));
+  for (i = 0; i < nalloc; i++) gentities[i] = 0;
   ngent = 0;
   for (i = 0; i < maxngent*numprocs; i++) {
     gentid = allgentities[i];
@@ -1155,7 +1160,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       MSTK_Report("MESH_ExportToFLAGX3D", "Export of cell vectors and tensors to X3D file not implemented", MSTK_WARN);
       continue;
     }
-    
+
     MAttrib_Get_Name(attrib,attname);
     if (strcmp("_tmp",attname-4) == 0)
       continue;
