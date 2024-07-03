@@ -48,7 +48,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   char                  modfilename[256];
   int                   jv, je, jr, jf;
   int                   nv, ne, nf, nr, nrf, nfv, nef, nfe, nfr, nvout;
-  int			i, found, k, nmeshatt, ival=0;
+  int			i, found, k, nmeshatt, ival=0, ndim;
   int                   nalloc, ngent;
   int                   attentdim, j, idx;
   int                   ndup, max_nrf, max_nfe;
@@ -132,11 +132,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   
   /* Problem dimension - 2 if we only have faces, 3 if we have regions */
   
-  if (nr)
-    fprintf(fp,"   %-22s %10d\n","numdim",3);
-  else 
-    fprintf(fp,"   %-22s %10d\n","numdim",2);
-  
+  ndim = nr ? 3 : 2;
+  fprintf(fp,"   %-22s %10d\n","numdim",ndim);
   
   /* Number of materials */
   
@@ -193,13 +190,15 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   }
 #ifdef MSTK_HAVE_MPI
   /* make sure each processor sees all materials even if it does not
-   * contain elements of that material */
+   * contain elements of that material. Also, in the concatenated
+   * list, we may end up with maxngent*numprocs entries if every rank
+   * has a unique set of materials */
 
   int maxngent;
   MPI_Allreduce(&ngent, &maxngent, 1, MPI_INT, MPI_MAX, comm);
 
   if (nalloc < maxngent) {
-    nalloc *= 2;
+    nalloc = maxngent;
     gentities = (int *) realloc(gentities,nalloc*sizeof(int));
   }
   for (i = ngent; i < maxngent; i++) gentities[i] = -1;
@@ -208,7 +207,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   MPI_Allgather(gentities, maxngent, MPI_INT, allgentities, maxngent, MPI_INT,
                 comm);
 
-  for (i = 0; i < maxngent; i++) gentities[i] = 0;
+  
+  nalloc = maxngent*numprocs;
+  gentities = (int *) realloc(gentities,nalloc*sizeof(int));
+  for (i = 0; i < nalloc; i++) gentities[i] = 0;
   ngent = 0;
   for (i = 0; i < maxngent*numprocs; i++) {
     gentid = allgentities[i];
@@ -469,8 +471,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     
     /* Collect the attributes */
     
-    cellatts = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
-    nodatts = (MAttrib_ptr *) malloc(nmeshatt*sizeof(int));
+    cellatts = (MAttrib_ptr *) malloc(nmeshatt*sizeof(MAttrib_ptr));
+    nodatts = (MAttrib_ptr *) malloc(nmeshatt*sizeof(MAttrib_ptr));
     
     for (i = 0; i < nmeshatt; i++) {
       attrib = MESH_Attrib(mesh,i);
@@ -479,9 +481,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       if (attrib == oppatt || attrib == vidatt_tmp || attrib == eidatt_tmp || attrib == fidatt_tmp || attrib == ridatt_tmp)
         continue;
       
-      /* If the attribute is not a INT or a DOUBLE we cannot write it out */
       atttype = MAttrib_Get_Type(attrib);      
-      if (atttype != INT && atttype != DOUBLE)
+      if (atttype != INT && atttype != DOUBLE && atttype != VECTOR && atttype != TENSOR)
         continue;
 
       /* If natt == 0, all qualifying attributes are to be written out */
@@ -507,7 +508,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       if ((attentdim == MVERTEX) || (attentdim == MALLTYPE)) {
         if (atttype == VECTOR) {
           int ncomps = MAttrib_Get_NumComps(attrib);
-          if (ncomps == 3)
+          if (ncomps == ndim)
             nodatts[nnodatt++] = attrib;
         }
       }
@@ -1152,12 +1153,14 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 
   /* Write out any other cell based attributes, if requested */
 
-  /* Apparently these are causing problems in FLAG so we will comment it out */
-
   for (i = 0; i < ncellatt; i++) {
     attrib = cellatts[i];
     atttype = MAttrib_Get_Type(attrib);
-    
+    if (atttype == VECTOR || atttype == TENSOR) {
+      MSTK_Report("MESH_ExportToFLAGX3D", "Export of cell vectors and tensors to X3D file not implemented", MSTK_WARN);
+      continue;
+    }
+
     MAttrib_Get_Name(attrib,attname);
     if (strcmp("_tmp",attname-4) == 0)
       continue;
@@ -1174,7 +1177,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
         if (atttype == INT)
           fprintf(fp,"% 20.12E\n",(double)ival);
         else if (atttype == DOUBLE)
-          fprintf(fp,"% 20.12E\n", rval);
+          fprintf(fp,"% 20.12E\n", rval);     
       }
     }
     else {
@@ -1212,7 +1215,6 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     atttype = MAttrib_Get_Type(attrib);
     if (atttype != VECTOR) continue;  /* X3D only supports vector attributes for nodes */
     int ncomps = MAttrib_Get_NumComps(attrib);
-    if (ncomps != 3) continue;
 
     MAttrib_Get_Name(attrib,attname);
     if (strcmp("_tmp",attname-4) == 0)
@@ -1229,6 +1231,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       
       for (k = 0; k < ncomps; k++)
         fprintf(fp,"% 20.12E", vval[k]);
+      for (k = ncomps; k < 3; k++)
+        fprintf(fp,"% 20.12E", 0.0);  /* expects 3 components for nodal vecs */
       fprintf(fp,"\n");
     }
     

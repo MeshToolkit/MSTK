@@ -9,6 +9,8 @@ https://github.com/MeshToolkit/MSTK/blob/master/LICENSE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
+#include <dirent.h>
 
 
 #include "MSTK.h"
@@ -34,6 +36,94 @@ extern "C" {
      parallel_opts[1] = N    ---- Number of ghost layers around mesh
   */                            
 
+
+  void trimLeadingWhiteSpace(char *string) {
+    int b = 0, l = strlen(string);
+    while (b < l && string[b] == ' ')
+      b++;
+
+    int lnew = l-b;
+    memcpy(string, string+b, lnew);
+    string[lnew] = '\0';
+  }
+
+  int isRegFile(const struct dirent *item) {
+    if (!item) return 0;
+  }
+
+  int getRegFileNames(const char *x3dfilename_in, int numprocs, int rank, char (**regFileNames)[256], char (**regNames)[256]) {
+
+    char x3dfilename[256];
+    strcpy(x3dfilename, x3dfilename_in);  /* hack to remove constness */
+
+    char dirname[256];
+    strcpy(dirname, basename(x3dfilename));
+    if (strcmp(dirname,x3dfilename) == 0)
+      strcpy(dirname, ".");
+    DIR *dir_p = opendir(dirname);
+    int ncandidates = 0;
+    if (!dir_p)
+      return 0;
+
+    struct dirent *diritem;
+    while ((diritem = readdir(dir_p)))
+      ncandidates++;
+    closedir(dir_p);
+        
+    *regFileNames = malloc(ncandidates*sizeof(char[256]));
+    *regNames = malloc(ncandidates*sizeof(char[256]));
+
+    char *basefilename = strtok(x3dfilename, ".");
+
+    dir_p = opendir(dirname);
+    int nfiles = 0;
+    while ((diritem = readdir(dir_p))) {
+      char fname[256];
+      strcpy(fname,diritem->d_name);
+
+      /* If filename does not have .Reg in it, discard */
+      if (!strstr(fname, ".Reg"))
+        continue;
+
+      char *token = strtok(fname, ".");
+
+      /* Does the base file name match the base of the x3d file name */
+      if (strcmp(basefilename, token) != 0)
+        continue;                   /* doesn't correspond to this x3d file */
+
+      char *matname = (char *) strtok(NULL, ".");
+      char *regstr  = (char *) strtok(NULL, ".");
+      if (strcmp(regstr, "Reg") != 0)  /* Sanity check */
+        continue;
+
+      if (numprocs > 1) {
+	/* If it is a parallel run, we may be reading a partitioned
+	   file (in which case the rank string has to match this rank)
+	   or we may be reading a serial file to partition (in which
+	   case there won't be a rank string)
+	 */
+        char *filerankstr = (char *) strtok(NULL, ".");
+        int filerank = 0;
+        if (filerankstr) {
+          sscanf(filerankstr, "%d", &filerank);
+          if (filerank != rank+1)
+            continue;
+        }
+      }
+
+      /* can't use fname because we used strtok on it and it only
+       * contains a substring */
+      strcpy((*regFileNames)[nfiles], diritem->d_name);
+      strcpy((*regNames)[nfiles], matname);
+      nfiles++;
+    }
+    *regFileNames = realloc(*regFileNames, nfiles*sizeof(char[256]));
+    *regNames = realloc(*regFileNames, nfiles*sizeof(char[256]));
+
+    closedir(dir_p);
+
+    return nfiles;
+  }
 
   int MESH_ImportFromFLAGX3D(Mesh_ptr mesh, const char *filename, int *parallel_opts, MSTK_Comm comm) {
 
@@ -437,6 +527,89 @@ extern "C" {
 
         if (strncmp(temp_str,"end_cell_data",13) == 0)
           cellvarsdone = 1;
+        else if (strncmp(temp_str,"matid",5) == 0) {
+          /* matids are special cell data */
+          /* there are 10 strings in a row, each taking up 10
+           * characters, except in the last row where there are as
+           * many as needed to complete the count. So we have to use
+           * fgets instead of fscanf */
+          int matids_done = 0;
+          while (!matids_done) {
+            if (ndim == 2) {
+              int idx = 0;
+              MFace_ptr mf;
+              while ((mf = MESH_Next_Face(mesh, &idx))) {
+                if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                  MSTK_Report("MESH_ImportFromFLAGX3D",
+                              "Premature end of file while reading matids",MSTK_ERROR);
+                  return 0;
+                }
+                if (strlen(temp_str) == 1 && temp_str[0] == '\n') {
+                  /* ignore newline and read again */
+                  if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                    MSTK_Report("MESH_ImportFromFLAGX3D",
+                                "Premature end of file while reading matids",MSTK_ERROR);
+                    return 0;
+                  }
+                }
+
+                
+                trimLeadingWhiteSpace(temp_str);
+                
+                /* Linear search but hopefully nmats is small */
+                for (i = 0; i < nmats; i++)
+                  if (strcmp(matnames[i],temp_str) == 0) {
+                    MF_Set_GEntDim(mf, 2);
+                    MF_Set_GEntID(mf, i+1);
+                    break;
+                  }
+              }
+            } else if (ndim == 3) {
+              int idx = 0;
+              MRegion_ptr mr;
+              while ((mr = MESH_Next_Region(mesh, &idx))) {              
+                if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                  MSTK_Report("MESH_ImportFromFLAGX3D",
+                              "Premature end of file while reading matids",MSTK_ERROR);
+                  return 0;
+                }
+                if (strlen(temp_str) == 1 && temp_str[0] == '\n') {
+                  /* ignore newline and read again */
+                  if (fgets(temp_str, 11, fp) == NULL || feof(fp)) {
+                    MSTK_Report("MESH_ImportFromFLAGX3D",
+                                "Premature end of file while reading matids",MSTK_ERROR);
+                    return 0;
+                  }
+                }
+                                
+                trimLeadingWhiteSpace(temp_str);
+                
+                /* Linear search but hopefully nmats is small */
+                for (i = 0; i < nmats; i++)
+                  if (strcmp(matnames[i],temp_str) == 0) {
+                    MR_Set_GEntDim(mr, 3);
+                    MR_Set_GEntID(mr, i+1);
+                    break;
+                  }
+              }
+            }
+            status = fscanf(fp,"%s",temp_str);
+            if (status == EOF) {
+              MSTK_Report("MESH_ImportFromFLAGX3D",
+                          "Premature end of file while reading matids",MSTK_ERROR);
+              return 0;
+            }
+            
+            if (strncmp(temp_str,"end_matid",9) == 0)
+              matids_done = 1;
+            else {
+              char temp_str2[256];
+              sprintf(temp_str2, "Expected end_matid but got %s", temp_str);
+              MSTK_Report("MESH_ImportFromFLAGX3D",
+                          temp_str2, MSTK_ERROR);
+            }
+          }
+        }
         else {
           MAttrib_ptr matt;
           double rval;
@@ -545,6 +718,71 @@ extern "C" {
 
   }
 
+  /* Some codes don't respect (and write out) appropriate matid
+   * data. Instead they rely on .Reg (Material Region) files to
+   * specify membership of cells in materials. This allows more than
+   * one material to be present in a cell. We can handle one material
+   * per cell but not multiple materials. So when we read Reg files
+   * and assign materials, we will assign the material of the last
+   * .Reg file the cell appeared in. Sometimes .Reg files also contain
+   * volume fractions of materials in cells (needed if a cell occurs
+   * in two or more .Reg files). We will ignore volume fraction fields
+   * in .Reg files. If both matids and .Reg files are used to indicate
+   * membership of cells in materials, we will overwrite the
+   * classification from the material ID fields */
+
+  char (*regfilenames)[256], (*regnames)[256];
+  int nfiles = getRegFileNames(filename, numprocs, rank, &regfilenames, &regnames);
+  sprintf(temp_str,"Found %d Reg files on rank %d", nfiles, rank);
+  MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_MESG);
+
+  if (nfiles > 0) {
+    nmats = 0;    /* Overwrite what was in matids */
+    matid = 1;
+    for (i = 0; i < nfiles; i++) {
+      char *regname = regnames[i];
+
+      char *regfname = regfilenames[i];
+      if (!(fp = fopen(regfname, "r"))) {
+        sprintf(temp_str, "Could not open region file %s", regfname);
+        MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
+      }
+
+      int nelements = 0;
+      while (fgets(temp_str, 12, fp)) {
+        if (!temp_str || strcmp(temp_str,"\n") == 0 || feof(fp))
+          break;
+        int elemid;
+        sscanf(temp_str,"%d",&elemid);
+        if (ndim == 2) {
+          MFace_ptr mf = MESH_Face(mesh, elemid-1);
+          if (!mf) {
+            sprintf(temp_str, "Could not find element ID %d from Reg file %s in mesh with %d elements", elemid, regfname, MESH_Num_Faces(mesh)); 
+            MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
+          }
+          MF_Set_GEntDim(mf, 2);
+          MF_Set_GEntID(mf, matid);
+          nelements++;
+        } else if (ndim == 3) {
+          MRegion_ptr mr = MESH_Region(mesh, elemid-1);
+          if (!mr) {
+            sprintf(temp_str, "Could not find element ID %d from Reg file %s in mesh with %d elements", elemid, regfname, MESH_Num_Regions(mesh)); 
+            MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
+          }
+          MR_Set_GEntDim(mr, 2);
+          MR_Set_GEntID(mr, matid);
+          nelements++;
+        }
+      }  /* while (!done) */
+      if (nelements) {
+        fprintf(stderr,"Read %d elements from file %s on rank %d\n",
+                nelements, regfname, rank);
+        matid++;
+      }
+      fclose(fp);
+    }
+  }
+    
 
   if (ndim == 2)
     free(medir);
