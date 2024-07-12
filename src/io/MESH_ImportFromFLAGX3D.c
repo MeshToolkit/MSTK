@@ -815,8 +815,6 @@ extern "C" {
     matid = 1;
     for (i = 0; i < nfiles; i++) {
       char *regname = regnames[i];
-      char regname1[256] = "X3DReg_";
-      strcat(regname1, regname);
 
       char *regfname = regfilenames[i];
       if (!(fp = fopen(regfname, "r"))) {
