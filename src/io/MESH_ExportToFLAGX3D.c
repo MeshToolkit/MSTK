@@ -1298,7 +1298,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     fclose(fp);
   }
   
-  /* Write out each element set as a .reg file */
+  /* Write out each element set as a .reg file; Some or all of these
+     will be a duplicate of the mat.N.Reg files */
 
   MSet_ptr mset;
   idx = 0;
@@ -1310,9 +1311,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     MSet_Name(mset, setname);
 
     char regfilename[256];
-    strcpy(regfilename, "ELSET_");
-    strcat(regfilename, setname);
-    strcat(regfilename, ".Reg");
+    strcpy(regfilename, setname);
+    strcat(setname, ".Reg");
     if (numprocs > 1) {
       char ext[256];
       sprintf(ext, ".%05d",pid);
