@@ -66,6 +66,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   pid += 1;  /* FLAG X3D counts processor IDs from 1 */
 #endif
 
+ 
+  char *basefilename = strtok(filename, ".");
+  
   strcpy(modfilename,filename);
   if (numprocs > 1)
     sprintf(modfilename,"%s.%05d",filename,pid);
@@ -1227,7 +1230,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       if (MV_PType(vertex) == PGHOST && !MV_OnParBoundary(vertex)) continue;
 
       double *vval;
-      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&vval);
+      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,(void **) &vval);
       
       for (k = 0; k < ncomps; k++)
         fprintf(fp,"% 20.12E", vval[k]);
@@ -1311,7 +1314,9 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     MSet_Name(mset, setname);
 
     char regfilename[256];
-    strcpy(regfilename, setname);
+    strcpy(regfilename, basefilename);
+    strcat(regfilename, ".");
+    strcat(regfilename, setname);
     strcat(setname, ".Reg");
     if (numprocs > 1) {
       char ext[256];
@@ -1346,8 +1351,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     MSet_Name(mset, setname);
 
     char bdyfilename[256];
-    strcpy(bdyfilename, setname);
-    strcat(bdyfilename, ".bdy");
+    strcpy(bdyfilename, basefilename);
+    strcat(bdyfilename, ".");
+    strcat(bdyfilename, setname);
+    strcat(bdyfilename, ".Bdy");
     if (numprocs > 1) {
       char ext[256];
       sprintf(ext, ".%05d",pid);
