@@ -118,7 +118,7 @@ extern "C" {
       nfiles++;
     }
     *regFileNames = realloc(*regFileNames, nfiles*sizeof(char[256]));
-    *regNames = realloc(*regFileNames, nfiles*sizeof(char[256]));
+    *regNames = realloc(*regNames, nfiles*sizeof(char[256]));
 
     closedir(dir_p);
 
