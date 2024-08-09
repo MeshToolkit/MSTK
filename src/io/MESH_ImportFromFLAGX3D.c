@@ -125,7 +125,7 @@ extern "C" {
     return nfiles;
   }
 
-  int getBdyFileNames(const char *x3dfilename_in, int numprocs, int rank, char (**nodeset_FileNames)[256], char (**nodeset_Names)[256]) {
+  int getBdyFileNames(const char *x3dfilename_in, int numprocs, int rank, char (**nodesetFileNames)[256], char (**nodesetNames)[256]) {
 
     char x3dfilename[256];
     strcpy(x3dfilename, x3dfilename_in);  /* hack to remove constness */
@@ -144,8 +144,8 @@ extern "C" {
       ncandidates++;
     closedir(dir_p);
         
-    *nodeset_FileNames = malloc(ncandidates*sizeof(char[256]));
-    *nodeset_Names = malloc(ncandidates*sizeof(char[256]));
+    *nodesetFileNames = malloc(ncandidates*sizeof(char[256]));
+    *nodesetNames = malloc(ncandidates*sizeof(char[256]));
 
     char *basefilename = strtok(x3dfilename, ".");
 
@@ -156,7 +156,7 @@ extern "C" {
       strcpy(fname,diritem->d_name);
 
       /* If filename does not have .Bdy in it, discard */
-      if (!strstr(fname, ".Bdy")
+      if (!strstr(fname, ".Bdy"))
         continue;
 
       char *token = strtok(fname, ".");
@@ -187,12 +187,12 @@ extern "C" {
 
       /* can't use fname because we used strtok on it and it only
        * contains a substring */
-      strcpy((*nodeset_FileNames)[nfiles], diritem->d_name);
-      strcpy((*nodeset_Names)[nfiles], matname);
+      strcpy((*nodesetFileNames)[nfiles], diritem->d_name);
+      strcpy((*nodesetNames)[nfiles], matname);
       nfiles++;
     }
-    *nodeset_FileNames = realloc(*nodeset_FileNames, nfiles*sizeof(char[256]));
-    *nodeset_Names = realloc(*nodeset_Names, nfiles*sizeof(char[256]));
+    *nodesetFileNames = realloc(*nodesetFileNames, nfiles*sizeof(char[256]));
+    *nodesetNames = realloc(*nodesetNames, nfiles*sizeof(char[256]));
 
     closedir(dir_p);
 
@@ -867,14 +867,14 @@ extern "C" {
 
   /* Read node sets from .Bdy files */
   
-  char (*bdyfilenames)[256], (*bdynames)[256];
+  char (*nodeset_filenames)[256], (*nodeset_names)[256];
   nfiles = getBdyFileNames(filename, numprocs, rank, &nodeset_filenames, &nodeset_names);
   sprintf(temp_str,"Found %d Bdy files on rank %d.", nfiles, rank);
   MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_MESG);
 
   if (nfiles > 0) {
     for (i = 0; i < nfiles; i++) {
-      char *nodeset_name = nodesetnames[i];
+      char *nodeset_name = nodeset_names[i];
 
       char *nodeset_fname = nodeset_filenames[i];
       if (!(fp = fopen(nodeset_fname, "r"))) {
@@ -894,7 +894,7 @@ extern "C" {
 	  sprintf(temp_str, "Could not find vertex ID %d from Bdy file %s in mesh with %d nodes", nodeid, nodeset_fname, MESH_Num_Vertices(mesh)); 
 	  MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
 	}
-	MSet_add(nodeset, mv);
+	MSet_Add(nodeset, mv);
 	nnodes++;
       }  /* while (!done) */
       if (nnodes)
