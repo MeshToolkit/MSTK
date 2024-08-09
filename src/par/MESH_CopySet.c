@@ -43,8 +43,11 @@ extern "C" {
   MSet_Name(gmset,msetname);
   mtype = MSet_EntDim(gmset);
 
-  for (i = 0; i < num; ++i)
+  for (i = 0; i < num; ++i) {
     lmset_array[i] = MESH_MSetByName(submeshes[i],msetname);
+    if (!lmset_array[i])
+       lmset_array[i] = MSet_New(submeshes[i],msetname,mtype);
+  }
  
   
 
@@ -59,9 +62,6 @@ extern "C" {
       for (i = 0; i < num; ++i) {
 	if (submesh == submeshes[i]) {
 	  lmset = lmset_array[i];
-	  if (!lmset)
-	    lmset = lmset_array[i] = MSet_New(submesh,msetname,mtype);
-      
 	  MSet_Add(lmset,lment);
 	  break;
 	}
