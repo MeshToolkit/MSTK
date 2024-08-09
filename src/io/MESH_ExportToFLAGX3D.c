@@ -67,8 +67,6 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
 #endif
 
  
-  char *basefilename = strtok(filename, ".");
-  
   strcpy(modfilename,filename);
   if (numprocs > 1)
     sprintf(modfilename,"%s.%05d",filename,pid);
@@ -79,6 +77,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     exit(2);
   }
   
+  char *basefilename = strtok(filename, ".");
   
   nv = MESH_Num_Vertices(mesh);
   ne = MESH_Num_Edges(mesh);
