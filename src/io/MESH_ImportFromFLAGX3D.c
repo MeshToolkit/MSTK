@@ -145,7 +145,7 @@ extern "C" {
     closedir(dir_p);
         
     *nodeset_FileNames = malloc(ncandidates*sizeof(char[256]));
-    *nodesetNames = malloc(ncandidates*sizeof(char[256]));
+    *nodeset_Names = malloc(ncandidates*sizeof(char[256]));
 
     char *basefilename = strtok(x3dfilename, ".");
 
