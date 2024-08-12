@@ -66,6 +66,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
   pid += 1;  /* FLAG X3D counts processor IDs from 1 */
 #endif
 
+ 
   strcpy(modfilename,filename);
   if (numprocs > 1)
     sprintf(modfilename,"%s.%05d",filename,pid);
@@ -76,6 +77,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     exit(2);
   }
   
+  char *basefilename = strtok(filename, ".");
   
   nv = MESH_Num_Vertices(mesh);
   ne = MESH_Num_Edges(mesh);
@@ -1227,7 +1229,7 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
       if (MV_PType(vertex) == PGHOST && !MV_OnParBoundary(vertex)) continue;
 
       double *vval;
-      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,&vval);
+      MEnt_Get_AttVal(vertex,attrib,&ival,&rval,(void **) &vval);
       
       for (k = 0; k < ncomps; k++)
         fprintf(fp,"% 20.12E", vval[k]);
@@ -1298,7 +1300,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     fclose(fp);
   }
   
-  /* Write out each element set as a .reg file */
+  /* Write out each element set as a .Reg file; Some or all of these
+     will be a duplicate of the mat.N.Reg files */
 
   MSet_ptr mset;
   idx = 0;
@@ -1310,7 +1313,8 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     MSet_Name(mset, setname);
 
     char regfilename[256];
-    strcpy(regfilename, "ELSET_");
+    strcpy(regfilename, basefilename);
+    strcat(regfilename, ".");
     strcat(regfilename, setname);
     strcat(regfilename, ".Reg");
     if (numprocs > 1) {
@@ -1346,8 +1350,10 @@ int MESH_ExportToFLAGX3D(Mesh_ptr mesh, const char *filename, const int natt,
     MSet_Name(mset, setname);
 
     char bdyfilename[256];
-    strcpy(bdyfilename, setname);
-    strcat(bdyfilename, ".bdy");
+    strcpy(bdyfilename, basefilename);
+    strcat(bdyfilename, ".");
+    strcat(bdyfilename, setname);
+    strcat(bdyfilename, ".Bdy");
     if (numprocs > 1) {
       char ext[256];
       sprintf(ext, ".%05d",pid);

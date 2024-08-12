@@ -118,7 +118,81 @@ extern "C" {
       nfiles++;
     }
     *regFileNames = realloc(*regFileNames, nfiles*sizeof(char[256]));
-    *regNames = realloc(*regFileNames, nfiles*sizeof(char[256]));
+    *regNames = realloc(*regNames, nfiles*sizeof(char[256]));
+
+    closedir(dir_p);
+
+    return nfiles;
+  }
+
+  int getBdyFileNames(const char *x3dfilename_in, int numprocs, int rank, char (**nodesetFileNames)[256], char (**nodesetNames)[256]) {
+
+    char x3dfilename[256];
+    strcpy(x3dfilename, x3dfilename_in);  /* hack to remove constness */
+
+    char dirname[256];
+    strcpy(dirname, basename(x3dfilename));
+    if (strcmp(dirname,x3dfilename) == 0)
+      strcpy(dirname, ".");
+    DIR *dir_p = opendir(dirname);
+    int ncandidates = 0;
+    if (!dir_p)
+      return 0;
+
+    struct dirent *diritem;
+    while ((diritem = readdir(dir_p)))
+      ncandidates++;
+    closedir(dir_p);
+        
+    *nodesetFileNames = malloc(ncandidates*sizeof(char[256]));
+    *nodesetNames = malloc(ncandidates*sizeof(char[256]));
+
+    char *basefilename = strtok(x3dfilename, ".");
+
+    dir_p = opendir(dirname);
+    int nfiles = 0;
+    while ((diritem = readdir(dir_p))) {
+      char fname[256];
+      strcpy(fname,diritem->d_name);
+
+      /* If filename does not have .Bdy in it, discard */
+      if (!strstr(fname, ".Bdy"))
+        continue;
+
+      char *token = strtok(fname, ".");
+
+      /* Does the base file name match the base of the x3d file name */
+      if (strcmp(basefilename, token) != 0)
+        continue;                   /* doesn't correspond to this x3d file */
+
+      char *matname = (char *) strtok(NULL, ".");
+      char *bdystr  = (char *) strtok(NULL, ".");
+      if (strcmp(bdystr, "Bdy") != 0)  /* Sanity check */
+        continue;
+
+      if (numprocs > 1) {
+	/* If it is a parallel run, we may be reading a partitioned
+	   file (in which case the rank string has to match this rank)
+	   or we may be reading a serial file to partition (in which
+	   case there won't be a rank string)
+	 */
+        char *filerankstr = (char *) strtok(NULL, ".");
+        int filerank = 0;
+        if (filerankstr) {
+          sscanf(filerankstr, "%d", &filerank);
+          if (filerank != rank+1)
+            continue;
+        }
+      }
+
+      /* can't use fname because we used strtok on it and it only
+       * contains a substring */
+      strcpy((*nodesetFileNames)[nfiles], diritem->d_name);
+      strcpy((*nodesetNames)[nfiles], matname);
+      nfiles++;
+    }
+    *nodesetFileNames = realloc(*nodesetFileNames, nfiles*sizeof(char[256]));
+    *nodesetNames = realloc(*nodesetNames, nfiles*sizeof(char[256]));
 
     closedir(dir_p);
 
@@ -733,7 +807,7 @@ extern "C" {
 
   char (*regfilenames)[256], (*regnames)[256];
   int nfiles = getRegFileNames(filename, numprocs, rank, &regfilenames, &regnames);
-  sprintf(temp_str,"Found %d Reg files on rank %d", nfiles, rank);
+  sprintf(temp_str,"Found %d Reg files on rank %d. \n NOTE:Region file reading ignores multiple materials per cells and volume fraction data", nfiles, rank);
   MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_MESG);
 
   if (nfiles > 0) {
@@ -748,6 +822,12 @@ extern "C" {
         MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
       }
 
+      MSet_ptr elset;
+      if (ndim == 2)
+	elset = MSet_New(mesh, regname, MFACE);
+      else if (ndim == 3)
+        elset = MSet_New(mesh, regname, MREGION);
+      
       int nelements = 0;
       while (fgets(temp_str, 12, fp)) {
         if (!temp_str || strcmp(temp_str,"\n") == 0 || feof(fp))
@@ -762,6 +842,7 @@ extern "C" {
           }
           MF_Set_GEntDim(mf, 2);
           MF_Set_GEntID(mf, matid);
+	  MSet_Add(elset, mf); 
           nelements++;
         } else if (ndim == 3) {
           MRegion_ptr mr = MESH_Region(mesh, elemid-1);
@@ -771,6 +852,7 @@ extern "C" {
           }
           MR_Set_GEntDim(mr, 2);
           MR_Set_GEntID(mr, matid);
+	  MSet_Add(elset, mr);
           nelements++;
         }
       }  /* while (!done) */
@@ -782,7 +864,45 @@ extern "C" {
       fclose(fp);
     }
   }
-    
+
+  /* Read node sets from .Bdy files */
+  
+  char (*nodeset_filenames)[256], (*nodeset_names)[256];
+  nfiles = getBdyFileNames(filename, numprocs, rank, &nodeset_filenames, &nodeset_names);
+  sprintf(temp_str,"Found %d Bdy files on rank %d.", nfiles, rank);
+  MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_MESG);
+
+  if (nfiles > 0) {
+    for (i = 0; i < nfiles; i++) {
+      char *nodeset_name = nodeset_names[i];
+
+      char *nodeset_fname = nodeset_filenames[i];
+      if (!(fp = fopen(nodeset_fname, "r"))) {
+        sprintf(temp_str, "Could not open bdy (nodeset) file %s", nodeset_fname);
+        MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
+      }
+
+      MSet_ptr nodeset = MSet_New(mesh, nodeset_name, MVERTEX); 
+      int nnodes = 0;
+      while (fgets(temp_str, 12, fp)) {
+        if (!temp_str || strcmp(temp_str,"\n") == 0 || feof(fp))
+          break;
+        int nodeid;
+        sscanf(temp_str,"%d",&nodeid);
+	MVertex_ptr mv = MESH_Vertex(mesh, nodeid-1);
+	if (!mv) {
+	  sprintf(temp_str, "Could not find vertex ID %d from Bdy file %s in mesh with %d nodes", nodeid, nodeset_fname, MESH_Num_Vertices(mesh)); 
+	  MSTK_Report("MESH_ImportFromFLAGX3D", temp_str, MSTK_FATAL);
+	}
+	MSet_Add(nodeset, mv);
+	nnodes++;
+      }  /* while (!done) */
+      if (nnodes)
+        fprintf(stderr,"Read %d elements from file %s on rank %d\n",
+                nnodes, nodeset_fname, rank);
+      fclose(fp);
+    }
+  }
 
   if (ndim == 2)
     free(medir);
